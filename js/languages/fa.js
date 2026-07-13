@@ -1,0 +1,353 @@
+/**
+ * Darya (دریا) — Persian language pack.
+ *
+ * Everything language-specific lives here: normalization rules, the
+ * conversation rule set, fallback pools, a small sentiment lexicon, and
+ * every piece of UI copy. `js/darya-engine.js` is entirely generic and
+ * just consumes whichever pack is handed to it, so Persian and English
+ * get identical engine capabilities with zero compromises on either side.
+ */
+
+(function (global) {
+  'use strict';
+
+  const BOT_NAME = 'دریا';
+
+  // Persian/Arabic Unicode blocks, including presentation-form supplements
+  // some fonts/keyboards produce.
+  const SCRIPT_RANGE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+  const FALLBACK_SUBSTITUTIONS = [
+    ['ي', 'ی'], // Arabic yeh -> Persian yeh
+    ['ك', 'ک'], // Arabic kaf -> Persian kaf
+    ['ة', 'ه'], // teh marbuta -> heh
+    ['ۀ', 'ه'],
+  ];
+
+  /**
+   * Normalizes raw Persian input for reliable pattern matching: unifies
+   * look-alike Arabic/Persian characters and collapses ASCII whitespace.
+   * Zero-width non-joiners (half-spaces, e.g. "می‌خواهم") are intentionally
+   * left intact since they are meaningful in Persian orthography.
+   */
+  function normalize(text) {
+    let normalized = String(text).trim();
+    for (const [src, dst] of FALLBACK_SUBSTITUTIONS) {
+      normalized = normalized.split(src).join(dst);
+    }
+    normalized = normalized.replace(/[ \t\r\n\f\v]+/g, ' ').trim();
+    return normalized;
+  }
+
+  function rule(topic, priority, pattern, responses) {
+    return { topic, priority, pattern, responses };
+  }
+
+  // A curated set of common Persian pronominal/verb suffixes that attach
+  // directly to a keyword with no space, e.g. "غمگین" -> "غمگینم" ("I am
+  // sad"). Recognizing exactly these (rather than allowing *any* trailing
+  // character) keeps matching accurate for real inflected forms while
+  // still rejecting unrelated compounds -- e.g. it correctly stops "پدر"
+  // ("father") from falsely matching inside "پدربزرگ" ("grandfather"),
+  // since "بزرگ" isn't one of these suffixes.
+  const SUFFIX = '(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?';
+
+  /**
+   * Builds a Persian-script-aware "whole word" pattern. `\b` doesn't work
+   * for Persian text in JavaScript regex (it's defined in terms of ASCII
+   * word characters), so this uses explicit lookaround instead: the
+   * keyword (plus an optional common suffix) must not be directly
+   * preceded or followed by another Persian/Arabic letter.
+   * @param {string} alternatives - A `|`-joined list of keyword forms.
+   * @param {string} [tail] - Extra pattern appended after the boundary
+   *   check, e.g. `\s*(.*)` for rules that capture the rest of the
+   *   sentence.
+   * @returns {RegExp}
+   */
+  function pw(alternatives, tail) {
+    return new RegExp(
+      `(?<![\\u0600-\\u06FF])(${alternatives})${SUFFIX}(?![\\u0600-\\u06FF])${tail || ''}`,
+      'i'
+    );
+  }
+
+  const rules = [
+    rule('safety', 100, pw('خودکشی|خودزنی|آسیب زدن به خودم|دیگه نمیخوام زندگی کنم|دیگه نمی‌خوام زندگی کنم'), [
+      'شنیدن این حرف از شما برایم بسیار مهم است و می‌خواهم بدانید که تنها نیستید. آیا در همین نزدیکی کسی هست که بتوانید همین حالا با او تماس بگیرید یا به او سر بزنید؟',
+      'این احساس بسیار سنگینی است و شایسته‌ی توجه فوری است. لطفاً با یک خط بحران یا فرد قابل‌اعتمادی در همین لحظه تماس بگیرید؛ من در کنار شما هستم اما جای کمک تخصصی و فوری را نمی‌گیرم.',
+    ]),
+
+    rule('grief', 55, pw('فوت کرد|درگذشت|فقدان|از دست دادم|از دستش دادم'), [
+      'از دست دادن، از سخت‌ترین تجربه‌های زندگی است. می‌خواهید کمی درباره‌اش بگویید؟',
+      'برای این فقدان، هر حسی که دارید طبیعی است. این روزها چطور با آن کنار می‌آیید؟',
+      'دوست دارید درباره‌اش برایم بگویید؟',
+    ]),
+
+    rule('family', 50, pw('پدربزرگ|مادربزرگ|پدر|مادر|خانواده|والدین|خواهر|برادر', '\\s*(.*)'), [
+      'درباره‌ی {captured} بیشتر برایم بگویید.',
+      'رابطه‌ی شما با خانواده‌تان چه حسی در شما ایجاد می‌کند؟',
+      'وقتی به {captured} فکر می‌کنید، چه احساسی سراغتان می‌آید؟',
+      'چه چیزی باعث شد الان یاد {captured} بیفتید؟',
+    ]),
+
+    rule('work', 50, pw('کار|شغل|رئیس|همکار|استخدام|اخراج', '\\s*(.*)'), [
+      'کار و شغل گاهی بار سنگینی روی دوش‌مان می‌گذارد. {captured} چطور بر شما اثر گذاشته؟',
+      'درباره‌ی شرایط کاری‌تان بیشتر بگویید؛ چه چیزی بیش از همه آزارتان می‌دهد؟',
+      'اگر شرایط کاری‌تان بهتر بود، چه چیزی فرق می‌کرد؟',
+    ]),
+
+    rule('sleep', 50, pw('خواب|بی‌خوابی|بیخوابی|کابوس'), [
+      'به نظر می‌رسد خواب‌تان این روزها آرام نیست. از کِی این‌طور شده؟',
+      'بی‌خوابی می‌تواند نشانه‌ی نگرانی‌های پنهانی باشد. این روزها چه چیزی ذهن‌تان را مشغول کرده؟',
+      'وقتی نمی‌توانید بخوابید، ذهن‌تان معمولاً کجا می‌رود؟',
+    ]),
+
+    rule('sadness', 40, pw('غمگین|ناراحت|افسرده|دلم گرفته|گریه'), [
+      'می‌شنوم که این روزها غم زیادی همراه‌تان است. دوست دارید بیشتر درباره‌اش صحبت کنیم؟',
+      'غمگین بودن سخت است. چه چیزی این حس را در شما به وجود آورده؟',
+      'اجازه بدهید کمی بیشتر در این احساس بمانیم؛ از کِی این‌طور احساس می‌کنید؟',
+      'این غم را کجای بدن‌تان بیشتر حس می‌کنید؟',
+    ]),
+
+    rule('anxiety', 40, pw('نگران|اضطراب|استرس|ترسیدم|می‌ترسم|میترسم'), [
+      'اضطراب می‌تواند خیلی خسته‌کننده باشد. دقیقاً چه چیزی نگران‌تان کرده؟',
+      'وقتی این استرس سراغتان می‌آید، در بدن‌تان چه احساسی دارید؟',
+      'از ۱ تا ۱۰، الان این نگرانی چقدر شدید است؟',
+    ]),
+
+    rule('anger', 40, pw('عصبانی|خشمگین|کفری|از دستش عصبانی'), [
+      'به نظر می‌رسد خشم زیادی در شما جمع شده. چه چیزی باعث این خشم شده؟',
+      'عصبانیت شما قابل‌درک است. مایلید بگویید دقیقاً چه اتفاقی افتاد؟',
+      'این خشم را در کدام قسمت از بدن‌تان بیشتر حس می‌کنید؟',
+    ]),
+
+    rule('joy', 35, pw('خوشحال|شاد|هیجان‌زده|هیجان زده'), [
+      'خوشحالم که این حس خوب را تجربه می‌کنید! چه چیزی باعثش شده؟',
+      'شنیدن این خبر خوب است. دوست دارید بیشتر درباره‌اش بگویید؟',
+      'این حس خوب را در بدنتان کجا حس می‌کنید؟',
+    ]),
+
+    rule('loneliness', 40, pw('تنها|تنهایی|کسی رو ندارم|هیچ‌کس نیست'), [
+      'تنهایی می‌تواند حس سنگینی باشد. این حس از کِی همراه‌تان است؟',
+      'وقتی می‌گویید تنها هستید، منظورتان بیشتر نبود کسی برای صحبت است یا حسی عمیق‌تر از جدا بودن؟',
+      'در این روزها، چه کسی نزدیک‌ترین فرد به شماست، حتی اگر کم می‌بینیدش؟',
+    ]),
+
+    rule('self_esteem', 40, pw('بی‌ارزش|بی ارزش|اعتماد به نفس ندارم|از خودم بدم میاد|به اندازه کافی خوب نیستم'), [
+      'این حرف‌ها درباره‌ی خودتان سنگین‌اند. این باور از کجا شکل گرفته؟',
+      'وقتی این فکرها می‌آیند، چه چیزی معمولاً باعثشان می‌شود؟',
+      'اگر یک دوست همین حرف را درباره‌ی خودش می‌زد، به او چه می‌گفتید؟',
+    ]),
+
+    rule('motivation', 35, pw('انگیزه ندارم|بی‌حوصله|بیحوصلگی|نمی‌تونم شروع کنم|تعلل می‌کنم'), [
+      'وقتی انگیزه نیست، حتی کارهای کوچک هم سنگین می‌شوند. این حس از کِی شروع شده؟',
+      'اگر یک قدم خیلی کوچک بردارید، چه چیزی می‌تواند باشد؟',
+      'چه چیزی معمولاً کمک می‌کند دوباره شروع کنید، حتی کمی؟',
+    ]),
+
+    rule('relationship', 40, pw('دوست پسر|دوست دختر|همسر|نامزد|بهم زدیم|جدا شدیم|رابطه‌ام'), [
+      'روابط می‌توانند هم عمیق‌ترین شادی‌ها و هم سخت‌ترین لحظات را بسازند. چه اتفاقی افتاده؟',
+      'الان بیشتر دنبال این هستید که با من درد دل کنید یا به راه‌حلی فکر کنید؟',
+      'این رابطه چه جایگاهی در زندگی‌تان دارد؟',
+    ]),
+
+    rule('health', 35, pw('مریض|بیمار|درد دارم|سلامتی|دکتر رفتم'), [
+      'نگرانی درباره‌ی سلامتی می‌تواند خیلی ذهن را درگیر کند. چه چیزی بیشتر نگران‌تان کرده؟',
+      'آیا با پزشک درباره‌اش صحبت کرده‌اید؟',
+      'این موضوع چقدر روی روزهای اخیرتان اثر گذاشته؟',
+    ]),
+
+    rule('gratitude', 25, pw('ممنون|سپاسگزار|قدردان|خوشحالم که هستی'), [
+      'شنیدن این حرف برایم دلگرم‌کننده است، ممنون که گفتید.',
+      'خوشحالم که این گفتگو براتون مفید بوده.',
+      'حضور شما هم برای من ارزشمند است.',
+    ]),
+
+    rule('school', 35, pw('امتحان|کنکور|دانشگاه|نمره|استاد'), [
+      'فشار درس و امتحان می‌تواند واقعاً خسته‌کننده باشد. الان دقیقاً چه چیزی فشار می‌آورد؟',
+      'چقدر به این امتحان/دوره مانده؟ و چه حسی نسبت بهش دارید؟',
+      'چه چیزی می‌تواند کمی از این فشار کم کند؟',
+    ]),
+
+    rule('money', 35, pw('پول ندارم|مشکل مالی|بدهکار|قسط|هزینه‌ها'), [
+      'نگرانی مالی می‌تواند روی خیلی چیزهای دیگر هم سایه بیندازد. چقدر این موضوع این روزها ذهن‌تان را درگیر کرده؟',
+      'این نگرانی مالی از کِی شروع شده؟',
+      'آیا کسی هست که بشود درباره‌ی این موضوع باهاش مشورت کرد؟',
+    ]),
+
+    rule('feeling', 30, /(?<![\u0600-\u06FF])(?:احساس می‌کنم|حس می‌کنم|فکر می‌کنم)(?![\u0600-\u06FF])\s*(.*)/i, [
+      'چرا فکر می‌کنید که {captured}؟',
+      'از کِی این‌طور احساس می‌کنید که {captured}؟',
+      'بیشتر توضیح می‌دهید که چرا {captured}؟',
+      'اگر این احساس نبود، چه چیزی جایش را می‌گرفت؟',
+    ]),
+
+    rule('reasoning', 25, /(?<![\u0600-\u06FF])(?:چونکه|چون)(?![\u0600-\u06FF])\s*(.*)/i, [
+      'آیا این تنها دلیل آن است؟',
+      'و آیا فکر می‌کنید این دلیل، همه‌ی ماجراست؟',
+      'چه دلیل دیگری هم می‌تواند در کار باشد؟',
+    ]),
+
+    rule('need', 25, /(?<![\u0600-\u06FF])(?:نیاز دارم|می‌خواهم|میخوام|دلم می‌خواد)(?![\u0600-\u06FF])\s*(.*)/i, [
+      'اگر {captured} داشتید، چه چیزی در زندگی‌تان تغییر می‌کرد؟',
+      'چه چیزی مانع رسیدن شما به {captured} شده؟',
+      'اولین قدم کوچک به سمت {captured} چه می‌تواند باشد؟',
+    ]),
+
+    rule('affirmation', 15, /^(بله|آره|اره)\.?$/i, [
+      'متوجه شدم. کمی بیشتر توضیح می‌دهید؟',
+      'خب. چه چیز دیگری در این‌باره به ذهنتان می‌رسد؟',
+    ]),
+
+    rule('negation', 15, /^(نه|خیر)\.?$/i, [
+      'باشد، اشکالی ندارد. پس چه چیزی به ذهن‌تان می‌رسد؟',
+      'متوجه‌ام. مایلید موضوع دیگری را مطرح کنید؟',
+    ]),
+  ];
+
+  const trivialCaptures = new Set([
+    'هستم', 'هستی', 'هست', 'هستیم', 'هستید', 'هستند', 'است', 'بود',
+    'بودم', 'بودی', 'بودیم', 'بودید', 'بودند', 'شد', 'شدم', 'شدی', 'ام',
+  ]);
+
+  const genericFallbacks = [
+    'بیشتر برایم توضیح می‌دهید؟',
+    'این موضوع برایتان چه اهمیتی دارد؟',
+    'لطفاً کمی بیشتر درباره‌اش بگویید.',
+    'متوجه شدم. و بعدش چه شد؟',
+    'چه چیزی باعث شد این را با من در میان بگذارید؟',
+  ];
+
+  const strategyShiftFallbacks = [
+    'بیایید کمی مکث کنیم؛ همین الان، بیشترین چیزی که ذهنتان را درگیر کرده چیست؟',
+    'اگر بخواهید این حس را برای یک دوست توصیف کنید، چه می‌گفتید؟',
+    'دوست دارید درباره‌ی موضوع دیگری هم صحبت کنیم؟',
+    'چه چیزی الان می‌تواند کمی این لحظه را برایتان سبک‌تر کند؟',
+  ];
+
+  const sessionCheckIns = [
+    'در این گفتگو درباره‌ی چند موضوع مختلف صحبت کردیم. کدام‌شان الان بیشتر ذهن‌تان را درگیر کرده؟',
+    'تا اینجا چیزهای زیادی گفتید. مایلید روی یکی‌شان بیشتر مکث کنیم؟',
+  ];
+
+  const topicCallbacks = {
+    family: ['راستی، هنوز درباره‌ی خانواده‌تان کنجکاوم؛ می‌خواهید ادامه دهیم؟'],
+    work: ['پیش‌تر درباره‌ی کارتان صحبت می‌کردیم؛ دوست دارید به آن برگردیم؟'],
+    sleep: ['وضعیت خواب‌تان این روزها چطور است؟'],
+    sadness: ['هنوز هم آن حس غم همراه‌تان است؟'],
+    anxiety: ['آن نگرانی که گفته بودید، هنوز پابرجاست؟'],
+    anger: ['آیا آن خشم هنوز در شماست؟'],
+    loneliness: ['آن حس تنهایی که گفته بودید، هنوز همراه‌تان است؟'],
+    self_esteem: ['آن فکرهای سخت درباره‌ی خودتان، هنوز سراغتان می‌آیند؟'],
+    grief: ['دوست دارید بازهم درباره‌ی آن فقدان صحبت کنیم؟'],
+    motivation: ['هنوز هم پیدا کردن انگیزه سخت است؟'],
+    relationship: ['وضعیت آن رابطه چطور پیش می‌رود؟'],
+    health: ['حال‌تان از نظر جسمی چطور است؟'],
+    school: ['وضعیت درس و امتحان‌ها چطور پیش می‌رود؟'],
+    money: ['نگرانی مالی‌ای که گفته بودید، هنوز هست؟'],
+  };
+
+  // A safe, language-agnostic-in-spirit callback: quoting the person's own
+  // earlier words back to them is a core reflective-listening technique
+  // and carries no grammar risk (their words are inserted verbatim).
+  const quotedCallbackTemplates = [
+    'کمی قبل‌تر گفتید: «{excerpt}». دوست دارید بیشتر درباره‌اش بگوییم؟',
+    'یادم است گفتید: «{excerpt}». هنوز ذهن‌تان درگیر آن است؟',
+  ];
+
+  // Gentle, optional coping offer shown when several consecutive messages
+  // read as emotionally heavy. Not a diagnosis, not a substitute for
+  // professional support -- just a caring pause and a well-known,
+  // low-risk grounding technique (paced breathing).
+  const distressNudges = [
+    'به نظر می‌رسد چند پیام اخیرتان نسبتاً سنگین بوده‌اند. اگر دوست دارید، یک لحظه مکث کنیم: چهار شماره نفس بکشید، چهار شماره نگه دارید، چهار شماره بازدم بدهید. اگر این احساس‌ها ادامه داشت یا شدت گرفت، صحبت با یک متخصص یا فرد مورد اعتمادتان می‌تواند خیلی کمک‌کننده باشد.',
+    'می‌بینم این بخش از گفتگو برایتان سنگین بوده. لازم نیست همین الان حلش کنیم؛ اگر خواستید، می‌توانیم چند لحظه فقط مکث کنیم. و اگر این حس‌ها ادامه‌دار بودند، کنار یک متخصص یا فردی که بهش اعتماد دارید بودن می‌تواند فرق بزرگی بسازد.',
+  ];
+
+  const sentimentLexicon = {
+    negative: [
+      'غمگین', 'ناراحت', 'افسرده', 'خسته', 'نگران', 'اضطراب', 'استرس', 'تنها',
+      'ترسیده', 'می‌ترسم', 'میترسم', 'عصبانی', 'خشمگین', 'ناامید', 'بی‌حوصله',
+      'گریه', 'درد', 'دلتنگ', 'بی‌ارزش', 'داغون', 'وحشتناک', 'بد', 'سخت‌ترین',
+    ],
+    positive: [
+      'خوشحال', 'شاد', 'عالی', 'ممنون', 'سپاسگزار', 'آرام', 'امیدوار', 'راحت',
+      'خوب', 'عاشق', 'قدردان', 'سبک', 'خوشایند', 'دوست‌داشتنی', 'رضایت',
+    ],
+  };
+
+  // Pronoun-swap reflection is intentionally NOT enabled for Persian: verb
+  // conjugation carries person/number in the verb ending itself (not just
+  // a separate pronoun), so a naive word-swap would frequently produce
+  // ungrammatical sentences. English's simpler pronoun morphology makes
+  // that technique reliable there instead (see en.js).
+  const pronounMap = null;
+
+  const exitKeywords = [
+    'بدرود', 'خداحافظ', 'خدانگهدار', 'میخوام برم', 'می‌خوام برم', 'exit', 'quit',
+  ];
+
+  const greetings = [
+    `درود! من ${BOT_NAME} هستم. خوشحالم که امروز اینجا با من هستید.`,
+    `سلام، دوست عزیز. ${BOT_NAME} هستم و با تمام وجود گوش می‌دهم.`,
+    `درود بر شما. من ${BOT_NAME}‌ام؛ هر چه در دل دارید، اینجا جایش امن است.`,
+    'سلام! خوشحالم که امروز کنار من هستید. چه چیزی در ذهن‌تان می‌گذرد؟',
+  ];
+
+  const farewells = [
+    'بدرود، مراقب خودتان باشید. هر وقت خواستید صحبت کنیم، اینجا هستم.',
+    'بدرود عزیز. امیدوارم امروز کمی سبک‌تر شده باشید.',
+    'به امید دیدار دوباره. بدرود و مراقب دل خودتان باشید.',
+  ];
+
+  const emptyInputReply = 'می‌شنوم که سکوت کرده‌اید. هر وقت آماده بودید، صحبت کنید.';
+
+  function foreignLanguageRedirect() {
+    return `من ${BOT_NAME} هستم و تنها به زبان فارسی گفت‌وگو می‌کنم، تا بتوانم بهترین همراهی را داشته باشم. لطفاً پیام‌تان را به فارسی بنویسید تا ادامه دهیم.`;
+  }
+
+  global.DaryaLang = global.DaryaLang || {};
+  global.DaryaLang.fa = {
+    code: 'fa',
+    dir: 'rtl',
+    botName: BOT_NAME,
+    scriptRange: SCRIPT_RANGE,
+    minScriptRatio: 0.85,
+    normalize,
+    rules,
+    trivialCaptures,
+    genericFallbacks,
+    strategyShiftFallbacks,
+    sessionCheckIns,
+    checkInEvery: 8,
+    topicCallbacks,
+    quotedCallbackTemplates,
+    distressNudges,
+    sentimentLexicon,
+    pronounMap,
+    exitKeywords,
+    greetings,
+    farewells,
+    emptyInputReply,
+    foreignLanguageRedirect,
+    ui: {
+      appTitle: 'دریا · همراه گفتگوی آرام',
+      appDescription: 'دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی.',
+      placeholderDefault: 'هر چه در دل دارید بنویسید…',
+      placeholderEnded: 'گفتگو پایان یافت. برای شروع دوباره، از منو «گفتگوی تازه» را بزنید',
+      ariaSendLabel: 'ارسال پیام',
+      ariaMenuLabel: 'گزینه‌ها',
+      ariaInputLabel: 'پیام شما به دریا',
+      menuNewChat: 'گفتگوی تازه',
+      menuExportMd: 'دانلود گفتگو (Markdown)',
+      menuExportTxt: 'دانلود گفتگو (متن ساده)',
+      disclaimer: 'دریا یک همراه شنونده است، نه جایگزین کمک تخصصی. در شرایط بحرانی، لطفاً با یک متخصص یا خط بحران تماس بگیرید.',
+      foreignScriptHint: 'لطفاً فقط به زبان فارسی بنویسید تا بتوانم همراهی‌تان کنم.',
+      exportTitle: `گفت‌وگو با ${BOT_NAME}`,
+      exportYouLabel: 'شما',
+      exportDivider: '-----------------------------',
+      dateLocale: 'fa-IR',
+      connectionError: 'در برقراری ارتباط مشکلی پیش آمد. لطفاً صفحه را دوباره بارگذاری کنید.',
+    },
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
