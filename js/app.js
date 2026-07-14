@@ -37,6 +37,7 @@
   const pickerEl = document.getElementById('picker');
   const pickerFaEl = document.getElementById('picker-fa');
   const pickerEnEl = document.getElementById('picker-en');
+  const themeToggleButtons = document.querySelectorAll('[data-theme-choice]');
 
   const appEl = document.getElementById('app');
   const headerTitleEl = document.getElementById('header-title');
@@ -56,6 +57,91 @@
   const menuExportMdLabelEl = document.getElementById('menu-export-md-label');
   const menuExportTxtEl = document.getElementById('menu-export-txt');
   const menuExportTxtLabelEl = document.getElementById('menu-export-txt-label');
+  const menuThemeToggleEl = document.getElementById('menu-theme-toggle');
+  const menuThemeIconEl = document.getElementById('menu-theme-icon');
+  const menuThemeLabelEl = document.getElementById('menu-theme-label');
+
+  // --- Cookie helpers (used only for the persisted theme preference) -------
+
+  const THEME_COOKIE_NAME = 'darya_theme';
+  const THEME_COOKIE_MAX_AGE_DAYS = 365;
+  const DEFAULT_THEME = 'ocean';
+
+  /**
+   * Reads a cookie value by name.
+   * @param {string} name
+   * @returns {string|null}
+   */
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+
+  /**
+   * Writes a cookie that persists across visits (used only for the theme
+   * preference; no conversation content or personal data is ever stored).
+   * @param {string} name
+   * @param {string} value
+   * @param {number} days
+   */
+  function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+
+  /**
+   * True on touch/coarse-pointer devices (phones, tablets). Used to skip
+   * programmatic auto-focus of the message input: calling `.focus()` on
+   * mobile reliably pops the virtual keyboard open, which is intrusive
+   * right after a reply arrives. On mice/trackpads, auto-focus keeps the
+   * cursor ready to type, same as before.
+   * @returns {boolean}
+   */
+  function isTouchDevice() {
+    return window.matchMedia('(pointer: coarse)').matches;
+  }
+
+  /** Focuses the message input, but only on non-touch (mouse/trackpad) devices. */
+  function focusInputUnlessTouch() {
+    if (!isTouchDevice()) {
+      inputEl.focus();
+    }
+  }
+
+  // --- Theme -----------------------------------------------------------------
+
+  /**
+   * Applies a visual theme ("ocean" or "beach") by setting it as a
+   * `data-theme` attribute on the root element; every theme-dependent
+   * color and animation is defined in CSS against that attribute. Also
+   * persists the choice in a cookie so it's remembered on the next visit
+   * (unlike language, which intentionally resets every time).
+   * @param {'ocean'|'beach'} theme
+   */
+  function applyTheme(theme) {
+    htmlRootEl.setAttribute('data-theme', theme);
+    setCookie(THEME_COOKIE_NAME, theme, THEME_COOKIE_MAX_AGE_DAYS);
+    themeToggleButtons.forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme));
+    });
+    updateThemeMenuItem();
+  }
+
+  /**
+   * Updates the in-chat menu's theme item to describe the *other* theme
+   * (the one clicking it would switch to), matching how "New chat" and
+   * the export items read as destinations rather than current state.
+   * No-ops before a language has been chosen, since the menu isn't
+   * visible yet at that point.
+   */
+  function updateThemeMenuItem() {
+    if (!lang) return;
+    const current = htmlRootEl.getAttribute('data-theme') || DEFAULT_THEME;
+    const target = current === 'ocean' ? 'beach' : 'ocean';
+    menuThemeIconEl.textContent = target === 'ocean' ? '🌊' : '🏖️';
+    menuThemeLabelEl.textContent = target === 'ocean' ? lang.ui.themeOceanLabel : lang.ui.themeBeachLabel;
+    menuThemeToggleEl.dataset.themeChoice = target;
+  }
 
   /** @type {object|null} The active language pack (window.DaryaLang.fa/en). */
   let lang = null;
@@ -230,6 +316,7 @@
     menuExportMdLabelEl.textContent = lang.ui.menuExportMd;
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
     disclaimerEl.textContent = lang.ui.disclaimer;
+    updateThemeMenuItem();
   }
 
   /**
@@ -282,7 +369,7 @@
     await deliverReply(engine.greeting());
 
     setComposerBusy(false);
-    inputEl.focus();
+    focusInputUnlessTouch();
   }
 
   async function sendMessage(text) {
@@ -303,7 +390,7 @@
     setComposerBusy(false);
 
     if (!conversationEnded) {
-      inputEl.focus();
+      focusInputUnlessTouch();
     }
   }
 
@@ -388,6 +475,10 @@
   pickerFaEl.addEventListener('click', () => selectLanguage(window.DaryaLang.fa));
   pickerEnEl.addEventListener('click', () => selectLanguage(window.DaryaLang.en));
 
+  themeToggleButtons.forEach((button) => {
+    button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+  });
+
   composerEl.addEventListener('submit', (event) => {
     event.preventDefault();
     const text = inputEl.value.trim();
@@ -439,6 +530,11 @@
     exportPlainText();
   });
 
+  menuThemeToggleEl.addEventListener('click', () => {
+    applyTheme(menuThemeToggleEl.dataset.themeChoice);
+    closeMenu();
+  });
+
   // --- Refresh / close guard -------------------------------------------------
   //
   // Reloading or closing the tab mid-conversation would silently lose the
@@ -457,6 +553,9 @@
   });
 
   // --- Boot -----------------------------------------------------------------
-  // Nothing starts automatically: the picker is shown and we simply wait
-  // for a language choice.
+  // Nothing about the conversation starts automatically: the picker is
+  // shown and we simply wait for a language choice. The saved theme,
+  // however, is restored immediately so returning visitors see their
+  // chosen look right away.
+  applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
 })();

@@ -57,12 +57,40 @@
    is a rounded, friendly display face for the wordmark, playing the same
    role Lalezar plays for Persian. */
 html[lang="en"] {
-  --font-display: 'Quicksand', 'Nunito Sans', sans-serif;
-  --font-body: 'Nunito Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Quicksand', 'Nunito', sans-serif;
+  --font-body: 'Nunito', -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Beach theme: same structure, warmer sunset/turquoise hues. Kept dark
+   enough at every stop to preserve text contrast; the literal sand and
+   surf imagery lives in the decorative .backdrop layer below, not in
+   this background gradient, so contrast never depends on it. */
+html[data-theme="beach"] {
+  --color-abyss: #12312f;
+  --color-abyss-deep: #0a201f;
+  --color-tide: #1d4a42;
+  --color-tide-soft: #26594f;
+  --color-coral: #f0916d;
+  --color-coral-soft: #f7ae8f;
+  --color-seafoam: #8fd8ba;
+  --color-warning: #f2c078;
+  --color-line: rgba(255, 247, 230, 0.14);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/*
+ * Critical correctness rule: `.picker` and `.app` both set their own
+ * `display` (flex), which has equal CSS specificity to the browser's
+ * built-in `[hidden] { display: none }` rule and comes later in the
+ * cascade, so it would otherwise win and leave a "hidden" element fully
+ * visible and interactive. This selector has higher specificity than
+ * either, so `hidden` always actually hides the element.
+ */
+[hidden] {
+  display: none !important;
 }
 
 html, body {
@@ -139,11 +167,69 @@ body {
   height: 40vh;
   opacity: 0.1;
   animation: horizon-drift 40s ease-in-out infinite;
+  transition: opacity 0.4s ease;
 }
 
 @keyframes horizon-drift {
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(-2%); }
+}
+
+/* Beach theme only: a sandy shore band with a foam line that washes up
+   and recedes, standing in for the ocean theme's abstract horizon. */
+.backdrop__shore {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26vh;
+  background: linear-gradient(to top, #d9bf85, rgba(217, 191, 133, 0));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/*
+ * The wave-wash "zone" wrapper controls visibility via `display`, and the
+ * inner `.backdrop__wave-wash` element carries the animation. These are
+ * deliberately split across two elements: the animation's own keyframes
+ * set `opacity` on every frame, which would always win over a plain
+ * `opacity: 0/1` toggle on the *same* element regardless of theme (an
+ * animated property beats a static rule for that property, full stop).
+ * Toggling `display` on the wrapper instead sidesteps that entirely.
+ */
+.backdrop__wave-wash-zone {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 15vh;
+  height: 9vh;
+  display: none;
+}
+
+html[data-theme="beach"] .backdrop__wave-wash-zone {
+  display: block;
+}
+
+.backdrop__wave-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+  border-radius: 50%;
+  filter: blur(2px);
+  animation: wave-wash 6s ease-in-out infinite;
+}
+
+@keyframes wave-wash {
+  0%, 100% { transform: translateY(6px) scaleX(1.03); opacity: 0.2; }
+  50% { transform: translateY(-18px) scaleX(1); opacity: 0.55; }
+}
+
+html[data-theme="beach"] .backdrop__horizon {
+  opacity: 0;
+}
+
+html[data-theme="beach"] .backdrop__shore {
+  opacity: 1;
 }
 
 .bubbles {
@@ -283,6 +369,53 @@ body {
 
 .picker__note-sep {
   opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------- */
+/* Theme picker: a small segmented control offered alongside language.   */
+/* --------------------------------------------------------------------- */
+
+.theme-picker {
+  width: 100%;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.theme-picker__option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-tide);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  color: var(--color-foam-dim);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-tide), color 0.2s var(--ease-tide), background 0.2s var(--ease-tide);
+}
+
+.theme-picker__option[aria-pressed="true"] {
+  border-color: var(--color-seafoam);
+  color: var(--color-foam);
+  background: var(--color-tide-soft);
+}
+
+.theme-picker__icon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.theme-picker__label {
+  font-size: 11.5px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.theme-picker__sep {
+  opacity: 0.5;
 }
 
 /* --------------------------------------------------------------------- */
@@ -669,13 +802,15 @@ html[dir="rtl"] .composer__send svg {
 @media (prefers-reduced-motion: reduce) {
   .backdrop__glow,
   .backdrop__horizon,
+  .backdrop__wave-wash,
   .bubble-particle,
   .ripple-dot,
   .bubble-row,
   .bubble--bot,
   .menu__popover,
   .menu__trigger,
-  .picker__option {
+  .picker__option,
+  .theme-picker__option {
     animation: none !important;
     transition: none !important;
   }
