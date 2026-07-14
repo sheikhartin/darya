@@ -97,6 +97,21 @@
       "I'd like to hear about them, if you'd like to share.",
     ]),
 
+    rule('smalltalk_howareyou', 60, /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing)\b/i, [
+      "I'm doing well, thank you for asking! I'm glad to be here with you. How are you doing today?",
+      "I'm good, thanks for asking! I'd love to hear how you're doing.",
+    ]),
+
+    rule('smalltalk_identity', 60, /\b(who are you|what are you|are you (?:a )?(?:robot|bot|ai|real|human|person))\b/i, [
+      "I'm Darya, a companion here to listen. I'm not a therapist or a real person, just a calm space to think out loud.",
+      "I'm a simple chat companion, not a human. But I'm genuinely here to listen.",
+    ]),
+
+    rule('smalltalk_capability', 60, /\b(what can you do|how can you help|what do you do|how do you work)\b/i, [
+      "I'm here to listen, ask questions, and sit with you when something's on your mind. I'm not a substitute for a professional, but I can be a patient ear.",
+      "I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you're feeling.",
+    ]),
+
     rule('motivation', 35, /\b(no motivation|can'?t get started|procrastinating|unmotivated|no energy to)\b/i, [
       "When motivation is gone, even small things can feel heavy. When did this start?",
       "If you took one very small step, what might that look like?",
@@ -311,6 +326,8 @@
       menuNewChat: 'New chat',
       menuExportMd: 'Download chat (Markdown)',
       menuExportTxt: 'Download chat (plain text)',
+      themeOceanLabel: 'Ocean theme',
+      themeBeachLabel: 'Beach theme',
       disclaimer: "Darya is a listening companion, not a substitute for professional help. In a crisis, please contact a professional or a crisis line.",
       foreignScriptHint: 'Please write in English so I can understand and support you.',
       exportTitle: `Conversation with ${BOT_NAME}`,

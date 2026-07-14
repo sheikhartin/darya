@@ -12,10 +12,10 @@
   <link rel="apple-touch-icon" href="assets/favicon.svg">
 
   <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
-       English: Nunito Sans (body) + Quicksand (display wordmark only). -->
+       English: Nunito (body, warm and rounded) + Quicksand (display wordmark only). -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Lalezar&family=Nunito+Sans:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Lalezar&family=Nunito:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -28,6 +28,10 @@
     <svg class="backdrop__horizon" viewBox="0 0 1200 300" preserveAspectRatio="none">
       <path d="M0,150 C200,90 400,210 600,150 C800,90 1000,210 1200,150 L1200,300 L0,300 Z" fill="#7fbeb0"/>
     </svg>
+    <div class="backdrop__shore"></div>
+    <div class="backdrop__wave-wash-zone">
+      <div class="backdrop__wave-wash"></div>
+    </div>
     <div class="bubbles">
       <span class="bubble-particle" style="--i:0"></span>
       <span class="bubble-particle" style="--i:1"></span>
@@ -59,6 +63,21 @@
         <button class="picker__option" id="picker-en" type="button" lang="en" dir="ltr">
           <span class="picker__option-title">English</span>
           <span class="picker__option-desc">Start the conversation in English</span>
+        </button>
+      </div>
+
+      <div class="theme-picker" role="group" aria-label="Theme / تم">
+        <button class="theme-picker__option" type="button" data-theme-choice="ocean" aria-pressed="true">
+          <span class="theme-picker__icon" aria-hidden="true">🌊</span>
+          <span class="theme-picker__label">
+            <span lang="fa" dir="rtl">اقیانوس</span><span class="theme-picker__sep">·</span><span lang="en" dir="ltr">Ocean</span>
+          </span>
+        </button>
+        <button class="theme-picker__option" type="button" data-theme-choice="beach" aria-pressed="false">
+          <span class="theme-picker__icon" aria-hidden="true">🏖️</span>
+          <span class="theme-picker__label">
+            <span lang="fa" dir="rtl">ساحل</span><span class="theme-picker__sep">·</span><span lang="en" dir="ltr">Beach</span>
+          </span>
         </button>
       </div>
 
@@ -101,6 +120,11 @@
               <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span id="menu-export-txt-label">دانلود گفتگو (متن ساده)</span>
+          </button>
+          <div class="menu__divider" role="separator"></div>
+          <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem">
+            <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🏖️</span>
+            <span id="menu-theme-label">تم ساحل</span>
           </button>
         </div>
       </div>
