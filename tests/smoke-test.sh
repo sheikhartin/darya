@@ -285,6 +285,18 @@ else
   fail "ocean horizon vertical bob regression detected"
 fi
 
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
+  ok "intelligence identity and generic-phrase guards pass"
+else
+  fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"
+fi
+
+if grep -q 'topicSpecificQuestions' js/darya-engine.js js/languages/en.js js/languages/fa.js && grep -q 'blend_sleep_anxiety' js/languages/en.js js/languages/fa.js && grep -q "rule('recap'" js/languages/en.js js/languages/fa.js; then
+  ok "topic-specific questions, blends, and recap rules are wired"
+else
+  fail "intelligence topic-depth wiring is incomplete"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================

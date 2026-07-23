@@ -61,6 +61,15 @@
   const QUESTION_BUDGET_WINDOW = 3;
   const QUESTION_BUDGET_LIMIT = 1;
 
+  /* Conversation design notes: keep replies relevant and proportionate,
+     alternate reflection with a small number of concrete questions, and
+     treat humor as a context-sensitive option rather than a personality
+     default. Structural inspiration: the reflective-inquiry discussion at
+     https://arxiv.org/html/2312.06024v4 and the turn-taking/relevance chapter
+     at https://web.stanford.edu/~jurafsky/slp3/old_jan25/15.pdf. Darya keeps
+     those ideas deterministic and local: lexical topics, weighted memory,
+     and explicit safety gates rather than a runtime service. */
+
   // ==========================================================================
   // Text helpers (language-agnostic, operate on whatever script range and
   // lexicon the active language pack supplies)
@@ -193,6 +202,13 @@
       this.namedEntities = new Map();
       this.askedQuestionTurns = [];
       this.consecutiveQuestions = 0;
+      this.topicHistory = [];
+      this.topicWeights = new Map();
+      this.seriousnessHistory = [];
+      this.currentSubject = { topic: null, entityRefs: [], since: 0 };
+      this.lightStreak = 0;
+      this.lastWarmthTurn = -Infinity;
+      this.smalltalkTurns = [];
     }
 
     rememberUtterance(utterance) {
@@ -200,9 +216,13 @@
       if (this.recentUtterances.length > this.capacity) this.recentUtterances.shift();
     }
 
-    rememberTopic(topic) {
+    rememberTopic(topic, weight = 1) {
+      if (!topic) return;
       this.recentTopics.push(topic);
       if (this.recentTopics.length > this.capacity) this.recentTopics.shift();
+      this.topicHistory.push({ topic, weight, turn: this.turnCount });
+      if (this.topicHistory.length > 7) this.topicHistory.shift();
+      this.topicWeights.set(topic, (this.topicWeights.get(topic) || 0) + weight);
 
       if (topic === this.lastRuleTopic) {
         this.sameRuleStreak += 1;
@@ -210,6 +230,26 @@
         this.sameRuleStreak = 1;
       }
       this.lastRuleTopic = topic;
+    }
+
+    rememberTopics(topics, weight = 1) {
+      const unique = [...new Set((topics || []).filter(Boolean))];
+      unique.forEach((topic) => this.rememberTopic(topic, weight));
+    }
+
+    rememberSeriousness(value) {
+      this.seriousnessHistory.push(value);
+      if (this.seriousnessHistory.length > 6) this.seriousnessHistory.shift();
+      this.lightStreak = value < 0.5 ? this.lightStreak + 1 : 0;
+    }
+
+    updateSubject(topics, entities) {
+      const topic = topics[0] || this.currentSubject.topic || null;
+      if (topic !== this.currentSubject.topic) {
+        this.currentSubject = { topic, entityRefs: [], since: this.turnCount };
+      }
+      const refs = (entities || []).map((entity) => `${entity.type}:${entity.surface}`);
+      this.currentSubject.entityRefs = [...new Set([...this.currentSubject.entityRefs, ...refs])].slice(-8);
     }
 
     rememberBotMessage(message) {
@@ -363,6 +403,9 @@
       // Public for deterministic integration tests and future product tuning;
       // every value is clamped at the decision point before it is used.
       this.entityCallbackProbability = ENTITY_CALLBACK_PROBABILITY;
+      this.currentTurnTopics = [];
+      this.currentTurnSeriousness = 0;
+      this.lastTurnNeedsCare = false;
     }
 
     /**
@@ -395,9 +438,6 @@
       this.memory.turnCount += 1;
       this.memory.decayNamedEntities();
 
-      // Entity extraction is gated on emotional weight. Neutral turns can
-      // still be answered normally, but they do not create a personal-data
-      // memory in the first place.
       const entities = global.DaryaEntityExtractor
         ? global.DaryaEntityExtractor.extract(normalized, this.lang, {
           emotionalWeight: sentimentScore !== 0,
@@ -405,18 +445,40 @@
         : [];
       this._turnEntities = entities;
 
-      const { rule: matchedRule, captured } = this._matchRule(normalized);
-      let reply = matchedRule
-        ? this._respondWithRule(matchedRule, captured)
-        : this._fallbackResponse(null, normalized);
+      const matches = this._matchRules(normalized);
+      const matchedRule = matches[0]?.rule || null;
+      const captured = matches[0]?.captured || '';
+      const matchedTopics = matches.map((match) => match.rule.topic);
+      this.currentTurnTopics = [...new Set(matchedTopics)];
+      this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
+      this.lastTurnNeedsCare = this.currentTurnSeriousness >= 0.5
+        || /\b(?:help|advice|problem|crisis|difficult|hard|worried)\b/iu.test(normalized)
+        || /(?<!\p{L})(?:کمک|مشورت|مشکل|سخت|نگران|بحران)(?!\p{L})/u.test(normalized);
+      this.memory.rememberSeriousness(this.currentTurnSeriousness);
+      this.memory.rememberTopics(this.currentTurnTopics);
+      this.memory.updateSubject(this.currentTurnTopics, entities);
+
+      let reply;
+      const blendKey = this._blendKey(this.currentTurnTopics);
+      if (blendKey && this.lang.blendResponses?.[blendKey]) {
+        reply = this._pickVaried(this.lang.blendResponses[blendKey]);
+      } else if (matchedRule) {
+        reply = this._respondWithRule(matchedRule, captured);
+      } else {
+        reply = this._fallbackResponse(null, normalized);
+      }
+
+      if (this._topicShifted() && !blendKey) {
+        const shift = this.lang.topicShiftTemplates || [];
+        if (shift.length && Math.random() < 0.35) {
+          reply = `${this._pickVaried(shift)} ${reply}`;
+        }
+      }
+
       // Remember after choosing the reply. This ordering is the first-
       // mention guard: a fresh entity is never described as remembered.
       this.memory.rememberEntities(entities);
 
-      // The distress nudge is a caring, optional add-on layered on top of
-      // whatever the normal flow produced -- but it never overrides the
-      // dedicated safety-keyword rule, which already gives the more
-      // serious crisis response.
       const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
       if (!isSafetyTurn && this.memory.isInDistressStreak() && !this.memory.distressNudgeGiven) {
         this.memory.distressNudgeGiven = true;
@@ -425,8 +487,86 @@
         this.memory.distressNudgeGiven = false;
       }
 
+      if (!isSafetyTurn) reply = this._maybeHumanTone(reply, normalized);
+      if (!isSafetyTurn && this._shouldAddHumanTouch()) {
+        reply = `${reply} ${this._humanTouchLine()}`.trim();
+      }
+
       this.memory.rememberBotMessage(reply);
       return reply;
+    }
+
+    _seriousnessForTurn(topics) {
+      const values = (topics || []).map((topic) => this.lang.topicSeriousness?.[topic] ?? 0.45);
+      const current = values.length ? Math.max(...values) : 0.35;
+      const recent = this.memory.seriousnessHistory.slice(-2);
+      const average = recent.length ? recent.reduce((sum, value) => sum + value, 0) / recent.length : 0;
+      return Math.max(current, average);
+    }
+
+    _blendKey(topics) {
+      if (!topics || topics.length < 2) return null;
+      const pairs = [
+        ['sleep', 'anxiety'], ['work', 'anger'], ['family', 'sadness'],
+        ['loneliness', 'sleep'], ['joy', 'gratitude'],
+      ];
+      const found = pairs.find((pair) => pair.every((topic) => topics.includes(topic)));
+      return found ? `blend_${found.join('_')}` : null;
+    }
+
+    _topicShifted() {
+      const history = this.memory.topicHistory;
+      if (history.length < 2 || !this.currentTurnTopics.length) return false;
+      return history.at(-2).topic !== this.currentTurnTopics[0];
+    }
+
+    canHumorFire() {
+      return this.memory.turnCount >= 3
+        && this.currentTurnSeriousness < 0.5
+        && !this.lastTurnNeedsCare;
+    }
+
+    _canAskTopicQuestion(topic) {
+      const pool = this.lang.topicSpecificQuestions?.[topic];
+      if (!pool || !this.lang.questionTopics?.has(topic)) return false;
+      const recent = this.memory.askedQuestionTurns.filter(
+        (turn) => this.memory.turnCount - turn < QUESTION_BUDGET_WINDOW
+      );
+      return recent.length < QUESTION_BUDGET_LIMIT && this.memory.consecutiveQuestions < CONSECUTIVE_QUESTION_LIMIT;
+    }
+
+    _maybeHumanTone(reply, normalized) {
+      if (this.canHumorFire() && Math.random() < 0.2) {
+        return this._pickVaried(this.lang.humor || [reply]);
+      }
+      if (this.currentTurnSeriousness >= 0.3 && this.currentTurnSeriousness < 0.6
+        && this.memory.turnCount - this.memory.lastWarmthTurn >= 3
+        && Math.random() < 0.3) {
+        this.memory.lastWarmthTurn = this.memory.turnCount;
+        return `${this._pickVaried(this.lang.warmth || [])} ${reply}`.trim();
+      }
+      if (this.memory.lightStreak >= 2 && !this.lastTurnNeedsCare
+        && this.memory.turnCount % 3 === 0 && Math.random() < 0.35
+        && normalized && !this.lang.questionPattern.test(normalized)) {
+        return this._pickVaried(this.lang.smalltalk || [reply]);
+      }
+      return reply;
+    }
+
+    _shouldAddHumanTouch() {
+      return this.memory.turnCount > 0 && this.memory.turnCount % 7 === 0
+        && this.currentTurnSeriousness < 0.5
+        && this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+          .some((entity) => entity.lastMentionTurn < this.memory.turnCount);
+    }
+
+    _humanTouchLine() {
+      const entity = this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+        .find((item) => item.lastMentionTurn < this.memory.turnCount);
+      const pool = this.lang.humanTouch || [];
+      return entity && pool.length
+        ? this._pickVaried(pool).replace(/\{surface\}/gu, entity.surface)
+        : '';
     }
 
     /**
@@ -436,10 +576,24 @@
      * asking how they are.
      */
     _openingForNewConversation() {
-      const inviting = Math.random() < 0.5;
-      const pool = inviting
-        ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
-        : (this.lang.greetingsOpen || this.lang.greentingsOpen);
+      const returning = this.memory.namedEntities.size > 0;
+      const roll = Math.random();
+      let pool;
+      if (returning) {
+        // Returning: 60% returning, 25% inviting, 15% open.
+        pool = roll < 0.6
+          ? (this.lang.greetingsReturning || this.lang.greentingsReturning)
+          : roll < 0.85
+            ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
+            : (this.lang.greetingsOpen || this.lang.greentingsOpen);
+      } else {
+        // New: 50% inviting, 35% open, 15% returning.
+        pool = roll < 0.5
+          ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
+          : roll < 0.85
+            ? (this.lang.greetingsOpen || this.lang.greentingsOpen)
+            : (this.lang.greetingsReturning || this.lang.greentingsReturning);
+      }
       return this._pickVaried(pool || this.lang.greetings, { trackQuestions: false });
     }
 
@@ -459,7 +613,8 @@
 
     // -- Internal helpers ----------------------------------------------------
 
-    _matchRule(normalizedText) {
+    _matchRules(normalizedText) {
+      const matches = [];
       for (const currentRule of this.rules) {
         const match = currentRule.pattern.exec(normalizedText);
         if (!match) continue;
@@ -475,16 +630,33 @@
             break;
           }
         }
-        return { rule: currentRule, captured };
+        matches.push({ rule: currentRule, captured });
       }
-      return { rule: null, captured: '' };
+      return matches;
+    }
+
+    _matchRule(normalizedText) {
+      return this._matchRules(normalizedText)[0] || { rule: null, captured: '' };
     }
 
     _respondWithRule(matchedRule, captured) {
-      this.memory.rememberTopic(matchedRule.topic);
+      if (matchedRule.topic === 'gratitude' && this.lang.gratitudeResponses) {
+        return this._pickVaried(this.lang.gratitudeResponses);
+      }
+      if (matchedRule.topic === 'professional_boundary' && this.lang.professionalBoundary) {
+        return this._pickVaried(this.lang.professionalBoundary);
+      }
+      if (matchedRule.topic === 'recap') {
+        return this._buildRecap();
+      }
 
       if (this.memory.sameRuleStreak > MAX_CONSECUTIVE_SAME_RULE) {
         return this._fallbackResponse(matchedRule.topic, '');
+      }
+
+      if (this._canAskTopicQuestion(matchedRule.topic)) {
+        const question = this._pickVaried(this.lang.topicSpecificQuestions[matchedRule.topic]);
+        if (this.lang.topicSpecificQuestions[matchedRule.topic].includes(question)) return question;
       }
 
       const needsCapture = matchedRule.responses.some((r) => r.includes('{captured}'));
@@ -498,12 +670,22 @@
         return template.replace('{captured}', captured);
       }
 
-      // Nothing meaningful was captured -- avoid an awkward empty
-      // reflection like "چرا فکر می‌کنید که ؟" by preferring a
-      // capture-free response from the same rule, else a generic phrase.
       const captureFree = matchedRule.responses.filter((r) => !r.includes('{captured}'));
       if (captureFree.length > 0) return this._pickVaried(captureFree);
       return this._pickVaried(this.lang.genericFallbacks);
+    }
+
+    _buildRecap() {
+      const topics = [...new Set(this.memory.recentTopics.slice(-7))].slice(-4);
+      const entities = this.memory.eligibleNamedEntities(0)
+        .slice(0, 3)
+        .map((entity) => entity.surface);
+      const topicText = topics.length ? topics.join(this.lang.code === 'fa' ? '، ' : ', ') : (this.lang.code === 'fa' ? 'چند موضوع مختلف' : 'a few threads');
+      const entityText = entities.length ? entities.join(this.lang.code === 'fa' ? '، ' : ', ') : (this.lang.code === 'fa' ? 'چند جزئیات شخصی' : 'a few personal details');
+      const pool = this.lang.recapTemplates || [];
+      return this._pickVaried(pool, { ignoreQuestionBudget: true, trackQuestions: false })
+        .replace(/\{topics\}/gu, topicText)
+        .replace(/\{entities\}/gu, entityText);
     }
 
     /**
@@ -645,6 +827,11 @@
 
     /** Returns a generic non-question alternative without consuming a budget. */
     _alternativeFor(response) {
+      const topic = this.currentTurnTopics[0] || this.memory.currentSubject.topic;
+      if (topic && this._canAskTopicQuestion(topic)) {
+        const specific = this.lang.topicSpecificQuestions?.[topic] || [];
+        if (specific.length) return specific[0];
+      }
       const pools = [this.lang.genericFallbacks, this.lang.strategyShiftFallbacks];
       for (const pool of pools) {
         const candidate = pool.find((line) => !this._isQuestionResponse(line) && line !== response);
@@ -656,7 +843,9 @@
     _pickVaried(pool, options = {}) {
       const original = Array.isArray(pool) ? pool : [];
       if (original.length === 0) return '';
-      let budgeted = this._filterForQuestionBudget(original);
+      let budgeted = options.ignoreQuestionBudget
+        ? original
+        : this._filterForQuestionBudget(original);
       if (budgeted.length === 0) budgeted = [this._alternativeFor(original[0])];
       if (budgeted.length === 1) {
         const only = budgeted[0];

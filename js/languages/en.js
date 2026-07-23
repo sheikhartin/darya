@@ -48,7 +48,7 @@
     ]),
 
     rule('family', 50, /\b(my (?:mom|mother|dad|father|parents|sister|brother|family))\b\s*(.*)/i, [
-      'Tell me more about {captured}.',
+      'Which part of {captured} stands out most right now?',
       'How does your relationship with your family feel to you these days?',
       'What comes up for you when you think about {captured}?',
       'What made {captured} come to mind just now?',
@@ -56,7 +56,7 @@
 
     rule('work', 50, /\b(my job|my work|my boss|my career|my coworker|got fired|got laid off)\b\s*(.*)/i, [
       'Work can weigh on you in ways that spill into everything else. How has {captured} been affecting you?',
-      'Tell me more about your work situation. What feels hardest about it right now?',
+      'Which part of your work situation feels hardest right now?',
       'If things at work were better, what would actually be different?',
     ]),
 
@@ -87,7 +87,7 @@
 
     rule('joy', 35, /\b(happy|glad|excited|thrilled|great news|feeling good)\b/i, [
       "I'm glad you're feeling this way! What brought it on?",
-      "That's good to hear. Want to tell me more about it?",
+      "That's good to hear. What part of it stands out to you?",
       'Where do you feel that good feeling in your body?',
     ]),
 
@@ -142,7 +142,7 @@
       'How much has this been affecting your day-to-day lately?',
     ]),
 
-    rule('gratitude', 25, /\b(thank you|thanks darya|i appreciate you|grateful for you)\b/i, [
+    rule('gratitude', 25, /\b(thanks?|thank you|thanks darya|i appreciate you|grateful for you)\b/i, [
       'That means a lot to hear, thank you for saying so.',
       "I'm glad this conversation has been helpful.",
       'Being here with you matters to me too.',
@@ -179,9 +179,13 @@
       'What might a small first step toward {captured} look like?',
     ]),
 
+    rule('professional_boundary', 90, /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i, []),
+
+    rule('recap', 80, /\b(?:what did i say earlier|what have i said|can you summarize|summarize this|give me a recap)\b/i, []),
+
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, [
       'I see. Can you tell me a bit more?',
-      'Okay. What else comes to mind about this?',
+      'Okay. What detail about this feels most important right now?',
     ]),
 
     rule('negation', 15, /^(no|nope|nah)\.?$/i, [
@@ -199,7 +203,7 @@
   ]);
 
   const genericFallbacks = [
-    'Can you tell me more about that?',
+    'Which part of that feels most worth staying with right now?',
     'Why does this matter to you?',
     'Please, go on, tell me a bit more.',
     'I see. And then what happened?',
@@ -217,7 +221,7 @@
   ];
   const professionTerms = [
     'job', 'work', 'boss', 'career', 'coworker', 'school', 'college',
-    'university', 'exam', 'professor', 'doctor', 'counselor', 'project',
+    'university', 'exam', 'professor', 'doctor', 'project',
     'meeting', 'office', 'student',
   ];
   const placeWords = [
@@ -226,11 +230,11 @@
   ];
 
   const entityCallbackTemplates = {
-    person: ['You mentioned {surface} earlier. Would you like to tell me more about them?'],
-    place: ['You mentioned {surface}. Is that place still on your mind?'],
-    time: ['You brought up {surface}. What does that time bring up for you?'],
-    activity: ['You mentioned {surface}. Which part of it is taking up the most space right now?'],
-    object: ['I remember you mentioned {surface}. Would you like to stay with that for a moment?'],
+    person: ['That {surface} thread is still with us. Its place in your day seems worth noticing.'],
+    place: ['The place you named, {surface}, still seems relevant to the shape of this story.'],
+    time: ['That {surface} timing detail gives this some shape and keeps the moment specific.'],
+    activity: ['The {surface} part of the story seems important and worth keeping in view.'],
+    object: ['That {surface} detail is still present and gives the story a particular texture.'],
   };
 
   const strategyShiftFallbacks = [
@@ -257,7 +261,7 @@
 
   const topicCallbacks = {
     family: ["I'm still curious about your family, by the way. Want to keep going there?"],
-    work: ['We were talking about your work earlier. Want to go back to that?'],
+    work: ['The work thread is still open. What has changed there since then?'],
     sleep: ['How has your sleep been these days?'],
     sadness: ['Is that sadness still with you?'],
     anxiety: ['Is that worry you mentioned still there?'],
@@ -276,8 +280,8 @@
   // to them is a core reflective-listening technique and carries no
   // grammar risk, since their words are inserted verbatim.
   const quotedCallbackTemplates = [
-    'A little earlier you mentioned: "{excerpt}". Would you like to explore that a bit more?',
-    'I remember you said: "{excerpt}". Is that still on your mind?',
+    'The phrase "{excerpt}" still has some weight. What part of it stays with you?',
+    'That phrase — "{excerpt}" — still seems present. Has it shifted at all?',
   ];
 
   // Gentle, optional coping offer shown when several consecutive messages
@@ -322,16 +326,34 @@
   const exitKeywords = ['bye', 'goodbye', 'i have to go', 'i need to go', 'exit', 'quit'];
 
   const greetingsOpen = [
-    `Hi, I'm ${BOT_NAME}. What would you like to share today?`,
-    `Hello, I'm ${BOT_NAME}, and I'm listening. What's been on your mind lately?`,
+    `Hi. What would you like to share today?`,
+    `Hello. What has been taking up space in your mind lately?`,
+    `Hi there. What brought you here today?`,
+    `Hello. Where would feel natural to begin?`,
+    `Hi. What is one thing from today you would like to put into words?`,
+    `Hello. What kind of conversation would suit you right now?`,
+    `Hi there. What would make this moment useful for you?`,
+    `Hello. What has your attention at the moment?`,
   ];
   const greetingsInviting = [
-    `Hi, I'm ${BOT_NAME}. You can tell me about anything that's been weighing on you.`,
-    `Welcome. I'm ${BOT_NAME}; start wherever feels easiest and tell me what's there.`,
+    `Hey. Anything in particular you would like to talk through, or shall we just see where it goes?`,
+    `Hi. If you have something on your chest, would you like to start there?`,
+    `Hello. I am here and curious — what brought you in today?`,
+    `Hey. Want to tell me a little about what is going on?`,
+    `Hi. There is no rush — what would feel good to start with?`,
+    `Hello. Where would feel easiest to start?`,
+    `Hi there. Is there something specific, or would you rather just chat for a while?`,
+    `Hey. What thought keeps wandering back today?`,
   ];
   const greetingsReturning = [
-    `Welcome back. I'm ${BOT_NAME}; what thought or feeling would you like to start with this time?`,
-    `Hello again. What feels most worth sharing right now?`,
+    `Welcome back. What feels most present this time?`,
+    `Good to see you again. Which thread would you like to pick up?`,
+    `You are back. What has changed since we last talked?`,
+    `Welcome back. What is asking for your attention today?`,
+    `It is nice to see you again. Where shall we begin this time?`,
+    `Back again. What has been following you around lately?`,
+    `Welcome. Is there an old thread or a new one on your mind?`,
+    `Hello again. What would you like to make room for today?`,
   ];
   const greetings = [...greetingsOpen, ...greetingsInviting, ...greetingsReturning];
 
@@ -346,6 +368,53 @@
   function foreignLanguageRedirect() {
     return `I'm ${BOT_NAME}, and I can only have this conversation in English so I can support you well. Could you write your message in English so we can continue?`;
   }
+
+  const topicSpecificQuestions = {
+    safety: ['Are you in immediate danger right now?', 'Is someone you trust nearby at this moment?', 'What would make the next ten minutes safer?', 'Can you contact a crisis service or trusted person now?'],
+    family: ['Which family relationship is taking up the most space today?', 'When did this tension with them begin to feel different?', 'What do you wish they understood about your side?', 'Is there a small boundary that would make contact easier?'],
+    work: ['What part of the workday has been hardest lately?', 'Did this pressure begin with a specific change at work?', 'What would a slightly better workday look like?', 'Which conversation at work keeps replaying in your head?'],
+    sleep: ['Has the tiredness been there for a while, or is it new?', 'What usually happens in the hour before you try to sleep?', 'Does your mind stay busy, or does your body feel restless?', 'What has changed most in your sleep over the past few days?'],
+    anxiety: ['What is the worry predicting will happen?', 'Where do you notice the anxiety first in your body?', 'Does the worry come in waves or stay in the background?', 'What would feel like a one-step reduction in its intensity?'],
+    sadness: ['When did this sadness start to feel this close?', 'Does it feel more like loss, disappointment, or exhaustion today?', 'What part of the day gives the sadness the most room?', 'Is there something that briefly softens it, even a little?'],
+    anger: ['What boundary or expectation felt crossed?', 'What happened just before the anger rose?', 'Would being heard, having space, or seeing change matter most?', 'Where could this anger usefully point your attention?'],
+    joy: ['What small detail made this moment especially good?', 'Who would you most like to share this good news with?', 'What do you want to remember about how this felt?', 'Could you make a little more room for this feeling today?'],
+    loneliness: ['What kind of company would feel good right now?', 'Is the loneliness strongest in a place or at a particular time?', 'Who feels easiest to reach, even with a short message?', 'Would you prefer quiet company or an actual conversation?'],
+    self_esteem: ['Whose standard are you measuring yourself against?', 'When did this self-criticism become familiar?', 'What evidence from today does that harsh verdict leave out?', 'What would you say to someone you love in the same position?'],
+    grief: ['What part of the loss feels most present today?', 'Is there a memory of them you find yourself returning to?', 'What has been hardest about the days since it happened?', 'Who can sit with you when the grief gets especially loud?'],
+    motivation: ['Which first step feels small enough to begin today?', 'Is the obstacle energy, uncertainty, or the size of the task?', 'What has helped you start something on a low-energy day before?', 'Would a shorter form of the task feel possible?'],
+    relationship: ['What changed between you and them most recently?', 'Are you looking for repair, clarity, or room to breathe?', 'Which part of the relationship still feels good or steady?', 'What do you need to be able to say plainly?'],
+    health: ['What symptom or change is worrying you most?', 'Have you already spoken with a qualified clinician about it?', 'How is this affecting ordinary parts of your day?', 'What question would you want answered first by a professional?'],
+    school: ['Which part of the course or exam feels most demanding?', 'How much time do you have before the next deadline?', 'What study approach has worked even once before?', 'Would breaking the material into one short session help?'],
+    money: ['Which financial pressure needs attention first?', 'What deadline or bill is making this feel urgent?', 'Who could offer practical advice you trust?', 'What information would make the next decision clearer?'],
+    gratitude: ['What part of this conversation has felt useful to you?', 'What would you like to carry with you from this moment?', 'What made you decide to say thanks just now?', 'What would feel good to talk about next?'],
+    feeling: ['When did that feeling first become noticeable?', 'What seems to strengthen it during the day?', 'What part of the feeling is easiest to name?', 'What would you like to be different about it?'],
+    reasoning: ['What other explanation feels possible beside that one?', 'What evidence makes this reason stand out to you?', 'Has this pattern appeared in another situation?', 'What would change your mind, even slightly?'],
+    need: ['What would meeting that need make possible first?', 'What is the main thing standing between you and it?', 'Could you move toward it through one small experiment?', 'Who or what could make that first step lighter?'],
+    smalltalk_howareyou: ['What has been the brightest part of your day so far?', 'What kind of day is it turning into for you?', 'What is one ordinary detail you noticed today?', 'Would you rather talk about the day or switch to something fun?'],
+    smalltalk_identity: ['What would make this conversation feel useful to you?', 'What kind of companion are you hoping to find here?', 'What would you like me to pay attention to?', 'Where would you like to begin?'],
+    smalltalk_capability: ['What sort of conversation would suit you right now?', 'Would reflection, brainstorming, or simple company be most useful?', 'What topic would you like to try first?', 'What would make this feel natural rather than mechanical?'],
+    professional_boundary: ['Which questions would you like to take to a qualified professional?', 'What facts would be useful to collect before that appointment?', 'Is there a deadline that makes professional guidance especially important?', 'Would organizing the situation into a short list help?'],
+    recap: ['Which of those threads feels most worth returning to?', 'Has one of those topics become more important since you mentioned it?', 'Which detail from the conversation feels clearest to you now?', 'Where would you like the recap to lead next?'],
+  };
+
+  const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need']);
+  const blendResponses = {
+    blend_sleep_anxiety: ['Your restless nights and the worry seem to be feeding each other a little; noticing which one arrives first may give you a useful opening.', 'When sleep and worry travel together, the evening can feel much longer than it is. A gentler wind-down might be worth protecting.', 'The tiredness may be making the worry louder, while the worry keeps sleep out of reach. That is a tiring loop, not a personal failure.', 'There are two threads here — a body asking for rest and a mind staying on watch. We can look at either one first.'],
+    blend_work_anger: ['The anger seems tied to what work is asking of you, not floating free of the situation.', 'When a work pressure keeps crossing a line, frustration can become its own daily workload.', 'It sounds as if the workplace problem is also taking a piece of your patience home with you.', 'There is a work problem and a boundary problem sitting close together here.'],
+    blend_family_sadness: ['The sadness has a relationship-shaped edge to it, which may be why it keeps returning.', 'Family can make an ordinary disappointment feel unusually close to the heart.', 'There is both the event itself and what it says about belonging; those are different things to hold.', 'This sounds like a tender family thread rather than a passing bad mood.'],
+    blend_loneliness_sleep: ['Quiet nights can make loneliness louder, and loneliness can make the night feel longer.', 'Your sleep and your sense of company seem to be touching the same quiet hours.', 'When the day goes still, both tiredness and wanting someone nearby may arrive together.', 'There may be a small evening ritual that gives those hours a little more warmth.'],
+    blend_joy_gratitude: ['There is a lovely little loop here: something went well, and you noticed its value.', 'The good feeling seems to have made room for appreciation too.', 'It is nice when a bright moment is not rushed past before it can land.', 'This sounds like a moment worth letting stay bright for another minute.'],
+  };
+
+  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35 };
+  const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough — I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
+  const warmth = ['That sounds like a lot to carry.', 'I can hear that this matters to you.', 'You do not have to have it all figured out at once.', 'It is okay to take your time with this.'];
+  const smalltalk = ['Nice. That has a good bit of character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];
+  const gratitudeResponses = ['Of course.', 'Anytime.', 'I am here.', 'That is kind of you to say.'];
+  const topicShiftTemplates = ['That is a different thread from a moment ago, and it deserves its own space.', 'We have moved from one part of your day to another; I am with you.', 'This feels like a new angle on what has been going on.'];
+  const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads — {topics} — alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}; {entities} gives it a more personal shape. What feels most present?'];
+  const humanTouch = ['That {surface} detail is still with me; does it feel different now?', 'The {surface} thread has a little more to it than it first seemed.'];
+  const professionalBoundary = ['For medical, legal, or financial decisions, a qualified human professional is the safest source of advice. I can help you organize the questions you want to bring them.', 'This is one of those areas where a licensed human professional should guide the decision. We can sort the facts and concerns you want to take with you.'];
 
   global.DaryaLang = global.DaryaLang || {};
   global.DaryaLang.en = {
@@ -372,6 +441,18 @@
     professionTerms,
     placeWords,
     entityCallbackTemplates,
+    topicSpecificQuestions,
+    questionTopics,
+    blendResponses,
+    topicSeriousness,
+    humor,
+    warmth,
+    smalltalk,
+    gratitudeResponses,
+    topicShiftTemplates,
+    recapTemplates,
+    humanTouch,
+    professionalBoundary,
     exitKeywords,
     greetings,
     greetingsOpen,

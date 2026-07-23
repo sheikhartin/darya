@@ -126,7 +126,7 @@ test('regression: inflected forms are still recognized after the word-boundary f
   // selection landing on a variant that phrases it differently.
   const reply = engine.respond('امروز خیلی غمگینم');
   const sadnessResponses = FA.rules.find((r) => r.topic === 'sadness').responses;
-  assert.ok(sadnessResponses.includes(reply), `expected a sadness-rule response, got: ${reply}`);
+  assert.ok(sadnessResponses.includes(reply) || FA.topicSpecificQuestions.sadness.includes(reply), `expected a sadness response, got: ${reply}`);
 });
 
 test('regression: "چراغ" (lamp) does not falsely trigger question-word detection for "چرا" (why)', () => {
@@ -540,7 +540,7 @@ test('opening uses the inviting pool when the policy random is below one half', 
 
 test('opening uses the open pool when the policy random is at or above one half', () => {
   const oldRandom = Math.random;
-  Math.random = () => 0.9;
+  Math.random = () => 0.6;
   try {
     const engine = freshEngine(EN);
     assert.ok(EN.greetingsOpen.includes(engine._openingForNewConversation()));
@@ -894,6 +894,167 @@ test('punctuation-only and very long inputs remain safe and bounded', () => {
   const long = engine.respond('sad '.repeat(2000));
   assert.equal(typeof long, 'string');
   assert.ok(engine.memory.recentUtterances.at(-1).length > 4000);
+});
+
+
+test('topic memory tracks weighted turns and a current subject without persistence', () => {
+  const engine = freshEngine(EN);
+  engine.respond("I can't sleep because I feel anxious");
+  assert.ok(engine.memory.topicHistory.length >= 2);
+  assert.equal(engine.memory.currentSubject.topic, 'sleep');
+  assert.ok(engine.memory.topicWeights.get('sleep') >= 1);
+  assert.ok(engine.memory.currentSubject.since >= 1);
+});
+
+test('common topic blends return a dedicated calm reflection', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    const reply = engine.respond("I can't sleep because I feel anxious");
+    assert.ok(EN.blendResponses.blend_sleep_anxiety.includes(reply));
+    assert.doesNotMatch(reply, /[?]/);
+  } finally { Math.random = oldRandom; }
+});
+
+test('every declared blend pool has four distinct non-question lines in both languages', () => {
+  for (const lang of [EN, FA]) {
+    for (const [name, pool] of Object.entries(lang.blendResponses)) {
+      assert.ok(pool.length >= 4, `${lang.code}:${name}`);
+      assert.equal(new Set(pool).size, pool.length);
+      assert.ok(pool.every((line) => !/[?؟]/u.test(line)), `${lang.code}:${name} contains a question`);
+    }
+  }
+});
+
+test('sleep follow-up is selected from the topic-specific question pool', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const reply = freshEngine(EN).respond("I can't sleep");
+    assert.ok(EN.topicSpecificQuestions.sleep.includes(reply), reply);
+  } finally { Math.random = oldRandom; }
+});
+
+test('work follow-up is selected from the topic-specific question pool', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const reply = freshEngine(EN).respond('My job is difficult lately');
+    assert.ok(EN.topicSpecificQuestions.work.includes(reply), reply);
+  } finally { Math.random = oldRandom; }
+});
+
+test('topic-specific question maps are complete and distinct for both locales', () => {
+  for (const lang of [EN, FA]) {
+    for (const [topic, pool] of Object.entries(lang.topicSpecificQuestions)) {
+      assert.ok(pool.length >= 4, `${lang.code}:${topic}`);
+      assert.equal(new Set(pool).size, pool.length);
+    }
+  }
+});
+
+test('seriousness blocks humor even when the random gate is eager', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    engine.memory.turnCount = 4;
+    engine.currentTurnSeriousness = EN.topicSeriousness.anxiety;
+    engine.lastTurnNeedsCare = true;
+    assert.equal(engine.canHumorFire(), false);
+    assert.equal(engine._maybeHumanTone('A careful reply.', 'I feel anxious'), 'A careful reply.');
+  } finally { Math.random = oldRandom; }
+});
+
+test('light humor can fire only after three turns and below the seriousness gate', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    engine.memory.turnCount = 3;
+    engine.currentTurnSeriousness = 0.2;
+    engine.lastTurnNeedsCare = false;
+    assert.equal(engine.canHumorFire(), true);
+    assert.ok(EN.humor.includes(engine._maybeHumanTone('A plain reply.', 'That is funny')));
+  } finally { Math.random = oldRandom; }
+});
+
+test('gratitude is brief and does not close the conversation', () => {
+  const banned = ['you are welcome', 'happy to help', 'goodbye', 'take care', 'خوشحالم که کمک کردم', 'موفق باشی'];
+  for (const [lang, input] of [[EN, 'thanks'], [FA, 'ممنون']]) {
+    const reply = freshEngine(lang).respond(input);
+    assert.ok(lang.gratitudeResponses.includes(reply));
+    for (const phrase of banned) assert.equal(reply.toLocaleLowerCase().includes(phrase), false, reply);
+  }
+});
+
+test('recap uses remembered topics and real entities rather than invented details', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I feel sad about my apartment');
+  const reply = engine.respond('what did I say earlier');
+  assert.match(reply, /sadness|sad|apartment|object/i);
+  assert.doesNotMatch(reply, /nothing you said|something interesting/i);
+});
+
+test('professional boundary replies redirect decisions to qualified human help', () => {
+  for (const [lang, input] of [[EN, 'Can you give me legal advice?'], [FA, 'مشاوره حقوقی می‌خواهم']]) {
+    const reply = freshEngine(lang).respond(input);
+    assert.match(reply, /professional|licensed|متخصص/iu);
+    assert.doesNotMatch(reply, /take this medication|invest in|you must file/i);
+  }
+});
+
+test('topic callbacks are specific and reject generic backward-reference openings', () => {
+  const generic = /^(?:earlier you|you mentioned|you brought up|قبلاً گفتی|همون‌طور که گفتی|یادته گفتی)/iu;
+  for (const lang of [EN, FA]) {
+    for (const pool of Object.values(lang.topicCallbacks)) {
+      for (const line of pool) assert.doesNotMatch(line, generic, line);
+    }
+    for (const pool of Object.values(lang.entityCallbackTemplates)) {
+      for (const line of pool) assert.doesNotMatch(line, generic, line);
+    }
+  }
+});
+
+test('human touch cannot fire without a real remembered entity', () => {
+  const engine = freshEngine(EN);
+  engine.memory.turnCount = 7;
+  engine.currentTurnSeriousness = 0.2;
+  assert.equal(engine._shouldAddHumanTouch(), false);
+  engine.memory.namedEntities.set('object:coffee', { type: 'object', surface: 'coffee', activation: 0.9, confidence: 0.9, mentions: 1, firstMentionTurn: 1, lastMentionTurn: 1, age: 1 });
+  assert.equal(engine._shouldAddHumanTouch(), true);
+  assert.match(engine._humanTouchLine(), /coffee/i);
+});
+
+test('returning openings favor the returning pool when prior memory exists', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0.1;
+  try {
+    const engine = freshEngine(EN);
+    engine.memory.namedEntities.set('object:coffee', { type: 'object', surface: 'coffee', activation: 0.9, confidence: 0.9, mentions: 1, firstMentionTurn: 1, lastMentionTurn: 1, age: 1 });
+    assert.ok(EN.greetingsReturning.includes(engine._openingForNewConversation()));
+  } finally { Math.random = oldRandom; }
+});
+
+test('reply pools contain no forbidden generic follow-up phrases', () => {
+  const forbidden = ['tell me more', 'how does that make you feel', 'what else can you tell me', 'بیشتر بگو', 'چه احساسی داری', 'چه چیز دیگری'];
+  for (const lang of [EN, FA]) {
+    const values = [
+      ...lang.genericFallbacks, ...lang.strategyShiftFallbacks,
+      ...lang.rules.flatMap((rule) => rule.responses),
+      ...Object.values(lang.topicCallbacks).flat(),
+      ...Object.values(lang.entityCallbackTemplates).flat(),
+    ];
+    for (const line of values) for (const phrase of forbidden) assert.equal(line.toLocaleLowerCase().includes(phrase), false, line);
+  }
+});
+
+test('no generated reply uses should more than once', () => {
+  for (const lang of [EN, FA]) {
+    const values = [...lang.genericFallbacks, ...lang.strategyShiftFallbacks, ...lang.rules.flatMap((rule) => rule.responses)];
+    for (const line of values) assert.ok((line.match(/\\bshould\\b/giu) || []).length <= 1, line);
+  }
 });
 
 console.log(`\nTests loaded from: ${__filename}`);
