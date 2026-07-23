@@ -124,13 +124,18 @@ test('bot question tracking records answers without creating duplicate questions
 });
 
 test('offline knowledge shelf exposes named domains', () => {
-  assert.deepEqual(global.DaryaKnowledge.domains, ['philosophy', 'focus', 'learning', 'communication', 'creativity']);
+  assert.deepEqual(global.DaryaKnowledge.domains, ['philosophy', 'thinkers', 'focus', 'learning', 'communication', 'creativity']);
 });
 
 test('knowledge shelf returns useful English philosophy guidance', () => {
   const answers = global.DaryaKnowledge.answer('en', 'philosophy');
   assert.equal(answers.length, 4);
   assert.ok(answers.every((answer) => answer.length > 40));
+});
+
+test('knowledge shelf includes ten carefully bounded thinker inspirations', () => {
+  assert.equal(global.DaryaKnowledge.answer('en', 'thinkers').length, 10);
+  assert.equal(global.DaryaKnowledge.answer('fa', 'thinkers').length, 10);
 });
 
 test('knowledge shelf returns useful Persian philosophy guidance', () => {

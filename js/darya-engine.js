@@ -870,8 +870,8 @@
       if (matchedRule.topic === 'knowledge' && global.DaryaKnowledge) {
         const knowledgeText = this._currentNormalizedInput || captured || '';
         const domainHints = this.lang.code === 'fa'
-          ? { philosophy: ['فلسفه', 'سقراط', 'رواقی', 'ارسطو'], focus: ['تمرکز'], learning: ['یاد'], communication: ['ارتباط'], creativity: ['خلاق'] }
-          : { philosophy: ['philosophy', 'socrates', 'stoic', 'aristotle'], focus: ['focus', 'concentrate'], learning: ['study', 'learn'], communication: ['communicate'], creativity: ['creative'] };
+          ? { thinkers: ['سقراط', 'رواقی', 'ارسطو', 'یونگ', 'نیچه', 'گاندی', 'ماندلا', 'چرچیل', 'زرتشت'], philosophy: ['فلسفه', 'فلسفی'], focus: ['تمرکز'], learning: ['یاد'], communication: ['ارتباط'], creativity: ['خلاق'] }
+          : { thinkers: ['socrates', 'stoic', 'aristotle', 'jung', 'nietzsche', 'gandhi', 'mandela', 'churchill', 'zarathustra'], philosophy: ['philosophy'], focus: ['focus', 'concentrate'], learning: ['study', 'learn'], communication: ['communicate'], creativity: ['creative'] };
         const domain = Object.entries(domainHints)
           .find(([, hints]) => hints.some((hint) => knowledgeText.toLocaleLowerCase().includes(hint)))?.[0] || 'philosophy';
         return this._pickVaried(global.DaryaKnowledge.answer(this.lang.code, domain));

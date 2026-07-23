@@ -186,7 +186,7 @@
       'What might a small first step toward {captured} look like?',
     ]),
 
-    rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative)\b/i, []),
+    rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative)\b/i, []),
 
     rule('professional_boundary', 90, /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i, []),
 
