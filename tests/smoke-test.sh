@@ -137,11 +137,11 @@ else
   fail "menu popover anchoring changed -- verify it doesn't overflow the viewport again"
 fi
 
-# The ugly white foam overlay that was removed from the beach scene.
+# The beach needs a dedicated, thin foam line at the waterline.
 if grep -q 'beach-scene__foam' index.html css/style.css 2>/dev/null; then
-  fail "beach-scene__foam references still present -- this was removed intentionally"
+  ok "beach-scene foam line is present"
 else
-  ok "beach-scene foam overlay stays removed"
+  fail "beach-scene foam line is missing"
 fi
 
 # The beach-theme text contrast bug: several text elements (picker note,
@@ -187,15 +187,15 @@ else
   fail "halfspace normalizer is not wired correctly"
 fi
 
-# Beach markup is intentionally structural: one fixed scene, six empty wave
+# Beach markup is intentionally structural: one fixed scene, three empty ocean
 # layers, and CSS-only sun children instead of inline wave artwork.
-if grep -q 'class="beach-scene"' index.html && [[ "$(grep -o 'class="beach-scene__wave' index.html | wc -l)" -eq 6 ]] && grep -q 'beach-scene__sun-halo' index.html; then
-  ok "beach scene structure has six wave layers and a CSS sun"
+if grep -q 'class="beach-scene"' index.html && [[ "$(grep -o 'class="beach-scene__ocean' index.html | wc -l)" -eq 3 ]] && grep -q 'beach-scene__sun-halo' index.html; then
+  ok "beach scene structure has three ocean layers and a CSS sun"
 else
   fail "beach scene structure is incomplete"
 fi
 
-if grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'mask-image: linear-gradient(to right, transparent 0%' css/style.css && grep -q 'background-position-x' css/style.css; then
+if grep -q 'beach-scene__ocean' css/style.css && grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'mask-image: linear-gradient(to right, transparent 0%' css/style.css && grep -q 'background-position-x' css/style.css && ! grep -Eq 'translate3d\([^,]+, *-[123]px' css/style.css; then
   ok "wave layers use in-place repeat-x tiles with an edge mask"
 else
   fail "wave tile repeat-x/mask regression marker missing"

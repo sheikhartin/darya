@@ -605,16 +605,30 @@ test('question budget prevents two immediate question responses', () => {
 test('beach scene covers the viewport with a fixed inset layer', () => {
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
   assert.match(css, /\.beach-scene\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;/);
-  assert.match(css, /linear-gradient\(to bottom,[\s\S]*#8fc8df[\s\S]*#d6b778/);
+  assert.match(css, /linear-gradient\(to bottom,[\s\S]*#b3d6e0[\s\S]*#d6b06b/);
 });
 
-test('beach waves have six empty HTML layers and repeat-x masked tiles', () => {
+test('beach waves have three ocean div layers and repeat-x masked tiles', () => {
   const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
-  assert.equal((html.match(/class="beach-scene__wave/g) || []).length, 6);
+  assert.equal((html.match(/class="beach-scene__ocean/g) || []).length, 3);
   assert.match(css, /background-repeat:\s*repeat-x/);
   assert.match(css, /background-size:\s*1200px/);
   assert.match(css, /mask-image:\s*linear-gradient\(to right, transparent 0%/);
+});
+
+test('beach ocean layers are divs, tiled, masked, level, and full-scene', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.equal((html.match(/class="beach-scene__ocean /g) || []).length, 3);
+  const scene = html.slice(html.indexOf('<div class="beach-scene">'), html.indexOf('</div>\n\n    <div class="backdrop__scrim">'));
+  assert.doesNotMatch(scene, /<svg/);
+  assert.match(css, /beach-scene__sky[\s\S]*height:\s*100%/);
+  assert.match(css, /beach-scene__ocean[\s\S]*background-repeat:\s*repeat-x/);
+  assert.match(css, /beach-scene__ocean[\s\S]*mask-image:/);
+  assert.doesNotMatch(css, /translate3d\([^)]*,\s*-[123]px/);
+  assert.match(css, /background-position-x:\s*-1200px/);
 });
 
 test('sun is CSS-only and has a breathing animation', () => {
@@ -779,7 +793,7 @@ test('resolved beach and ocean foreground variables meet readable contrast targe
     assert.ok(matches.length > 0, `missing ${name}`);
     return matches.at(-1)[1];
   };
-  const beachBackgrounds = ['#8fc8df', '#cfe7ec', '#e8d5a3'];
+  const beachBackgrounds = ['#b3d6e0', '#d4e5d4', '#f1d7b1', '#ecd9bb', '#e6c688'];
   for (const name of ['--color-on-sky', '--color-on-sky-dim', '--color-on-sky-accent', '--color-on-sky-link']) {
     for (const background of beachBackgrounds) assert.ok(contrast(value(name), background) >= 4.5, `${name} fails on ${background}`);
   }

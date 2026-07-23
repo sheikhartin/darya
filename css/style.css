@@ -997,23 +997,23 @@ html[dir="rtl"] .composer__send svg {
 
 
 /* ======================================================================
- * Beach theme: a bright, full-viewport shoreline
+ * Beach theme: one calm, sunny full-viewport coastal view
  * ====================================================================== */
 
 html[data-theme="beach"] {
   --color-on-sky: #123847;
   --color-on-sky-dim: #204957;
-  --color-on-sky-accent: #7b3d2b;
+  --color-on-sky-accent: #60301f;
   --color-on-sky-link: #06495c;
 }
 
 html[data-theme="beach"] body {
   color: var(--color-on-sky);
-  background: #cfe7ec;
+  background: #ecd9bb;
 }
 
 html[data-theme="beach"] .backdrop {
-  background: #cfe7ec;
+  background: #ecd9bb;
 }
 
 html[data-theme="beach"] .backdrop__glow,
@@ -1021,9 +1021,6 @@ html[data-theme="beach"] .backdrop__horizon {
   opacity: 0;
 }
 
-/* The scene itself owns the sky, sun, sea, and sand. It is fixed rather
-   than a short strip at the bottom, so every viewport gets a complete
-   sunny composition even when there are only a few chat messages. */
 .beach-scene {
   position: fixed;
   inset: 0;
@@ -1034,12 +1031,7 @@ html[data-theme="beach"] .backdrop__horizon {
   visibility: hidden;
   pointer-events: none;
   z-index: 0;
-  background: linear-gradient(to bottom,
-    #8fc8df 0%,
-    #b8dce8 27%,
-    #cfe7ec 48%,
-    #e8d5a3 70%,
-    #d6b778 100%);
+  will-change: transform;
   transition: opacity 0.4s ease, visibility 0s linear 0.4s;
 }
 
@@ -1049,13 +1041,28 @@ html[data-theme="beach"] .beach-scene {
   transition: opacity 0.4s ease, visibility 0s linear 0s;
 }
 
+.beach-scene__sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    #b3d6e0 0%,
+    #c4dfe0 22%,
+    #d4e5d4 42%,
+    #f1d7b1 59%,
+    #ecd9bb 70%,
+    #e6c688 100%);
+}
+
 .beach-scene__sun {
   position: absolute;
   top: 8vh;
-  inset-inline-end: 15vw;
-  width: 150px;
-  height: 150px;
-  animation: sun-breathe 8s ease-in-out infinite;
+  inset-inline-start: 6vw;
+  width: clamp(112px, 13vw, 190px);
+  height: clamp(112px, 13vw, 190px);
+  animation: sun-breathe 10s ease-in-out infinite;
+  will-change: transform;
 }
 
 .beach-scene__sun-halo,
@@ -1067,87 +1074,138 @@ html[data-theme="beach"] .beach-scene {
 
 .beach-scene__sun-halo {
   background: radial-gradient(circle,
-    rgba(255, 244, 184, 0.72) 0%,
-    rgba(255, 224, 128, 0.3) 38%,
-    rgba(255, 220, 120, 0.08) 62%,
-    transparent 74%);
-  transform: scale(1.45);
-  filter: blur(3px);
+    rgba(255, 239, 181, 0.48) 0%,
+    rgba(255, 225, 151, 0.24) 38%,
+    rgba(255, 220, 145, 0.08) 62%,
+    transparent 76%);
+  transform: scale(1.5);
+  filter: blur(4px);
 }
 
 .beach-scene__sun-core {
-  inset: 25px;
-  background: radial-gradient(circle at 38% 32%, #fffbe0 0%, #ffe58b 42%, #ffc75e 100%);
-  box-shadow: 0 0 26px rgba(255, 220, 119, 0.72);
+  inset: 28%;
+  background: radial-gradient(circle at 38% 32%, #fff5cf 0%, #f9dda0 54%, #edc777 100%);
+  box-shadow: 0 0 24px rgba(246, 211, 139, 0.42);
 }
 
 @keyframes sun-breathe {
-  0%, 100% { transform: scale(0.97); opacity: 0.9; }
+  0%, 100% { transform: scale(1); opacity: 0.94; }
   50% { transform: scale(1.04); opacity: 1; }
 }
 
-/* Each layer is an in-place tiled background. Only background-position-x
-   changes; translating the element itself would make the edge mask drift.
-   The -1200px endpoint is exactly one tile, hence every cycle joins at the
-   same pixel and is mathematically seamless. */
-.beach-scene__wave {
+/* Each ocean is one period-wide SVG tile repeated horizontally. The tile
+   begins and ends at the same y coordinate, while the symmetric mask hides
+   only the viewport cut—not an animation seam. Background position is the
+   only animated property, so the sheet stays perfectly level. */
+.beach-scene__ocean {
   position: absolute;
   left: 0;
   right: 0;
   width: 100%;
-  height: 16vh;
-  min-height: 82px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='130' viewBox='0 0 1200 130'%3E%3Cpath d='M0 50 C115 8 235 16 350 53 S585 98 700 52 S935 8 1050 50 S1165 94 1200 50 L1200 130 L0 130 Z' fill='%23ffffff' fill-opacity='.58'/%3E%3Cpath d='M0 72 C120 32 225 38 355 73 S590 117 715 72 S940 30 1060 69 S1162 107 1200 72' fill='none' stroke='%23fffdf0' stroke-opacity='.75' stroke-width='8'/%3E%3C/svg%3E");
+  height: 24%;
+  min-height: 110px;
   background-repeat: repeat-x;
-  background-size: 1200px 130px;
+  background-size: 1200px 160px;
   background-position-x: 0;
   background-position-y: center;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  animation: beach-wave-tile 18s linear infinite;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  animation-name: beach-ocean-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: background-position-x;
 }
 
-@keyframes beach-wave-tile {
+.beach-scene__ocean--far {
+  top: 41%;
+  opacity: 0.72;
+  background-repeat: repeat-x;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 74 C100 38 200 38 300 74 S500 110 600 74 S800 38 900 74 S1100 110 1200 74 L1200 160 L0 160 Z' fill='%23d9f0ed' fill-opacity='.82'/%3E%3C/svg%3E");
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  animation-duration: 64s;
+}
+
+.beach-scene__ocean--mid {
+  top: 47%;
+  opacity: 0.76;
+  background-repeat: repeat-x;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 70 C100 28 200 28 300 70 S500 112 600 70 S800 28 900 70 S1100 112 1200 70 L1200 160 L0 160 Z' fill='%235aa9aa' fill-opacity='.62'/%3E%3C/svg%3E");
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  animation-duration: 48s;
+}
+
+.beach-scene__ocean--near {
+  top: 53%;
+  opacity: 0.82;
+  background-repeat: repeat-x;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 68 C100 20 200 20 300 68 S500 116 600 68 S800 20 900 68 S1100 116 1200 68 L1200 160 L0 160 Z' fill='%232c777d' fill-opacity='.76'/%3E%3C/svg%3E");
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  animation-duration: 36s;
+}
+
+@keyframes beach-ocean-drift {
   from { background-position-x: 0; }
   to { background-position-x: -1200px; }
 }
 
-.beach-scene__wave--one { top: 48%; opacity: 0.78; animation-duration: 17s; }
-.beach-scene__wave--two { top: 52%; opacity: 0.58; animation-duration: 21s; animation-delay: -4s; transform: scaleY(0.82); }
-.beach-scene__wave--three { top: 56%; opacity: 0.72; animation-duration: 19s; animation-delay: -9s; transform: scaleY(0.72); }
-.beach-scene__wave--four { top: 61%; opacity: 0.5; animation-duration: 24s; animation-delay: -12s; transform: scaleY(0.62); }
-.beach-scene__wave--five { top: 65%; opacity: 0.36; animation-duration: 20s; animation-delay: -3s; transform: scaleY(0.5); }
-.beach-scene__wave--six { top: 69%; opacity: 0.24; animation-duration: 26s; animation-delay: -16s; transform: scaleY(0.42); }
+.beach-scene__foam {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 64%;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 244, 0.86) 0%, rgba(255, 255, 244, 0.54) 42%, transparent 76%);
+  opacity: 0.75;
+  animation: foam-breathe 6s ease-in-out infinite;
+}
+
+@keyframes foam-breathe {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+.beach-scene__sand {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 35%;
+  background-image:
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 1px, transparent 1px, transparent 4px),
+    linear-gradient(to bottom, #e6c688 0%, #dfbd7b 48%, #d6b06b 100%);
+}
 
 .beach-scene__wet-patches {
   position: absolute;
   inset-inline: 0;
-  top: 71%;
+  top: 66%;
   bottom: 0;
   overflow: hidden;
 }
 
-/* The bottom controls need a narrow readability scrim only. The old broad
-   broad treatment made the sunny half of the scene look permanently dim. */
 .backdrop__scrim {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 110px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(31, 49, 43, 0.13) 20%, rgba(31, 49, 43, 0.72) 100%);
+  background: linear-gradient(to bottom, transparent 0%, rgba(103, 73, 42, 0.12) 24%, rgba(72, 48, 30, 0.58) 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
 html[data-theme="beach"] .backdrop__scrim { opacity: 1; }
-html[data-theme="beach"] .header,
 html[data-theme="beach"] .picker__intro,
 html[data-theme="beach"] .picker__note,
-html[data-theme="beach"] .header__title {
+html[data-theme="beach"] .header {
   color: var(--color-on-sky);
 }
-html[data-theme="beach"] .header__title { color: var(--color-on-sky-accent); }
+html[data-theme="beach"] .header__title,
 html[data-theme="beach"] .picker__intro-fa { color: var(--color-on-sky-accent); }
 html[data-theme="beach"] .picker__intro-en { color: var(--color-on-sky-link); }
 html[data-theme="beach"] .picker__note,
@@ -1155,7 +1213,9 @@ html[data-theme="beach"] .picker__intro-sep { color: var(--color-on-sky-dim); }
 
 @media (prefers-reduced-motion: reduce) {
   .beach-scene__sun,
-  .beach-scene__wave { animation: none !important; }
+  .beach-scene__ocean,
+  .beach-scene__foam { animation: none !important; }
+  .beach-scene__ocean { background-position-x: 0; }
 }
 
 /* Older engines without CSS masking still receive a fully tiled, seamless
