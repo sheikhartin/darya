@@ -14,7 +14,7 @@
 
 'use strict';
 
-const CACHE_VERSION = 'darya-v1';
+const CACHE_VERSION = 'darya-v3';
 
 const PRECACHE_URLS = [
   './',
@@ -23,8 +23,14 @@ const PRECACHE_URLS = [
   './css/style.css',
   './js/app.js',
   './js/darya-engine.js',
+  './js/languages/halfspace.js',
   './js/languages/fa.js',
   './js/languages/en.js',
+  './fonts/BeVietnamPro-Regular.woff2',
+  './fonts/BeVietnamPro-Medium.woff2',
+  './fonts/BeVietnamPro-SemiBold.woff2',
+  './fonts/BeVietnamPro-Bold.woff2',
+  './fonts/BeVietnamPro-Italic.woff2',
   './fonts/Vazirmatn-Regular.woff2',
   './fonts/Vazirmatn-Medium.woff2',
   './fonts/Vazirmatn-SemiBold.woff2',

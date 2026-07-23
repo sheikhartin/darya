@@ -74,32 +74,7 @@
    * a server or a large model running in the browser.
    */
   function normalize(text) {
-    let normalized = String(text).normalize('NFKC').trim();
-
-    for (const [src, dst] of FALLBACK_SUBSTITUTIONS) {
-      normalized = normalized.split(src).join(dst);
-    }
-
-    normalized = normalized.replace(DIACRITICS_PATTERN, '');
-    normalized = normalized.replace(/[٠-٩]/g, (digit) => ARABIC_TO_PERSIAN_DIGITS[digit]);
-
-    // "می" / "نمی" followed by a space and then the verb should be joined
-    // with a zero-width non-joiner (half-space) instead, e.g. "می خواهم"
-    // -> "می‌خواهم". Lookbehind uses `\p{L}` rather than `\b`, which (as
-    // elsewhere in this file) doesn't work for Persian script, and
-    // specifically guards against matching "می" as a mere substring
-    // inside an unrelated word like "کمی" ("a bit"). Deliberately *not*
-    // handled here: words already joined with no space at all (e.g.
-    // "میخواهم"). A general "insert a half-space after می" rule would
-    // also wrongly rewrite words where "می" is simply the start of the
-    // root rather than a prefix -- "میز" (table), "میدان" (square),
-    // "میهن" (homeland) -- and since normalized text is sometimes echoed
-    // back verbatim (the quoted-memory callback), a wrong guess here
-    // would be visibly corrupted text, not just a missed match.
-    normalized = normalized.replace(/(?<!\p{L})(می|نمی)[ \t]+(?=\p{L})/gu, '$1\u200c');
-
-    normalized = normalized.replace(/[ \t\r\n\f\v]+/g, ' ').trim();
-    return normalized;
+    return global.DaryaHalfspace.normalize(text);
   }
 
   function rule(topic, priority, pattern, responses) {
@@ -440,8 +415,8 @@
       ariaMenuLabel: 'گزینه‌ها',
       ariaInputLabel: 'پیام شما به دریا',
       menuNewChat: 'گفتگوی تازه',
-      menuExportMd: 'دانلود گفتگو (Markdown)',
-      menuExportTxt: 'دانلود گفتگو (متن ساده)',
+      menuExportMd: 'دانلود گفتگو — مارک‌داون',
+      menuExportTxt: 'دانلود گفتگو — متن ساده',
       themeOceanLabel: 'تم اقیانوس',
       themeBeachLabel: 'تم ساحل',
       disclaimer: 'دریا یک همراه شنونده است، نه جایگزین کمک تخصصی. در شرایط بحرانی، لطفاً با یک متخصص یا خط بحران تماس بگیرید.',
