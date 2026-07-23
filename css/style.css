@@ -61,6 +61,46 @@
 }
 
 @font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Nunito';
   src: url('../fonts/Nunito-VF.woff2') format('woff2-variations');
   font-weight: 400 800;
@@ -89,6 +129,11 @@
   --color-seafoam: #7fbeb0;
   --color-warning: #f0b986;
   --color-line: rgba(234, 243, 239, 0.12);
+  /* Dedicated ink colors for the bright beach sky. */
+  --color-on-sky: #123847;
+  --color-on-sky-dim: #2c5967;
+  --color-on-sky-accent: #7b3d2b;
+  --color-on-sky-link: #075d76;
 
   /* --- Type: Persian is the default; overridden per-language below --- */
   --font-display: 'Lalezar', 'Vazirmatn', 'Tahoma', sans-serif;
@@ -120,7 +165,7 @@
    role Lalezar plays for Persian. */
 html[lang="en"] {
   --font-display: 'Quicksand', 'Nunito', sans-serif;
-  --font-body: 'Nunito', -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Be Vietnam Pro', 'Nunito', -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Beach theme: same structure, warmer sunset/turquoise hues. Kept dark
@@ -1039,4 +1084,167 @@ html[dir="rtl"] .composer__send svg {
     animation: none !important;
     transition: none !important;
   }
+}
+
+
+/* ======================================================================
+ * Beach theme: a bright, full-viewport shoreline
+ * ====================================================================== */
+
+html[data-theme="beach"] {
+  --color-on-sky: #123847;
+  --color-on-sky-dim: #2c5967;
+  --color-on-sky-accent: #7b3d2b;
+  --color-on-sky-link: #075d76;
+}
+
+html[data-theme="beach"] body {
+  color: var(--color-on-sky);
+  background: #cfe7ec;
+}
+
+html[data-theme="beach"] .backdrop {
+  background: #cfe7ec;
+}
+
+html[data-theme="beach"] .backdrop__glow,
+html[data-theme="beach"] .backdrop__horizon {
+  opacity: 0;
+}
+
+/* The scene itself owns the sky, sun, sea, and sand. It is fixed rather
+   than a short strip at the bottom, so every viewport gets a complete
+   sunny composition even when there are only a few chat messages. */
+.beach-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(to bottom,
+    #8fc8df 0%,
+    #b8dce8 27%,
+    #cfe7ec 48%,
+    #e8d5a3 70%,
+    #d6b778 100%);
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+}
+
+html[data-theme="beach"] .beach-scene {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0s linear 0s;
+}
+
+.beach-scene__sun {
+  position: absolute;
+  top: 8vh;
+  inset-inline-end: 15vw;
+  width: 150px;
+  height: 150px;
+  animation: sun-breathe 8s ease-in-out infinite;
+}
+
+.beach-scene__sun-halo,
+.beach-scene__sun-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.beach-scene__sun-halo {
+  background: radial-gradient(circle,
+    rgba(255, 244, 184, 0.72) 0%,
+    rgba(255, 224, 128, 0.3) 38%,
+    rgba(255, 220, 120, 0.08) 62%,
+    transparent 74%);
+  transform: scale(1.45);
+  filter: blur(3px);
+}
+
+.beach-scene__sun-core {
+  inset: 25px;
+  background: radial-gradient(circle at 38% 32%, #fffbe0 0%, #ffe58b 42%, #ffc75e 100%);
+  box-shadow: 0 0 26px rgba(255, 220, 119, 0.72);
+}
+
+@keyframes sun-breathe {
+  0%, 100% { transform: scale(0.97); opacity: 0.9; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+/* Each layer is an in-place tiled background. Only background-position-x
+   changes; translating the element itself would make the edge mask drift.
+   The -1200px endpoint is exactly one tile, hence every cycle joins at the
+   same pixel and is mathematically seamless. */
+.beach-scene__wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 16vh;
+  min-height: 82px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='130' viewBox='0 0 1200 130'%3E%3Cpath d='M0 50 C115 8 235 16 350 53 S585 98 700 52 S935 8 1050 50 S1165 94 1200 66 L1200 130 L0 130 Z' fill='%23ffffff' fill-opacity='.58'/%3E%3Cpath d='M0 72 C120 32 225 38 355 73 S590 117 715 72 S940 30 1060 69 S1162 107 1200 86' fill='none' stroke='%23fffdf0' stroke-opacity='.75' stroke-width='8'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 1200px 130px;
+  background-position-x: 0;
+  background-position-y: center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  animation: beach-wave-tile 18s linear infinite;
+}
+
+@keyframes beach-wave-tile {
+  from { background-position-x: 0; }
+  to { background-position-x: -1200px; }
+}
+
+.beach-scene__wave--one { top: 48%; opacity: 0.78; animation-duration: 17s; }
+.beach-scene__wave--two { top: 52%; opacity: 0.58; animation-duration: 21s; animation-delay: -4s; transform: scaleY(0.82); }
+.beach-scene__wave--three { top: 56%; opacity: 0.72; animation-duration: 19s; animation-delay: -9s; transform: scaleY(0.72); }
+.beach-scene__wave--four { top: 61%; opacity: 0.5; animation-duration: 24s; animation-delay: -12s; transform: scaleY(0.62); }
+.beach-scene__wave--five { top: 65%; opacity: 0.36; animation-duration: 20s; animation-delay: -3s; transform: scaleY(0.5); }
+.beach-scene__wave--six { top: 69%; opacity: 0.24; animation-duration: 26s; animation-delay: -16s; transform: scaleY(0.42); }
+
+.beach-scene__wet-patches {
+  position: absolute;
+  inset-inline: 0;
+  top: 71%;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* The bottom controls need a narrow readability scrim only. The old broad
+   24vh treatment made the sunny half of the scene look permanently dim. */
+.backdrop__scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 110px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(31, 49, 43, 0.13) 20%, rgba(31, 49, 43, 0.72) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+html[data-theme="beach"] .backdrop__scrim { opacity: 1; }
+html[data-theme="beach"] .header,
+html[data-theme="beach"] .picker__intro,
+html[data-theme="beach"] .picker__note,
+html[data-theme="beach"] .header__title {
+  color: var(--color-on-sky);
+}
+html[data-theme="beach"] .header__title { color: var(--color-on-sky-accent); }
+html[data-theme="beach"] .picker__intro-fa { color: var(--color-on-sky-accent); }
+html[data-theme="beach"] .picker__intro-en { color: var(--color-on-sky-link); }
+html[data-theme="beach"] .picker__note,
+html[data-theme="beach"] .picker__intro-sep { color: var(--color-on-sky-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .beach-scene__sun,
+  .beach-scene__wave { animation: none !important; }
 }
