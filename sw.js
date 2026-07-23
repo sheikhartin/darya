@@ -7,14 +7,14 @@
  *
  * Cache-first strategy: once cached, an asset is served from the cache
  * without touching the network at all. To ship an update, bump
- * CACHE_VERSION below -- that creates a new cache name, so the install
+ * CACHE_NAME below -- that creates a new cache name, so the install
  * step re-fetches everything fresh, and the old cache is cleared out on
  * activate.
  */
 
 'use strict';
 
-const CACHE_VERSION = 'darya-v5';
+const CACHE_NAME = 'darya-cache-current';
 
 const PRECACHE_URLS = [
   './',
@@ -50,7 +50,7 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
-      .open(CACHE_VERSION)
+      .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
       .then(() => self.skipWaiting())
   );
@@ -60,7 +60,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -87,7 +87,7 @@ self.addEventListener('fetch', (event) => {
           // app ever requests is offline-capable too.
           if (response && response.status === 200) {
             const responseClone = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(request, responseClone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           }
           return response;
         })

@@ -30,7 +30,7 @@ Open it in Chrome or Edge on desktop or Android and use "Install app" /
 the app still runs standalone and offline once added - that's what the
 `apple-mobile-web-app-*` tags in `index.html` are for).
 
-To ship an update later, bump `CACHE_VERSION` in `sw.js` - that's what
+To ship an update later, bump `CACHE_NAME` in `sw.js` - that's what
 tells returning visitors' browsers to fetch the new files instead of
 continuing to serve the old cached ones.
 

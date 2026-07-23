@@ -495,7 +495,7 @@ test('app language application assigns titles to dynamic controls', () => {
   assert.match(app, /pickerFaEl\.setAttribute\('title'/);
   assert.match(app, /themeToggleButtons\.forEach/);
   assert.match(app, /themePickerEl\.setAttribute\('aria-label'/);
-  assert.match(app, /typingRowLabelEl\.setAttribute\('aria-label'/);
+  assert.match(app, /typingStatusEl\.setAttribute\('aria-label'/);
 });
 
 test('theme menu updates the title on both its button and label', () => {
@@ -673,10 +673,10 @@ test('beach readability scrim is the narrow 110px treatment', () => {
   assert.doesNotMatch(css, /24vh/);
 });
 
-test('service worker caches the new scripts and uses darya-v5', () => {
+test('service worker caches the new scripts and uses the current cache name', () => {
   const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  const cacheConstant = ['CACHE', '_', 'VER', 'SION'].join('');
-  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v5'`));
+  const cacheConstant = ['CACHE', '_', 'NAME'].join('');
+  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-cache-current'`));
   assert.match(sw, /languages\/halfspace\.js/);
   assert.match(sw, /languages\/entity-extractor\.js/);
 });
@@ -1110,6 +1110,54 @@ test('new UI copy contains no em dash characters', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
     assert.equal(source.includes(String.fromCodePoint(0x2014)), false, file);
   }
+});
+
+
+test('punctuation variants share the same rule path in English', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const replies = ['yes', 'yes!', 'yes.'].map((input) => freshEngine(EN).respond(input));
+    assert.equal(new Set(replies).size, 1);
+    assert.ok(EN.rules.find((rule) => rule.topic === 'affirmation').responses.some((line) => replies[0].includes(line)));
+  } finally { Math.random = oldRandom; }
+});
+
+test('punctuation variants share the same rule path in Persian', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const replies = ['آره', 'آره!', 'آره.'].map((input) => freshEngine(FA).respond(input));
+    assert.equal(new Set(replies).size, 1);
+    assert.ok(FA.rules.find((rule) => rule.topic === 'affirmation').responses.some((line) => replies[0].includes(line)));
+  } finally { Math.random = oldRandom; }
+});
+
+test('punctuation normalization preserves the original text for memory', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I feel sad!');
+  assert.equal(engine.memory.recentUtterances.at(-1), 'I feel sad!');
+  assert.equal(DaryaEngine.normalizeForMatching('I feel sad!', EN), 'I feel sad');
+});
+
+test('punctuated exit commands are detected consistently', () => {
+  for (const input of ['goodbye', 'goodbye!', 'goodbye.']) assert.equal(freshEngine(EN).isExitCommand(input), true);
+  for (const input of ['خداحافظ', 'خداحافظ!', 'خداحافظ.']) assert.equal(freshEngine(FA).isExitCommand(input), true);
+});
+
+
+test('English font declarations use the warm Be Vietnam Pro family without thin body weights', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /font-family: 'Be Vietnam Pro'/);
+  assert.match(css, /html\[lang=\"en\"\][\s\S]*--font-body: 'Be Vietnam Pro'/);
+  assert.doesNotMatch(css, /font-family: 'Be Vietnam Pro';[\s\S]{0,180}font-weight: (?:100|200|300)/);
+});
+
+test('theme surfaces expose descriptive group, status, and composer semantics', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /id=\"theme-picker\"[\s\S]*role=\"group\"/);
+  assert.match(html, /id=\"typing-row\"[\s\S]*role=\"status\"/);
+  assert.match(html, /id=\"composer\"[\s\S]*autocomplete=\"off\"/);
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

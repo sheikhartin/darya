@@ -113,7 +113,20 @@
    */
   function truncateExcerpt(text, maxLength) {
     if (text.length <= maxLength) return text;
-    return `${text.slice(0, maxLength).trim()}…`;
+    return `${text.slice(0, maxLength).trim()}...`;
+  }
+
+  /**
+   * Canonicalizes punctuation used only for rule matching. The original
+   * utterance remains intact for memory and display, while سلام, سلام! and
+   * سلام. reach the same matcher path.
+   */
+  function normalizeForMatching(rawText, lang) {
+    const normalized = lang.normalize(rawText);
+    return normalized
+      .replace(/[ \t\r\n]*[.,،؛:!?؟]+[ \t\r\n]*/gu, ' ')
+      .replace(/[ \t\r\n]+/gu, ' ')
+      .trim();
   }
 
   /**
@@ -421,7 +434,7 @@
      * @returns {boolean}
      */
     isExitCommand(rawText) {
-      const normalized = this.lang.normalize(rawText).toLowerCase();
+      const normalized = normalizeForMatching(rawText, this.lang).toLowerCase();
       return this.lang.exitKeywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
     }
 
@@ -439,6 +452,7 @@
       }
 
       const normalized = this.lang.normalize(rawText);
+      const matchingText = normalizeForMatching(rawText, this.lang);
       const sentimentScore = scoreSentiment(normalized, this.lang.sentimentLexicon);
       this.memory.rememberUtterance(normalized);
       this.memory.rememberSentiment(sentimentScore);
@@ -452,7 +466,7 @@
         : [];
       this._turnEntities = entities;
 
-      const matches = this._matchRules(normalized);
+      const matches = this._matchRules(matchingText);
       const matchedRule = matches[0]?.rule || null;
       const captured = matches[0]?.captured || '';
       const matchedTopics = matches.map((match) => match.rule.topic);
@@ -899,6 +913,7 @@
   global.DaryaEngine = {
     isValidScript,
     scoreSentiment,
+    normalizeForMatching,
     ENTITY_DECAY_PER_TURN,
     ENTITY_CALLBACK_PROBABILITY,
     CONSECUTIVE_QUESTION_LIMIT,
