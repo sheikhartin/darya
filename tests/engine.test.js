@@ -771,7 +771,7 @@ test('back-to-back user questions take a non-question alternative path', () => {
     engine.respond('Why does this keep happening?');
     const second = engine.respond('What should I do next?');
     assert.doesNotMatch(second, /[?]/);
-    assert.match(second, /thread|piece|listening|detail/i);
+    assert.match(second, /thread|piece|listening|detail|question|open/i);
   } finally { Math.random = oldRandom; }
 });
 

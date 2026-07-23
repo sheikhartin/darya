@@ -266,6 +266,13 @@
     "That's worth sitting with. What's your own take on it?",
   ];
 
+  const questionAcknowledgements = [
+    "That's worth sitting with. I can stay with the question without adding another one.",
+    'A thoughtful question. My first response is to leave it open rather than rush to a neat answer.',
+    'I do not have a personal view, but I can help you look at the question from a few useful angles.',
+    'That question has some depth to it. We can let it breathe for a moment.',
+  ];
+
   const topicCallbacks = {
     family: ["I'm still curious about your family, by the way. Want to keep going there?"],
     work: ['The work thread is still open. What has changed there since then?'],
@@ -439,6 +446,7 @@
     checkInEvery: 8,
     questionPattern,
     questionFallbacks,
+    questionAcknowledgements,
     topicCallbacks,
     quotedCallbackTemplates,
     distressNudges,

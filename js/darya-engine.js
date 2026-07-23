@@ -223,6 +223,7 @@
       this.lastWarmthTurn = -Infinity;
       this.smalltalkTurns = [];
       this.responseStrategies = [];
+      this.turnFrames = [];
     }
 
     rememberUtterance(utterance) {
@@ -269,6 +270,11 @@
     rememberStrategy(strategy) {
       this.responseStrategies.push({ strategy, turn: this.turnCount });
       if (this.responseStrategies.length > 8) this.responseStrategies.shift();
+    }
+
+    rememberTurnFrame(frame) {
+      this.turnFrames.push(frame);
+      if (this.turnFrames.length > 8) this.turnFrames.shift();
     }
 
     rememberBotMessage(message) {
@@ -452,6 +458,18 @@
       this.currentTurnTopics = [];
       this.currentTurnSeriousness = 0;
       this.lastTurnNeedsCare = false;
+      this.currentTurnDialogueAct = 'statement';
+      this.currentTurnIntent = 'unknown';
+      this.currentTurnQuestionNeed = 0;
+      this.conversationState = {
+        phase: 'new',
+        dialogueAct: null,
+        intent: null,
+        topics: [],
+        seriousness: 0,
+        strategy: null,
+        referenceConfidence: 0,
+      };
     }
 
     /**
@@ -513,6 +531,9 @@
       if (this.currentTurnTopics.length === 0 && this.currentReferenceContext) {
         this.currentTurnTopics = [this.currentReferenceContext.topic];
       }
+      this.currentTurnDialogueAct = this.classifyDialogueAct(matchingText, matchedRule);
+      this.currentTurnIntent = this.classifyIntent(this.currentTurnDialogueAct, matchedRule, this.currentTurnTopics);
+      this.currentTurnQuestionNeed = this.questionNeedScore(this.currentTurnDialogueAct, this.currentTurnTopics);
       this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
       this.lastTurnNeedsCare = this.currentTurnSeriousness >= 0.5
         || /\b(?:help|advice|problem|crisis|difficult|hard|worried)\b/iu.test(normalized)
@@ -525,6 +546,16 @@
       const strategy = this.selectResponseStrategy({ matchedRule, blendKey, matchingText });
       this.lastResponseStrategy = strategy;
       this.memory.rememberStrategy(strategy);
+      this.conversationState = {
+        phase: this._phaseForTurn(strategy, this.currentTurnSeriousness),
+        dialogueAct: this.currentTurnDialogueAct,
+        intent: this.currentTurnIntent,
+        topics: [...this.currentTurnTopics],
+        seriousness: this.currentTurnSeriousness,
+        strategy,
+        referenceConfidence: this.currentReferenceContext?.confidence || 0,
+      };
+      this.memory.rememberTurnFrame({ ...this.conversationState, turn: this.memory.turnCount });
 
       let reply;
       if (blendKey && this.lang.blendResponses?.[blendKey]) {
@@ -593,6 +624,41 @@
       return { topic: subject.topic, entityRefs: [...subject.entityRefs], confidence };
     }
 
+    classifyDialogueAct(text, matchedRule = null) {
+      if (matchedRule?.topic === 'greeting') return 'greeting';
+      if (matchedRule?.topic === 'gratitude') return 'gratitude';
+      if (matchedRule?.topic === 'affirmation') return 'affirmation';
+      if (matchedRule?.topic === 'negation') return 'negation';
+      if (matchedRule?.topic === 'safety') return 'safety';
+      if (this.lang.questionPattern?.test(text) || /[?؟]/u.test(text)) return 'question';
+      return 'statement';
+    }
+
+    classifyIntent(dialogueAct, matchedRule, topics) {
+      if (dialogueAct === 'safety') return 'safety_support';
+      if (matchedRule?.topic === 'professional_boundary') return 'professional_boundary';
+      if (matchedRule?.topic === 'recap') return 'recap_request';
+      if (dialogueAct === 'gratitude') return 'gratitude';
+      if (dialogueAct === 'question') return 'information_or_reflection';
+      if (topics.length) return 'topic_statement';
+      return 'open_statement';
+    }
+
+    questionNeedScore(dialogueAct, topics) {
+      if (dialogueAct === 'question' || dialogueAct === 'gratitude' || dialogueAct === 'greeting') return 0;
+      if (!topics.length) return 0.25;
+      const seriousness = Math.max(...topics.map((topic) => this.lang.topicSeriousness?.[topic] ?? 0.45));
+      return Math.min(0.9, 0.45 + seriousness * 0.35);
+    }
+
+    _phaseForTurn(strategy, seriousness) {
+      if (strategy === 'safety') return 'safetySupport';
+      if (strategy === 'context-reference') return 'contextualContinuation';
+      if (strategy === 'topic-question' || strategy === 'question-acknowledgement') return 'clarifying';
+      if (seriousness >= 0.5) return 'reflecting';
+      return this.memory.turnCount <= 1 ? 'greeting' : 'listening';
+    }
+
     selectResponseStrategy({ matchedRule, blendKey, matchingText }) {
       if (matchedRule?.topic === 'safety') return 'safety';
       if (matchedRule?.topic === 'professional_boundary') return 'professional-boundary';
@@ -639,6 +705,7 @@
     _canAskTopicQuestion(topic) {
       const pool = this.lang.topicSpecificQuestions?.[topic];
       if (!pool || !this.lang.questionTopics?.has(topic)) return false;
+      if (this.currentTurnDialogueAct === 'question' || this.currentTurnQuestionNeed < 0.4) return false;
       const recent = this.memory.askedQuestionTurns.filter(
         (turn) => this.memory.turnCount - turn < QUESTION_BUDGET_WINDOW
       );
@@ -830,6 +897,9 @@
       }
 
       if (normalizedUserText && this.lang.questionPattern.test(normalizedUserText)) {
+        if (this.currentTurnDialogueAct === 'question') {
+          return this._pickVaried(this.lang.questionAcknowledgements || this.lang.genericFallbacks);
+        }
         return this._pickVaried(this.lang.questionFallbacks);
       }
 
