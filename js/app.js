@@ -495,6 +495,19 @@
 
   inputEl.addEventListener('input', refreshComposerState);
 
+  // On mobile, opening the virtual keyboard shrinks the visible viewport
+  // and can push the most recent message out of view right as someone
+  // taps in to reply, which is jarring early in a conversation when
+  // there's little else on screen to anchor to. Standard practice in
+  // chat apps is to keep the latest message visible above the keyboard;
+  // `visualViewport`'s resize event fires once the keyboard animation
+  // settles and is the reliable signal for this (a plain focus listener
+  // fires too early, before the keyboard has actually opened).
+  inputEl.addEventListener('focus', () => scrollToBottom());
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => scrollToBottom());
+  }
+
   menuTriggerEl.addEventListener('click', (event) => {
     event.stopPropagation();
     toggleMenu();
@@ -552,10 +565,122 @@
     return '';
   });
 
+  // --- Ambient scene particles ------------------------------------------------
+  //
+  // Bubbles (ocean) and wind gusts (beach) are generated here, each with
+  // independently randomized position/size/timing, rather than living as
+  // static markup driven by a repeating CSS formula -- a fixed formula is
+  // exactly what made the earlier version read as a sequential row of
+  // identical bubbles instead of something organic. Both sets are built
+  // once at load and simply left in the DOM; CSS shows only the active
+  // theme's set via `display`, so no regeneration is needed on toggle.
+
+  /**
+   * Returns a random float in [min, max).
+   * @param {number} min
+   * @param {number} max
+   * @returns {number}
+   */
+  function randomBetween(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  function initBubbles() {
+    const container = document.querySelector('.bubbles');
+    if (!container) return;
+    const count = 10;
+    for (let i = 0; i < count; i += 1) {
+      const bubble = document.createElement('span');
+      bubble.className = 'bubble-particle';
+      const size = randomBetween(4, 19);
+      const duration = randomBetween(11, 26);
+      bubble.style.setProperty('--left', `${randomBetween(2, 96).toFixed(1)}%`);
+      bubble.style.setProperty('--size', `${size.toFixed(1)}px`);
+      bubble.style.setProperty('--duration', `${duration.toFixed(1)}s`);
+      // A negative delay starts the animation already partway through its
+      // cycle, so bubbles don't all begin rising from the bottom at once.
+      bubble.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
+      bubble.style.setProperty('--drift', `${randomBetween(-24, 24).toFixed(0)}px`);
+      bubble.style.setProperty('--peak-opacity', randomBetween(0.22, 0.55).toFixed(2));
+      container.appendChild(bubble);
+    }
+  }
+
+  function initWindGusts() {
+    const container = document.querySelector('.wind-gusts');
+    if (!container) return;
+    // Each gust only actually drifts across during roughly the first
+    // third of its own cycle (see the CSS keyframe), then sits invisible
+    // for the rest -- so even with a handful running, gusts still feel
+    // occasional rather than constant, while being frequent enough
+    // together to keep the scene feeling alive.
+    const count = 4;
+    const svgNs = 'http://www.w3.org/2000/svg';
+    for (let i = 0; i < count; i += 1) {
+      const gust = document.createElementNS(svgNs, 'svg');
+      gust.setAttribute('class', 'wind-gust');
+      gust.setAttribute('viewBox', '0 0 100 40');
+      gust.innerHTML =
+        '<path d="M5,20 Q30,7 60,14 Q76,17.5 95,15" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+        '<path d="M0,29 Q24,21 48,25" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+      const duration = randomBetween(11, 20);
+      gust.style.setProperty('--top', `${randomBetween(4, 46).toFixed(1)}vh`);
+      gust.style.setProperty('--scale', randomBetween(0.5, 0.95).toFixed(2));
+      gust.style.setProperty('--duration', `${duration.toFixed(1)}s`);
+      gust.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
+      gust.style.setProperty('--peak-opacity', randomBetween(0.2, 0.4).toFixed(2));
+      container.appendChild(gust);
+    }
+  }
+
+  function initWetPatches() {
+    const container = document.querySelector('.beach-scene__wet-patches');
+    if (!container) return;
+    const count = 6;
+    for (let i = 0; i < count; i += 1) {
+      const patch = document.createElement('span');
+      patch.className = 'wet-patch';
+      const size = randomBetween(46, 130);
+      const duration = randomBetween(7, 16);
+      patch.style.setProperty('--left', `${randomBetween(0, 92).toFixed(1)}%`);
+      // Weighted toward the top of the sand band, closer to the waterline,
+      // so patches thin out (and dry sand becomes more likely) further
+      // from the water -- like a real shoreline.
+      patch.style.setProperty('--top', `${randomBetween(2, 55).toFixed(1)}%`);
+      patch.style.setProperty('--size', `${size.toFixed(0)}px`);
+      patch.style.setProperty('--duration', `${duration.toFixed(1)}s`);
+      patch.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
+      patch.style.setProperty('--peak-opacity', randomBetween(0.3, 0.6).toFixed(2));
+      container.appendChild(patch);
+    }
+  }
+
+  // --- Offline support ---------------------------------------------------
+  //
+  // Registers the service worker that precaches the whole app shell (see
+  // sw.js) so the app keeps working with no network at all after the
+  // first successful load. Registration only runs where the browser
+  // actually supports it, and a failure here (e.g. running over plain
+  // HTTP somewhere that isn't localhost, where service workers are
+  // blocked for security reasons) is caught rather than left as an
+  // unhandled rejection -- the app works fine online either way, it
+  // simply won't have offline caching in that case.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch((error) => {
+        // eslint-disable-next-line no-console
+        console.warn('Service worker registration failed (app still works online):', error);
+      });
+    });
+  }
+
   // --- Boot -----------------------------------------------------------------
   // Nothing about the conversation starts automatically: the picker is
   // shown and we simply wait for a language choice. The saved theme,
   // however, is restored immediately so returning visitors see their
   // chosen look right away.
   applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
+  initBubbles();
+  initWindGusts();
+  initWetPatches();
 })();

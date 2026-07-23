@@ -30,11 +30,74 @@
    * Zero-width non-joiners (half-spaces, e.g. "می‌خواهم") are intentionally
    * left intact since they are meaningful in Persian orthography.
    */
+  // Arabic diacritics (harakat/tashkil): fatha, damma, kasra, sukun,
+  // shadda, tanwin, and the superscript alef. These are combining marks
+  // that occasionally show up from certain keyboards or copy-pasted text
+  // (e.g. Quranic-style input methods) and, left in place, would prevent
+  // an otherwise-identical word from matching a rule's literal keyword.
+  const DIACRITICS_PATTERN = /[\u0610-\u061A\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED\u0670]/g;
+
+  // Arabic-Indic and Extended Arabic-Indic digits, mapped to their
+  // Persian (Eastern Arabic) equivalents, so "1" written with a different
+  // regional digit set still reads consistently.
+  const ARABIC_TO_PERSIAN_DIGITS = {
+    '٠': '۰', '١': '۱', '٢': '۲', '٣': '۳', '٤': '۴', '٥': '۵', '٦': '۶', '٧': '۷', '٨': '۸', '٩': '۹',
+  };
+
+  /**
+   * Normalizes raw Persian input for reliable pattern matching. This goes
+   * a fair bit further than a plain character swap:
+   *
+   *   1. Unicode NFKC normalization: folds Arabic-script presentation
+   *      forms and ligatures (the kind some keyboards/fonts produce for
+   *      joined letter shapes) down to their standard, decomposed form,
+   *      so a word typed with those glyphs still matches a rule written
+   *      with ordinary letters. This is a single built-in JS method, no
+   *      library required.
+   *   2. Character unification for known Arabic/Persian look-alikes
+   *      (yeh, kaf, teh marbuta) that NFKC alone doesn't merge, since
+   *      they're distinct letters, not alternate forms of the same one.
+   *   3. Diacritic stripping, so vocalized text still matches plain text.
+   *   4. Digit unification (Arabic-Indic -> Persian digits).
+   *   5. Half-space (ZWNJ) correction for the most common cases where
+   *      people type a full space, or no space at all, around the "می"
+   *      and "نمی" verb prefixes -- e.g. "می خواهم" or "میخواهم" both
+   *      become "می‌خواهم", matching how the rules themselves are written.
+   *   6. Whitespace collapsing.
+   *
+   * This is a genuinely more capable normalizer than a single character
+   * swap, but it is not a replacement for a real Persian NLP toolkit like
+   * `hazm` (which the original Python version of this project used): it
+   * doesn't stem, lemmatize, tokenize, or tag parts of speech. Matching
+   * still relies on the curated suffix list in `SUFFIX` below rather than
+   * true morphological analysis, since that's what's achievable without
+   * a server or a large model running in the browser.
+   */
   function normalize(text) {
-    let normalized = String(text).trim();
+    let normalized = String(text).normalize('NFKC').trim();
+
     for (const [src, dst] of FALLBACK_SUBSTITUTIONS) {
       normalized = normalized.split(src).join(dst);
     }
+
+    normalized = normalized.replace(DIACRITICS_PATTERN, '');
+    normalized = normalized.replace(/[٠-٩]/g, (digit) => ARABIC_TO_PERSIAN_DIGITS[digit]);
+
+    // "می" / "نمی" followed by a space and then the verb should be joined
+    // with a zero-width non-joiner (half-space) instead, e.g. "می خواهم"
+    // -> "می‌خواهم". Lookbehind uses `\p{L}` rather than `\b`, which (as
+    // elsewhere in this file) doesn't work for Persian script, and
+    // specifically guards against matching "می" as a mere substring
+    // inside an unrelated word like "کمی" ("a bit"). Deliberately *not*
+    // handled here: words already joined with no space at all (e.g.
+    // "میخواهم"). A general "insert a half-space after می" rule would
+    // also wrongly rewrite words where "می" is simply the start of the
+    // root rather than a prefix -- "میز" (table), "میدان" (square),
+    // "میهن" (homeland) -- and since normalized text is sometimes echoed
+    // back verbatim (the quoted-memory callback), a wrong guess here
+    // would be visibly corrupted text, not just a missed match.
+    normalized = normalized.replace(/(?<!\p{L})(می|نمی)[ \t]+(?=\p{L})/gu, '$1\u200c');
+
     normalized = normalized.replace(/[ \t\r\n\f\v]+/g, ' ').trim();
     return normalized;
   }
@@ -226,7 +289,7 @@
     ]),
 
     rule('negation', 15, /^(نه|خیر)\.?$/i, [
-      'باشد، اشکالی ندارد. پس چه چیزی به ذهن‌تان می‌رسد؟',
+      'باشه، اشکالی نداره. پس چه چیزی به ذهنتان می‌رسد؟',
       'متوجه‌ام. مایلید موضوع دیگری را مطرح کنید؟',
     ]),
   ];
@@ -254,6 +317,16 @@
   const sessionCheckIns = [
     'در این گفتگو درباره‌ی چند موضوع مختلف صحبت کردیم. کدام‌شان الآن بیشتر ذهن‌تان را درگیر کرده؟',
     'تا اینجا چیزهای زیادی گفتید. مایلید روی یکی‌شان بیشتر مکث کنیم؟',
+  ];
+
+  // Matches Persian question marks and the most common question words, so
+  // the engine can tell an interrogative sentence apart from a statement
+  // even when a specific rule doesn't cover what's being asked.
+  const questionPattern = /[؟?]|(?<!\p{L})(چرا|چطور|چگونه|چیست|چیه|کجا|کیه|کیست|آیا|کدام|چقدر|چند)(?!\p{L})/u;
+
+  const questionFallbacks = [
+    'سؤال خوبی پرسیدید. جواب دقیقی براش ندارم، اما کنجکاوم بدونم چی باعث شده این سؤال براتون پیش بیاد؟',
+    'این سؤالی است که ارزش فکر کردن دارد. خودتان چه فکری درباره‌اش دارید؟',
   ];
 
   const topicCallbacks = {
@@ -346,6 +419,8 @@
     strategyShiftFallbacks,
     sessionCheckIns,
     checkInEvery: 8,
+    questionPattern,
+    questionFallbacks,
     topicCallbacks,
     quotedCallbackTemplates,
     distressNudges,

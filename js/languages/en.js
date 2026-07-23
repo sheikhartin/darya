@@ -21,8 +21,20 @@
    * handled by the rule patterns themselves (case-insensitive flag), so
    * normalization here is limited to trimming and whitespace collapsing.
    */
+  /**
+   * Normalizes raw English input: Unicode NFKC normalization folds
+   * compatibility characters (full-width letters, certain ligatures) to
+   * their standard form, smart/curly quotes are unified to plain ASCII
+   * ones so contraction patterns like "i'm" still match text pasted from
+   * word processors, and whitespace is trimmed and collapsed.
+   */
   function normalize(text) {
-    return String(text).trim().replace(/\s+/g, ' ');
+    return String(text)
+      .normalize('NFKC')
+      .replace(/[\u2018\u2019\u02BC]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .trim()
+      .replace(/\s+/g, ' ');
   }
 
   function rule(topic, priority, pattern, responses) {
@@ -206,6 +218,16 @@
     "We've covered a fair amount so far. Would you like to sit with one of these a little longer?",
   ];
 
+  // Matches question marks and common question-word sentence openers, so
+  // the engine can tell an interrogative sentence apart from a statement
+  // even when a specific rule doesn't cover what's being asked.
+  const questionPattern = /\?|^\s*(what|why|how|who|when|where|which|do|does|did|is|are|am|can|could|will|would|should)\b/i;
+
+  const questionFallbacks = [
+    "That's a thoughtful question. I don't have a perfect answer, but I'm curious what's making you think about it right now.",
+    "That's worth sitting with. What's your own take on it?",
+  ];
+
   const topicCallbacks = {
     family: ["I'm still curious about your family, by the way. Want to keep going there?"],
     work: ['We were talking about your work earlier. Want to go back to that?'],
@@ -305,6 +327,8 @@
     strategyShiftFallbacks,
     sessionCheckIns,
     checkInEvery: 8,
+    questionPattern,
+    questionFallbacks,
     topicCallbacks,
     quotedCallbackTemplates,
     distressNudges,

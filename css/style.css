@@ -14,6 +14,68 @@
  * approachable, without exaggerated fully-pill shapes.
  */
 
+/* --------------------------------------------------------------------- */
+/* Self-hosted fonts: no CDN, works fully offline (PWA / packaged app).  */
+/* Nunito and Quicksand are variable fonts (one file covers their whole  */
+/* weight range); Vazirmatn ships as four static weights.                */
+/* --------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lalezar';
+  src: url('../fonts/Lalezar-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('../fonts/Nunito-VF.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  src: url('../fonts/Quicksand-VF.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* --- Color: named after what they represent in the "sea" metaphor --- */
   --color-abyss: #0a2229;
@@ -175,85 +237,203 @@ body {
   50% { transform: translateX(-2%); }
 }
 
-/* Beach theme only: a sandy shore band with a foam line that washes up
-   and recedes, standing in for the ocean theme's abstract horizon. */
-.backdrop__shore {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 26vh;
-  background: linear-gradient(to top, #d9bf85, rgba(217, 191, 133, 0));
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-/*
- * The wave-wash "zone" wrapper controls visibility via `display`, and the
- * inner `.backdrop__wave-wash` element carries the animation. These are
- * deliberately split across two elements: the animation's own keyframes
- * set `opacity` on every frame, which would always win over a plain
- * `opacity: 0/1` toggle on the *same* element regardless of theme (an
- * animated property beats a static rule for that property, full stop).
- * Toggling `display` on the wrapper instead sidesteps that entirely.
- */
-.backdrop__wave-wash-zone {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  bottom: 15vh;
-  height: 9vh;
-  display: none;
-}
-
-html[data-theme="beach"] .backdrop__wave-wash-zone {
-  display: block;
-}
-
-.backdrop__wave-wash {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
-  border-radius: 50%;
-  filter: blur(2px);
-  animation: wave-wash 6s ease-in-out infinite;
-}
-
-@keyframes wave-wash {
-  0%, 100% { transform: translateY(6px) scaleX(1.03); opacity: 0.2; }
-  50% { transform: translateY(-18px) scaleX(1); opacity: 0.55; }
-}
-
 html[data-theme="beach"] .backdrop__horizon {
   opacity: 0;
 }
 
-html[data-theme="beach"] .backdrop__shore {
+/* --------------------------------------------------------------------- */
+/* Beach scene: a proper shoreline, not a submerged-in-water reskin.     */
+/* Sand dominates the lower portion of the screen; the sea is a modest   */
+/* strip above it, meeting the sand at a scalloped (not smooth-oval)     */
+/* foam edge, which reads much closer to an actual wave line than a      */
+/* single pulsing blob. Hidden entirely outside the beach theme.         */
+/* --------------------------------------------------------------------- */
+
+.beach-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44vh;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+}
+
+html[data-theme="beach"] .beach-scene {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0s linear 0s;
+}
+
+.beach-scene__sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, rgba(59, 158, 158, 0) 0%, #2b8f92 55%, #45b6ae 100%);
+}
+
+.beach-scene__sand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 27%;
+  background: linear-gradient(to bottom, #b89968 0%, #ecd39c 12%, #e6c68c 40%, #dcb877 100%);
+}
+
+/* Wet-sand patches: irregular, independently-faded blobs populated by
+   app.js with randomized position/size/timing, so the waterline leaves a
+   patchy, uneven damp mark rather than uniformly darkening the whole
+   sand band -- some stretches of sand stay visibly dry at any moment,
+   the way a real shoreline looks. */
+.beach-scene__wet-patches {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 27%;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.wet-patch {
+  position: absolute;
+  left: var(--left, 50%);
+  top: var(--top, 20%);
+  width: var(--size, 80px);
+  height: calc(var(--size, 80px) * 0.45);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(107, 79, 41, 0.4), rgba(107, 79, 41, 0) 72%);
+  filter: blur(3px);
+  opacity: 0;
+  animation: wet-patch-fade var(--duration, 9s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes wet-patch-fade {
+  0%, 100% { opacity: 0; }
+  35%, 55% { opacity: var(--peak-opacity, 0.5); }
+}
+
+/*
+ * Protects the input hint and disclaimer -- both always pinned to the
+ * very bottom of the screen by the fixed flex-column layout, so a small,
+ * narrow scrim reliably covers them regardless of viewport height.
+ * (Elements whose position varies instead -- the picker's footnote,
+ * message timestamps -- use a text-shadow halo on the text itself; see
+ * .picker__note and .bubble-meta. Deliberately kept small rather than
+ * covering most of the scene, so the beach still reads as bright and
+ * sunny rather than dim.)
+ */
+.backdrop__scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* The protected zone below (input hint + composer + disclaimer) is
+     built from fixed font-sizes and padding, so its height is roughly
+     constant in *pixels*, not in vh -- a pure vh value that works on one
+     viewport height under-covers it on a shorter one. The 210px floor
+     covers that fixed zone with margin; the 24vh term scales the scrim
+     up further on taller screens. */
+  height: max(24vh, 210px);
+  background: linear-gradient(to bottom, transparent 0%, rgba(15, 15, 10, 0.8) 8%, rgba(15, 15, 10, 0.8) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+html[data-theme="beach"] .backdrop__scrim {
   opacity: 1;
 }
+
+/* --------------------------------------------------------------------- */
+/* Ocean-theme bubbles: populated by app.js with randomized position,    */
+/* size, drift, and timing per bubble (not a repeating formula), so they */
+/* never read as a sequential row.                                      */
+/* --------------------------------------------------------------------- */
 
 .bubbles {
   position: absolute;
   inset: 0;
+  display: block;
+}
+
+html[data-theme="beach"] .bubbles {
+  display: none;
 }
 
 .bubble-particle {
   position: absolute;
   bottom: -40px;
-  left: calc(8% + (var(--i) * 16%));
-  width: calc(6px + (var(--i) * 2px));
-  height: calc(6px + (var(--i) * 2px));
+  left: var(--left, 50%);
+  width: var(--size, 10px);
+  height: var(--size, 10px);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, rgba(234, 243, 239, 0.55), rgba(127, 190, 176, 0.08));
-  animation: rise-bubble calc(14s + (var(--i) * 3s)) ease-in infinite;
-  animation-delay: calc(var(--i) * -2.4s);
+  animation: rise-bubble var(--duration, 16s) ease-in infinite;
+  animation-delay: var(--delay, 0s);
 }
 
 @keyframes rise-bubble {
   0% { transform: translateY(0) translateX(0); opacity: 0; }
-  10% { opacity: 0.5; }
-  90% { opacity: 0.35; }
-  100% { transform: translateY(-100vh) translateX(12px); opacity: 0; }
+  10% { opacity: var(--peak-opacity, 0.4); }
+  90% { opacity: calc(var(--peak-opacity, 0.4) * 0.7); }
+  100% { transform: translateY(-100vh) translateX(var(--drift, 12px)); opacity: 0; }
+}
+
+/* --------------------------------------------------------------------- */
+/* Beach-theme wind gusts, replacing bubbles: floating particles read as */
+/* underwater, which doesn't fit a beach scene, so a breeze -- a couple  */
+/* of tapered curved lines suggesting a head and a trailing tail, like   */
+/* classic wind/speed-line iconography -- drifts across instead.        */
+/* --------------------------------------------------------------------- */
+
+.wind-gusts {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: none;
+}
+
+html[data-theme="beach"] .wind-gusts {
+  display: block;
+}
+
+.wind-gust {
+  position: absolute;
+  top: var(--top, 20vh);
+  left: -20vw;
+  width: calc(96px * var(--scale, 1));
+  height: calc(38px * var(--scale, 1));
+  animation: gust-drift var(--duration, 18s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+}
+
+/*
+ * `linear` timing plus exactly two keyframe stops that set `transform`
+ * (0% and 32%) is what makes the crossing itself constant-speed: with
+ * nothing else in between touching `transform`, the browser interpolates
+ * it as one continuous, evenly-paced motion across that whole span,
+ * rather than the "hold still, then suddenly move" effect an uneven
+ * spread of stops (or a non-linear timing function) produces. The 130vw
+ * travel distance clears a full 100vw viewport with room to spare, so
+ * the gust genuinely exits past the right edge before fading rather than
+ * fading out mid-screen. Opacity fades in/out quickly at each end of
+ * that same span, independent of the constant-speed movement. The gust
+ * then sits invisible, parked off-screen, for the remaining ~65% of the
+ * cycle -- combined with a randomized `--duration` (see app.js) and a
+ * small particle count, that's what makes a new gust appear only
+ * occasionally rather than there always being one in motion.
+ */
+@keyframes gust-drift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  3% { opacity: var(--peak-opacity, 0.3); }
+  29% { opacity: var(--peak-opacity, 0.3); }
+  32% { transform: translate(130vw, 6px); opacity: 0; }
+  100% { transform: translate(130vw, 6px); opacity: 0; }
 }
 
 /* --------------------------------------------------------------------- */
@@ -367,6 +547,17 @@ html[data-theme="beach"] .backdrop__shore {
   gap: var(--space-2);
 }
 
+/* Unlike .disclaimer/.input-hint, this text's vertical position shifts
+   with how tall the rest of the picker content is, so it can't reliably
+   count on falling within a small, fixed-height scrim the way elements
+   pinned to the very bottom of the screen can. A dark halo around the
+   letterforms themselves works regardless of exactly what's behind them
+   -- the same principle video subtitles use -- without needing a large
+   overlay that would otherwise have to cover much more of the screen. */
+html[data-theme="beach"] .picker__note {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
 .picker__note-sep {
   opacity: 0.6;
 }
@@ -432,6 +623,30 @@ html[data-theme="beach"] .backdrop__shore {
   margin-inline: auto;
 }
 
+/*
+ * A soft fade-and-rise instead of an abrupt pop whenever the picker or
+ * the chat screen becomes visible -- on first load, and every time
+ * "New chat" swaps between them. CSS animations restart automatically
+ * when an element goes from `display: none` to visible, so this needs
+ * no JS trigger of its own.
+ */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.picker:not([hidden]),
+.app:not([hidden]) {
+  animation: reveal 0.45s var(--ease-tide) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker:not([hidden]),
+  .app:not([hidden]) {
+    animation: none;
+  }
+}
+
 /* --------------------------------------------------------------------- */
 /* Header -- streamlined to exactly two controls: title + a single menu. */
 /* No background/border/blur of its own: it sits directly on the same    */
@@ -486,7 +701,8 @@ html[data-theme="beach"] .backdrop__shore {
 .menu__popover {
   position: absolute;
   top: calc(100% + 8px);
-  inset-inline-start: 0;
+  inset-inline-end: 0;
+  max-width: calc(100vw - 2 * var(--space-3));
   min-width: 216px;
   background: var(--color-tide);
   border: 1px solid var(--color-line);
@@ -639,6 +855,14 @@ html[dir="ltr"] .bubble-row--bot { justify-content: flex-start; }  /* left in LT
   color: var(--color-foam-dim);
   margin-top: 3px;
   padding-inline: 4px;
+}
+
+/* Same reasoning as .picker__note above: a timestamp can end up
+   anywhere in the chat as the conversation scrolls, so a halo around the
+   text itself is the reliable fix here rather than trying to predict
+   where it'll land relative to a fixed scrim. */
+html[data-theme="beach"] .bubble-meta {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
 /* Meta text follows the same intentional physical-side convention as the
@@ -802,8 +1026,9 @@ html[dir="rtl"] .composer__send svg {
 @media (prefers-reduced-motion: reduce) {
   .backdrop__glow,
   .backdrop__horizon,
-  .backdrop__wave-wash,
+  .wet-patch,
   .bubble-particle,
+  .wind-gust,
   .ripple-dot,
   .bubble-row,
   .bubble--bot,

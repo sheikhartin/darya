@@ -1,4 +1,4 @@
-# دریا (Darya)
+# Darya (دریا)
 
 Darya is a bilingual (Persian/English) conversation companion in the
 tradition of **ELIZA**, the 1966 program by Joseph Weizenbaum that first

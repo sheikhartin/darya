@@ -404,9 +404,11 @@
      * how much conversational value they add:
      *   1. A callback to a different recently-discussed topic.
      *   2. A session check-in, at a periodic turn interval.
-     *   3. A quoted callback to something the person said earlier.
-     *   4. (English only) a pronoun-swap reflection of what they just said.
-     *   5. A generic or "strategy shift" fallback, alternated.
+     *   3. If the message is a direct question, an acknowledgment that
+     *      treats it as one, rather than reflecting it back unanswered.
+     *   4. A quoted callback to something the person said earlier.
+     *   5. (English only) a pronoun-swap reflection of what they just said.
+     *   6. A generic or "strategy shift" fallback, alternated.
      * @param {string|null} preferTopic - A topic to avoid re-surfacing.
      * @param {string} normalizedUserText - The current message, for
      *   quoted-callback/reflection strategies. Empty when breaking a
@@ -422,6 +424,10 @@
 
       if (this.memory.turnCount > 0 && this.memory.turnCount % this.lang.checkInEvery === 0) {
         return this._pickVaried(this.lang.sessionCheckIns);
+      }
+
+      if (normalizedUserText && this.lang.questionPattern.test(normalizedUserText)) {
+        return this._pickVaried(this.lang.questionFallbacks);
       }
 
       if (normalizedUserText && Math.random() < QUOTED_CALLBACK_PROBABILITY) {

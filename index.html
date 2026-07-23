@@ -9,37 +9,55 @@
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="assets/favicon.ico">
-  <link rel="apple-touch-icon" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- iOS doesn't support the web app manifest for "add to home screen"
+       behavior, so these Apple-specific tags cover the same ground:
+       standalone (no browser chrome) and a matching status bar style. -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Darya">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
        English: Nunito (body, warm and rounded) + Quicksand (display wordmark only). -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Lalezar&family=Nunito:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
+       rules) for full offline capability -- no CDN dependency. -->
+  <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Nunito-VF.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- Ambient backdrop: soft light glows, a faint horizon wave, and slowly rising bubbles. -->
+  <!-- Ambient backdrop. Ocean theme: soft light glows, a faint horizon
+       silhouette, and randomly-placed rising bubbles (populated by
+       app.js, so each one gets a genuinely random size/position/timing
+       rather than a repeating formula). Beach theme: a proper shoreline
+       scene (sea strip, scalloped foam edge, tall sand band, patchy wet
+       spots that fade in and out unevenly) plus drifting wind gusts
+       instead of bubbles, since floating bubbles read as underwater, not
+       beach. Both themes' elements live here; CSS shows only the active
+       theme's set. -->
   <div class="backdrop" aria-hidden="true">
     <div class="backdrop__glow backdrop__glow--one"></div>
     <div class="backdrop__glow backdrop__glow--two"></div>
+
     <svg class="backdrop__horizon" viewBox="0 0 1200 300" preserveAspectRatio="none">
       <path d="M0,150 C200,90 400,210 600,150 C800,90 1000,210 1200,150 L1200,300 L0,300 Z" fill="#7fbeb0"/>
     </svg>
-    <div class="backdrop__shore"></div>
-    <div class="backdrop__wave-wash-zone">
-      <div class="backdrop__wave-wash"></div>
+
+    <div class="beach-scene">
+      <div class="beach-scene__sea"></div>
+      <div class="beach-scene__sand"></div>
+      <div class="beach-scene__wet-patches"></div>
     </div>
-    <div class="bubbles">
-      <span class="bubble-particle" style="--i:0"></span>
-      <span class="bubble-particle" style="--i:1"></span>
-      <span class="bubble-particle" style="--i:2"></span>
-      <span class="bubble-particle" style="--i:3"></span>
-      <span class="bubble-particle" style="--i:4"></span>
-      <span class="bubble-particle" style="--i:5"></span>
-    </div>
+
+    <div class="backdrop__scrim"></div>
+
+    <div class="bubbles"></div>
+    <div class="wind-gusts"></div>
   </div>
 
   <!-- Language picker: shown before any conversation starts, and again

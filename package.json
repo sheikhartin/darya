@@ -1,0 +1,19 @@
+{
+  "name": "darya",
+  "version": "1.0.0",
+  "description": "Darya (دریا) — a bilingual Persian/English calm conversation companion. Fully offline: static HTML/CSS/JS, no build step, no backend.",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test tests/engine.test.js",
+    "test:smoke": "bash tests/smoke-test.sh",
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}
