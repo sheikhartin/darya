@@ -206,6 +206,33 @@
     'What made you want to share this with me?',
   ];
 
+
+  // Vocabulary for the language-neutral named-entity extractor. Terms are
+  // intentionally conversational and are remembered only on an emotional
+  // turn, never as a complete transcript or profile.
+  const familyTerms = [
+    'mother', 'mom', 'father', 'dad', 'grandmother', 'grandfather', 'sister',
+    'brother', 'husband', 'wife', 'partner', 'fiancé', 'fiancee', 'boyfriend',
+    'girlfriend', 'family', 'parents', 'child', 'daughter', 'son',
+  ];
+  const professionTerms = [
+    'job', 'work', 'boss', 'career', 'coworker', 'school', 'college',
+    'university', 'exam', 'professor', 'doctor', 'therapist', 'project',
+    'meeting', 'office', 'student',
+  ];
+  const placeWords = [
+    'home', 'house', 'room', 'school', 'college', 'university', 'office',
+    'city', 'town', 'park', 'hospital', 'here', 'there', 'Tehran', 'London',
+  ];
+
+  const entityCallbackTemplates = {
+    person: ['You mentioned {surface} earlier. Would you like to tell me more about them?'],
+    place: ['You mentioned {surface}. Is that place still on your mind?'],
+    time: ['You brought up {surface}. What does that time bring up for you?'],
+    activity: ['You mentioned {surface}. Which part of it is taking up the most space right now?'],
+    object: ['I remember you mentioned {surface}. Would you like to stay with that for a moment?'],
+  };
+
   const strategyShiftFallbacks = [
     "Let's pause for a second. Right now, what's taking up the most space in your mind?",
     'If you were describing this feeling to a friend, what would you say?',
@@ -334,6 +361,10 @@
     distressNudges,
     sentimentLexicon,
     pronounMap,
+    familyTerms,
+    professionTerms,
+    placeWords,
+    entityCallbackTemplates,
     exitKeywords,
     greetings,
     farewells,

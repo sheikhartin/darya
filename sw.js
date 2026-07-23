@@ -24,6 +24,7 @@ const PRECACHE_URLS = [
   './js/app.js',
   './js/darya-engine.js',
   './js/languages/halfspace.js',
+  './js/languages/entity-extractor.js',
   './js/languages/fa.js',
   './js/languages/en.js',
   './fonts/BeVietnamPro-Regular.woff2',

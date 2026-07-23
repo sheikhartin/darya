@@ -55,6 +55,8 @@
   const PRONOUN_REFLECTION_MAX_WORDS = 14;
   const PRONOUN_REFLECTION_MIN_WORDS = 2;
   const EXCERPT_MAX_LENGTH = 60;
+  const ENTITY_DECAY_PER_TURN = 0.18;
+  const ENTITY_CALLBACK_PROBABILITY = 0.55;
 
   // ==========================================================================
   // Text helpers (language-agnostic, operate on whatever script range and
@@ -182,6 +184,10 @@
       this.sameRuleStreak = 0;
       this.distressNudgeGiven = false;
       this.turnCount = 0;
+      // Entity values are intentionally small, ephemeral records. The map
+      // key is stable for lookup, while surface preserves the person's own
+      // spelling for a natural callback.
+      this.namedEntities = new Map();
     }
 
     rememberUtterance(utterance) {
@@ -213,6 +219,63 @@
       if (this.sentimentHistory.length > SENTIMENT_HISTORY_SIZE) {
         this.sentimentHistory.shift();
       }
+    }
+
+    /**
+     * Age named entities at the start of a new user turn. A multiplicative
+     * decay keeps recent memories available while making a long-abandoned
+     * detail naturally fall below the callback threshold.
+     */
+    decayNamedEntities() {
+      for (const [key, entity] of this.namedEntities) {
+        entity.activation *= (1 - ENTITY_DECAY_PER_TURN);
+        entity.age += 1;
+        if (entity.activation < 0.05) this.namedEntities.delete(key);
+      }
+    }
+
+    /**
+     * Remember only the entities selected by the language pack extractor.
+     * This method is called after response selection, which is important:
+     * a brand-new entity cannot be used to fabricate an "earlier" callback
+     * in the same turn.
+     */
+    rememberEntities(entities, turn = this.turnCount) {
+      for (const item of entities || []) {
+        if (!item || !item.type || !item.surface) continue;
+        const key = item.key || `${item.type}:${item.surface.toLocaleLowerCase()}`;
+        const old = this.namedEntities.get(key);
+        if (old) {
+          old.surface = item.surface;
+          old.activation = Math.min(1, old.activation + 0.34 * item.confidence);
+          old.confidence = Math.max(old.confidence, item.confidence);
+          old.mentions += 1;
+          old.lastMentionTurn = turn;
+          old.age = 0;
+        } else {
+          this.namedEntities.set(key, {
+            type: item.type,
+            surface: item.surface,
+            confidence: item.confidence,
+            activation: item.confidence,
+            mentions: 1,
+            firstMentionTurn: turn,
+            lastMentionTurn: turn,
+            age: 0,
+          });
+        }
+      }
+    }
+
+    /**
+     * Returns remembered entities strong enough for a callback. A threshold
+     * is applied by the engine, not by extraction, so tests and future UI
+     * diagnostics can inspect low-confidence lexical candidates safely.
+     */
+    eligibleNamedEntities(threshold = 0.6) {
+      return [...this.namedEntities.values()]
+        .filter((entity) => entity.activation >= threshold)
+        .sort((a, b) => b.activation - a.activation);
     }
 
     /**
@@ -284,6 +347,7 @@
       this.rules = [...lang.rules].sort((a, b) => b.priority - a.priority);
       this.memory = new ConversationMemory();
       this._fallbackToggle = false;
+      this.entityCallbackThreshold = 0.6;
     }
 
     /**
@@ -310,14 +374,29 @@
       }
 
       const normalized = this.lang.normalize(rawText);
+      const sentimentScore = scoreSentiment(normalized, this.lang.sentimentLexicon);
       this.memory.rememberUtterance(normalized);
-      this.memory.rememberSentiment(scoreSentiment(normalized, this.lang.sentimentLexicon));
+      this.memory.rememberSentiment(sentimentScore);
       this.memory.turnCount += 1;
+      this.memory.decayNamedEntities();
+
+      // Entity extraction is gated on emotional weight. Neutral turns can
+      // still be answered normally, but they do not create a personal-data
+      // memory in the first place.
+      const entities = global.DaryaEntityExtractor
+        ? global.DaryaEntityExtractor.extract(normalized, this.lang, {
+          emotionalWeight: sentimentScore !== 0,
+        })
+        : [];
+      this._turnEntities = entities;
 
       const { rule: matchedRule, captured } = this._matchRule(normalized);
       let reply = matchedRule
         ? this._respondWithRule(matchedRule, captured)
         : this._fallbackResponse(null, normalized);
+      // Remember after choosing the reply. This ordering is the first-
+      // mention guard: a fresh entity is never described as remembered.
+      this.memory.rememberEntities(entities);
 
       // The distress nudge is a caring, optional add-on layered on top of
       // whatever the normal flow produced -- but it never overrides the
@@ -416,6 +495,9 @@
      * @returns {string}
      */
     _fallbackResponse(preferTopic, normalizedUserText) {
+      const entityCallback = this._respondToEntityReference();
+      if (entityCallback) return entityCallback;
+
       const exclude = preferTopic ? [preferTopic] : [];
       const topic = this.memory.mostCommonTopic(exclude);
       if (topic && this.lang.topicCallbacks[topic]) {
@@ -451,6 +533,27 @@
     }
 
     /**
+     * Occasionally callbacks to an emotionally salient entity from an
+     * earlier turn. No current-entity list is needed: the map contains only
+     * already-remembered turns, so the first mention can never hallucinate
+     * an earlier reference. The probability is deliberately lower than
+     * one, keeping callbacks conversational rather than mechanical.
+     * @returns {string|null}
+     */
+    _respondToEntityReference() {
+      const candidates = this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+        .filter((entity) => entity.lastMentionTurn < this.memory.turnCount);
+      if (candidates.length === 0 || Math.random() >= ENTITY_CALLBACK_PROBABILITY) return null;
+
+      const entity = candidates[0];
+      const templates = this.lang.entityCallbackTemplates || {};
+      const pool = templates[entity.type] || templates.object || [];
+      if (pool.length === 0) return null;
+      const template = this._pickVaried(pool);
+      return template.replace(/\{surface\}/gu, entity.surface);
+    }
+
+    /**
      * Chooses a response from `pool`, actively avoiding lines used
      * recently so the conversation doesn't feel repetitive. Falls back
      * to "anything but the very last message" if every option has
@@ -482,6 +585,9 @@
   global.DaryaEngine = {
     isValidScript,
     scoreSentiment,
+    ENTITY_DECAY_PER_TURN,
+    ENTITY_CALLBACK_PROBABILITY,
+    ConversationMemory,
     DaryaResponseEngine,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -282,6 +282,31 @@
     'چه چیزی باعث شد این را با من در میان بگذارید؟',
   ];
 
+
+  // Vocabulary consumed by the language-neutral named-entity extractor.
+  // These are deliberately short, emotionally salient surfaces rather than
+  // an attempt to enumerate every Persian noun.
+  const familyTerms = [
+    'پدر', 'مادر', 'پدربزرگ', 'مادربزرگ', 'خواهر', 'برادر', 'همسر',
+    'نامزد', 'دوست', 'خانواده', 'والدین', 'فرزند', 'دخترم', 'پسرم',
+  ];
+  const professionTerms = [
+    'کار', 'شغل', 'رئیس', 'همکار', 'دانشگاه', 'مدرسه', 'امتحان', 'کنکور',
+    'پروژه', 'جلسه', 'پزشک', 'دکتر', 'درمانگر', 'استاد', 'دانشجو',
+  ];
+  const placeWords = [
+    'خانه', 'اتاق', 'مدرسه', 'دانشگاه', 'محل کار', 'دفتر', 'تهران', 'شیراز',
+    'شهر', 'روستا', 'پارک', 'بیمارستان', 'اینجا', 'آنجا',
+  ];
+
+  const entityCallbackTemplates = {
+    person: ['کمی قبل‌تر از {surface} گفتید؛ دوست دارید بیشتر درباره‌اش بگویید؟'],
+    place: ['آن جایی که گفتید، یعنی {surface}، هنوز در ذهن‌تان هست؟'],
+    time: ['به {surface} اشاره کردید. این زمان چه حسی برایتان دارد؟'],
+    activity: ['درباره‌ی {surface} گفتید؛ الآن بیشتر کدام بخشش ذهن‌تان را درگیر کرده؟'],
+    object: ['یادم هست از {surface} گفتید. دوست دارید کمی بیشتر روی آن مکث کنیم؟'],
+  };
+
   const strategyShiftFallbacks = [
     'بیایید کمی مکث کنیم؛ همین الآن، بیشترین چیزی که ذهنتان را درگیر کرده چیست؟',
     'اگر بخواهید این حس را برای یک دوست توصیف کنید، چه می‌گفتید؟',
@@ -401,6 +426,10 @@
     distressNudges,
     sentimentLexicon,
     pronounMap,
+    familyTerms,
+    professionTerms,
+    placeWords,
+    entityCallbackTemplates,
     exitKeywords,
     greetings,
     farewells,
