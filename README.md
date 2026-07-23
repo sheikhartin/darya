@@ -3,9 +3,8 @@
 Darya is a bilingual (Persian/English) conversation companion in the
 tradition of **ELIZA**, the 1966 program by Joseph Weizenbaum that first
 showed how a purely keyword-driven, rule-based script could imitate a
-Rogerian therapist's reflective listening well enough to feel genuinely
-heard, even once people knew exactly how the trick worked. Darya is a
-considerably more capable version of that same idea, not a language model:
+reflective listening well enough to feel genuinely heard, even once people knew exactly how the trick worked. Darya is a
+a richer form of that same idea:
 it recognizes a broad set of topics and common small-talk questions, keeps
 a short working memory it can quote back to you, tracks emotional tone
 across a conversation to occasionally offer a grounding exercise, and

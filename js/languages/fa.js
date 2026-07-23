@@ -67,7 +67,7 @@
    *
    * This is a genuinely more capable normalizer than a single character
    * swap, but it is not a replacement for a real Persian NLP toolkit like
-   * `hazm` (which the original Python version of this project used): it
+   * `hazm` (which the original Python implementation used): it
    * doesn't stem, lemmatize, tokenize, or tag parts of speech. Matching
    * still relies on the curated suffix list in `SUFFIX` below rather than
    * true morphological analysis, since that's what's achievable without
@@ -287,7 +287,7 @@
   // These are deliberately short, emotionally salient surfaces rather than
   // an attempt to enumerate every Persian noun.
   const familyTerms = [
-    'پدر', 'مادر', 'پدربزرگ', 'مادربزرگ', 'خواهر', 'برادر', 'همسر',
+    'پدر', 'پدرم', 'مادر', 'مادرم', 'پدربزرگ', 'مادربزرگ', 'خواهر', 'خواهرم', 'برادر', 'برادرم', 'همسر',
     'نامزد', 'دوست', 'خانواده', 'والدین', 'فرزند', 'دخترم', 'پسرم',
   ];
   const professionTerms = [
@@ -391,7 +391,7 @@
     `سلام، من ${BOT_NAME} هستم و گوش می‌دهم. چه چیزی این روزها در ذهن‌تان مانده است؟`,
   ];
   const greetingsInviting = [
-    `سلام! من ${BOT_NAME} هستم. هر چیزی که این روزها سنگین‌تان کرده، می‌توانید با من در میان بگذارید.`,
+    `سلام! من ${BOT_NAME} هستم. هر چیزی که این روزها سنگین‌تان کرده، می‌توانید با من در میان بگذارید و برایم بگویید.`,
     `درود بر شما. من ${BOT_NAME}‌ام؛ از هر چیزی که دوست دارید شروع کنید و برایم بگویید.`,
   ];
   const greetingsReturning = [
@@ -455,9 +455,19 @@
       appDescription: 'دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی.',
       placeholderDefault: 'هر چه در دل دارید بنویسید…',
       placeholderEnded: 'گفتگو پایان یافت. برای شروع دوباره، از منو «گفتگوی تازه» را بزنید',
-      ariaSendLabel: 'ارسال پیام',
-      ariaMenuLabel: 'گزینه‌ها',
+      ariaSendLabel: 'ارسال پیام به دریا',
+      ariaMenuLabel: 'باز کردن منوی گزینه‌های گفتگو',
       ariaInputLabel: 'پیام شما به دریا',
+      pickerFaTitle: 'شروع گفتگوی تازه به زبان فارسی',
+      pickerEnTitle: 'شروع گفتگوی تازه به زبان انگلیسی',
+      themeOceanTitle: 'انتخاب تم اقیانوس',
+      themeBeachTitle: 'انتخاب تم ساحل',
+      sendButtonTitle: 'ارسال پیام فعلی',
+      menuTriggerTitle: 'باز کردن منوی گزینه‌های گفتگو',
+      newChatTitle: 'شروع گفتگوی تازه',
+      exportMdTitle: 'دانلود گفتگو با قالب مارک‌داون',
+      exportTxtTitle: 'دانلود گفتگو به صورت متن ساده',
+      themeToggleTitle: 'تغییر تم گفتگو',
       menuNewChat: 'گفتگوی تازه',
       menuExportMd: 'دانلود گفتگو — مارک‌داون',
       menuExportTxt: 'دانلود گفتگو — متن ساده',

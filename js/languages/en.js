@@ -115,7 +115,7 @@
     ]),
 
     rule('smalltalk_identity', 60, /\b(who are you|what are you|are you (?:a )?(?:robot|bot|ai|real|human|person))\b/i, [
-      "I'm Darya, a companion here to listen. I'm not a therapist or a real person, just a calm space to think out loud.",
+      "I'm Darya, a companion here to listen. I'm not a real person, just a calm space to think out loud.",
       "I'm a simple chat companion, not a human. But I'm genuinely here to listen.",
     ]),
 
@@ -217,7 +217,7 @@
   ];
   const professionTerms = [
     'job', 'work', 'boss', 'career', 'coworker', 'school', 'college',
-    'university', 'exam', 'professor', 'doctor', 'therapist', 'project',
+    'university', 'exam', 'professor', 'doctor', 'counselor', 'project',
     'meeting', 'office', 'student',
   ];
   const placeWords = [
@@ -389,9 +389,19 @@
       appDescription: 'Darya, an English-language conversation companion for listening and support.',
       placeholderDefault: "Write whatever's on your mind…",
       placeholderEnded: 'This conversation has ended. Choose "New chat" from the menu to start again.',
-      ariaSendLabel: 'Send message',
-      ariaMenuLabel: 'Options',
+      ariaSendLabel: 'Send your message to Darya',
+      ariaMenuLabel: 'Open the conversation options menu',
       ariaInputLabel: 'Your message to Darya',
+      pickerFaTitle: 'Start a new conversation in Persian',
+      pickerEnTitle: 'Start a new conversation in English',
+      themeOceanTitle: 'Choose the ocean theme',
+      themeBeachTitle: 'Choose the beach theme',
+      sendButtonTitle: 'Send the current message',
+      menuTriggerTitle: 'Open the conversation options menu',
+      newChatTitle: 'Start a new conversation',
+      exportMdTitle: 'Download the conversation as Markdown',
+      exportTxtTitle: 'Download the conversation as plain text',
+      themeToggleTitle: 'Change the conversation theme',
       menuNewChat: 'New chat',
       menuExportMd: 'Download chat — Markdown',
       menuExportTxt: 'Download chat — plain text',

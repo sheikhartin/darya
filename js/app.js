@@ -141,6 +141,9 @@
     menuThemeIconEl.textContent = target === 'ocean' ? '🌊' : '🏖️';
     menuThemeLabelEl.textContent = target === 'ocean' ? lang.ui.themeOceanLabel : lang.ui.themeBeachLabel;
     menuThemeToggleEl.dataset.themeChoice = target;
+    const themeTitle = target === 'ocean' ? lang.ui.themeOceanTitle : lang.ui.themeBeachTitle;
+    menuThemeToggleEl.setAttribute('title', themeTitle);
+    menuThemeLabelEl.setAttribute('title', themeTitle);
   }
 
   /** @type {object|null} The active language pack (window.DaryaLang.fa/en). */
@@ -311,7 +314,19 @@
     inputEl.setAttribute('dir', lang.dir);
     inputEl.setAttribute('lang', lang.code);
     sendButtonEl.setAttribute('aria-label', lang.ui.ariaSendLabel);
+    sendButtonEl.setAttribute('title', lang.ui.sendButtonTitle);
     menuTriggerEl.setAttribute('aria-label', lang.ui.ariaMenuLabel);
+    menuTriggerEl.setAttribute('title', lang.ui.menuTriggerTitle);
+    pickerFaEl.setAttribute('title', lang.ui.pickerFaTitle);
+    pickerEnEl.setAttribute('title', lang.ui.pickerEnTitle);
+    themeToggleButtons.forEach((button) => {
+      button.setAttribute('title', button.dataset.themeChoice === 'ocean'
+        ? lang.ui.themeOceanTitle
+        : lang.ui.themeBeachTitle);
+    });
+    menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
+    menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
+    menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
     menuNewChatLabelEl.textContent = lang.ui.menuNewChat;
     menuExportMdLabelEl.textContent = lang.ui.menuExportMd;
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
@@ -570,7 +585,7 @@
   // Bubbles (ocean) and wind gusts (beach) are generated here, each with
   // independently randomized position/size/timing, rather than living as
   // static markup driven by a repeating CSS formula -- a fixed formula is
-  // exactly what made the earlier version read as a sequential row of
+  // exactly what made the earlier layout read as a sequential row of
   // identical bubbles instead of something organic. Both sets are built
   // once at load and simply left in the DOM; CSS shows only the active
   // theme's set via `display`, so no regeneration is needed on toggle.

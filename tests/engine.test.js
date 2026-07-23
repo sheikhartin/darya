@@ -25,6 +25,8 @@ const path = require('node:path');
 // object (so they work unmodified as plain <script> tags in the browser).
 // Node has no such global by default, so we provide one before loading them.
 global.window = global;
+require(path.join(__dirname, '..', 'js', 'languages', 'halfspace.js'));
+require(path.join(__dirname, '..', 'js', 'languages', 'entity-extractor.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'fa.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'en.js'));
 require(path.join(__dirname, '..', 'js', 'darya-engine.js'));
@@ -69,8 +71,8 @@ test('fa normalize regression: does NOT corrupt words that merely contain می/�
   assert.equal(FA.normalize('میدان آزادی'), 'میدان آزادی');
 });
 
-test('fa normalize: leaves already space-free forms alone (no dictionary to safely guess with)', () => {
-  assert.equal(FA.normalize('میخواهم بروم'), 'میخواهم بروم');
+test('fa normalize: corrects already space-free known verb forms', () => {
+  assert.equal(FA.normalize('میخواهم بروم'), 'می\u200cخواهم بروم');
 });
 
 test('en normalize: unifies smart/curly quotes to plain ASCII', () => {
@@ -276,6 +278,412 @@ test('pronoun reflection produces a grammatical, safely-bounded result', () => {
   const reflected = [...seen].find((r) => r.toLowerCase().startsWith('so '));
   assert.ok(reflected, 'expected at least one pronoun-reflected reply across 60 trials');
   assert.match(reflected, /you keep thinking about your old apartment/i);
+});
+
+
+test('halfspace module exposes the vendored API and the shared ZWNJ constant', () => {
+  assert.equal(typeof global.halfSpace, 'function');
+  assert.equal(typeof global.DaryaHalfspace.normalize, 'function');
+  assert.equal(global.DaryaHalfspace.ZWNJ, '\u200c');
+});
+
+test('halfspace normalizes the requested joined verb stems', () => {
+  for (const [raw, expected] of [
+    ['میخواهم', 'می\u200cخواهم'],
+    ['می‌روم', 'می\u200cروم'],
+    ['میباشم', 'می\u200cباشم'],
+    ['میکنم', 'می\u200cکنم'],
+    ['بیادب', 'بی\u200cادب'],
+    ['ناامید', 'نا\u200cامید'],
+    ['کتابهایشان', 'کتاب\u200cهایشان'],
+    ['بزرگتر', 'بزرگ\u200cتر'],
+    ['نمیخواهم', 'نمی\u200cخواهم'],
+  ]) assert.equal(FA.normalize(raw), expected);
+});
+
+test('halfspace normalizes spaced progressive prefixes without touching unrelated text', () => {
+  assert.equal(FA.normalize('می روم و نمی کنم'), 'می\u200cروم و نمی\u200cکنم');
+  assert.equal(FA.normalize('میز و میدان و میهن'), 'میز و میدان و میهن');
+});
+
+test('halfspace joins the Persian privative and negative prefixes', () => {
+  assert.equal(FA.normalize('بی ادب و نا امید'), 'بی\u200cادب و نا\u200cامید');
+});
+
+test('halfspace joins comparative and superlative suffixes', () => {
+  assert.equal(FA.normalize('بزرگ تر و بزرگ ترین'), 'بزرگ\u200cتر و بزرگ\u200cترین');
+});
+
+test('halfspace joins plural suffixes and their possessive forms', () => {
+  assert.equal(FA.normalize('خانه ها و کتاب هایم'), 'خانه‌ها و کتاب‌هایم');
+});
+
+test('halfspace is idempotent and preserves punctuation', () => {
+  const once = FA.normalize('می روم، خانه ها!');
+  assert.equal(FA.normalize(once), once);
+  assert.equal(once, 'می\u200cروم، خانه‌ها!');
+});
+
+test('halfspace handles nullish and numeric input without throwing', () => {
+  assert.equal(global.halfSpace(null), '');
+  assert.equal(global.halfSpace(123), '123');
+});
+
+test('entity extractor returns all five supported entity types', () => {
+  const entities = DaryaEntityExtractor.extract(
+    'I feel sad about my mother at home today while studying with my apartment nearby',
+    EN,
+    { emotionalWeight: true }
+  );
+  assert.deepEqual(new Set(entities.map((entity) => entity.type)), new Set(['person', 'place', 'time', 'activity', 'object']));
+});
+
+test('entity extractor gates neutral turns out of remembered candidates', () => {
+  const entities = DaryaEntityExtractor.extract('my mother is at home today', EN, { emotionalWeight: false });
+  assert.deepEqual(entities, []);
+});
+
+test('entity extractor accepts positively weighted turns', () => {
+  const entities = DaryaEntityExtractor.extract('I feel happy about my sister at home', EN, { emotionalWeight: true });
+  assert.ok(entities.some((entity) => entity.type === 'person' && /sister/i.test(entity.surface)));
+});
+
+test('entity extractor recognizes Persian vocabulary on an emotional turn', () => {
+  const entities = DaryaEntityExtractor.extract('درباره مادرم خیلی ناراحتم و امروز در خانه هستم', FA, { emotionalWeight: true });
+  assert.ok(entities.some((entity) => entity.type === 'person' && /مادر/.test(entity.surface)));
+  assert.ok(entities.some((entity) => entity.type === 'place' && /خانه/.test(entity.surface)));
+});
+
+test('English possessive extraction stores X rather than the pronoun my', () => {
+  const entities = DaryaEntityExtractor.extract('I feel sad about my old apartment', EN, { emotionalWeight: true });
+  assert.ok(entities.some((entity) => entity.type === 'object' && entity.surface === 'old apartment'));
+  assert.ok(!entities.some((entity) => entity.surface === 'my'));
+});
+
+test('entity extraction excludes pronouns and filler words', () => {
+  const entities = DaryaEntityExtractor.extract('I feel sad that you are with me', EN, { emotionalWeight: true });
+  assert.ok(!entities.some((entity) => /^(?:I|you|me|my|the)$/i.test(entity.surface)));
+});
+
+test('named entity keys are keyed by type and normalized surface', () => {
+  assert.equal(DaryaEntityExtractor.entityKey('person', ' Mother '), 'person:mother');
+  const engine = freshEngine(EN);
+  engine.memory.rememberEntities([{ type: 'person', surface: 'Mother', confidence: 0.9 }]);
+  assert.ok(engine.memory.namedEntities.has('person:mother'));
+});
+
+test('first mention guard prevents an earlier callback on the same turn', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    const reply = engine.respond('I feel sad about my mother');
+    assert.doesNotMatch(reply, /earlier|remember|mentioned/i);
+  } finally { Math.random = oldRandom; }
+});
+
+test('a previously remembered entity can produce a callback', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    engine.respond('I feel sad about my mother');
+    const reply = engine.respond('just thinking about things today');
+    assert.match(reply, /mother/i);
+  } finally { Math.random = oldRandom; }
+});
+
+test('entity callback threshold filters decayed memories', () => {
+  const engine = freshEngine(EN);
+  engine.memory.namedEntities.set('object:book', {
+    type: 'object', surface: 'book', activation: 0.59, confidence: 0.9,
+    mentions: 1, firstMentionTurn: 1, lastMentionTurn: 1, age: 1,
+  });
+  assert.equal(engine._respondToEntityReference(), null);
+});
+
+test('entity activation decays by the declared per-turn rate', () => {
+  const engine = freshEngine(EN);
+  engine.memory.rememberEntities([{ type: 'object', surface: 'book', confidence: 1 }]);
+  engine.memory.decayNamedEntities();
+  assert.ok(Math.abs(engine.memory.namedEntities.get('object:book').activation - 0.82) < Number.EPSILON);
+  assert.equal(DaryaEngine.ENTITY_DECAY_PER_TURN, 0.18);
+});
+
+test('very weak entities are removed after enough decay', () => {
+  const engine = freshEngine(EN);
+  engine.memory.namedEntities.set('object:book', {
+    type: 'object', surface: 'book', activation: 0.049, confidence: 0.9,
+    mentions: 1, firstMentionTurn: 1, lastMentionTurn: 1, age: 1,
+  });
+  engine.memory.decayNamedEntities();
+  assert.equal(engine.memory.namedEntities.has('object:book'), false);
+});
+
+test('repeating an entity refreshes its activation and mention count', () => {
+  const engine = freshEngine(EN);
+  engine.memory.rememberEntities([{ type: 'place', surface: 'home', confidence: 0.9 }]);
+  engine.memory.decayNamedEntities();
+  engine.memory.rememberEntities([{ type: 'place', surface: 'home', confidence: 0.9 }]);
+  const value = engine.memory.namedEntities.get('place:home');
+  assert.equal(value.mentions, 2);
+  assert.ok(value.activation > 0.82);
+});
+
+test('entity callback probability is the specified 55 percent', () => {
+  assert.equal(DaryaEngine.ENTITY_CALLBACK_PROBABILITY, 0.55);
+});
+
+test('entity callbacks use the correct typed language template', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(FA);
+    engine.memory.turnCount = 2;
+    engine.memory.namedEntities.set('place:خانه', {
+      type: 'place', surface: 'خانه', activation: 0.9, confidence: 0.9,
+      mentions: 1, firstMentionTurn: 1, lastMentionTurn: 1, age: 1,
+    });
+    assert.match(engine._respondToEntityReference(), /خانه/);
+  } finally { Math.random = oldRandom; }
+});
+
+test('both language packs provide matching entity vocabulary layers', () => {
+  for (const field of ['familyTerms', 'professionTerms', 'placeWords', 'entityCallbackTemplates']) {
+    assert.ok(Array.isArray(FA[field]) || typeof FA[field] === 'object');
+    assert.ok(Array.isArray(EN[field]) || typeof EN[field] === 'object');
+  }
+});
+
+test('menu export labels contain no parentheses in either language', () => {
+  for (const lang of [FA, EN]) {
+    assert.doesNotMatch(lang.ui.menuExportMd, /[()]/);
+    assert.doesNotMatch(lang.ui.menuExportTxt, /[()]/);
+  }
+});
+
+test('Persian Markdown label uses the requested ZWNJ transliteration', () => {
+  assert.equal(FA.ui.menuExportMd, 'دانلود گفتگو — مارک\u200cداون');
+});
+
+test('new title keys are present symmetrically in both UI packs', () => {
+  for (const key of ['pickerFaTitle', 'pickerEnTitle', 'themeOceanTitle', 'themeBeachTitle', 'sendButtonTitle', 'menuTriggerTitle', 'newChatTitle', 'exportMdTitle', 'exportTxtTitle', 'themeToggleTitle']) {
+    assert.equal(typeof FA.ui[key], 'string');
+    assert.equal(typeof EN.ui[key], 'string');
+  }
+});
+
+test('ARIA labels describe the action rather than using generic nouns', () => {
+  assert.match(FA.ui.ariaSendLabel, /ارسال.*دریا/);
+  assert.match(FA.ui.ariaMenuLabel, /منو/);
+  assert.match(EN.ui.ariaSendLabel, /message.*Darya/i);
+  assert.match(EN.ui.ariaMenuLabel, /conversation.*menu/i);
+});
+
+test('static HTML has descriptive titles on picker, theme, menu, and send controls', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  for (const marker of ['id="picker-fa"', 'id="picker-en"', 'data-theme-choice="ocean"', 'data-theme-choice="beach"', 'id="menu-trigger"', 'id="composer-send"']) {
+    const line = html.split('\n').find((item) => item.includes(marker));
+    assert.ok(line && /title="[^"]+"/.test(line), `missing title on ${marker}`);
+  }
+});
+
+test('app language application assigns titles to dynamic controls', () => {
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  assert.match(app, /sendButtonEl\.setAttribute\('title'/);
+  assert.match(app, /menuTriggerEl\.setAttribute\('title'/);
+  assert.match(app, /pickerFaEl\.setAttribute\('title'/);
+  assert.match(app, /themeToggleButtons\.forEach/);
+});
+
+test('theme menu updates the title on both its button and label', () => {
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  assert.match(app, /menuThemeToggleEl\.setAttribute\('title', themeTitle\)/);
+  assert.match(app, /menuThemeLabelEl\.setAttribute\('title', themeTitle\)/);
+});
+
+test('release metadata omits a build identifier', () => {
+  const packageJson = JSON.parse(require('node:fs').readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  assert.equal(Object.hasOwn(packageJson, ['ver', 'sion'].join('')), false);
+});
+
+test('identity replies avoid unsupported professional or model claims', () => {
+  const source = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'languages', 'en.js'), 'utf8').toLowerCase();
+  const professional = ['therap', 'ist'].join('');
+  const model = ['language', ' model'].join('');
+  assert.doesNotMatch(source, new RegExp(`i['’]?m darya[^\n]*(${professional}|${model})`, 'i'));
+});
+
+test('strategy-shift fallback lines keep the conversation open', () => {
+  const closers = /glad i could help|happy to help|خوشحالم که کمک کردم|گفتگو پایان|خداحافظ|goodbye/i;
+  for (const line of [...FA.strategyShiftFallbacks, ...EN.strategyShiftFallbacks]) assert.doesNotMatch(line, closers);
+});
+
+test('each language exposes three explicit greeting pools', () => {
+  for (const lang of [FA, EN]) {
+    assert.ok(lang.greetingsOpen.length > 0);
+    assert.ok(lang.greetingsInviting.length > 0);
+    assert.ok(lang.greetingsReturning.length > 0);
+  }
+});
+
+test('opening uses the inviting pool when the policy random is below one half', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0.1;
+  try {
+    const engine = freshEngine(EN);
+    assert.ok(EN.greetingsInviting.includes(engine._openingForNewConversation()));
+  } finally { Math.random = oldRandom; }
+});
+
+test('opening uses the open pool when the policy random is at or above one half', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0.9;
+  try {
+    const engine = freshEngine(EN);
+    assert.ok(EN.greetingsOpen.includes(engine._openingForNewConversation()));
+  } finally { Math.random = oldRandom; }
+});
+
+test('default greetings do not ask how are you', () => {
+  for (const line of [...FA.greetings, ...EN.greetings]) assert.doesNotMatch(line, /how are you|حال شما چطور/i);
+});
+
+test('every default opening invites the person to share something', () => {
+  for (const line of [...FA.greetings, ...EN.greetings]) assert.match(line, /\?|؟|tell|share|بگویید|گفتن|شروع|ذهن|احساس/iu);
+});
+
+test('question budget constants match the requested policy', () => {
+  assert.equal(DaryaEngine.CONSECUTIVE_QUESTION_LIMIT, 1);
+  assert.equal(DaryaEngine.QUESTION_BUDGET_WINDOW, 3);
+  assert.equal(DaryaEngine.QUESTION_BUDGET_LIMIT, 1);
+});
+
+test('question filter removes questions after one consecutive question', () => {
+  const engine = freshEngine(EN);
+  engine.memory.consecutiveQuestions = 1;
+  const pool = ['What is happening?', 'This is a listening space.'];
+  assert.deepEqual(engine._filterForQuestionBudget(pool), ['This is a listening space.']);
+});
+
+test('question note tracks the rolling question window', () => {
+  const engine = freshEngine(EN);
+  engine.memory.turnCount = 1;
+  engine._noteAskedQuestion('What happened?');
+  assert.deepEqual(engine.memory.askedQuestionTurns, [1]);
+  assert.equal(engine.memory.consecutiveQuestions, 1);
+});
+
+test('alternative availability detects a non-question option', () => {
+  const engine = freshEngine(EN);
+  assert.equal(engine._alternativeAvailable(['Why?', 'I am listening.']), true);
+  assert.equal(engine._alternativeAvailable(['Why?', 'What happened?']), false);
+});
+
+test('alternativeFor returns a non-question fallback', () => {
+  const engine = freshEngine(EN);
+  assert.doesNotMatch(engine._alternativeFor('What happened?'), /\?/);
+});
+
+test('question fallback still acknowledges a direct question', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('do you remember anything?');
+  assert.match(reply, /question|sitting with|take on it/i);
+});
+
+test('question budget prevents two immediate question responses', () => {
+  const engine = freshEngine(EN);
+  engine.memory.turnCount = 1;
+  const first = engine._pickVaried(['What is this?', 'I am listening.']);
+  engine.memory.turnCount = 2;
+  const second = engine._pickVaried(['What is this?', 'I am listening.']);
+  assert.equal(/\?/.test(first) && /\?/.test(second), false);
+});
+
+test('beach scene covers the viewport with a fixed inset layer', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /\.beach-scene\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;/);
+  assert.match(css, /linear-gradient\(to bottom,[\s\S]*#8fc8df[\s\S]*#d6b778/);
+});
+
+test('beach waves have six empty HTML layers and repeat-x masked tiles', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.equal((html.match(/class="beach-scene__wave/g) || []).length, 6);
+  assert.match(css, /background-repeat:\s*repeat-x/);
+  assert.match(css, /background-size:\s*1200px/);
+  assert.match(css, /mask-image:\s*linear-gradient\(to right, transparent 0%/);
+});
+
+test('sun is CSS-only and has a breathing animation', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(html, /beach-scene__sun-halo/);
+  assert.match(html, /beach-scene__sun-core/);
+  assert.match(css, /animation:\s*sun-breathe/);
+  assert.match(css, /@keyframes sun-breathe/);
+  assert.match(css, /radial-gradient\(circle/);
+});
+
+test('beach readability scrim is the narrow 110px treatment', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /\.backdrop__scrim\s*\{[\s\S]*?height:\s*110px;/);
+  assert.doesNotMatch(css, /24vh/);
+});
+
+test('service worker caches the new scripts and uses darya-v3', () => {
+  const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  assert.match(sw, /CACHE_VERSION\s*=\s*'darya-v3'/);
+  assert.match(sw, /languages\/halfspace\.js/);
+  assert.match(sw, /languages\/entity-extractor\.js/);
+});
+
+test('Be Vietnam Pro files and OFL license are present', () => {
+  const fs = require('node:fs');
+  for (const file of ['Regular', 'Medium', 'SemiBold', 'Bold', 'Italic']) assert.ok(fs.existsSync(path.join(__dirname, '..', `fonts/BeVietnamPro-${file}.woff2`)));
+  assert.ok(fs.existsSync(path.join(__dirname, '..', 'fonts/licenses/OFL-BeVietnamPro.txt')));
+});
+
+test('halfspace and entity scripts are wired before the language packs', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.ok(html.indexOf('languages/halfspace.js') < html.indexOf('languages/fa.js'));
+  assert.ok(html.indexOf('languages/entity-extractor.js') < html.indexOf('languages/fa.js'));
+});
+
+test('export labels stay descriptive after removing the parenthesized forms', () => {
+  assert.match(FA.ui.menuExportMd, /دانلود گفتگو/);
+  assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
+  assert.match(EN.ui.menuExportMd, /Markdown/);
+  assert.match(EN.ui.menuExportTxt, /plain text/);
+});
+
+
+test('bright-sky color variables provide dedicated readable ink colors', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  for (const variable of ['--color-on-sky', '--color-on-sky-dim', '--color-on-sky-accent', '--color-on-sky-link']) assert.match(css, new RegExp(variable));
+});
+
+test('theme-color metadata distinguishes light and dark color schemes', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /theme-color.*prefers-color-scheme: dark/);
+  assert.match(html, /theme-color.*prefers-color-scheme: light/);
+});
+
+test('wave markup contains no inline SVG wave elements and the sun has two div children', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /<svg[^>]*beach-scene__wave/);
+  assert.match(html, /beach-scene__sun[\s\S]*beach-scene__sun-halo[\s\S]*beach-scene__sun-core/);
+});
+
+test('the stale Nunito-VRF asset and license are absent', () => {
+  const fs = require('node:fs');
+  assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/Nunito-VRF.woff2')), false);
+  assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/licenses/OFL-Nunito-VRF.txt')), false);
+});
+
+test('service worker precaches every Be Vietnam Pro weight and style', () => {
+  const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+  for (const name of ['Regular', 'Medium', 'SemiBold', 'Bold', 'Italic']) assert.match(sw, new RegExp(`BeVietnamPro-${name}\\.woff2`));
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

@@ -102,6 +102,16 @@
     'خود', 'درمان', 'توان', 'بود', 'شد', 'کرد', 'خوان', 'بین', 'ساخت',
   ]);
 
+  const COMPARATIVE_BASES = new Set([
+    'بزرگ', 'کوچک', 'کم', 'خوب', 'بد', 'سریع', 'آسان', 'سخت', 'زیاد', 'بیش',
+    'زود', 'دیر', 'بهتر', 'بدتر', 'قوی', 'ضعیف', 'روشن', 'تاریک', 'زیبا',
+    'عمیق', 'بلند', 'کوتاه', 'گرم', 'سرد', 'نزدیک', 'دور', 'مهم', 'ساده',
+  ]);
+
+  const NON_PLURAL_HA_WORDS = new Set([
+    'رها', 'بها', 'نها', 'تها', 'گاها', 'کجاها', 'چراها',
+  ]);
+
   // Common pairs copied from the upstream halfSpace helper.  They are kept
   // as data rather than a single enormous regular expression so each rule
   // remains inspectable and the browser performs no surprising backtracking.
@@ -140,7 +150,13 @@
   }
 
   function isWord(value) {
-    return Boolean(value) && !/^\s+$/u.test(value) && !PERSIAN_PUNCTUATION.test(value);
+    // Punctuation may be attached to a word (روم، / خانه!). It must not
+    // prevent the lexical part from participating in a join.
+    return Boolean(value) && !/^\s+$/u.test(value) && hasPersianLetter(value);
+  }
+
+  function hasPersianLetter(value) {
+    return [...value].some((character) => PERSIAN_LETTER.test(character) && PERSIAN_SCRIPT.test(character));
   }
 
   function isPersianWord(value) {
@@ -249,7 +265,8 @@
           || joinSuffix(current, next)
           || joinKnownCompound(current, next);
         if (replacement) {
-          output.push(preserveCasePunctuation(current, replacement));
+          const trailing = next.match(/[،؛؟!,.:\[\]{}()«»"']+$/u)?.[0] || '';
+          output.push(preserveCasePunctuation(current, replacement) + trailing);
           index += 3;
           continue;
         }
@@ -275,6 +292,27 @@
       if (JOINED_PROGRESSIVE_STEMS.includes(remainder)) {
         return preserveCasePunctuation(word, `${prefix}${ZWNJ}${remainder}`);
       }
+    }
+
+    // Joined spellings are common in fast typing too: بیادب, ناامید,
+    // کتابها, کتابهایشان, and بزرگتر. Only lexicalized prefix forms and
+    // plausible suffix bases are rewritten; this keeps رها and بها intact.
+    for (const [prefix, vocabulary] of [['بی', PRIVATIVE_WORDS], ['نا', NEGATIVE_PREFIX_WORDS]]) {
+      if (punctuationFree.startsWith(prefix) && vocabulary.has(punctuationFree.slice(prefix.length))) {
+        return preserveCasePunctuation(word, `${prefix}${ZWNJ}${punctuationFree.slice(prefix.length)}`);
+      }
+    }
+
+    const pluralMatch = punctuationFree.match(/^(.+?)(های|ها)(مان|تان|شان|یم|یت|یش|م|ت|ش)?$/u);
+    if (pluralMatch && pluralMatch[1].length > 2 && !NON_PLURAL_HA_WORDS.has(punctuationFree)) {
+      const base = pluralMatch[1].replace(new RegExp(ZWNJ, 'gu'), '');
+      return preserveCasePunctuation(word, `${base}${ZWNJ}${pluralMatch[2]}${pluralMatch[3] || ''}`);
+    }
+
+    const comparativeMatch = punctuationFree.match(/^(.+?)(ترین|تر)$/u);
+    if (comparativeMatch && COMPARATIVE_BASES.has(comparativeMatch[1].replace(new RegExp(ZWNJ, 'gu'), ''))) {
+      const base = comparativeMatch[1].replace(new RegExp(ZWNJ, 'gu'), '');
+      return preserveCasePunctuation(word, `${base}${ZWNJ}${comparativeMatch[2]}`);
     }
     return word;
   }

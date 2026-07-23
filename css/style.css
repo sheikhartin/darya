@@ -381,9 +381,9 @@ html[data-theme="beach"] .beach-scene {
      built from fixed font-sizes and padding, so its height is roughly
      constant in *pixels*, not in vh -- a pure vh value that works on one
      viewport height under-covers it on a shorter one. The 210px floor
-     covers that fixed zone with margin; the 24vh term scales the scrim
+     covers that fixed zone with margin; the viewport term scales the scrim
      up further on taller screens. */
-  height: max(24vh, 210px);
+  height: 110px;
   background: linear-gradient(to bottom, transparent 0%, rgba(15, 15, 10, 0.8) 8%, rgba(15, 15, 10, 0.8) 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -1219,7 +1219,7 @@ html[data-theme="beach"] .beach-scene {
 }
 
 /* The bottom controls need a narrow readability scrim only. The old broad
-   24vh treatment made the sunny half of the scene look permanently dim. */
+   broad treatment made the sunny half of the scene look permanently dim. */
 .backdrop__scrim {
   position: absolute;
   left: 0;

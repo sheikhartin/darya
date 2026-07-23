@@ -36,7 +36,7 @@
  *     grammatical, whereas Persian carries person/number in the verb
  *     ending itself, where a naive word-swap would often break.
  *
- * None of this is a real language model: it is a considerably richer,
+ * None of this is genuine language understanding: it is a considerably richer,
  * carefully engineered rule-based/expert-system approach (in the lineage
  * of ELIZA and Rogerian-style companions), not a claim of genuine
  * language understanding.

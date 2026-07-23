@@ -178,6 +178,55 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 # ============================================================================
+section "Feature regression markers"
+# ============================================================================
+
+# Half-space normalization must load before the Persian language pack.
+if grep -q 'js/languages/halfspace.js' index.html && grep -q 'DaryaHalfspace' js/languages/halfspace.js; then
+  ok "halfspace wired before the Persian language pack"
+else
+  fail "halfspace normalizer is not wired correctly"
+fi
+
+# Beach markup is intentionally structural: one fixed scene, six empty wave
+# layers, and CSS-only sun children instead of inline wave artwork.
+if grep -q 'class="beach-scene"' index.html && [[ "$(grep -o 'class="beach-scene__wave' index.html | wc -l)" -eq 6 ]] && grep -q 'beach-scene__sun-halo' index.html; then
+  ok "beach scene structure has six wave layers and a CSS sun"
+else
+  fail "beach scene structure is incomplete"
+fi
+
+if grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'mask-image: linear-gradient(to right, transparent 0%' css/style.css && grep -q 'background-position-x' css/style.css; then
+  ok "wave layers use in-place repeat-x tiles with an edge mask"
+else
+  fail "wave tile repeat-x/mask regression marker missing"
+fi
+
+if grep -q 'animation: sun-breathe' css/style.css && grep -q '@keyframes sun-breathe' css/style.css; then
+  ok "sun breathing animation is present"
+else
+  fail "sun breathing animation is missing"
+fi
+
+if grep -q 'height: 110px' css/style.css && ! grep -q '24vh' css/style.css; then
+  ok "beach scrim remains narrow at 110px"
+else
+  fail "broad 24vh beach scrim has regressed"
+fi
+
+if grep -q 'menuExportMd:.*دانلود گفتگو.*مارک‌داون' js/languages/fa.js && ! grep -q 'دانلود گفتگو (' js/languages/fa.js; then
+  ok "Persian export label uses Markdown transliteration without parentheses"
+else
+  fail "Persian export label is missing the no-parentheses form"
+fi
+
+if ! grep -q 'دانلود گفتگو (Markdown)' index.html js/languages/fa.js js/languages/en.js 2>/dev/null; then
+  ok "old parenthesized Markdown export form is gone"
+else
+  fail "old parenthesized Markdown export form remains"
+fi
+
+# ============================================================================
 section "Live server checks"
 # ============================================================================
 
