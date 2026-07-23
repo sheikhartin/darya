@@ -345,6 +345,26 @@
       }
     }
 
+    correctEntity(oldSurface, replacement, context = {}) {
+      const oldKey = String(oldSurface).trim().toLocaleLowerCase();
+      for (const [key, entity] of this.namedEntities) {
+        if (entity.surface.toLocaleLowerCase() === oldKey
+          || oldKey.endsWith(entity.surface.toLocaleLowerCase())
+          || key.endsWith(`:${oldKey}`)) {
+          entity.corrected = true;
+          entity.correctionTurn = this.turnCount;
+          this.namedEntities.delete(key);
+        }
+      }
+      if (replacement?.surface && replacement?.type) {
+        this.rememberEntities([{
+          type: replacement.type,
+          surface: replacement.surface,
+          confidence: Math.max(0.9, replacement.confidence || 0.9),
+        }], this.turnCount, context);
+      }
+    }
+
     /**
      * Returns remembered entities strong enough for a callback. A threshold
      * is applied by the engine, not by extraction, so tests and future UI
@@ -471,6 +491,18 @@
         })
         : [];
       this._turnEntities = entities;
+      const correction = this.detectEntityCorrection(matchingText);
+      if (correction) {
+        const oldEntity = [...this.memory.namedEntities.values()]
+          .find((entity) => correction.oldSurface.toLocaleLowerCase().includes(entity.surface.toLocaleLowerCase()));
+        if (oldEntity) {
+          this.memory.correctEntity(correction.oldSurface, {
+            type: oldEntity.type,
+            surface: correction.newSurface,
+            confidence: 0.96,
+          }, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
+        }
+      }
 
       const matches = this._matchRules(matchingText);
       const matchedRule = matches[0]?.rule || null;
@@ -529,6 +561,17 @@
 
       this.memory.rememberBotMessage(reply);
       return reply;
+    }
+
+    detectEntityCorrection(normalizedText) {
+      const match = this.lang.code === 'fa'
+        ? normalizedText.match(/(?:منظورم|منظورم اینه)\s+(.+?)\s+(?:بود،|بود|نه)\s+(.+?)(?:[.!؟]|$)/iu)
+        : normalizedText.match(/\bI meant\s+(.+?)\s+(?:not|rather than)\s+(.+?)(?:[.!?]|$)/iu);
+      if (!match) return null;
+      return {
+        newSurface: match[1].trim().replace(/^[,،\s]+|[,،\s]+$/gu, ''),
+        oldSurface: match[2].trim().replace(/^[,،\s]+|[,،\s]+$/gu, ''),
+      };
     }
 
     /**
@@ -924,6 +967,15 @@
       return this.lang.genericFallbacks[0] || '';
     }
 
+    scoreResponseCandidate(candidate) {
+      let score = 1;
+      if (this.memory.recentBotMessages.includes(candidate)) score -= 0.9;
+      if (this._isQuestionResponse(candidate)) score -= this.memory.consecutiveQuestions * 0.25;
+      if (candidate.length > 220) score -= 0.08;
+      if (/^(?:I see|Okay|Understood|متوجه شدم|باشه)[.!،؟]?$/iu.test(candidate)) score -= 0.12;
+      return score;
+    }
+
     _pickVaried(pool, options = {}) {
       const original = Array.isArray(pool) ? pool : [];
       if (original.length === 0) return '';
@@ -946,7 +998,10 @@
       }
       if (candidates.length === 0) candidates = budgeted;
 
-      const picked = candidates[Math.floor(Math.random() * candidates.length)];
+      const ranked = candidates.map((candidate) => ({ candidate, score: this.scoreResponseCandidate(candidate) }));
+      const bestScore = Math.max(...ranked.map((item) => item.score));
+      const best = ranked.filter((item) => item.score >= bestScore - 0.12).map((item) => item.candidate);
+      const picked = best[Math.floor(Math.random() * best.length)];
       if (options.trackQuestions !== false) this._noteAskedQuestion(picked);
       return picked;
     }

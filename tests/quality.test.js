@@ -32,6 +32,25 @@ function fresh(lang) {
   return new DaryaResponseEngine(lang);
 }
 
+test('entity correction removes the old referent and promotes the corrected one', () => {
+  const engine = fresh(EN);
+  engine.memory.turnCount = 1;
+  engine.memory.rememberEntities([{ type: 'person', surface: 'mother', confidence: 0.9 }], 1, { topics: ['family'] });
+  const correction = engine.detectEntityCorrection('I meant my manager, not my mother');
+  assert.deepEqual(correction, { newSurface: 'my manager', oldSurface: 'my mother' });
+  engine.memory.correctEntity(correction.oldSurface, { type: 'person', surface: correction.newSurface, confidence: 0.96 }, { topics: ['work'] });
+  assert.equal(engine.memory.namedEntities.has('person:mother'), false);
+  assert.ok(engine.memory.namedEntities.has('person:my manager'));
+});
+
+test('response candidate ranking penalizes recent filler and repeated questions', () => {
+  const engine = fresh(EN);
+  engine.memory.recentBotMessages.push('The repeated line.');
+  engine.memory.consecutiveQuestions = 1;
+  assert.ok(engine.scoreResponseCandidate('A fresh reflective sentence.') > engine.scoreResponseCandidate('The repeated line.'));
+  assert.ok(engine.scoreResponseCandidate('What now?') < engine.scoreResponseCandidate('A fresh reflective sentence.'));
+});
+
 test('reference resolution follows a recent subject when the user says it happened again', () => {
   const engine = fresh(EN);
   engine.respond('My job has been stressful');
