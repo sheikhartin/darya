@@ -267,6 +267,24 @@ else
   fail "beach wave fallback for older mask engines is missing"
 fi
 
+if grep -q 'backdrop__depth-breath' index.html css/style.css && grep -q '@keyframes depth-breathe' css/style.css && grep -q 'prefers-reduced-motion: reduce' css/style.css; then
+  ok "ocean depth breath is present and reduced-motion safe"
+else
+  fail "ocean depth breath regression detected"
+fi
+
+if grep -q 'const count = 8' js/app.js && grep -q 'randomBetween(14, 22)' js/app.js && grep -q 'randomBetween(-12, 12)' js/app.js; then
+  ok "ocean bubble parameters are randomized in the calm range"
+else
+  fail "ocean bubble randomization regression detected"
+fi
+
+if grep -A4 '@keyframes horizon-drift' css/style.css | grep -q 'translateX' && ! grep -A4 '@keyframes horizon-drift' css/style.css | grep -q 'translateY'; then
+  ok "ocean horizon drift has no vertical bob"
+else
+  fail "ocean horizon vertical bob regression detected"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================

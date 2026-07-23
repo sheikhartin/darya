@@ -602,6 +602,32 @@ test('question budget prevents two immediate question responses', () => {
   assert.equal(/\?/.test(first) && /\?/.test(second), false);
 });
 
+test('ocean bubbles keep a small randomized calm-water profile', () => {
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  assert.match(app, /const count = 8/);
+  assert.match(app, /randomBetween\(4, 14\)/);
+  assert.match(app, /randomBetween\(14, 22\)/);
+  assert.match(app, /randomBetween\(-12, 12\)/);
+  assert.match(app, /randomBetween\(0\.15, 0\.45\)/);
+});
+
+test('ocean has a reduced-motion-safe depth breath and no vertical horizon drift', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /backdrop__depth-breath/);
+  assert.match(css, /@keyframes depth-breathe/);
+  assert.match(css, /backdrop__depth-breath[\s\S]*radial-gradient/);
+  assert.match(css, /@keyframes horizon-drift[\s\S]*translateX/);
+  assert.doesNotMatch(css.match(/@keyframes horizon-drift[\s\S]*?\}/)?.[0] || '', /translateY/);
+  assert.match(css, /prefers-reduced-motion: reduce[\s\S]*depth-breath/);
+});
+
+test('ocean keeps beach-only layers out of its visible state', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /html\[data-theme=\"beach\"\] \.bubbles[\s\S]*display: none/);
+  assert.match(css, /\.wind-gusts[\s\S]*display: none/);
+  assert.match(css, /\.beach-scene[\s\S]*visibility: hidden/);
+});
+
 test('beach scene covers the viewport with a fixed inset layer', () => {
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
   assert.match(css, /\.beach-scene\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;/);
@@ -647,10 +673,10 @@ test('beach readability scrim is the narrow 110px treatment', () => {
   assert.doesNotMatch(css, /24vh/);
 });
 
-test('service worker caches the new scripts and uses darya-v3', () => {
+test('service worker caches the new scripts and uses darya-v4', () => {
   const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const cacheConstant = ['CACHE', '_', 'VER', 'SION'].join('');
-  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v3'`));
+  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v4'`));
   assert.match(sw, /languages\/halfspace\.js/);
   assert.match(sw, /languages\/entity-extractor\.js/);
 });

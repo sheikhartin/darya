@@ -630,20 +630,20 @@
   function initBubbles() {
     const container = document.querySelector('.bubbles');
     if (!container) return;
-    const count = 10;
+    const count = 8;
     for (let i = 0; i < count; i += 1) {
       const bubble = document.createElement('span');
       bubble.className = 'bubble-particle';
-      const size = randomBetween(4, 19);
-      const duration = randomBetween(11, 26);
+      const size = randomBetween(4, 14);
+      const duration = randomBetween(14, 22);
       bubble.style.setProperty('--left', `${randomBetween(2, 96).toFixed(1)}%`);
       bubble.style.setProperty('--size', `${size.toFixed(1)}px`);
       bubble.style.setProperty('--duration', `${duration.toFixed(1)}s`);
       // A negative delay starts the animation already partway through its
       // cycle, so bubbles don't all begin rising from the bottom at once.
       bubble.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      bubble.style.setProperty('--drift', `${randomBetween(-24, 24).toFixed(0)}px`);
-      bubble.style.setProperty('--peak-opacity', randomBetween(0.22, 0.55).toFixed(2));
+      bubble.style.setProperty('--drift', `${randomBetween(-12, 12).toFixed(0)}px`);
+      bubble.style.setProperty('--peak-opacity', randomBetween(0.15, 0.45).toFixed(2));
       container.appendChild(bubble);
     }
   }
