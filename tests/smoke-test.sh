@@ -52,6 +52,7 @@ required_files=(
   "css/style.css"
   "js/app.js"
   "js/darya-engine.js"
+  "js/languages/halfspace.js"
   "js/languages/fa.js"
   "js/languages/en.js"
   "favicon.ico"
@@ -59,7 +60,7 @@ required_files=(
   "manifest.json"
   "sw.js"
   "fonts/Vazirmatn-Regular.woff2"
-  "fonts/Nunito-VF.woff2"
+  "fonts/BeVietnamPro-Regular.woff2"
   "fonts/Quicksand-VF.woff2"
   "fonts/Lalezar-Regular.woff2"
   "assets/icons/icon-192.png"
@@ -130,6 +131,16 @@ else
   fail "fa.js does not appear to use \\p{L} boundary checks -- word-boundary bug may have regressed"
 fi
 
+# Half-space (ZWNJ) is delegated to the vendored halfspace module.
+# Verify both that the module exists and that fa.js wires it in
+# (rather than re-implementing the rules inline). Inline
+# re-implementations are how this ZWNJ bug kept coming back before.
+if [[ -f js/languages/halfspace.js ]] && grep -q 'HALF_SPACE_API' js/languages/fa.js; then
+  ok "fa.js delegates ZWNJ normalization to the vendored halfspace module"
+else
+  fail "fa.js does not appear to use the halfspace module -- ZWNJ handling may have regressed to inline rules"
+fi
+
 # The menu popover overflow bug: it must grow toward the center
 # (inset-inline-end), not toward whichever edge the trigger sits near.
 if grep -A3 '\.menu__popover {' css/style.css | grep -q 'inset-inline-end'; then
@@ -138,11 +149,36 @@ else
   fail "menu popover anchoring changed -- verify it doesn't overflow the viewport again"
 fi
 
-# The ugly white foam overlay that was removed from the beach scene.
-if grep -q 'beach-scene__foam' index.html css/style.css 2>/dev/null; then
-  fail "beach-scene__foam references still present -- this was removed intentionally"
+# The earlier "ugly white foam overlay" that was removed: it was a
+# single white rectangle covering the whole shoreline area, which
+# looked fake. The new design uses a thin scalloped line right at
+# the water's edge (still named .beach-scene__foam), so its presence
+# is expected. The check below just confirms the new wave layers and
+# the foam line coexist sensibly.
+if grep -q 'beach-scene__foam' index.html && grep -q 'beach-scene__foam' css/style.css && grep -q 'beach-scene__ocean' css/style.css; then
+  ok "beach scene has both the foam line and the layered ocean waves"
 else
-  ok "beach-scene foam overlay stays removed"
+  fail "beach scene structure changed unexpectedly -- verify foam line and ocean layers"
+fi
+
+# The sun is part of the redesigned beach scene. The smoke check just
+# confirms the SVG element is present and the soft glow is animated
+# (so the sun has the "breathing" / glow feel rather than being a
+# flat static circle).
+if grep -q 'beach-scene__sun' index.html && grep -q 'sun-breathe' css/style.css; then
+  ok "beach scene has a sun with a breathing animation"
+else
+  fail "beach scene sun missing or no glow animation"
+fi
+
+# The old "tall dark scrim" that covered the bottom 24vh of the
+# screen has been replaced with a much narrower band (110px) plus
+# text-shadow halos on the elements that would otherwise land over
+# bright sand. The scrim-height should NOT be the old `24vh` value.
+if grep -q 'height: max(24vh' css/style.css; then
+  fail "the old tall dark scrim (24vh) is back -- this was specifically called out as bad"
+else
+  ok "beach scrim is the narrow new band, not the old 24vh tall scrim"
 fi
 
 # The beach-theme text contrast bug: several text elements (picker note,
@@ -208,13 +244,14 @@ else
     check_status "/css/style.css" "200"
     check_status "/js/app.js" "200"
     check_status "/js/darya-engine.js" "200"
+    check_status "/js/languages/halfspace.js" "200"
     check_status "/js/languages/fa.js" "200"
     check_status "/js/languages/en.js" "200"
     check_status "/favicon.ico" "200"
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"
     check_status "/fonts/Vazirmatn-Regular.woff2" "200"
-    check_status "/fonts/Nunito-VF.woff2" "200"
+    check_status "/fonts/BeVietnamPro-Regular.woff2" "200"
     check_status "/assets/icons/icon-192.png" "200"
     check_status "/assets/icons/icon-512.png" "200"
     check_status "/assets/favicon.svg" "200"
@@ -240,6 +277,22 @@ else
       fail "homepage contains a literal 'undefined' or '[object Object]' -- likely a templating bug"
     else
       ok "no obvious templating artifacts in homepage HTML"
+    fi
+
+    # The export menu items were rewritten to drop parentheses (the user
+    # explicitly preferred no parens, in either language, and "Markdown"
+    # was transliterated to "مارک‌داون" in Persian). Check that the new
+    # static labels made it into the rendered HTML and that the old
+    # parenthesized form didn't sneak back in.
+    if echo "$homepage" | grep -q 'menu-export-md-label">دانلود گفتگو مارک‌داون<'; then
+      ok "Persian Markdown export label uses the new no-parens form"
+    else
+      fail "Persian Markdown export label is missing the new no-parens form"
+    fi
+    if echo "$homepage" | grep -q 'menu-export-md-label">دانلود گفتگو (Markdown)'; then
+      fail "the old parenthesized Persian Markdown export label is back"
+    else
+      ok "old parenthesized Persian Markdown export label is gone"
     fi
   fi
 fi

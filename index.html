@@ -8,7 +8,7 @@
   <meta id="page-description" name="description" content="دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی.">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="alternate icon" href="assets/favicon.ico">
+  <link rel="alternate icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
 
@@ -21,11 +21,12 @@
   <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
-       English: Nunito (body, warm and rounded) + Quicksand (display wordmark only). -->
+       English: Be Vietnam Pro (body, very warm and humanist) + Quicksand
+       (display wordmark only). -->
   <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
        rules) for full offline capability -- no CDN dependency. -->
   <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/Nunito-VF.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -34,12 +35,12 @@
   <!-- Ambient backdrop. Ocean theme: soft light glows, a faint horizon
        silhouette, and randomly-placed rising bubbles (populated by
        app.js, so each one gets a genuinely random size/position/timing
-       rather than a repeating formula). Beach theme: a proper shoreline
-       scene (sea strip, scalloped foam edge, tall sand band, patchy wet
-       spots that fade in and out unevenly) plus drifting wind gusts
-       instead of bubbles, since floating bubbles read as underwater, not
-       beach. Both themes' elements live here; CSS shows only the active
-       theme's set. -->
+       rather than a repeating formula). Beach theme: a layered shoreline
+       scene (sky, sun, three parallax ocean layers, foam line, sand band,
+       and patchy wet-sand marks that fade in and out unevenly), plus
+       drifting wind gusts instead of bubbles, since floating bubbles
+       read as underwater, not beach. Both themes' elements live here;
+       CSS shows only the active theme's set. -->
   <div class="backdrop" aria-hidden="true">
     <div class="backdrop__glow backdrop__glow--one"></div>
     <div class="backdrop__glow backdrop__glow--two"></div>
@@ -49,11 +50,80 @@
     </svg>
 
     <div class="beach-scene">
-      <div class="beach-scene__sea"></div>
+      <!-- Sky band: a soft top-to-bottom gradient (warmer near the
+           horizon, cooler above) so the sand never feels like it floats
+           in nothing. -->
+      <div class="beach-scene__sky"></div>
+
+      <!-- Sun: SVG for crisp edges and easy color stops. Sits in the
+           upper-left of the scene with a soft glow halo. -->
+      <svg class="beach-scene__sun" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff3d6" stop-opacity="1"/>
+            <stop offset="55%" stop-color="#ffd58a" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#ffb968" stop-opacity="0.85"/>
+          </radialGradient>
+          <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffe2a3" stop-opacity="0.45"/>
+            <stop offset="60%" stop-color="#ffd58a" stop-opacity="0.08"/>
+            <stop offset="100%" stop-color="#ffd58a" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="48" fill="url(#sunGlow)"/>
+        <circle cx="50" cy="50" r="22" fill="url(#sunCore)"/>
+      </svg>
+
+      <!-- Three parallax ocean layers, each a wide SVG with a wavy path
+           that scrolls horizontally at its own speed. The two copies
+           inside each layer are stacked side by side so the wave loops
+           seamlessly (when the right copy has scrolled fully off, the
+           left copy has taken its place and the cycle restarts). -->
+      <div class="beach-scene__ocean beach-scene__ocean--far">
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,40 C150,10 350,70 600,40 C850,10 1050,70 1200,40 C1350,10 1550,70 1800,40 C2050,10 2250,70 2400,40 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,40 C150,10 350,70 600,40 C850,10 1050,70 1200,40 C1350,10 1550,70 1800,40 C2050,10 2250,70 2400,40 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="beach-scene__ocean beach-scene__ocean--mid">
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,50 C200,20 400,80 600,50 C800,20 1000,80 1200,50 C1400,20 1600,80 1800,50 C2000,20 2200,80 2400,50 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,50 C200,20 400,80 600,50 C800,20 1000,80 1200,50 C1400,20 1600,80 1800,50 C2000,20 2200,80 2400,50 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="beach-scene__ocean beach-scene__ocean--near">
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,60 C200,30 400,90 600,60 C800,30 1000,90 1200,60 C1400,30 1600,90 1800,60 C2000,30 2200,90 2400,60 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+        <svg class="beach-scene__wave" viewBox="0 0 2400 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0,60 C200,30 400,90 600,60 C800,30 1000,90 1200,60 C1400,30 1600,90 1800,60 C2000,30 2200,90 2400,60 L2400,100 L0,100 Z" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <!-- Foam line: a thin, scalloped bright band right at the water's
+           edge of the sand. It doesn't animate (a still line reads more
+           like foam than a moving one) but its color subtly pulses. -->
+      <svg class="beach-scene__foam" viewBox="0 0 2400 40" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,18 C100,4 200,32 300,18 C400,4 500,32 600,18 C700,4 800,32 900,18 C1000,4 1100,32 1200,18 C1300,4 1400,32 1500,18 C1600,4 1700,32 1800,18 C1900,4 2000,32 2100,18 C2200,4 2300,32 2400,18 L2400,40 L0,40 Z" fill="rgba(255,255,255,0.7)"/>
+      </svg>
+
+      <!-- Sand band: the lower portion of the scene. -->
       <div class="beach-scene__sand"></div>
       <div class="beach-scene__wet-patches"></div>
+
+      <!-- Soft sand reflections: a low-opacity white shimmer that
+           catches the "sun on wet sand" look without being literal. -->
+      <div class="beach-scene__shimmer"></div>
     </div>
 
+    <!-- A soft, low-opacity gradient just behind the composer so text
+         reads clearly over the brightest part of the sand. This is a
+         thin, narrow band (not the previous tall dark scrim) so the
+         beach itself still reads as bright and sunny. -->
     <div class="backdrop__scrim"></div>
 
     <div class="bubbles"></div>
@@ -113,7 +183,7 @@
       <span class="header__title" id="header-title">دریا</span>
 
       <div class="menu">
-        <button id="menu-trigger" class="menu__trigger" type="button" aria-haspopup="true" aria-expanded="false">
+        <button id="menu-trigger" class="menu__trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-popover">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <circle cx="5" cy="12" r="1.8" fill="currentColor"/>
             <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
@@ -131,13 +201,13 @@
             <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span id="menu-export-md-label">دانلود گفتگو (Markdown)</span>
+            <span id="menu-export-md-label">دانلود گفتگو مارک‌داون</span>
           </button>
           <button id="menu-export-txt" class="menu__item" type="button" role="menuitem">
             <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span id="menu-export-txt-label">دانلود گفتگو (متن ساده)</span>
+            <span id="menu-export-txt-label">دانلود گفتگو متن ساده</span>
           </button>
           <div class="menu__divider" role="separator"></div>
           <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem">
@@ -160,7 +230,7 @@
       </div>
     </div>
 
-    <p class="input-hint" id="input-hint" role="alert" hidden></p>
+    <p class="input-hint" id="input-hint" role="status" hidden></p>
 
     <form class="composer" id="composer" autocomplete="off">
       <textarea
@@ -168,6 +238,7 @@
         class="composer__input"
         rows="1"
         maxlength="4000"
+        aria-describedby="disclaimer-text"
       ></textarea>
       <button type="submit" id="composer-send" class="composer__send" disabled>
         <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
@@ -181,6 +252,7 @@
     </p>
   </div>
 
+  <script src="js/languages/halfspace.js"></script>
   <script src="js/languages/fa.js"></script>
   <script src="js/languages/en.js"></script>
   <script src="js/darya-engine.js"></script>

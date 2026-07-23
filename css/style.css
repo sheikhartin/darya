@@ -16,8 +16,14 @@
 
 /* --------------------------------------------------------------------- */
 /* Self-hosted fonts: no CDN, works fully offline (PWA / packaged app).  */
-/* Nunito and Quicksand are variable fonts (one file covers their whole  */
-/* weight range); Vazirmatn ships as four static weights.                */
+/* Persian: Vazirmatn (body) + Lalezar (display wordmark only).            */
+/* English: Be Vietnam Pro (body, very warm and humanist) + Quicksand    */
+/*          (display wordmark only). Be Vietnam Pro is a humanist         */
+/*          sans-serif designed for legibility and warmth -- its rounded  */
+/*          terminals and friendly proportions make long Persian/English  */
+/*          conversations feel like talking to a person rather than       */
+/*          reading a UI. All weights ship as static WOFF2 to keep       */
+/*          offline caching simple.                                      */
 /* --------------------------------------------------------------------- */
 
 @font-face {
@@ -61,9 +67,41 @@
 }
 
 @font-face {
-  font-family: 'Nunito';
-  src: url('../fonts/Nunito-VF.woff2') format('woff2-variations');
-  font-weight: 400 800;
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  src: url('../fonts/BeVietnamPro-Bold.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -115,12 +153,17 @@
 
 /* English gets its own, equally considered type pairing rather than
    reusing the Persian faces, which aren't optimized for long-form Latin
-   text: Nunito Sans is warm and highly legible for body copy; Quicksand
-   is a rounded, friendly display face for the wordmark, playing the same
-   role Lalezar plays for Persian. */
+   text: Be Vietnam Pro is a warm, humanist sans-serif designed for
+   legibility and friendly conversations, with rounded terminals that
+   feel approachable without sacrificing clarity. Quicksand is a
+   rounded display face for the wordmark, playing the same role Lalezar
+   plays for Persian. The system-font fallback chain picks the warmest
+   available system font on each platform if our self-hosted files
+   fail to load (e.g. on a fresh install before the service worker
+   has precached them). */
 html[lang="en"] {
-  --font-display: 'Quicksand', 'Nunito', sans-serif;
-  --font-body: 'Nunito', -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Quicksand', 'Be Vietnam Pro', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Be Vietnam Pro', 'Verdana', 'Trebuchet MS', system-ui, sans-serif;
 }
 
 /* Beach theme: same structure, warmer sunset/turquoise hues. Kept dark
@@ -201,6 +244,7 @@ body {
   inset-inline-end: -15%;
   background: var(--color-seafoam);
   animation: drift-one 26s ease-in-out infinite;
+  will-change: transform;
 }
 
 .backdrop__glow--two {
@@ -208,6 +252,7 @@ body {
   inset-inline-start: -15%;
   background: var(--color-coral);
   animation: drift-two 32s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes drift-one {
@@ -242,11 +287,13 @@ html[data-theme="beach"] .backdrop__horizon {
 }
 
 /* --------------------------------------------------------------------- */
-/* Beach scene: a proper shoreline, not a submerged-in-water reskin.     */
-/* Sand dominates the lower portion of the screen; the sea is a modest   */
-/* strip above it, meeting the sand at a scalloped (not smooth-oval)     */
-/* foam edge, which reads much closer to an actual wave line than a      */
-/* single pulsing blob. Hidden entirely outside the beach theme.         */
+/* Beach scene                                                          */
+/*                                                                     */
+/* A layered, parallax shoreline built from a sky band, a sun, three    */
+/* moving water layers (each is two side-by-side SVGs scrolling at     */
+/* different speeds for a seamless loop), a foam line, a sand band,     */
+/* randomly-placed wet-sand patches, and a subtle "shimmer" overlay     */
+/* for sun-on-wet-sand. Hidden entirely outside the beach theme.       */
 /* --------------------------------------------------------------------- */
 
 .beach-scene {
@@ -254,46 +301,187 @@ html[data-theme="beach"] .backdrop__horizon {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 44vh;
+  height: 52vh;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 }
 
 html[data-theme="beach"] .beach-scene {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.4s ease, visibility 0s linear 0s;
+  transition: opacity 0.5s ease, visibility 0s linear 0s;
 }
 
-.beach-scene__sea {
+/* Sky: a soft top-to-bottom gradient that lets the sand transition
+   out of the page's main color rather than appearing to float. The
+   warmer band near the horizon mimics real atmospheric scattering. */
+.beach-scene__sky {
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
-  height: 30%;
-  background: linear-gradient(to bottom, rgba(59, 158, 158, 0) 0%, #2b8f92 55%, #45b6ae 100%);
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    #b3d6e0 0%,
+    #d4e5d4 25%,
+    #f1d7b1 50%,
+    #ecd9bb 70%,
+    #efd8b5 100%
+  );
 }
 
+/* Sun: positioned in the upper-left, with both a soft outer glow
+   (the wide low-opacity circle) and a sharper inner core. The sun
+   itself does not move -- it's the part of the scene that stays
+   still, which makes the moving water feel right by contrast. */
+.beach-scene__sun {
+  position: absolute;
+  top: 8%;
+  inset-inline-start: 6%;
+  width: clamp(80px, 14vw, 140px);
+  height: clamp(80px, 14vw, 140px);
+  filter: drop-shadow(0 0 20px rgba(255, 213, 138, 0.35));
+  animation: sun-breathe 10s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes sun-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.96; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+/* Each ocean layer is a 2x-wide strip (two identical wave SVGs side
+   by side) that translates leftward at its own speed. The far layer
+   moves slowest (deep background perspective), the near layer
+   fastest (foreground perspective). The animation duration is set
+   per layer; the keyframe moves the strip by exactly -50% of its
+   width, which is exactly the width of one wave copy -- so the loop
+   is seamless. `currentColor` lets the layer pick its own color via
+   the `color:` property below, which keeps the path fill in sync
+   with the per-layer palette. */
+.beach-scene__ocean {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  display: flex;
+  width: 200%;
+  height: 90px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.beach-scene__wave {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+}
+
+/* The horizontal drift and the vertical bob are combined into a
+   single keyframe per layer: two animations targeting `transform`
+   would otherwise have one silently override the other. The
+   horizontal motion stays linear; the vertical bob is layered on
+   top of it via a second `translate` parameter, so the wave
+   translates left continuously while gently rising and falling. */
+.beach-scene__ocean--far {
+  top: 24%;
+  color: #4ea3a8;
+  opacity: 0.85;
+  animation: ocean-drift-far 22s linear infinite;
+}
+
+.beach-scene__ocean--mid {
+  top: 30%;
+  color: #2f8d96;
+  opacity: 0.95;
+  animation: ocean-drift-mid 14s linear infinite;
+}
+
+.beach-scene__ocean--near {
+  top: 36%;
+  color: #1f6f7a;
+  height: 110px;
+  animation: ocean-drift-near 9s linear infinite;
+}
+
+@keyframes ocean-drift-far {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-25%, -1px, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes ocean-drift-mid {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-25%, -2px, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes ocean-drift-near {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-25%, -3px, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Foam line: a thin scalloped band at the water's edge, sitting on
+   top of the near layer and below the sand. The slight, slow opacity
+   pulse mimics the way real foam catches the light. */
+.beach-scene__foam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 41%;
+  width: 100%;
+  height: 22px;
+  opacity: 0.9;
+  animation: foam-pulse 6s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes foam-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+/* Sand band: the dominant lower portion. A warm gradient with a
+   slightly noisy texture would be ideal, but a clean multi-stop
+   gradient reads well at every size and ships zero bytes of image. */
 .beach-scene__sand {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  top: 27%;
-  background: linear-gradient(to bottom, #b89968 0%, #ecd39c 12%, #e6c68c 40%, #dcb877 100%);
+  top: 45%;
+  background:
+    /* A faint horizontal "grain" pattern from a striped gradient,
+       giving the sand subtle visual texture without any image. */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(
+      to bottom,
+      #e6c688 0%,
+      #e9cd92 8%,
+      #eccb88 25%,
+      #e2bd7a 60%,
+      #d6b06b 100%
+    );
 }
 
 /* Wet-sand patches: irregular, independently-faded blobs populated by
-   app.js with randomized position/size/timing, so the waterline leaves a
-   patchy, uneven damp mark rather than uniformly darkening the whole
-   sand band -- some stretches of sand stay visibly dry at any moment,
-   the way a real shoreline looks. */
+   app.js with randomized position/size/timing, so the waterline
+   leaves a patchy, uneven damp mark rather than uniformly darkening
+   the whole sand band -- some stretches of sand stay visibly dry at
+   any moment, the way a real shoreline looks. */
 .beach-scene__wet-patches {
   position: absolute;
   left: 0;
   right: 0;
-  top: 27%;
+  top: 45%;
   bottom: 0;
   overflow: hidden;
 }
@@ -317,29 +505,45 @@ html[data-theme="beach"] .beach-scene {
   35%, 55% { opacity: var(--peak-opacity, 0.5); }
 }
 
+/* Shimmer: a low-opacity white wash that catches "sun on wet sand"
+   near the waterline, blending down into the dry sand. Static
+   (deliberately) so it doesn't compete with the moving water for
+   attention. */
+.beach-scene__shimmer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 45%;
+  height: 25%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
 /*
- * Protects the input hint and disclaimer -- both always pinned to the
- * very bottom of the screen by the fixed flex-column layout, so a small,
- * narrow scrim reliably covers them regardless of viewport height.
- * (Elements whose position varies instead -- the picker's footnote,
- * message timestamps -- use a text-shadow halo on the text itself; see
- * .picker__note and .bubble-meta. Deliberately kept small rather than
- * covering most of the scene, so the beach still reads as bright and
- * sunny rather than dim.)
+ * Soft, low-opacity gradient just behind the composer so the text
+ * reads clearly over the brightest part of the sand. Deliberately
+ * a narrow band (not a tall dark scrim): the beach still reads as
+ * bright and sunny. Below this band, .picker__note and .bubble-meta
+ * use a text-shadow halo on the letterforms themselves for any
+ * text that lands in the bright sand area but outside the scrim.
  */
 .backdrop__scrim {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  /* The protected zone below (input hint + composer + disclaimer) is
-     built from fixed font-sizes and padding, so its height is roughly
-     constant in *pixels*, not in vh -- a pure vh value that works on one
-     viewport height under-covers it on a shorter one. The 210px floor
-     covers that fixed zone with margin; the 24vh term scales the scrim
-     up further on taller screens. */
-  height: max(24vh, 210px);
-  background: linear-gradient(to bottom, transparent 0%, rgba(15, 15, 10, 0.8) 8%, rgba(15, 15, 10, 0.8) 100%);
+  height: 110px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(20, 12, 8, 0.35) 50%,
+    rgba(20, 12, 8, 0.55) 100%
+  );
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -547,13 +751,12 @@ html[data-theme="beach"] .wind-gusts {
   gap: var(--space-2);
 }
 
-/* Unlike .disclaimer/.input-hint, this text's vertical position shifts
-   with how tall the rest of the picker content is, so it can't reliably
-   count on falling within a small, fixed-height scrim the way elements
-   pinned to the very bottom of the screen can. A dark halo around the
-   letterforms themselves works regardless of exactly what's behind them
-   -- the same principle video subtitles use -- without needing a large
-   overlay that would otherwise have to cover much more of the screen. */
+/*
+ * A text-shadow halo on the note's own letters is more reliable than
+ * a scrim: the note's vertical position shifts with the rest of the
+ * picker's content, so a fixed-position scrim can't always cover it.
+ * This is the same halo principle video subtitles use.
+ */
 html[data-theme="beach"] .picker__note {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
 }
@@ -711,6 +914,11 @@ html[data-theme="beach"] .picker__note {
   padding: var(--space-2);
   z-index: 10;
   animation: menu-in 0.16s var(--ease-tide) both;
+  transform-origin: top right;
+}
+
+html[dir="rtl"] .menu__popover {
+  transform-origin: top left;
 }
 
 @keyframes menu-in {
@@ -768,6 +976,12 @@ html[data-theme="beach"] .picker__note {
   flex-direction: column;
   gap: var(--space-3);
   scroll-behavior: smooth;
+  /* Smooth fade mask at the top so messages appear to "drift in" from
+     the haze above rather than just popping into view. Subtle. The
+     bottom mask is generous enough to not clip the last message
+     (chat padding + bubble-meta are below it). */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 12px), transparent 100%);
 }
 
 .chat::-webkit-scrollbar {
@@ -924,7 +1138,8 @@ html[dir="ltr"] .bubble-row--bot .bubble-meta { text-align: left; }
   display: flex;
   align-items: flex-end;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  padding: var(--space-2);
+  padding-inline-start: var(--space-3);
   background: var(--color-tide);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
@@ -1035,8 +1250,18 @@ html[dir="rtl"] .composer__send svg {
   .menu__popover,
   .menu__trigger,
   .picker__option,
-  .theme-picker__option {
+  .theme-picker__option,
+  .beach-scene__sun,
+  .beach-scene__ocean,
+  .beach-scene__foam {
     animation: none !important;
     transition: none !important;
+  }
+
+  /* When reduced motion is requested, the wave layers still need to be
+     positioned to look like a continuous ocean, but a single frame is
+     enough -- the browser can paint that without animating. */
+  .beach-scene__ocean {
+    transform: translate3d(0, 0, 0);
   }
 }
