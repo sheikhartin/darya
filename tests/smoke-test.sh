@@ -322,6 +322,18 @@ else
   fail "em dash characters found: $(tr '\n' ' ' </tmp/darya-emdash.log)"
 fi
 
+if grep -q "CACHE_NAME = 'darya-cache-current'" sw.js && ! grep -q 'CACHE_VERSION' sw.js OFFLINE.md; then
+  ok "service worker cache uses a non-versioned current name"
+else
+  fail "numeric cache version reference remains"
+fi
+
+if grep -q "font-family: 'Be Vietnam Pro'" css/style.css && ! grep -Eq "font-weight: (100|200|300)" css/style.css; then
+  ok "English uses a readable non-thin Be Vietnam Pro setup"
+else
+  fail "English font configuration is too thin or missing"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================

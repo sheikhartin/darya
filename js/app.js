@@ -49,7 +49,7 @@
   const inputEl = document.getElementById('composer-input');
   const sendButtonEl = document.getElementById('composer-send');
   const disclaimerEl = document.getElementById('disclaimer-text');
-  const typingRowLabelEl = document.getElementById('typing-row');
+  const typingStatusEl = document.getElementById('typing-row');
 
   const menuTriggerEl = document.getElementById('menu-trigger');
   const menuPopoverEl = document.getElementById('menu-popover');
@@ -349,7 +349,7 @@
     menuExportTxtEl.setAttribute('aria-label', lang.ui.ariaExportTxtLabel);
     menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
     themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
-    typingRowLabelEl.setAttribute('aria-label', lang.ui.typingLabel);
+    typingStatusEl.setAttribute('aria-label', lang.ui.typingLabel);
     menuNewChatLabelEl.textContent = lang.ui.menuNewChat;
     menuExportMdLabelEl.textContent = lang.ui.menuExportMd;
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
