@@ -127,6 +127,18 @@
   --color-on-sky-dim: #204957;
   --color-on-sky-accent: #7b3d2b;
   --color-on-sky-link: #06495c;
+  /* Semantic roles keep component contrast consistent across themes. */
+  --surface-app: var(--color-abyss-deep);
+  --surface-panel: var(--color-tide);
+  --surface-panel-hover: var(--color-tide-soft);
+  --surface-control: var(--color-tide);
+  --surface-control-hover: var(--color-tide-soft);
+  --text-primary: var(--color-foam);
+  --text-secondary: var(--color-foam-dim);
+  --text-on-bright: var(--color-on-sky);
+  --border-subtle: var(--color-line);
+  --border-strong: var(--color-seafoam);
+  --border-focus: var(--color-seafoam);
 
   /* --- Type: Persian is the default; overridden per-language below --- */
   --font-display: 'Lalezar', 'Vazirmatn', 'Tahoma', sans-serif;
@@ -208,7 +220,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-seafoam);
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -451,10 +463,10 @@ html[data-theme="beach"] .wind-gusts {
   flex-direction: column;
   gap: 2px;
   padding: var(--space-4);
-  background: var(--color-tide);
-  border: 1px solid var(--color-line);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  color: var(--color-foam);
+  color: var(--text-primary);
   cursor: pointer;
   transition: border-color 0.2s var(--ease-tide), transform 0.15s var(--ease-tide), background 0.2s var(--ease-tide);
 }
@@ -658,8 +670,8 @@ html[data-theme="beach"] .picker__note {
   inset-inline-end: 0;
   max-width: calc(100vw - 2 * var(--space-3));
   min-width: 216px;
-  background: var(--color-tide);
-  border: 1px solid var(--color-line);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);
   padding: var(--space-2);
@@ -791,9 +803,9 @@ html[dir="ltr"] .bubble-row--bot { justify-content: flex-start; }  /* left in LT
 }
 
 .bubble--bot {
-  background: var(--color-tide);
-  color: var(--color-foam);
-  border: 1px solid var(--color-line);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
   position: relative;
   animation: rise-in 0.3s var(--ease-tide) both, ripple-glow 1.2s var(--ease-tide) both;
@@ -879,8 +891,8 @@ html[dir="ltr"] .bubble-row--bot .bubble-meta { text-align: left; }
   align-items: flex-end;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
-  background: var(--color-tide);
-  border: 1px solid var(--color-line);
+  background: var(--surface-control);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   margin: var(--space-2) var(--space-3);
 }
@@ -1005,6 +1017,11 @@ html[data-theme="beach"] {
   --color-on-sky-dim: #204957;
   --color-on-sky-accent: #60301f;
   --color-on-sky-link: #06495c;
+}
+
+html[data-theme="beach"] {
+  --text-on-bright: #123847;
+  --border-focus: #06495c;
 }
 
 html[data-theme="beach"] body {

@@ -309,6 +309,15 @@ test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', (
   assert.doesNotMatch(css.match(/@keyframes horizon-drift[\s\S]*?\}/u)?.[0] || '', /translateY/u);
 });
 
+test('semantic theme tokens are defined for reusable component roles', () => {
+  const css = read('css/style.css');
+  for (const token of ['--surface-app', '--surface-panel', '--surface-panel-hover', '--surface-control', '--text-primary', '--text-secondary', '--text-on-bright', '--border-subtle', '--border-strong', '--border-focus']) {
+    assert.match(css, new RegExp(`${token}:`), token);
+  }
+  assert.match(css, /\.menu__popover[\s\S]*background: var\(--surface-panel\)/u);
+  assert.match(css, /\.composer[\s\S]*background: var\(--surface-control\)/u);
+});
+
 test('representative theme foregrounds meet WCAG AA contrast', () => {
   const css = read('css/style.css');
   const luminance = (hex) => {
