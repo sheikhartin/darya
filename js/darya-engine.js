@@ -471,6 +471,10 @@
       const captured = matches[0]?.captured || '';
       const matchedTopics = matches.map((match) => match.rule.topic);
       this.currentTurnTopics = [...new Set(matchedTopics)];
+      this.currentReferenceContext = this.resolveReferenceContext(matchingText);
+      if (this.currentTurnTopics.length === 0 && this.currentReferenceContext) {
+        this.currentTurnTopics = [this.currentReferenceContext.topic];
+      }
       this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
       this.lastTurnNeedsCare = this.currentTurnSeriousness >= 0.5
         || /\b(?:help|advice|problem|crisis|difficult|hard|worried)\b/iu.test(normalized)
@@ -515,6 +519,25 @@
 
       this.memory.rememberBotMessage(reply);
       return reply;
+    }
+
+    /**
+     * Resolves a small set of anaphoric phrases against the current subject.
+     * It deliberately refuses to guess when the subject is absent or stale.
+     * @param {string} normalizedText
+     * @returns {{topic: string, entityRefs: string[], confidence: number}|null}
+     */
+    resolveReferenceContext(normalizedText) {
+      const referencePattern = this.lang.code === 'fa'
+        ? /(?<!\p{L})(?:این|آن|اون|همین|همون|دوباره|همان مشکل|همون مشکل|همان موضوع|همون موضوع|چیزی که گفتم)(?!\p{L})/u
+        : /\b(?:it|that|this|again|same problem|the meeting|the thing i mentioned before)\b/iu;
+      if (!referencePattern.test(normalizedText)) return null;
+      const subject = this.memory.currentSubject;
+      if (!subject?.topic || this.memory.turnCount - subject.since > 5) return null;
+      const age = this.memory.turnCount - subject.since;
+      const confidence = subject.entityRefs.length ? 0.92 - age * 0.08 : 0.72 - age * 0.08;
+      if (confidence < 0.6) return null;
+      return { topic: subject.topic, entityRefs: [...subject.entityRefs], confidence };
     }
 
     _seriousnessForTurn(topics) {
