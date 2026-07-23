@@ -1,0 +1,9 @@
+{
+  "name": "question budget",
+  "language": "en",
+  "turns": [
+    {"text": "I can't sleep", "dialogueAct": "statement", "topic": "sleep"},
+    {"text": "What do you think?", "dialogueAct": "question", "topic": "sleep"},
+    {"text": "I keep waking up at night", "dialogueAct": "statement", "topic": "sleep"}
+  ]
+}

@@ -98,6 +98,30 @@ test('reference resolution refuses an absent or stale subject', () => {
   assert.equal(engine.resolveReferenceContext('it happened again'), null);
 });
 
+test('dialogue scenarios maintain state across multiple turns', () => {
+  const scenarios = ['work-correction.json', 'question-budget.json'];
+  for (const file of scenarios) {
+    const scenario = JSON.parse(read(`tests/scenarios/${file}`));
+    const lang = scenario.language === 'fa' ? FA : EN;
+    const engine = fresh(lang);
+    for (const turn of scenario.turns) {
+      engine.respond(turn.text);
+      assert.equal(engine.conversationState.dialogueAct, turn.dialogueAct, `${file}:${turn.text}`);
+      if (turn.topic) assert.ok(engine.currentTurnTopics.includes(turn.topic), `${file}:${turn.text}`);
+    }
+  }
+});
+
+test('bot question tracking records answers without creating duplicate questions', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  assert.ok(engine.memory.pendingQuestions.length > 0);
+  const before = engine.memory.answeredQuestions.length;
+  engine.respond('The meeting with my manager was the hardest part');
+  assert.equal(engine.memory.answeredQuestions.length, before + 1);
+  assert.equal(engine.memory.answeredQuestions.at(-1).answered, true);
+});
+
 test('quality fixture: all application shell files exist', () => {
   for (const file of ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'sw.js', 'manifest.json']) {
     assert.ok(fs.existsSync(path.join(ROOT, file)), file);

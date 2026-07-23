@@ -67,7 +67,7 @@
       'If things at work were better, what would actually be different?',
     ]),
 
-    rule('sleep', 50, /\b(can'?t sleep|insomnia|nightmares|sleeping badly|trouble sleeping)\b\s*(.*)/i, [
+    rule('sleep', 50, /\b(can'?t sleep|insomnia|nightmares|sleeping badly|trouble sleeping|waking up|wake up at night)\b\s*(.*)/i, [
       "It sounds like your sleep hasn't been restful lately. When did that start?",
       "Trouble sleeping can be a sign that something's weighing on your mind. What's been occupying your thoughts lately?",
       'When you can\'t sleep, where does your mind usually go?',

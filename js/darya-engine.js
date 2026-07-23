@@ -224,6 +224,8 @@
       this.smalltalkTurns = [];
       this.responseStrategies = [];
       this.turnFrames = [];
+      this.pendingQuestions = [];
+      this.answeredQuestions = [];
     }
 
     rememberUtterance(utterance) {
@@ -275,6 +277,22 @@
     rememberTurnFrame(frame) {
       this.turnFrames.push(frame);
       if (this.turnFrames.length > 8) this.turnFrames.shift();
+    }
+
+    noteBotQuestion(question, topic) {
+      this.pendingQuestions.push({ question, topic, askedAtTurn: this.turnCount, answered: false });
+      if (this.pendingQuestions.length > 4) this.pendingQuestions.shift();
+    }
+
+    markLatestQuestionAnswered(answer, turn) {
+      const pending = [...this.pendingQuestions].reverse().find((item) => !item.answered);
+      if (!pending) return null;
+      pending.answered = true;
+      pending.answer = answer;
+      pending.answeredAtTurn = turn;
+      this.answeredQuestions.push(pending);
+      if (this.answeredQuestions.length > 6) this.answeredQuestions.shift();
+      return pending;
     }
 
     rememberBotMessage(message) {
@@ -501,6 +519,7 @@
       this.memory.rememberUtterance(normalized);
       this.memory.rememberSentiment(sentimentScore);
       this.memory.turnCount += 1;
+      this.memory.markLatestQuestionAnswered(normalized, this.memory.turnCount);
       this.memory.decayNamedEntities();
 
       const entities = global.DaryaEntityExtractor
@@ -532,6 +551,17 @@
         this.currentTurnTopics = [this.currentReferenceContext.topic];
       }
       this.currentTurnDialogueAct = this.classifyDialogueAct(matchingText, matchedRule);
+      if (this.currentTurnTopics.length === 0 && this.currentTurnDialogueAct === 'question'
+        && matchingText.split(/\s+/u).length <= 6
+        && this.memory.currentSubject.topic
+        && this.memory.turnCount - this.memory.currentSubject.since <= 3) {
+        this.currentTurnTopics = [this.memory.currentSubject.topic];
+        this.currentReferenceContext = {
+          topic: this.memory.currentSubject.topic,
+          entityRefs: [...this.memory.currentSubject.entityRefs],
+          confidence: 0.64,
+        };
+      }
       this.currentTurnIntent = this.classifyIntent(this.currentTurnDialogueAct, matchedRule, this.currentTurnTopics);
       this.currentTurnQuestionNeed = this.questionNeedScore(this.currentTurnDialogueAct, this.currentTurnTopics);
       this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
@@ -619,7 +649,7 @@
       const subject = this.memory.currentSubject;
       if (!subject?.topic || this.memory.turnCount - subject.since > 5) return null;
       const age = this.memory.turnCount - subject.since;
-      const confidence = subject.entityRefs.length ? 0.92 - age * 0.08 : 0.72 - age * 0.08;
+      const confidence = subject.entityRefs.length ? 0.94 - age * 0.06 : 0.76 - age * 0.04;
       if (confidence < 0.6) return null;
       return { topic: subject.topic, entityRefs: [...subject.entityRefs], confidence };
     }
@@ -1012,6 +1042,7 @@
       if (this._isQuestionResponse(response)) {
         this.memory.consecutiveQuestions += 1;
         this.memory.askedQuestionTurns.push(this.memory.turnCount);
+        this.memory.noteBotQuestion(response, this.currentTurnTopics[0] || this.memory.currentSubject.topic);
       } else {
         this.memory.consecutiveQuestions = 0;
       }
