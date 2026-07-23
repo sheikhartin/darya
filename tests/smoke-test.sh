@@ -52,6 +52,7 @@ required_files=(
   "css/style.css"
   "js/app.js"
   "js/darya-engine.js"
+  "js/knowledge-base.js"
   "js/languages/fa.js"
   "js/languages/en.js"
   "favicon.ico"
@@ -78,7 +79,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app.js js/darya-engine.js js/languages/fa.js js/languages/en.js; do
+  for f in js/app.js js/darya-engine.js js/knowledge-base.js js/languages/fa.js js/languages/en.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -377,6 +378,7 @@ else
     check_status "/css/style.css" "200"
     check_status "/js/app.js" "200"
     check_status "/js/darya-engine.js" "200"
+    check_status "/js/knowledge-base.js" "200"
     check_status "/js/languages/fa.js" "200"
     check_status "/js/languages/en.js" "200"
     check_status "/favicon.ico" "200"

@@ -14,6 +14,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 global.window = global;
+require(path.join(__dirname, '..', 'js', 'knowledge-base.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'halfspace.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'entity-extractor.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'fa.js'));
@@ -120,6 +121,206 @@ test('bot question tracking records answers without creating duplicate questions
   engine.respond('The meeting with my manager was the hardest part');
   assert.equal(engine.memory.answeredQuestions.length, before + 1);
   assert.equal(engine.memory.answeredQuestions.at(-1).answered, true);
+});
+
+test('offline knowledge shelf exposes named domains', () => {
+  assert.deepEqual(global.DaryaKnowledge.domains, ['philosophy', 'focus', 'learning', 'communication', 'creativity']);
+});
+
+test('knowledge shelf returns useful English philosophy guidance', () => {
+  const answers = global.DaryaKnowledge.answer('en', 'philosophy');
+  assert.equal(answers.length, 4);
+  assert.ok(answers.every((answer) => answer.length > 40));
+});
+
+test('knowledge shelf returns useful Persian philosophy guidance', () => {
+  const answers = global.DaryaKnowledge.answer('fa', 'philosophy');
+  assert.equal(answers.length, 4);
+  assert.ok(answers.every((answer) => /فلسف|سقراط|رواقی|ارسطو/u.test(answer)));
+});
+
+test('knowledge shelf returns independent copies', () => {
+  const first = global.DaryaKnowledge.answer('en', 'focus');
+  first.pop();
+  assert.equal(global.DaryaKnowledge.answer('en', 'focus').length, 4);
+});
+
+test('knowledge domains cover learning, communication, and creativity', () => {
+  for (const domain of ['learning', 'communication', 'creativity']) {
+    assert.equal(global.DaryaKnowledge.answer('en', domain).length, 4);
+    assert.equal(global.DaryaKnowledge.answer('fa', domain).length, 4);
+  }
+});
+
+test('knowledge rule responds without runtime network access', () => {
+  const engine = fresh(EN);
+  const reply = engine.respond('How can I focus better?');
+  assert.ok(reply.length > 40);
+  assert.equal(engine.currentTurnTopics.includes('knowledge'), true);
+});
+
+test('Persian knowledge rule responds in Persian', () => {
+  const engine = fresh(FA);
+  const reply = engine.respond('برای تمرکز چه کار کنم؟');
+  assert.match(reply, /[\u0600-\u06FF]/u);
+});
+
+test('self awareness remains bounded and truthful', () => {
+  for (const lang of [EN, FA]) {
+    const engine = fresh(lang);
+    const snapshot = engine.describeSelf ? engine.describeSelf() : lang.selfAwareness;
+    assert.ok(snapshot);
+    assert.equal(typeof snapshot.approach, 'string');
+    assert.equal(typeof snapshot.boundaries, 'string');
+    assert.doesNotMatch(JSON.stringify(snapshot), /human|real person|انسان واقعی/u);
+  }
+});
+
+test('greeting turn is explicitly represented in conversation state', () => {
+  const engine = fresh(EN);
+  engine.respond('hello');
+  assert.equal(engine.currentTurnDialogueAct, 'greeting');
+  assert.equal(engine.currentTurnIntent, 'greeting');
+  assert.equal(engine.conversationState.phase, 'greeting');
+});
+
+test('short acknowledgements do not become high-seriousness stories', () => {
+  const engine = fresh(EN);
+  engine.respond('okay');
+  assert.ok(engine.currentTurnSeriousness < 0.5);
+  assert.notEqual(engine.currentTurnIntent, 'safety_support');
+});
+
+test('question need is zero when the user already asked a question', () => {
+  const engine = fresh(EN);
+  engine.respond('What do you think?');
+  assert.equal(engine.currentTurnDialogueAct, 'question');
+  assert.equal(engine.currentTurnQuestionNeed, 0);
+});
+
+test('question need rises for a clear emotional topic statement', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  assert.ok(engine.currentTurnQuestionNeed >= 0.4);
+});
+
+test('bot questions are recorded with their topic', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  const question = engine.memory.pendingQuestions.at(-1);
+  assert.ok(question);
+  assert.equal(question.topic, 'work');
+  assert.equal(question.answered, false);
+});
+
+test('a substantive next user turn answers the pending bot question', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  engine.respond('The meeting with my manager was the hardest part');
+  assert.equal(engine.memory.answeredQuestions.at(-1).answered, true);
+});
+
+test('reference resolution is confident for a current short question', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  const context = engine.resolveReferenceContext('it happened again');
+  assert.ok(context);
+  assert.ok(context.confidence >= 0.6);
+});
+
+test('reference resolution becomes unavailable after the subject ages out', () => {
+  const engine = fresh(EN);
+  engine.memory.currentSubject = { topic: 'work', entityRefs: [], since: 1 };
+  engine.memory.turnCount = 9;
+  assert.equal(engine.resolveReferenceContext('it happened again'), null);
+});
+
+test('correcting an entity marks no stale callback target', () => {
+  const engine = fresh(EN);
+  engine.memory.turnCount = 1;
+  engine.memory.rememberEntities([{ type: 'person', surface: 'manager', confidence: 0.9 }], 1, { topics: ['work'] });
+  engine.memory.correctEntity('manager', { type: 'person', surface: 'friend', confidence: 0.96 }, { topics: ['relationship'] });
+  assert.equal(engine.memory.namedEntities.has('person:manager'), false);
+  assert.equal(engine.memory.namedEntities.has('person:friend'), true);
+});
+
+test('response strategy history is bounded to recent decisions', () => {
+  const engine = fresh(EN);
+  for (let i = 0; i < 20; i += 1) engine.memory.rememberStrategy('reflect');
+  assert.ok(engine.memory.responseStrategies.length <= 8);
+});
+
+test('turn frame history is bounded to recent turns', () => {
+  const engine = fresh(EN);
+  for (let i = 0; i < 20; i += 1) engine.memory.rememberTurnFrame({ turn: i });
+  assert.ok(engine.memory.turnFrames.length <= 8);
+});
+
+test('candidate ranking prefers a fresh short response over a repeated response', () => {
+  const engine = fresh(EN);
+  engine.memory.recentBotMessages.push('repeated');
+  assert.ok(engine.scoreResponseCandidate('fresh') > engine.scoreResponseCandidate('repeated'));
+});
+
+test('candidate ranking penalizes a repeated question', () => {
+  const engine = fresh(EN);
+  engine.memory.consecutiveQuestions = 1;
+  assert.ok(engine.scoreResponseCandidate('What now?') < engine.scoreResponseCandidate('A quiet reflection.'));
+});
+
+test('all language rules expose response arrays', () => {
+  for (const lang of [EN, FA]) {
+    for (const rule of lang.rules) assert.ok(Array.isArray(rule.responses), `${lang.code}:${rule.topic}`);
+  }
+});
+
+test('all entity callback templates are context-specific and nonempty', () => {
+  for (const lang of [EN, FA]) {
+    for (const [type, pool] of Object.entries(lang.entityCallbackTemplates)) {
+      assert.ok(pool.length > 0, `${lang.code}:${type}`);
+      assert.ok(pool.every((line) => line.includes('{surface}')));
+    }
+  }
+});
+
+test('knowledge module is precached for offline use', () => {
+  assert.match(read('sw.js'), /js\/knowledge-base\.js/u);
+  assert.match(read('index.html'), /js\/knowledge-base\.js/u);
+});
+
+test('knowledge replies do not claim personal experience or authority', () => {
+  for (const lang of ['en', 'fa']) {
+    for (const domain of global.DaryaKnowledge.domains) {
+      for (const answer of global.DaryaKnowledge.answer(lang, domain)) {
+        assert.doesNotMatch(answer, /my experience|as a professional|تجربه شخصی|به عنوان متخصص/iu);
+      }
+    }
+  }
+});
+
+test('full scenario fixture files contain multiple turns and expectations', () => {
+  for (const file of ['tests/scenarios/work-correction.json', 'tests/scenarios/question-budget.json']) {
+    const scenario = JSON.parse(read(file));
+    assert.ok(scenario.turns.length >= 3);
+    assert.ok(scenario.turns.every((turn) => turn.dialogueAct && turn.text));
+  }
+});
+
+test('all code remains browser-loadable without module syntax', () => {
+  for (const file of ['js/knowledge-base.js', 'js/darya-engine.js', 'js/languages/fa.js', 'js/languages/en.js']) {
+    assert.doesNotMatch(read(file), /^export\s|^import\s/mu, file);
+  }
+});
+
+test('the current cache name is stable and does not expose a numeric release', () => {
+  const sw = read('sw.js');
+  assert.match(sw, /darya-cache-current/u);
+  assert.doesNotMatch(sw, /darya-v\d/u);
+});
+
+test('theme token system has both on-bright and surface roles', () => {
+  const css = read('css/style.css');
+  for (const token of ['--text-on-bright', '--surface-panel', '--surface-control', '--border-focus']) assert.match(css, new RegExp(token));
 });
 
 test('quality fixture: all application shell files exist', () => {

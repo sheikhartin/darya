@@ -515,6 +515,7 @@
 
       const normalized = this.lang.normalize(rawText);
       const matchingText = normalizeForMatching(rawText, this.lang);
+      this._currentNormalizedInput = matchingText;
       const sentimentScore = scoreSentiment(normalized, this.lang.sentimentLexicon);
       this.memory.rememberUtterance(normalized);
       this.memory.rememberSentiment(sentimentScore);
@@ -665,6 +666,7 @@
     }
 
     classifyIntent(dialogueAct, matchedRule, topics) {
+      if (dialogueAct === 'greeting') return 'greeting';
       if (dialogueAct === 'safety') return 'safety_support';
       if (matchedRule?.topic === 'professional_boundary') return 'professional_boundary';
       if (matchedRule?.topic === 'recap') return 'recap_request';
@@ -700,6 +702,15 @@
       if (matchingText && this.lang.questionPattern.test(matchingText)) return 'question-acknowledgement';
       if (this.canHumorFire()) return 'light-warmth';
       return 'contextual-fallback';
+    }
+
+    describeSelf() {
+      return {
+        name: this.lang.botName,
+        approach: this.lang.selfAwareness.approach,
+        boundaries: this.lang.selfAwareness.boundaries,
+        memory: this.lang.selfAwareness.memory,
+      };
     }
 
     _seriousnessForTurn(topics) {
@@ -855,6 +866,15 @@
       }
       if (matchedRule.topic === 'recap') {
         return this._buildRecap();
+      }
+      if (matchedRule.topic === 'knowledge' && global.DaryaKnowledge) {
+        const knowledgeText = this._currentNormalizedInput || captured || '';
+        const domainHints = this.lang.code === 'fa'
+          ? { philosophy: ['فلسفه', 'سقراط', 'رواقی', 'ارسطو'], focus: ['تمرکز'], learning: ['یاد'], communication: ['ارتباط'], creativity: ['خلاق'] }
+          : { philosophy: ['philosophy', 'socrates', 'stoic', 'aristotle'], focus: ['focus', 'concentrate'], learning: ['study', 'learn'], communication: ['communicate'], creativity: ['creative'] };
+        const domain = Object.entries(domainHints)
+          .find(([, hints]) => hints.some((hint) => knowledgeText.toLocaleLowerCase().includes(hint)))?.[0] || 'philosophy';
+        return this._pickVaried(global.DaryaKnowledge.answer(this.lang.code, domain));
       }
 
       if (this.memory.sameRuleStreak > MAX_CONSECUTIVE_SAME_RULE) {

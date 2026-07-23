@@ -186,6 +186,8 @@
       'What might a small first step toward {captured} look like?',
     ]),
 
+    rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative)\b/i, []),
+
     rule('professional_boundary', 90, /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i, []),
 
     rule('recap', 80, /\b(?:what did i say earlier|what have i said|can you summarize|summarize this|give me a recap)\b/i, []),
@@ -420,7 +422,7 @@
     blend_joy_gratitude: ['There is a lovely little loop here: something went well, and you noticed its value.', 'The good feeling seems to have made room for appreciation too.', 'It is nice when a bright moment is not rushed past before it can land.', 'This sounds like a moment worth letting stay bright for another minute.'],
   };
 
-  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35 };
+  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25 };
   const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough - I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
   const warmth = ['That sounds like a lot to carry.', 'I can hear that this matters to you.', 'You do not have to have it all figured out at once.', 'It is okay to take your time with this.'];
   const smalltalk = ['Nice. That has a good bit of character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];
@@ -429,6 +431,12 @@
   const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads - {topics} - alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}; {entities} gives it a more personal shape. What feels most present?'];
   const humanTouch = ['That {surface} detail is still with me; does it feel different now?', 'The {surface} thread has a little more to it than it first seemed.'];
   const professionalBoundary = ['For medical, legal, or financial decisions, a qualified human professional is the safest source of advice. I can help you organize the questions you want to bring them.', 'This is one of those areas where a licensed human professional should guide the decision. We can sort the facts and concerns you want to take with you.'];
+
+  const selfAwareness = {
+    approach: 'I use conversation patterns, short-term context, and careful response selection.',
+    boundaries: 'I do not know current facts unless they are already in my offline knowledge shelf, and I do not make professional decisions for you.',
+    memory: 'I remember selected details only within this browser tab, and I can revise a detail when you correct me.',
+  };
 
   global.DaryaLang = global.DaryaLang || {};
   global.DaryaLang.en = {
@@ -468,6 +476,7 @@
     recapTemplates,
     humanTouch,
     professionalBoundary,
+    selfAwareness,
     exitKeywords,
     greetings,
     greetingsOpen,

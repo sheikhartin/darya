@@ -50,3 +50,12 @@ rule-based:
 
 - https://arxiv.org/html/2312.06024v4
 - https://web.stanford.edu/~jurafsky/slp3/old_jan25/15.pdf
+
+## Offline knowledge shelf
+
+Darya has a small bilingual knowledge shelf for philosophy, focus, learning,
+communication, and creativity. It is deliberately curated and offline. It
+provides useful starting points without pretending to know current events or
+claiming professional authority. Knowledge answers are still passed through
+the same language, seriousness, and response selection rules as ordinary
+conversation.
