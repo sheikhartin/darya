@@ -38,6 +38,7 @@
   const pickerFaEl = document.getElementById('picker-fa');
   const pickerEnEl = document.getElementById('picker-en');
   const themeToggleButtons = document.querySelectorAll('[data-theme-choice]');
+  const themePickerEl = document.getElementById('theme-picker');
 
   const appEl = document.getElementById('app');
   const headerTitleEl = document.getElementById('header-title');
@@ -48,6 +49,7 @@
   const inputEl = document.getElementById('composer-input');
   const sendButtonEl = document.getElementById('composer-send');
   const disclaimerEl = document.getElementById('disclaimer-text');
+  const typingRowLabelEl = document.getElementById('typing-row');
 
   const menuTriggerEl = document.getElementById('menu-trigger');
   const menuPopoverEl = document.getElementById('menu-popover');
@@ -73,8 +75,12 @@
    * @returns {string|null}
    */
   function getCookie(name) {
-    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : null;
+    try {
+      const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   /**
@@ -85,8 +91,13 @@
    * @param {number} days
    */
   function setCookie(name, value, days) {
-    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    try {
+      const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    } catch (error) {
+      // Cookie access can be blocked in private or embedded contexts. Theme
+      // selection still works for this tab; persistence is best effort.
+    }
   }
 
   /**
@@ -98,7 +109,8 @@
    * @returns {boolean}
    */
   function isTouchDevice() {
-    return window.matchMedia('(pointer: coarse)').matches;
+    return typeof window.matchMedia === 'function'
+      && window.matchMedia('(pointer: coarse)').matches;
   }
 
   /** Focuses the message input, but only on non-touch (mouse/trackpad) devices. */
@@ -119,10 +131,11 @@
    * @param {'ocean'|'beach'} theme
    */
   function applyTheme(theme) {
-    htmlRootEl.setAttribute('data-theme', theme);
-    setCookie(THEME_COOKIE_NAME, theme, THEME_COOKIE_MAX_AGE_DAYS);
+    const safeTheme = theme === 'beach' ? 'beach' : 'ocean';
+    htmlRootEl.setAttribute('data-theme', safeTheme);
+    setCookie(THEME_COOKIE_NAME, safeTheme, THEME_COOKIE_MAX_AGE_DAYS);
     themeToggleButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme));
+      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
     });
     updateThemeMenuItem();
   }
@@ -172,6 +185,10 @@
    * @type {TranscriptEntry[]}
    */
   let transcript = [];
+
+  // Invalidates delayed replies when New chat is chosen while Darya is
+  // thinking, so an old response can never appear in the fresh conversation.
+  let conversationGeneration = 0;
 
   // --- Timing / formatting helpers -----------------------------------------
 
@@ -284,11 +301,13 @@
     refreshComposerState();
   }
 
-  async function deliverReply(replyText) {
+  async function deliverReply(replyText, generation = conversationGeneration) {
     setTypingVisible(true);
     await new Promise((resolve) => setTimeout(resolve, randomReplyDelay()));
     setTypingVisible(false);
+    if (generation !== conversationGeneration) return false;
     appendMessage('bot', replyText);
+    return true;
   }
 
   // --- Language selection --------------------------------------------------
@@ -327,6 +346,8 @@
     menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
     menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
     menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
+    themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
+    typingRowLabelEl.setAttribute('aria-label', lang.ui.typingLabel);
     menuNewChatLabelEl.textContent = lang.ui.menuNewChat;
     menuExportMdLabelEl.textContent = lang.ui.menuExportMd;
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
@@ -358,6 +379,8 @@
    * find it.
    */
   function showPicker() {
+    conversationGeneration += 1;
+    setTypingVisible(false);
     appEl.hidden = true;
     pickerEl.hidden = false;
     closeMenu();
@@ -373,6 +396,7 @@
   // --- Conversation flow -------------------------------------------------------
 
   async function startConversation() {
+    const generation = ++conversationGeneration;
     engine = new DaryaResponseEngine(lang);
     conversationEnded = false;
     transcript = [];
@@ -381,13 +405,15 @@
     inputEl.setAttribute('placeholder', lang.ui.placeholderDefault);
     setComposerBusy(true);
 
-    await deliverReply(engine.greeting());
+    const delivered = await deliverReply(engine.greeting(), generation);
+    if (!delivered || generation !== conversationGeneration) return;
 
     setComposerBusy(false);
     focusInputUnlessTouch();
   }
 
   async function sendMessage(text) {
+    const generation = conversationGeneration;
     appendMessage('user', text);
     inputEl.value = '';
     setComposerBusy(true);
@@ -395,7 +421,8 @@
     const isExit = engine.isExitCommand(text);
     const replyText = isExit ? engine.farewell() : engine.respond(text);
 
-    await deliverReply(replyText);
+    const delivered = await deliverReply(replyText, generation);
+    if (!delivered || generation !== conversationGeneration) return;
 
     if (isExit) {
       conversationEnded = true;

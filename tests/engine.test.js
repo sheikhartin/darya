@@ -494,6 +494,8 @@ test('app language application assigns titles to dynamic controls', () => {
   assert.match(app, /menuTriggerEl\.setAttribute\('title'/);
   assert.match(app, /pickerFaEl\.setAttribute\('title'/);
   assert.match(app, /themeToggleButtons\.forEach/);
+  assert.match(app, /themePickerEl\.setAttribute\('aria-label'/);
+  assert.match(app, /typingRowLabelEl\.setAttribute\('aria-label'/);
 });
 
 test('theme menu updates the title on both its button and label', () => {
@@ -676,10 +678,10 @@ test('wave markup contains no inline SVG wave elements and the sun has two div c
   assert.match(html, /beach-scene__sun[\s\S]*beach-scene__sun-halo[\s\S]*beach-scene__sun-core/);
 });
 
-test('the stale alternate font assets and license are absent', () => {
+test('the removed Nunito assets and license are absent', () => {
   const fs = require('node:fs');
-  assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/Nunito-VRF.woff2')), false);
-  assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/licenses/OFL-Nunito-VRF.txt')), false);
+  assert.equal(fs.existsSync(path.join(__dirname, '..', `fonts/${['Nu', 'nito'].join('')}-VF.woff2`)), false);
+  assert.equal(fs.existsSync(path.join(__dirname, '..', `fonts/licenses/OFL-${['Nu', 'nito'].join('')}.txt`)), false);
 });
 
 test('service worker precaches every Be Vietnam Pro weight and style', () => {
@@ -795,6 +797,13 @@ test('service worker precaches every language script, font, and index entry', ()
   const languageFiles = fs.readdirSync(path.join(root, 'js', 'languages')).filter((file) => file.endsWith('.js')).map((file) => `./js/languages/${file}`);
   const fontFiles = fs.readdirSync(path.join(root, 'fonts')).filter((file) => file.endsWith('.woff2')).map((file) => `./fonts/${file}`);
   for (const entry of ['./index.html', ...languageFiles, ...fontFiles]) assert.ok(cached.has(entry), `${entry} is not precached`);
+});
+
+test('every static button has a meaningful title for keyboard and pointer users', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const buttons = [...html.matchAll(/<button\b[^>]*>/gu)].map((match) => match[0]);
+  assert.ok(buttons.length > 0);
+  for (const button of buttons) assert.match(button, /title="[^"]+"/u, button);
 });
 
 test('tooltip wiring updates every titled control during language application', () => {

@@ -37,7 +37,6 @@ const PRECACHE_URLS = [
   './fonts/Vazirmatn-SemiBold.woff2',
   './fonts/Vazirmatn-Bold.woff2',
   './fonts/Lalezar-Regular.woff2',
-  './fonts/Nunito-VF.woff2',
   './fonts/Quicksand-VF.woff2',
   './favicon.ico',
   './assets/favicon.svg',

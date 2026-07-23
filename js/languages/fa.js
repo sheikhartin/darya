@@ -468,6 +468,8 @@
       exportMdTitle: 'دانلود گفتگو با قالب مارک‌داون',
       exportTxtTitle: 'دانلود گفتگو به صورت متن ساده',
       themeToggleTitle: 'تغییر تم گفتگو',
+      themeGroupLabel: 'انتخاب تم گفتگو',
+      typingLabel: 'دریا در حال فکر کردن است',
       menuNewChat: 'گفتگوی تازه',
       menuExportMd: 'دانلود گفتگو — مارک‌داون',
       menuExportTxt: 'دانلود گفتگو — متن ساده',

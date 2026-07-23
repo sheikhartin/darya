@@ -402,6 +402,8 @@
       exportMdTitle: 'Download the conversation as Markdown',
       exportTxtTitle: 'Download the conversation as plain text',
       themeToggleTitle: 'Change the conversation theme',
+      themeGroupLabel: 'Choose a conversation theme',
+      typingLabel: 'Darya is thinking',
       menuNewChat: 'New chat',
       menuExportMd: 'Download chat — Markdown',
       menuExportTxt: 'Download chat — plain text',
