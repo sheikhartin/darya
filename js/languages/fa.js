@@ -308,10 +308,10 @@
   };
 
   const strategyShiftFallbacks = [
-    'بیایید کمی مکث کنیم؛ همین الآن، بیشترین چیزی که ذهنتان را درگیر کرده چیست؟',
-    'اگر بخواهید این حس را برای یک دوست توصیف کنید، چه می‌گفتید؟',
-    'دوست دارید درباره‌ی موضوع دیگری هم صحبت کنیم؟',
-    'چه چیزی الآن می‌تواند کمی این لحظه را برایتان سبک‌تر کند؟',
+    'بیایید از زاویه‌ای تازه نگاه کنیم؛ کدام بخش این موضوع برایتان پررنگ‌تر است؟',
+    'اگر این حس را برای یک دوست توصیف کنید، از کجا شروع می‌کنید؟',
+    'در کنار این موضوع، چه چیز دیگری این روزها در ذهن‌تان جا گرفته است؟',
+    'چه چیزی می‌تواند همین لحظه را کمی قابل‌تحمل‌تر کند؟',
   ];
 
   const sessionCheckIns = [
@@ -386,12 +386,19 @@
     'بدرود', 'خداحافظ', 'خدانگهدار', 'میخوام برم', 'می‌خوام برم', 'exit', 'quit',
   ];
 
-  const greetings = [
-    `درود! من ${BOT_NAME} هستم. خوشحالم که امروز اینجا با من هستید.`,
-    `سلام، دوست عزیز. ${BOT_NAME} هستم و با تمام وجود گوش می‌دهم.`,
-    `درود بر شما. من ${BOT_NAME}‌ام؛ هر چه در دل دارید، اینجا جایش امن است.`,
-    'سلام! خوشحالم که امروز کنار من هستید. چه چیزی در ذهن‌تان می‌گذرد؟',
+  const greetingsOpen = [
+    `درود! من ${BOT_NAME} هستم. دوست دارید امروز درباره‌ی چه چیزی برایم بگویید؟`,
+    `سلام، من ${BOT_NAME} هستم و گوش می‌دهم. چه چیزی این روزها در ذهن‌تان مانده است؟`,
   ];
+  const greetingsInviting = [
+    `سلام! من ${BOT_NAME} هستم. هر چیزی که این روزها سنگین‌تان کرده، می‌توانید با من در میان بگذارید.`,
+    `درود بر شما. من ${BOT_NAME}‌ام؛ از هر چیزی که دوست دارید شروع کنید و برایم بگویید.`,
+  ];
+  const greetingsReturning = [
+    `خوش آمدید. من ${BOT_NAME} هستم؛ این بار دوست دارید از کدام فکر یا احساس شروع کنیم؟`,
+    `سلام دوباره. چه چیزی اکنون بیشتر از همه دوست دارد شنیده شود؟`,
+  ];
+  const greetings = [...greetingsOpen, ...greetingsInviting, ...greetingsReturning];
 
   const farewells = [
     'بدرود، مراقب خودتان باشید. هر وقت خواستید صحبت کنیم، اینجا هستم.',
@@ -432,6 +439,14 @@
     entityCallbackTemplates,
     exitKeywords,
     greetings,
+    greetingsOpen,
+    greetingsInviting,
+    greetingsReturning,
+    // Keep the historical misspelling as a read-only compatibility alias;
+    // old callers used greentings* before the pools were made explicit.
+    greentingsOpen: greetingsOpen,
+    greentingsInviting: greetingsInviting,
+    greentingsReturning: greetingsReturning,
     farewells,
     emptyInputReply,
     foreignLanguageRedirect,

@@ -57,6 +57,9 @@
   const EXCERPT_MAX_LENGTH = 60;
   const ENTITY_DECAY_PER_TURN = 0.18;
   const ENTITY_CALLBACK_PROBABILITY = 0.55;
+  const CONSECUTIVE_QUESTION_LIMIT = 1;
+  const QUESTION_BUDGET_WINDOW = 3;
+  const QUESTION_BUDGET_LIMIT = 1;
 
   // ==========================================================================
   // Text helpers (language-agnostic, operate on whatever script range and
@@ -188,6 +191,8 @@
       // key is stable for lookup, while surface preserves the person's own
       // spelling for a natural callback.
       this.namedEntities = new Map();
+      this.askedQuestionTurns = [];
+      this.consecutiveQuestions = 0;
     }
 
     rememberUtterance(utterance) {
@@ -414,9 +419,23 @@
       return reply;
     }
 
+    /**
+     * Returns an opening from the explicit three-pool greeting policy. A
+     * new conversation is inviting half the time (up from the old 30%);
+     * both branches still ask the person to share rather than passively
+     * asking how they are.
+     */
+    _openingForNewConversation() {
+      const inviting = Math.random() < 0.5;
+      const pool = inviting
+        ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
+        : (this.lang.greetingsOpen || this.lang.greentingsOpen);
+      return this._pickVaried(pool || this.lang.greetings, { trackQuestions: false });
+    }
+
     /** Returns a varied opening greeting and records it in memory. */
     greeting() {
-      const text = this._pickVaried(this.lang.greetings);
+      const text = this._openingForNewConversation();
       this.memory.rememberBotMessage(text);
       return text;
     }
@@ -562,19 +581,78 @@
      * @param {string[]} pool
      * @returns {string}
      */
-    _pickVaried(pool) {
-      if (pool.length === 1) return pool[0];
+    /** True when a bot line consumes one question from the small budget. */
+    _isQuestionResponse(text) {
+      return /[?؟]/u.test(text) || Boolean(this.lang.questionPattern && this.lang.questionPattern.test(text));
+    }
+
+    /**
+     * Removes question-shaped options after the consecutive or rolling
+     * budget is exhausted. This is intentionally pool-aware: if a pool has
+     * a non-question alternative, the engine uses it instead of silently
+     * asking a second question.
+     */
+    _filterForQuestionBudget(pool) {
+      const options = Array.isArray(pool) ? pool : [];
+      const now = this.memory.turnCount;
+      this.memory.askedQuestionTurns = this.memory.askedQuestionTurns.filter(
+        (turn) => now - turn < QUESTION_BUDGET_WINDOW
+      );
+      const budgetUsed = this.memory.askedQuestionTurns.length >= QUESTION_BUDGET_LIMIT;
+      const consecutiveUsed = this.memory.consecutiveQuestions >= CONSECUTIVE_QUESTION_LIMIT;
+      if (!budgetUsed && !consecutiveUsed) return options;
+      const alternatives = options.filter((option) => !this._isQuestionResponse(option));
+      return alternatives;
+    }
+
+    /** Records whether a selected response used a question turn. */
+    _noteAskedQuestion(response) {
+      if (this._isQuestionResponse(response)) {
+        this.memory.consecutiveQuestions += 1;
+        this.memory.askedQuestionTurns.push(this.memory.turnCount);
+      } else {
+        this.memory.consecutiveQuestions = 0;
+      }
+    }
+
+    /** Whether a response pool contains a budget-safe non-question option. */
+    _alternativeAvailable(pool) {
+      return Array.isArray(pool) && pool.some((option) => !this._isQuestionResponse(option));
+    }
+
+    /** Returns a generic non-question alternative without consuming a budget. */
+    _alternativeFor(response) {
+      const pools = [this.lang.genericFallbacks, this.lang.strategyShiftFallbacks];
+      for (const pool of pools) {
+        const candidate = pool.find((line) => !this._isQuestionResponse(line) && line !== response);
+        if (candidate) return candidate;
+      }
+      return this.lang.genericFallbacks[0] || '';
+    }
+
+    _pickVaried(pool, options = {}) {
+      const original = Array.isArray(pool) ? pool : [];
+      if (original.length === 0) return '';
+      let budgeted = this._filterForQuestionBudget(original);
+      if (budgeted.length === 0) budgeted = [this._alternativeFor(original[0])];
+      if (budgeted.length === 1) {
+        const only = budgeted[0];
+        if (options.trackQuestions !== false) this._noteAskedQuestion(only);
+        return only;
+      }
 
       const recent = this.memory.recentBotMessages;
-      let candidates = pool.filter((p) => !recent.includes(p));
+      let candidates = budgeted.filter((item) => !recent.includes(item));
 
       if (candidates.length === 0) {
         const last = recent[recent.length - 1];
-        candidates = pool.filter((p) => p !== last);
+        candidates = budgeted.filter((item) => item !== last);
       }
-      if (candidates.length === 0) candidates = pool;
+      if (candidates.length === 0) candidates = budgeted;
 
-      return candidates[Math.floor(Math.random() * candidates.length)];
+      const picked = candidates[Math.floor(Math.random() * candidates.length)];
+      if (options.trackQuestions !== false) this._noteAskedQuestion(picked);
+      return picked;
     }
   }
 
@@ -587,6 +665,9 @@
     scoreSentiment,
     ENTITY_DECAY_PER_TURN,
     ENTITY_CALLBACK_PROBABILITY,
+    CONSECUTIVE_QUESTION_LIMIT,
+    QUESTION_BUDGET_WINDOW,
+    QUESTION_BUDGET_LIMIT,
     ConversationMemory,
     DaryaResponseEngine,
   };

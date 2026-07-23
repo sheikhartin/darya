@@ -234,10 +234,10 @@
   };
 
   const strategyShiftFallbacks = [
-    "Let's pause for a second. Right now, what's taking up the most space in your mind?",
-    'If you were describing this feeling to a friend, what would you say?',
-    'Would you like to talk about something else for a bit?',
-    'What might make this moment feel a little lighter, right now?',
+    "Let's look at this from a new angle. Which part feels most present for you?",
+    'If you described this feeling to a friend, where would you start?',
+    "Alongside this, what else has been taking up space in your mind lately?",
+    'What could make this moment feel a little more manageable right now?',
   ];
 
   const sessionCheckIns = [
@@ -321,12 +321,19 @@
 
   const exitKeywords = ['bye', 'goodbye', 'i have to go', 'i need to go', 'exit', 'quit'];
 
-  const greetings = [
-    `Hi, I'm ${BOT_NAME}. I'm glad you're here with me today.`,
-    `Hello, it's good to see you. I'm ${BOT_NAME}, and I'm listening.`,
-    `Welcome. I'm ${BOT_NAME}, and whatever's on your mind, this is a safe place for it.`,
-    "Hi there! I'm glad you're here. What's on your mind today?",
+  const greetingsOpen = [
+    `Hi, I'm ${BOT_NAME}. What would you like to share today?`,
+    `Hello, I'm ${BOT_NAME}, and I'm listening. What's been on your mind lately?`,
   ];
+  const greetingsInviting = [
+    `Hi, I'm ${BOT_NAME}. You can tell me about anything that's been weighing on you.`,
+    `Welcome. I'm ${BOT_NAME}; start wherever feels easiest and tell me what's there.`,
+  ];
+  const greetingsReturning = [
+    `Welcome back. I'm ${BOT_NAME}; what thought or feeling would you like to start with this time?`,
+    `Hello again. What feels most worth sharing right now?`,
+  ];
+  const greetings = [...greetingsOpen, ...greetingsInviting, ...greetingsReturning];
 
   const farewells = [
     "Take care of yourself. I'm here whenever you'd like to talk again.",
@@ -367,6 +374,13 @@
     entityCallbackTemplates,
     exitKeywords,
     greetings,
+    greetingsOpen,
+    greetingsInviting,
+    greetingsReturning,
+    // Compatibility aliases for the earlier misspelled pool names.
+    greentingsOpen: greetingsOpen,
+    greentingsInviting: greetingsInviting,
+    greentingsReturning: greetingsReturning,
     farewells,
     emptyInputReply,
     foreignLanguageRedirect,
