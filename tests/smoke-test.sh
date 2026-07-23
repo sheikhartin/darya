@@ -334,6 +334,18 @@ else
   fail "English font configuration is too thin or missing"
 fi
 
+if grep -q 'selectResponseStrategy' js/darya-engine.js && grep -q 'responseStrategies' js/darya-engine.js; then
+  ok "response strategy decisions are tracked"
+else
+  fail "response strategy tracking is missing"
+fi
+
+if grep -q 'html\[data-theme="beach"\] .menu__trigger' css/style.css && grep -q 'html\[data-theme="beach"\] .input-hint' css/style.css; then
+  ok "beach menu and language hint visibility rules are present"
+else
+  fail "beach foreground visibility rules are missing"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================

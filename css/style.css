@@ -1280,3 +1280,33 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
     transform: none;
   }
 }
+
+/* Bright-sky controls need their own ink and surface treatment. The ocean
+   trigger uses subdued foam tones, but those same tones disappear against
+   the beach sky. */
+html[data-theme="beach"] .menu__trigger {
+  color: var(--color-on-sky);
+  border-color: rgba(18, 56, 71, 0.34);
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 3px 12px rgba(91, 61, 35, 0.12);
+}
+
+html[data-theme="beach"] .menu__trigger:hover,
+html[data-theme="beach"] .menu__trigger[aria-expanded="true"] {
+  color: var(--color-on-sky-link);
+  border-color: var(--color-on-sky-link);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+html[data-theme="beach"] .input-hint {
+  color: var(--color-on-sky);
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(18, 56, 71, 0.22);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-shadow: none;
+}
+
+html[data-theme="beach"] .disclaimer {
+  color: #f7ead5;
+}
