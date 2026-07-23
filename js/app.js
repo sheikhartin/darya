@@ -1,5 +1,5 @@
 /**
- * Darya — front-end chat controller for the static (GitHub Pages) build.
+ * Darya - front-end chat controller for the static (GitHub Pages) build.
  * Runs entirely client-side against `window.DaryaEngine` and the active
  * `window.DaryaLang` pack (fa or en).
  *
@@ -38,6 +38,7 @@
   const pickerFaEl = document.getElementById('picker-fa');
   const pickerEnEl = document.getElementById('picker-en');
   const themeToggleButtons = document.querySelectorAll('[data-theme-choice]');
+  const themePickerEl = document.getElementById('theme-picker');
 
   const appEl = document.getElementById('app');
   const headerTitleEl = document.getElementById('header-title');
@@ -48,9 +49,12 @@
   const inputEl = document.getElementById('composer-input');
   const sendButtonEl = document.getElementById('composer-send');
   const disclaimerEl = document.getElementById('disclaimer-text');
+  const typingStatusEl = document.getElementById('typing-row');
 
   const menuTriggerEl = document.getElementById('menu-trigger');
   const menuPopoverEl = document.getElementById('menu-popover');
+  const menuItemElements = [...menuPopoverEl.querySelectorAll('[role="menuitem"]')];
+  let menuFocusIndex = 0;
   const menuNewChatEl = document.getElementById('menu-new-chat');
   const menuNewChatLabelEl = document.getElementById('menu-new-chat-label');
   const menuExportMdEl = document.getElementById('menu-export-md');
@@ -73,8 +77,12 @@
    * @returns {string|null}
    */
   function getCookie(name) {
-    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : null;
+    try {
+      const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   /**
@@ -85,8 +93,13 @@
    * @param {number} days
    */
   function setCookie(name, value, days) {
-    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    try {
+      const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    } catch (error) {
+      // Cookie access can be blocked in private or embedded contexts. Theme
+      // selection still works for this tab; persistence is best effort.
+    }
   }
 
   /**
@@ -98,7 +111,8 @@
    * @returns {boolean}
    */
   function isTouchDevice() {
-    return window.matchMedia('(pointer: coarse)').matches;
+    return typeof window.matchMedia === 'function'
+      && window.matchMedia('(pointer: coarse)').matches;
   }
 
   /** Focuses the message input, but only on non-touch (mouse/trackpad) devices. */
@@ -119,10 +133,11 @@
    * @param {'ocean'|'beach'} theme
    */
   function applyTheme(theme) {
-    htmlRootEl.setAttribute('data-theme', theme);
-    setCookie(THEME_COOKIE_NAME, theme, THEME_COOKIE_MAX_AGE_DAYS);
+    const safeTheme = theme === 'beach' ? 'beach' : 'ocean';
+    htmlRootEl.setAttribute('data-theme', safeTheme);
+    setCookie(THEME_COOKIE_NAME, safeTheme, THEME_COOKIE_MAX_AGE_DAYS);
     themeToggleButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme));
+      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
     });
     updateThemeMenuItem();
   }
@@ -141,6 +156,9 @@
     menuThemeIconEl.textContent = target === 'ocean' ? '🌊' : '🏖️';
     menuThemeLabelEl.textContent = target === 'ocean' ? lang.ui.themeOceanLabel : lang.ui.themeBeachLabel;
     menuThemeToggleEl.dataset.themeChoice = target;
+    const themeTitle = target === 'ocean' ? lang.ui.themeOceanTitle : lang.ui.themeBeachTitle;
+    menuThemeToggleEl.setAttribute('title', themeTitle);
+    menuThemeLabelEl.setAttribute('title', themeTitle);
   }
 
   /** @type {object|null} The active language pack (window.DaryaLang.fa/en). */
@@ -169,6 +187,10 @@
    * @type {TranscriptEntry[]}
    */
   let transcript = [];
+
+  // Invalidates delayed replies when New chat is chosen while Darya is
+  // thinking, so an old response can never appear in the fresh conversation.
+  let conversationGeneration = 0;
 
   // --- Timing / formatting helpers -----------------------------------------
 
@@ -281,11 +303,13 @@
     refreshComposerState();
   }
 
-  async function deliverReply(replyText) {
+  async function deliverReply(replyText, generation = conversationGeneration) {
     setTypingVisible(true);
     await new Promise((resolve) => setTimeout(resolve, randomReplyDelay()));
     setTypingVisible(false);
+    if (generation !== conversationGeneration) return false;
     appendMessage('bot', replyText);
+    return true;
   }
 
   // --- Language selection --------------------------------------------------
@@ -311,7 +335,23 @@
     inputEl.setAttribute('dir', lang.dir);
     inputEl.setAttribute('lang', lang.code);
     sendButtonEl.setAttribute('aria-label', lang.ui.ariaSendLabel);
+    sendButtonEl.setAttribute('title', lang.ui.sendButtonTitle);
     menuTriggerEl.setAttribute('aria-label', lang.ui.ariaMenuLabel);
+    menuTriggerEl.setAttribute('title', lang.ui.menuTriggerTitle);
+    pickerFaEl.setAttribute('title', lang.ui.pickerFaTitle);
+    pickerEnEl.setAttribute('title', lang.ui.pickerEnTitle);
+    themeToggleButtons.forEach((button) => {
+      button.setAttribute('title', button.dataset.themeChoice === 'ocean'
+        ? lang.ui.themeOceanTitle
+        : lang.ui.themeBeachTitle);
+    });
+    menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
+    menuExportMdEl.setAttribute('aria-label', lang.ui.ariaExportMdLabel);
+    menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
+    menuExportTxtEl.setAttribute('aria-label', lang.ui.ariaExportTxtLabel);
+    menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
+    themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
+    typingStatusEl.setAttribute('aria-label', lang.ui.typingLabel);
     menuNewChatLabelEl.textContent = lang.ui.menuNewChat;
     menuExportMdLabelEl.textContent = lang.ui.menuExportMd;
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
@@ -343,6 +383,8 @@
    * find it.
    */
   function showPicker() {
+    conversationGeneration += 1;
+    setTypingVisible(false);
     appEl.hidden = true;
     pickerEl.hidden = false;
     closeMenu();
@@ -358,6 +400,7 @@
   // --- Conversation flow -------------------------------------------------------
 
   async function startConversation() {
+    const generation = ++conversationGeneration;
     engine = new DaryaResponseEngine(lang);
     conversationEnded = false;
     transcript = [];
@@ -366,13 +409,15 @@
     inputEl.setAttribute('placeholder', lang.ui.placeholderDefault);
     setComposerBusy(true);
 
-    await deliverReply(engine.greeting());
+    const delivered = await deliverReply(engine.greeting(), generation);
+    if (!delivered || generation !== conversationGeneration) return;
 
     setComposerBusy(false);
     focusInputUnlessTouch();
   }
 
   async function sendMessage(text) {
+    const generation = conversationGeneration;
     appendMessage('user', text);
     inputEl.value = '';
     setComposerBusy(true);
@@ -380,7 +425,8 @@
     const isExit = engine.isExitCommand(text);
     const replyText = isExit ? engine.farewell() : engine.respond(text);
 
-    await deliverReply(replyText);
+    const delivered = await deliverReply(replyText, generation);
+    if (!delivered || generation !== conversationGeneration) return;
 
     if (isExit) {
       conversationEnded = true;
@@ -458,11 +504,20 @@
   function openMenu() {
     menuPopoverEl.hidden = false;
     menuTriggerEl.setAttribute('aria-expanded', 'true');
+    menuFocusIndex = 0;
+    requestAnimationFrame(() => menuItemElements[menuFocusIndex]?.focus());
   }
 
-  function closeMenu() {
+  function closeMenu(restoreFocus = false) {
     menuPopoverEl.hidden = true;
     menuTriggerEl.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) menuTriggerEl.focus();
+  }
+
+  function moveMenuFocus(step) {
+    if (menuItemElements.length === 0) return;
+    menuFocusIndex = (menuFocusIndex + step + menuItemElements.length) % menuItemElements.length;
+    menuItemElements[menuFocusIndex].focus();
   }
 
   function toggleMenu() {
@@ -513,6 +568,27 @@
     toggleMenu();
   });
 
+  menuPopoverEl.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveMenuFocus(1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveMenuFocus(-1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      menuFocusIndex = 0;
+      menuItemElements[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      menuFocusIndex = menuItemElements.length - 1;
+      menuItemElements.at(-1)?.focus();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(true);
+    }
+  });
+
   document.addEventListener('click', (event) => {
     if (!menuPopoverEl.hidden && !menuPopoverEl.contains(event.target) && event.target !== menuTriggerEl) {
       closeMenu();
@@ -521,8 +597,7 @@
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !menuPopoverEl.hidden) {
-      closeMenu();
-      menuTriggerEl.focus();
+      closeMenu(true);
     }
   });
 
@@ -570,7 +645,7 @@
   // Bubbles (ocean) and wind gusts (beach) are generated here, each with
   // independently randomized position/size/timing, rather than living as
   // static markup driven by a repeating CSS formula -- a fixed formula is
-  // exactly what made the earlier version read as a sequential row of
+  // exactly what made the earlier layout read as a sequential row of
   // identical bubbles instead of something organic. Both sets are built
   // once at load and simply left in the DOM; CSS shows only the active
   // theme's set via `display`, so no regeneration is needed on toggle.
@@ -585,23 +660,34 @@
     return min + Math.random() * (max - min);
   }
 
+  function initBeachWaveVariation() {
+    const layers = document.querySelectorAll('.beach-scene__ocean');
+    const ranges = [[56, 72], [42, 58], [30, 46]];
+    layers.forEach((layer, index) => {
+      const [min, max] = ranges[index] || ranges[ranges.length - 1];
+      const duration = randomBetween(min, max);
+      layer.style.setProperty('--wave-duration', `${duration.toFixed(2)}s`);
+      layer.style.setProperty('--wave-delay', `-${randomBetween(0, duration).toFixed(2)}s`);
+    });
+  }
+
   function initBubbles() {
     const container = document.querySelector('.bubbles');
     if (!container) return;
-    const count = 10;
+    const count = 8;
     for (let i = 0; i < count; i += 1) {
       const bubble = document.createElement('span');
       bubble.className = 'bubble-particle';
-      const size = randomBetween(4, 19);
-      const duration = randomBetween(11, 26);
+      const size = randomBetween(4, 14);
+      const duration = randomBetween(14, 22);
       bubble.style.setProperty('--left', `${randomBetween(2, 96).toFixed(1)}%`);
       bubble.style.setProperty('--size', `${size.toFixed(1)}px`);
       bubble.style.setProperty('--duration', `${duration.toFixed(1)}s`);
       // A negative delay starts the animation already partway through its
       // cycle, so bubbles don't all begin rising from the bottom at once.
       bubble.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      bubble.style.setProperty('--drift', `${randomBetween(-24, 24).toFixed(0)}px`);
-      bubble.style.setProperty('--peak-opacity', randomBetween(0.22, 0.55).toFixed(2));
+      bubble.style.setProperty('--drift', `${randomBetween(-12, 12).toFixed(0)}px`);
+      bubble.style.setProperty('--peak-opacity', randomBetween(0.15, 0.45).toFixed(2));
       container.appendChild(bubble);
     }
   }
@@ -680,6 +766,7 @@
   // however, is restored immediately so returning visitors see their
   // chosen look right away.
   applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
+  initBeachWaveVariation();
   initBubbles();
   initWindGusts();
   initWetPatches();

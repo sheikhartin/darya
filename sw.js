@@ -7,14 +7,14 @@
  *
  * Cache-first strategy: once cached, an asset is served from the cache
  * without touching the network at all. To ship an update, bump
- * CACHE_VERSION below -- that creates a new cache name, so the install
+ * CACHE_NAME below -- that creates a new cache name, so the install
  * step re-fetches everything fresh, and the old cache is cleared out on
  * activate.
  */
 
 'use strict';
 
-const CACHE_VERSION = 'darya-v1';
+const CACHE_NAME = 'darya-cache-current';
 
 const PRECACHE_URLS = [
   './',
@@ -23,14 +23,21 @@ const PRECACHE_URLS = [
   './css/style.css',
   './js/app.js',
   './js/darya-engine.js',
+  './js/knowledge-base.js',
+  './js/languages/halfspace.js',
+  './js/languages/entity-extractor.js',
   './js/languages/fa.js',
   './js/languages/en.js',
+  './fonts/BeVietnamPro-Regular.woff2',
+  './fonts/BeVietnamPro-Medium.woff2',
+  './fonts/BeVietnamPro-SemiBold.woff2',
+  './fonts/BeVietnamPro-Bold.woff2',
+  './fonts/BeVietnamPro-Italic.woff2',
   './fonts/Vazirmatn-Regular.woff2',
   './fonts/Vazirmatn-Medium.woff2',
   './fonts/Vazirmatn-SemiBold.woff2',
   './fonts/Vazirmatn-Bold.woff2',
   './fonts/Lalezar-Regular.woff2',
-  './fonts/Nunito-VF.woff2',
   './fonts/Quicksand-VF.woff2',
   './favicon.ico',
   './assets/favicon.svg',
@@ -44,7 +51,7 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
-      .open(CACHE_VERSION)
+      .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
       .then(() => self.skipWaiting())
   );
@@ -54,7 +61,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -81,7 +88,7 @@ self.addEventListener('fetch', (event) => {
           // app ever requests is offline-capable too.
           if (response && response.status === 200) {
             const responseClone = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(request, responseClone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           }
           return response;
         })

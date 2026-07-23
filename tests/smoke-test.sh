@@ -52,6 +52,7 @@ required_files=(
   "css/style.css"
   "js/app.js"
   "js/darya-engine.js"
+  "js/knowledge-base.js"
   "js/languages/fa.js"
   "js/languages/en.js"
   "favicon.ico"
@@ -59,7 +60,6 @@ required_files=(
   "manifest.json"
   "sw.js"
   "fonts/Vazirmatn-Regular.woff2"
-  "fonts/Nunito-VF.woff2"
   "fonts/Quicksand-VF.woff2"
   "fonts/Lalezar-Regular.woff2"
   "assets/icons/icon-192.png"
@@ -79,7 +79,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app.js js/darya-engine.js js/languages/fa.js js/languages/en.js; do
+  for f in js/app.js js/darya-engine.js js/knowledge-base.js js/languages/fa.js js/languages/en.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -95,9 +95,9 @@ section "Node engine test suite"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  if node --test tests/engine.test.js > /tmp/darya-node-test.log 2>&1; then
+  if node --test tests/engine.test.js tests/quality.test.js > /tmp/darya-node-test.log 2>&1; then
     node_pass=$(grep -oP '(?<=# pass )\d+' /tmp/darya-node-test.log || echo "?")
-    ok "engine tests passed ($node_pass tests)"
+    ok "engine and quality tests passed ($node_pass tests)"
   else
     fail "engine test suite failed -- see details below"
     grep -E "^not ok|AssertionError" /tmp/darya-node-test.log | sed 's/^/      /'
@@ -138,11 +138,11 @@ else
   fail "menu popover anchoring changed -- verify it doesn't overflow the viewport again"
 fi
 
-# The ugly white foam overlay that was removed from the beach scene.
+# The beach needs a dedicated, thin foam line at the waterline.
 if grep -q 'beach-scene__foam' index.html css/style.css 2>/dev/null; then
-  fail "beach-scene__foam references still present -- this was removed intentionally"
+  ok "beach-scene foam line is present"
 else
-  ok "beach-scene foam overlay stays removed"
+  fail "beach-scene foam line is missing"
 fi
 
 # The beach-theme text contrast bug: several text elements (picker note,
@@ -178,6 +178,176 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 # ============================================================================
+section "Feature regression markers"
+# ============================================================================
+
+# Half-space normalization must load before the Persian language pack.
+if grep -q 'js/languages/halfspace.js' index.html && grep -q 'DaryaHalfspace' js/languages/halfspace.js; then
+  ok "halfspace wired before the Persian language pack"
+else
+  fail "halfspace normalizer is not wired correctly"
+fi
+
+# Beach markup is intentionally structural: one fixed scene, three empty ocean
+# layers, and CSS-only sun children instead of inline wave artwork.
+if grep -q 'class="beach-scene"' index.html && [[ "$(grep -o 'class="beach-scene__ocean' index.html | wc -l)" -eq 3 ]] && grep -q 'beach-scene__sun-halo' index.html; then
+  ok "beach scene structure has three ocean layers and a CSS sun"
+else
+  fail "beach scene structure is incomplete"
+fi
+
+if grep -q 'beach-scene__ocean' css/style.css && grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'mask-image: linear-gradient(to right, transparent 0%' css/style.css && grep -q 'background-position-x' css/style.css && ! grep -Eq 'translate3d\([^,]+, *-[123]px' css/style.css; then
+  ok "wave layers use in-place repeat-x tiles with an edge mask"
+else
+  fail "wave tile repeat-x/mask regression marker missing"
+fi
+
+if grep -q 'animation: sun-breathe' css/style.css && grep -q '@keyframes sun-breathe' css/style.css; then
+  ok "sun breathing animation is present"
+else
+  fail "sun breathing animation is missing"
+fi
+
+if grep -q 'height: 110px' css/style.css && ! grep -q '24vh' css/style.css; then
+  ok "beach scrim remains narrow at 110px"
+else
+  fail "broad 24vh beach scrim has regressed"
+fi
+
+if grep -q 'menuExportMd:.*دانلود گفتگو.*مارک‌داون' js/languages/fa.js && ! grep -q 'دانلود گفتگو (' js/languages/fa.js; then
+  ok "Persian export label uses Markdown transliteration without parentheses"
+else
+  fail "Persian export label is missing the no-parentheses form"
+fi
+
+legacy_markdown_label='دانلود گفتگو ('''Markdown''')'
+if ! grep -q "$legacy_markdown_label" index.html js/languages/fa.js js/languages/en.js 2>/dev/null; then
+  ok "old parenthesized Markdown export form is gone"
+else
+  fail "old parenthesized Markdown export form remains"
+fi
+
+# Additional hardening checks keep the static shell honest as assets evolve.
+if command -v node >/dev/null 2>&1 && node - <<'NODE'
+  global.window = global;
+  require('./js/languages/halfspace.js');
+  const words = ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی'];
+  process.exit(words.every((word) => global.halfSpace(word) === word) ? 0 : 1);
+NODE
+then
+  ok "halfspace allow-list roots remain unchanged"
+else
+  fail "halfspace allow-list regression detected"
+fi
+
+if python3 - <<'PY2'
+import pathlib, re
+sw = pathlib.Path('sw.js').read_text()
+entries = set(re.findall(r"['\"](\./[^'\"]+)['\"]", sw))
+required = {'./index.html'}
+required.update('./js/languages/' + p.name for p in pathlib.Path('js/languages').glob('*.js'))
+required.update('./fonts/' + p.name for p in pathlib.Path('fonts').glob('*.woff2'))
+raise SystemExit(0 if required <= entries else 1)
+PY2
+then
+  ok "service worker precaches every language script and font"
+else
+  fail "service worker precache is incomplete"
+fi
+
+forbidden_pattern='language'\ 'model|L''LM|AI'\ 'assistant|therap''ist|دانلود گفتگو ('\ 'Markdown'\ ')|(^|[^A-Za-z])v[0-9]+\.[0-9]+'
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
+  ok "forbidden identity and legacy version strings stay out of app sources"
+else
+  fail "forbidden source strings found: $(tr '\n' ' ' </tmp/darya-forbidden.log)"
+fi
+
+if grep -q 'supports not' css/style.css && grep -q 'mask-image' css/style.css; then
+  ok "beach wave has a no-mask fallback"
+else
+  fail "beach wave fallback for older mask engines is missing"
+fi
+
+if grep -q 'backdrop__depth-breath' index.html css/style.css && grep -q '@keyframes depth-breathe' css/style.css && grep -q 'prefers-reduced-motion: reduce' css/style.css; then
+  ok "ocean depth breath is present and reduced-motion safe"
+else
+  fail "ocean depth breath regression detected"
+fi
+
+if grep -q 'const count = 8' js/app.js && grep -q 'randomBetween(14, 22)' js/app.js && grep -q 'randomBetween(-12, 12)' js/app.js; then
+  ok "ocean bubble parameters are randomized in the calm range"
+else
+  fail "ocean bubble randomization regression detected"
+fi
+
+if grep -A4 '@keyframes horizon-drift' css/style.css | grep -q 'translateX' && ! grep -A4 '@keyframes horizon-drift' css/style.css | grep -q 'translateY'; then
+  ok "ocean horizon drift has no vertical bob"
+else
+  fail "ocean horizon vertical bob regression detected"
+fi
+
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
+  ok "intelligence identity and generic-phrase guards pass"
+else
+  fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"
+fi
+
+if grep -q 'topicSpecificQuestions' js/darya-engine.js js/languages/en.js js/languages/fa.js && grep -q 'blend_sleep_anxiety' js/languages/en.js js/languages/fa.js && grep -q "rule('recap'" js/languages/en.js js/languages/fa.js; then
+  ok "topic-specific questions, blends, and recap rules are wired"
+else
+  fail "intelligence topic-depth wiring is incomplete"
+fi
+
+if grep -q 'contextTopics' js/darya-engine.js && grep -q '_entityContextConfidence' js/darya-engine.js; then
+  ok "entity callbacks carry topic context confidence"
+else
+  fail "entity context confidence guard is missing"
+fi
+
+if [[ "$(grep -n 'id="menu-export-txt"' index.html | cut -d: -f1)" -lt "$(grep -n 'id="menu-export-md"' index.html | cut -d: -f1)" ]] && grep -q 'پوسته' js/languages/fa.js; then
+  ok "plain text export precedes Markdown and Persian uses پوسته"
+else
+  fail "export order or Persian theme wording is wrong"
+fi
+
+if grep -q 'initBeachWaveVariation' js/app.js && grep -q -- '--wave-duration' js/app.js && grep -q -- '--wave-delay' js/app.js && ! grep -Eq 'beach-ocean-drift[^}]*translate3d' css/style.css; then
+  ok "beach waves have randomized horizontal-only timing"
+else
+  fail "beach wave variation regression detected"
+fi
+
+emdash=$'\u2014'
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' "$emdash" . >/tmp/darya-emdash.log 2>&1; then
+  ok "no em dash characters remain"
+else
+  fail "em dash characters found: $(tr '\n' ' ' </tmp/darya-emdash.log)"
+fi
+
+if grep -q "CACHE_NAME = 'darya-cache-current'" sw.js && ! grep -q 'CACHE_VERSION' sw.js OFFLINE.md; then
+  ok "service worker cache uses a non-versioned current name"
+else
+  fail "numeric cache version reference remains"
+fi
+
+if grep -q "font-family: 'Be Vietnam Pro'" css/style.css && ! grep -Eq "font-weight: (100|200|300)" css/style.css; then
+  ok "English uses a readable non-thin Be Vietnam Pro setup"
+else
+  fail "English font configuration is too thin or missing"
+fi
+
+if grep -q 'selectResponseStrategy' js/darya-engine.js && grep -q 'responseStrategies' js/darya-engine.js; then
+  ok "response strategy decisions are tracked"
+else
+  fail "response strategy tracking is missing"
+fi
+
+if grep -q 'html\[data-theme="beach"\] .menu__trigger' css/style.css && grep -q 'html\[data-theme="beach"\] .input-hint' css/style.css; then
+  ok "beach menu and language hint visibility rules are present"
+else
+  fail "beach foreground visibility rules are missing"
+fi
+
+# ============================================================================
 section "Live server checks"
 # ============================================================================
 
@@ -208,13 +378,13 @@ else
     check_status "/css/style.css" "200"
     check_status "/js/app.js" "200"
     check_status "/js/darya-engine.js" "200"
+    check_status "/js/knowledge-base.js" "200"
     check_status "/js/languages/fa.js" "200"
     check_status "/js/languages/en.js" "200"
     check_status "/favicon.ico" "200"
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"
     check_status "/fonts/Vazirmatn-Regular.woff2" "200"
-    check_status "/fonts/Nunito-VF.woff2" "200"
     check_status "/assets/icons/icon-192.png" "200"
     check_status "/assets/icons/icon-512.png" "200"
     check_status "/assets/favicon.svg" "200"

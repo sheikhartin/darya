@@ -1,5 +1,5 @@
 /**
- * Darya — generic Rogerian conversation engine core.
+ * Darya - generic Rogerian conversation engine core.
  *
  * This file contains no language-specific content at all: every string,
  * pattern, and lexicon lives in a "language pack" (see js/languages/fa.js
@@ -36,7 +36,7 @@
  *     grammatical, whereas Persian carries person/number in the verb
  *     ending itself, where a naive word-swap would often break.
  *
- * None of this is a real language model: it is a considerably richer,
+ * None of this is genuine language understanding: it is a considerably richer,
  * carefully engineered rule-based/expert-system approach (in the lineage
  * of ELIZA and Rogerian-style companions), not a claim of genuine
  * language understanding.
@@ -55,6 +55,20 @@
   const PRONOUN_REFLECTION_MAX_WORDS = 14;
   const PRONOUN_REFLECTION_MIN_WORDS = 2;
   const EXCERPT_MAX_LENGTH = 60;
+  const ENTITY_DECAY_PER_TURN = 0.18;
+  const ENTITY_CALLBACK_PROBABILITY = 0.55;
+  const CONSECUTIVE_QUESTION_LIMIT = 1;
+  const QUESTION_BUDGET_WINDOW = 3;
+  const QUESTION_BUDGET_LIMIT = 1;
+
+  /* Conversation design notes: keep replies relevant and proportionate,
+     alternate reflection with a small number of concrete questions, and
+     treat humor as a context-sensitive option rather than a personality
+     default. Structural inspiration: the reflective-inquiry discussion at
+     https://arxiv.org/html/2312.06024v4 and the turn-taking/relevance chapter
+     at https://web.stanford.edu/~jurafsky/slp3/old_jan25/15.pdf. Darya keeps
+     those ideas deterministic and local: lexical topics, weighted memory,
+     and explicit safety gates rather than a runtime service. */
 
   // ==========================================================================
   // Text helpers (language-agnostic, operate on whatever script range and
@@ -99,7 +113,20 @@
    */
   function truncateExcerpt(text, maxLength) {
     if (text.length <= maxLength) return text;
-    return `${text.slice(0, maxLength).trim()}…`;
+    return `${text.slice(0, maxLength).trim()}...`;
+  }
+
+  /**
+   * Canonicalizes punctuation used only for rule matching. The original
+   * utterance remains intact for memory and display, while سلام, سلام! and
+   * سلام. reach the same matcher path.
+   */
+  function normalizeForMatching(rawText, lang) {
+    const normalized = lang.normalize(rawText);
+    return normalized
+      .replace(/[ \t\r\n]*[.,،؛:!?؟]+[ \t\r\n]*/gu, ' ')
+      .replace(/[ \t\r\n]+/gu, ' ')
+      .trim();
   }
 
   /**
@@ -182,6 +209,23 @@
       this.sameRuleStreak = 0;
       this.distressNudgeGiven = false;
       this.turnCount = 0;
+      // Entity values are intentionally small, ephemeral records. The map
+      // key is stable for lookup, while surface preserves the person's own
+      // spelling for a natural callback.
+      this.namedEntities = new Map();
+      this.askedQuestionTurns = [];
+      this.consecutiveQuestions = 0;
+      this.topicHistory = [];
+      this.topicWeights = new Map();
+      this.seriousnessHistory = [];
+      this.currentSubject = { topic: null, entityRefs: [], since: 0 };
+      this.lightStreak = 0;
+      this.lastWarmthTurn = -Infinity;
+      this.smalltalkTurns = [];
+      this.responseStrategies = [];
+      this.turnFrames = [];
+      this.pendingQuestions = [];
+      this.answeredQuestions = [];
     }
 
     rememberUtterance(utterance) {
@@ -189,9 +233,13 @@
       if (this.recentUtterances.length > this.capacity) this.recentUtterances.shift();
     }
 
-    rememberTopic(topic) {
+    rememberTopic(topic, weight = 1) {
+      if (!topic) return;
       this.recentTopics.push(topic);
       if (this.recentTopics.length > this.capacity) this.recentTopics.shift();
+      this.topicHistory.push({ topic, weight, turn: this.turnCount });
+      if (this.topicHistory.length > 7) this.topicHistory.shift();
+      this.topicWeights.set(topic, (this.topicWeights.get(topic) || 0) + weight);
 
       if (topic === this.lastRuleTopic) {
         this.sameRuleStreak += 1;
@@ -199,6 +247,52 @@
         this.sameRuleStreak = 1;
       }
       this.lastRuleTopic = topic;
+    }
+
+    rememberTopics(topics, weight = 1) {
+      const unique = [...new Set((topics || []).filter(Boolean))];
+      unique.forEach((topic) => this.rememberTopic(topic, weight));
+    }
+
+    rememberSeriousness(value) {
+      this.seriousnessHistory.push(value);
+      if (this.seriousnessHistory.length > 6) this.seriousnessHistory.shift();
+      this.lightStreak = value < 0.5 ? this.lightStreak + 1 : 0;
+    }
+
+    updateSubject(topics, entities) {
+      const topic = topics[0] || this.currentSubject.topic || null;
+      if (topic !== this.currentSubject.topic) {
+        this.currentSubject = { topic, entityRefs: [], since: this.turnCount };
+      }
+      const refs = (entities || []).map((entity) => `${entity.type}:${entity.surface}`);
+      this.currentSubject.entityRefs = [...new Set([...this.currentSubject.entityRefs, ...refs])].slice(-8);
+    }
+
+    rememberStrategy(strategy) {
+      this.responseStrategies.push({ strategy, turn: this.turnCount });
+      if (this.responseStrategies.length > 8) this.responseStrategies.shift();
+    }
+
+    rememberTurnFrame(frame) {
+      this.turnFrames.push(frame);
+      if (this.turnFrames.length > 8) this.turnFrames.shift();
+    }
+
+    noteBotQuestion(question, topic) {
+      this.pendingQuestions.push({ question, topic, askedAtTurn: this.turnCount, answered: false });
+      if (this.pendingQuestions.length > 4) this.pendingQuestions.shift();
+    }
+
+    markLatestQuestionAnswered(answer, turn) {
+      const pending = [...this.pendingQuestions].reverse().find((item) => !item.answered);
+      if (!pending) return null;
+      pending.answered = true;
+      pending.answer = answer;
+      pending.answeredAtTurn = turn;
+      this.answeredQuestions.push(pending);
+      if (this.answeredQuestions.length > 6) this.answeredQuestions.shift();
+      return pending;
     }
 
     rememberBotMessage(message) {
@@ -213,6 +307,97 @@
       if (this.sentimentHistory.length > SENTIMENT_HISTORY_SIZE) {
         this.sentimentHistory.shift();
       }
+    }
+
+    /**
+     * Age named entities at the start of a new user turn. A multiplicative
+     * decay keeps recent memories available while making a long-abandoned
+     * detail naturally fall below the callback threshold.
+     */
+    decayNamedEntities() {
+      for (const [key, entity] of this.namedEntities) {
+        const current = Number.isFinite(entity.activation) ? entity.activation : 0;
+        entity.activation = Math.max(0, current * (1 - ENTITY_DECAY_PER_TURN));
+        entity.age = Math.max(0, Number.isFinite(entity.age) ? entity.age + 1 : 1);
+        // Remove a memory once its practical score is zero. This keeps the
+        // map bounded and makes decay monotonic even if a malformed record
+        // enters the map from an integration test or future adapter.
+        if (entity.activation < 0.05) {
+          entity.activation = 0;
+          this.namedEntities.delete(key);
+        }
+      }
+    }
+
+    /**
+     * Remember only the entities selected by the language pack extractor.
+     * This method is called after response selection, which is important:
+     * a brand-new entity cannot be used to fabricate an "earlier" callback
+     * in the same turn.
+     */
+    rememberEntities(entities, turn = this.turnCount, context = {}) {
+      const contextTopics = [...new Set(context.topics || [])];
+      for (const item of entities || []) {
+        if (!item || !item.type || !item.surface) continue;
+        const key = item.key || `${item.type}:${item.surface.toLocaleLowerCase()}`;
+        const old = this.namedEntities.get(key);
+        if (old) {
+          old.surface = item.surface;
+          old.activation = Math.min(1, old.activation + 0.34 * item.confidence);
+          old.confidence = Math.max(old.confidence, item.confidence);
+          old.mentions += 1;
+          old.lastMentionTurn = turn;
+          old.age = 0;
+          old.contextTopics = [...new Set([...(old.contextTopics || []), ...contextTopics])].slice(-5);
+          old.contextConfidence = Math.max(old.contextConfidence || 0, item.confidence);
+          old.contextSeriousness = context.seriousness ?? old.contextSeriousness ?? 0;
+        } else {
+          this.namedEntities.set(key, {
+            type: item.type,
+            surface: item.surface,
+            confidence: item.confidence,
+            activation: item.confidence,
+            mentions: 1,
+            firstMentionTurn: turn,
+            lastMentionTurn: turn,
+            age: 0,
+            contextTopics,
+            contextConfidence: item.confidence,
+            contextSeriousness: context.seriousness ?? 0,
+          });
+        }
+      }
+    }
+
+    correctEntity(oldSurface, replacement, context = {}) {
+      const oldKey = String(oldSurface).trim().toLocaleLowerCase();
+      for (const [key, entity] of this.namedEntities) {
+        if (entity.surface.toLocaleLowerCase() === oldKey
+          || oldKey.endsWith(entity.surface.toLocaleLowerCase())
+          || key.endsWith(`:${oldKey}`)) {
+          entity.corrected = true;
+          entity.correctionTurn = this.turnCount;
+          this.namedEntities.delete(key);
+        }
+      }
+      if (replacement?.surface && replacement?.type) {
+        this.rememberEntities([{
+          type: replacement.type,
+          surface: replacement.surface,
+          confidence: Math.max(0.9, replacement.confidence || 0.9),
+        }], this.turnCount, context);
+      }
+    }
+
+    /**
+     * Returns remembered entities strong enough for a callback. A threshold
+     * is applied by the engine, not by extraction, so tests and future UI
+     * diagnostics can inspect low-confidence lexical candidates safely.
+     */
+    eligibleNamedEntities(threshold = 0.6) {
+      return [...this.namedEntities.values()]
+        .filter((entity) => entity.activation >= threshold)
+        .sort((a, b) => b.activation - a.activation);
     }
 
     /**
@@ -284,6 +469,25 @@
       this.rules = [...lang.rules].sort((a, b) => b.priority - a.priority);
       this.memory = new ConversationMemory();
       this._fallbackToggle = false;
+      this.entityCallbackThreshold = 0.6;
+      // Public for deterministic integration tests and future product tuning;
+      // every value is clamped at the decision point before it is used.
+      this.entityCallbackProbability = ENTITY_CALLBACK_PROBABILITY;
+      this.currentTurnTopics = [];
+      this.currentTurnSeriousness = 0;
+      this.lastTurnNeedsCare = false;
+      this.currentTurnDialogueAct = 'statement';
+      this.currentTurnIntent = 'unknown';
+      this.currentTurnQuestionNeed = 0;
+      this.conversationState = {
+        phase: 'new',
+        dialogueAct: null,
+        intent: null,
+        topics: [],
+        seriousness: 0,
+        strategy: null,
+        referenceConfidence: 0,
+      };
     }
 
     /**
@@ -292,7 +496,7 @@
      * @returns {boolean}
      */
     isExitCommand(rawText) {
-      const normalized = this.lang.normalize(rawText).toLowerCase();
+      const normalized = normalizeForMatching(rawText, this.lang).toLowerCase();
       return this.lang.exitKeywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
     }
 
@@ -310,19 +514,100 @@
       }
 
       const normalized = this.lang.normalize(rawText);
+      const matchingText = normalizeForMatching(rawText, this.lang);
+      this._currentNormalizedInput = matchingText;
+      const sentimentScore = scoreSentiment(normalized, this.lang.sentimentLexicon);
       this.memory.rememberUtterance(normalized);
-      this.memory.rememberSentiment(scoreSentiment(normalized, this.lang.sentimentLexicon));
+      this.memory.rememberSentiment(sentimentScore);
       this.memory.turnCount += 1;
+      this.memory.markLatestQuestionAnswered(normalized, this.memory.turnCount);
+      this.memory.decayNamedEntities();
 
-      const { rule: matchedRule, captured } = this._matchRule(normalized);
-      let reply = matchedRule
-        ? this._respondWithRule(matchedRule, captured)
-        : this._fallbackResponse(null, normalized);
+      const entities = global.DaryaEntityExtractor
+        ? global.DaryaEntityExtractor.extract(normalized, this.lang, {
+          emotionalWeight: sentimentScore !== 0,
+        })
+        : [];
+      this._turnEntities = entities;
+      const correction = this.detectEntityCorrection(matchingText);
+      if (correction) {
+        const oldEntity = [...this.memory.namedEntities.values()]
+          .find((entity) => correction.oldSurface.toLocaleLowerCase().includes(entity.surface.toLocaleLowerCase()));
+        if (oldEntity) {
+          this.memory.correctEntity(correction.oldSurface, {
+            type: oldEntity.type,
+            surface: correction.newSurface,
+            confidence: 0.96,
+          }, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
+        }
+      }
 
-      // The distress nudge is a caring, optional add-on layered on top of
-      // whatever the normal flow produced -- but it never overrides the
-      // dedicated safety-keyword rule, which already gives the more
-      // serious crisis response.
+      const matches = this._matchRules(matchingText);
+      const matchedRule = matches[0]?.rule || null;
+      const captured = matches[0]?.captured || '';
+      const matchedTopics = matches.map((match) => match.rule.topic);
+      this.currentTurnTopics = [...new Set(matchedTopics)];
+      this.currentReferenceContext = this.resolveReferenceContext(matchingText);
+      if (this.currentTurnTopics.length === 0 && this.currentReferenceContext) {
+        this.currentTurnTopics = [this.currentReferenceContext.topic];
+      }
+      this.currentTurnDialogueAct = this.classifyDialogueAct(matchingText, matchedRule);
+      if (this.currentTurnTopics.length === 0 && this.currentTurnDialogueAct === 'question'
+        && matchingText.split(/\s+/u).length <= 6
+        && this.memory.currentSubject.topic
+        && this.memory.turnCount - this.memory.currentSubject.since <= 3) {
+        this.currentTurnTopics = [this.memory.currentSubject.topic];
+        this.currentReferenceContext = {
+          topic: this.memory.currentSubject.topic,
+          entityRefs: [...this.memory.currentSubject.entityRefs],
+          confidence: 0.64,
+        };
+      }
+      this.currentTurnIntent = this.classifyIntent(this.currentTurnDialogueAct, matchedRule, this.currentTurnTopics);
+      this.currentTurnQuestionNeed = this.questionNeedScore(this.currentTurnDialogueAct, this.currentTurnTopics);
+      this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
+      this.lastTurnNeedsCare = this.currentTurnSeriousness >= 0.5
+        || /\b(?:help|advice|problem|crisis|difficult|hard|worried)\b/iu.test(normalized)
+        || /(?<!\p{L})(?:کمک|مشورت|مشکل|سخت|نگران|بحران)(?!\p{L})/u.test(normalized);
+      this.memory.rememberSeriousness(this.currentTurnSeriousness);
+      this.memory.rememberTopics(this.currentTurnTopics);
+      this.memory.updateSubject(this.currentTurnTopics, entities);
+
+      const blendKey = this._blendKey(this.currentTurnTopics);
+      const strategy = this.selectResponseStrategy({ matchedRule, blendKey, matchingText });
+      this.lastResponseStrategy = strategy;
+      this.memory.rememberStrategy(strategy);
+      this.conversationState = {
+        phase: this._phaseForTurn(strategy, this.currentTurnSeriousness),
+        dialogueAct: this.currentTurnDialogueAct,
+        intent: this.currentTurnIntent,
+        topics: [...this.currentTurnTopics],
+        seriousness: this.currentTurnSeriousness,
+        strategy,
+        referenceConfidence: this.currentReferenceContext?.confidence || 0,
+      };
+      this.memory.rememberTurnFrame({ ...this.conversationState, turn: this.memory.turnCount });
+
+      let reply;
+      if (blendKey && this.lang.blendResponses?.[blendKey]) {
+        reply = this._pickVaried(this.lang.blendResponses[blendKey]);
+      } else if (matchedRule) {
+        reply = this._respondWithRule(matchedRule, captured);
+      } else {
+        reply = this._fallbackResponse(null, normalized);
+      }
+
+      if (this._topicShifted() && !blendKey) {
+        const shift = this.lang.topicShiftTemplates || [];
+        if (shift.length && Math.random() < 0.35) {
+          reply = `${this._pickVaried(shift)} ${reply}`;
+        }
+      }
+
+      // Remember after choosing the reply. This ordering is the first-
+      // mention guard: a fresh entity is never described as remembered.
+      this.memory.rememberEntities(entities, this.memory.turnCount, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
+
       const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
       if (!isSafetyTurn && this.memory.isInDistressStreak() && !this.memory.distressNudgeGiven) {
         this.memory.distressNudgeGiven = true;
@@ -331,13 +616,208 @@
         this.memory.distressNudgeGiven = false;
       }
 
+      if (!isSafetyTurn) reply = this._maybeHumanTone(reply, normalized);
+      if (!isSafetyTurn && this._shouldAddHumanTouch()) {
+        reply = `${reply} ${this._humanTouchLine()}`.trim();
+      }
+
       this.memory.rememberBotMessage(reply);
       return reply;
     }
 
+    detectEntityCorrection(normalizedText) {
+      const match = this.lang.code === 'fa'
+        ? normalizedText.match(/(?:منظورم|منظورم اینه)\s+(.+?)\s+(?:بود،|بود|نه)\s+(.+?)(?:[.!؟]|$)/iu)
+        : normalizedText.match(/\bI meant\s+(.+?)\s+(?:not|rather than)\s+(.+?)(?:[.!?]|$)/iu);
+      if (!match) return null;
+      return {
+        newSurface: match[1].trim().replace(/^[,،\s]+|[,،\s]+$/gu, ''),
+        oldSurface: match[2].trim().replace(/^[,،\s]+|[,،\s]+$/gu, ''),
+      };
+    }
+
+    /**
+     * Resolves a small set of anaphoric phrases against the current subject.
+     * It deliberately refuses to guess when the subject is absent or stale.
+     * @param {string} normalizedText
+     * @returns {{topic: string, entityRefs: string[], confidence: number}|null}
+     */
+    resolveReferenceContext(normalizedText) {
+      const referencePattern = this.lang.code === 'fa'
+        ? /(?<!\p{L})(?:این|آن|اون|همین|همون|دوباره|همان مشکل|همون مشکل|همان موضوع|همون موضوع|چیزی که گفتم)(?!\p{L})/u
+        : /\b(?:it|that|this|again|same problem|the meeting|the thing i mentioned before)\b/iu;
+      if (!referencePattern.test(normalizedText)) return null;
+      const subject = this.memory.currentSubject;
+      if (!subject?.topic || this.memory.turnCount - subject.since > 5) return null;
+      const age = this.memory.turnCount - subject.since;
+      const confidence = subject.entityRefs.length ? 0.94 - age * 0.06 : 0.76 - age * 0.04;
+      if (confidence < 0.6) return null;
+      return { topic: subject.topic, entityRefs: [...subject.entityRefs], confidence };
+    }
+
+    classifyDialogueAct(text, matchedRule = null) {
+      if (matchedRule?.topic === 'greeting') return 'greeting';
+      if (matchedRule?.topic === 'gratitude') return 'gratitude';
+      if (matchedRule?.topic === 'affirmation') return 'affirmation';
+      if (matchedRule?.topic === 'negation') return 'negation';
+      if (matchedRule?.topic === 'safety') return 'safety';
+      if (this.lang.questionPattern?.test(text) || /[?؟]/u.test(text)) return 'question';
+      return 'statement';
+    }
+
+    classifyIntent(dialogueAct, matchedRule, topics) {
+      if (dialogueAct === 'greeting') return 'greeting';
+      if (dialogueAct === 'safety') return 'safety_support';
+      if (matchedRule?.topic === 'professional_boundary') return 'professional_boundary';
+      if (matchedRule?.topic === 'recap') return 'recap_request';
+      if (dialogueAct === 'gratitude') return 'gratitude';
+      if (dialogueAct === 'question') return 'information_or_reflection';
+      if (topics.length) return 'topic_statement';
+      return 'open_statement';
+    }
+
+    questionNeedScore(dialogueAct, topics) {
+      if (dialogueAct === 'question' || dialogueAct === 'gratitude' || dialogueAct === 'greeting') return 0;
+      if (!topics.length) return 0.25;
+      const seriousness = Math.max(...topics.map((topic) => this.lang.topicSeriousness?.[topic] ?? 0.45));
+      return Math.min(0.9, 0.45 + seriousness * 0.35);
+    }
+
+    _phaseForTurn(strategy, seriousness) {
+      if (strategy === 'safety') return 'safetySupport';
+      if (strategy === 'context-reference') return 'contextualContinuation';
+      if (strategy === 'topic-question' || strategy === 'question-acknowledgement') return 'clarifying';
+      if (seriousness >= 0.5) return 'reflecting';
+      return this.memory.turnCount <= 1 ? 'greeting' : 'listening';
+    }
+
+    selectResponseStrategy({ matchedRule, blendKey, matchingText }) {
+      if (matchedRule?.topic === 'safety') return 'safety';
+      if (matchedRule?.topic === 'professional_boundary') return 'professional-boundary';
+      if (matchedRule?.topic === 'recap') return 'recap';
+      if (blendKey) return 'topic-blend';
+      if (!matchedRule && this.currentReferenceContext) return 'context-reference';
+      if (matchedRule && this._canAskTopicQuestion(matchedRule.topic)) return 'topic-question';
+      if (matchedRule) return matchedRule.topic === 'greeting' ? 'greeting' : 'topic-reflection';
+      if (matchingText && this.lang.questionPattern.test(matchingText)) return 'question-acknowledgement';
+      if (this.canHumorFire()) return 'light-warmth';
+      return 'contextual-fallback';
+    }
+
+    describeSelf() {
+      return {
+        name: this.lang.botName,
+        approach: this.lang.selfAwareness.approach,
+        boundaries: this.lang.selfAwareness.boundaries,
+        memory: this.lang.selfAwareness.memory,
+      };
+    }
+
+    _seriousnessForTurn(topics) {
+      const values = (topics || []).map((topic) => this.lang.topicSeriousness?.[topic] ?? 0.45);
+      const current = values.length ? Math.max(...values) : 0.35;
+      const recent = this.memory.seriousnessHistory.slice(-2);
+      const average = recent.length ? recent.reduce((sum, value) => sum + value, 0) / recent.length : 0;
+      return Math.max(current, average);
+    }
+
+    _blendKey(topics) {
+      if (!topics || topics.length < 2) return null;
+      const pairs = [
+        ['sleep', 'anxiety'], ['work', 'anger'], ['family', 'sadness'],
+        ['loneliness', 'sleep'], ['joy', 'gratitude'],
+      ];
+      const found = pairs.find((pair) => pair.every((topic) => topics.includes(topic)));
+      return found ? `blend_${found.join('_')}` : null;
+    }
+
+    _topicShifted() {
+      const history = this.memory.topicHistory;
+      if (history.length < 2 || !this.currentTurnTopics.length) return false;
+      return history.at(-2).topic !== this.currentTurnTopics[0];
+    }
+
+    canHumorFire() {
+      return this.memory.turnCount >= 3
+        && this.currentTurnSeriousness < 0.5
+        && !this.lastTurnNeedsCare;
+    }
+
+    _canAskTopicQuestion(topic) {
+      const pool = this.lang.topicSpecificQuestions?.[topic];
+      if (!pool || !this.lang.questionTopics?.has(topic)) return false;
+      if (this.currentTurnDialogueAct === 'question' || this.currentTurnQuestionNeed < 0.4) return false;
+      const recent = this.memory.askedQuestionTurns.filter(
+        (turn) => this.memory.turnCount - turn < QUESTION_BUDGET_WINDOW
+      );
+      return recent.length < QUESTION_BUDGET_LIMIT && this.memory.consecutiveQuestions < CONSECUTIVE_QUESTION_LIMIT;
+    }
+
+    _maybeHumanTone(reply, normalized) {
+      if (this.canHumorFire() && Math.random() < 0.2) {
+        return this._pickVaried(this.lang.humor || [reply]);
+      }
+      if (this.currentTurnSeriousness >= 0.3 && this.currentTurnSeriousness < 0.6
+        && this.memory.turnCount - this.memory.lastWarmthTurn >= 3
+        && Math.random() < 0.3) {
+        this.memory.lastWarmthTurn = this.memory.turnCount;
+        return `${this._pickVaried(this.lang.warmth || [])} ${reply}`.trim();
+      }
+      if (this.memory.lightStreak >= 2 && !this.lastTurnNeedsCare
+        && this.memory.turnCount % 3 === 0 && Math.random() < 0.35
+        && normalized && !this.lang.questionPattern.test(normalized)) {
+        return this._pickVaried(this.lang.smalltalk || [reply]);
+      }
+      return reply;
+    }
+
+    _shouldAddHumanTouch() {
+      return this.memory.turnCount > 0 && this.memory.turnCount % 7 === 0
+        && this.currentTurnSeriousness < 0.5
+        && this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+          .some((entity) => entity.lastMentionTurn < this.memory.turnCount);
+    }
+
+    _humanTouchLine() {
+      const entity = this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+        .find((item) => item.lastMentionTurn < this.memory.turnCount);
+      const pool = this.lang.humanTouch || [];
+      return entity && pool.length
+        ? this._pickVaried(pool).replace(/\{surface\}/gu, entity.surface)
+        : '';
+    }
+
+    /**
+     * Returns an opening from the explicit three-pool greeting policy. A
+     * new conversation is inviting half the time (up from the old 30%);
+     * both branches still ask the person to share rather than passively
+     * asking how they are.
+     */
+    _openingForNewConversation() {
+      const returning = this.memory.namedEntities.size > 0;
+      const roll = Math.random();
+      let pool;
+      if (returning) {
+        // Returning: 60% returning, 25% inviting, 15% open.
+        pool = roll < 0.6
+          ? (this.lang.greetingsReturning || this.lang.greentingsReturning)
+          : roll < 0.85
+            ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
+            : (this.lang.greetingsOpen || this.lang.greentingsOpen);
+      } else {
+        // New: 50% inviting, 35% open, 15% returning.
+        pool = roll < 0.5
+          ? (this.lang.greetingsInviting || this.lang.greentingsInviting)
+          : roll < 0.85
+            ? (this.lang.greetingsOpen || this.lang.greentingsOpen)
+            : (this.lang.greetingsReturning || this.lang.greentingsReturning);
+      }
+      return this._pickVaried(pool || this.lang.greetings, { trackQuestions: false });
+    }
+
     /** Returns a varied opening greeting and records it in memory. */
     greeting() {
-      const text = this._pickVaried(this.lang.greetings);
+      const text = this._openingForNewConversation();
       this.memory.rememberBotMessage(text);
       return text;
     }
@@ -351,7 +831,8 @@
 
     // -- Internal helpers ----------------------------------------------------
 
-    _matchRule(normalizedText) {
+    _matchRules(normalizedText) {
+      const matches = [];
       for (const currentRule of this.rules) {
         const match = currentRule.pattern.exec(normalizedText);
         if (!match) continue;
@@ -367,16 +848,42 @@
             break;
           }
         }
-        return { rule: currentRule, captured };
+        matches.push({ rule: currentRule, captured });
       }
-      return { rule: null, captured: '' };
+      return matches;
+    }
+
+    _matchRule(normalizedText) {
+      return this._matchRules(normalizedText)[0] || { rule: null, captured: '' };
     }
 
     _respondWithRule(matchedRule, captured) {
-      this.memory.rememberTopic(matchedRule.topic);
+      if (matchedRule.topic === 'gratitude' && this.lang.gratitudeResponses) {
+        return this._pickVaried(this.lang.gratitudeResponses);
+      }
+      if (matchedRule.topic === 'professional_boundary' && this.lang.professionalBoundary) {
+        return this._pickVaried(this.lang.professionalBoundary);
+      }
+      if (matchedRule.topic === 'recap') {
+        return this._buildRecap();
+      }
+      if (matchedRule.topic === 'knowledge' && global.DaryaKnowledge) {
+        const knowledgeText = this._currentNormalizedInput || captured || '';
+        const domainHints = this.lang.code === 'fa'
+          ? { thinkers: ['سقراط', 'رواقی', 'ارسطو', 'یونگ', 'نیچه', 'گاندی', 'ماندلا', 'چرچیل', 'زرتشت'], philosophy: ['فلسفه', 'فلسفی'], focus: ['تمرکز'], learning: ['یاد'], communication: ['ارتباط'], creativity: ['خلاق'] }
+          : { thinkers: ['socrates', 'stoic', 'aristotle', 'jung', 'nietzsche', 'gandhi', 'mandela', 'churchill', 'zarathustra'], philosophy: ['philosophy'], focus: ['focus', 'concentrate'], learning: ['study', 'learn'], communication: ['communicate'], creativity: ['creative'] };
+        const domain = Object.entries(domainHints)
+          .find(([, hints]) => hints.some((hint) => knowledgeText.toLocaleLowerCase().includes(hint)))?.[0] || 'philosophy';
+        return this._pickVaried(global.DaryaKnowledge.answer(this.lang.code, domain));
+      }
 
       if (this.memory.sameRuleStreak > MAX_CONSECUTIVE_SAME_RULE) {
         return this._fallbackResponse(matchedRule.topic, '');
+      }
+
+      if (this._canAskTopicQuestion(matchedRule.topic)) {
+        const question = this._pickVaried(this.lang.topicSpecificQuestions[matchedRule.topic]);
+        if (this.lang.topicSpecificQuestions[matchedRule.topic].includes(question)) return question;
       }
 
       const needsCapture = matchedRule.responses.some((r) => r.includes('{captured}'));
@@ -390,12 +897,22 @@
         return template.replace('{captured}', captured);
       }
 
-      // Nothing meaningful was captured -- avoid an awkward empty
-      // reflection like "چرا فکر می‌کنید که ؟" by preferring a
-      // capture-free response from the same rule, else a generic phrase.
       const captureFree = matchedRule.responses.filter((r) => !r.includes('{captured}'));
       if (captureFree.length > 0) return this._pickVaried(captureFree);
       return this._pickVaried(this.lang.genericFallbacks);
+    }
+
+    _buildRecap() {
+      const topics = [...new Set(this.memory.recentTopics.slice(-7))].slice(-4);
+      const entities = this.memory.eligibleNamedEntities(0)
+        .slice(0, 3)
+        .map((entity) => entity.surface);
+      const topicText = topics.length ? topics.join(this.lang.code === 'fa' ? '، ' : ', ') : (this.lang.code === 'fa' ? 'چند موضوع مختلف' : 'a few threads');
+      const entityText = entities.length ? entities.join(this.lang.code === 'fa' ? '، ' : ', ') : (this.lang.code === 'fa' ? 'چند جزئیات شخصی' : 'a few personal details');
+      const pool = this.lang.recapTemplates || [];
+      return this._pickVaried(pool, { ignoreQuestionBudget: true, trackQuestions: false })
+        .replace(/\{topics\}/gu, topicText)
+        .replace(/\{entities\}/gu, entityText);
     }
 
     /**
@@ -416,6 +933,9 @@
      * @returns {string}
      */
     _fallbackResponse(preferTopic, normalizedUserText) {
+      const entityCallback = this._respondToEntityReference();
+      if (entityCallback) return entityCallback;
+
       const exclude = preferTopic ? [preferTopic] : [];
       const topic = this.memory.mostCommonTopic(exclude);
       if (topic && this.lang.topicCallbacks[topic]) {
@@ -427,6 +947,9 @@
       }
 
       if (normalizedUserText && this.lang.questionPattern.test(normalizedUserText)) {
+        if (this.currentTurnDialogueAct === 'question') {
+          return this._pickVaried(this.lang.questionAcknowledgements || this.lang.genericFallbacks);
+        }
         return this._pickVaried(this.lang.questionFallbacks);
       }
 
@@ -451,6 +974,50 @@
     }
 
     /**
+     * Occasionally callbacks to an emotionally salient entity from an
+     * earlier turn. No current-entity list is needed: the map contains only
+     * already-remembered turns, so the first mention can never hallucinate
+     * an earlier reference. The probability is deliberately lower than
+     * one, keeping callbacks conversational rather than mechanical.
+     * @returns {string|null}
+     */
+    _entityContextConfidence(entity) {
+      const activeTopics = new Set(this.currentTurnTopics.length
+        ? this.currentTurnTopics
+        : [this.memory.currentSubject.topic].filter(Boolean));
+      const rememberedTopics = new Set(entity.contextTopics || []);
+      if (activeTopics.size === 0 || rememberedTopics.size === 0) {
+        return entity.age <= 4 ? 0.72 : 0.45;
+      }
+      const overlap = [...activeTopics].some((topic) => rememberedTopics.has(topic));
+      if (overlap) return 1;
+      const recentTopic = this.memory.topicHistory.slice(-4).some((entry) => rememberedTopics.has(entry.topic));
+      return recentTopic ? 0.64 : 0.22;
+    }
+
+    _respondToEntityReference() {
+      const threshold = Number.isFinite(this.entityCallbackThreshold)
+        ? Math.max(0, Math.min(1, this.entityCallbackThreshold))
+        : 0.6;
+      const probability = Number.isFinite(this.entityCallbackProbability)
+        ? Math.max(0, Math.min(1, this.entityCallbackProbability))
+        : ENTITY_CALLBACK_PROBABILITY;
+      const candidates = this.memory.eligibleNamedEntities(threshold)
+        .filter((entity) => entity.lastMentionTurn < this.memory.turnCount)
+        .map((entity) => ({ entity, context: this._entityContextConfidence(entity) }))
+        .filter((entry) => entry.context >= 0.6)
+        .sort((a, b) => (b.entity.activation * b.context) - (a.entity.activation * a.context));
+      if (candidates.length === 0 || Math.random() >= probability) return null;
+
+      const entity = candidates[0].entity;
+      const templates = this.lang.entityCallbackTemplates || {};
+      const pool = templates[entity.type] || templates.object || [];
+      if (pool.length === 0) return null;
+      const template = this._pickVaried(pool);
+      return template.replace(/\{surface\}/gu, entity.surface);
+    }
+
+    /**
      * Chooses a response from `pool`, actively avoiding lines used
      * recently so the conversation doesn't feel repetitive. Falls back
      * to "anything but the very last message" if every option has
@@ -459,19 +1026,105 @@
      * @param {string[]} pool
      * @returns {string}
      */
-    _pickVaried(pool) {
-      if (pool.length === 1) return pool[0];
+    /** True when a bot line consumes one question from the small budget. */
+    _isQuestionResponse(text) {
+      if (/[?؟]/u.test(text)) return true;
+      if (this.lang.questionPattern && this.lang.questionPattern.test(text)) return true;
+      // Fallback templates can contain an embedded question clause without
+      // ending in a question mark (for example, "I'm curious what's...").
+      // Count those too, otherwise two question-shaped replies can bypass
+      // the budget simply by using a period at the end.
+      return /\b(?:what|why|how|who|when|where|which)\b/iu.test(text)
+        || /(?<!\p{L})(?:چرا|چطور|چگونه|چیست|چیه|کجا|کیست|کیه|آیا)(?!\p{L})/u.test(text);
+    }
+
+    /**
+     * Removes question-shaped options after the consecutive or rolling
+     * budget is exhausted. This is intentionally pool-aware: if a pool has
+     * a non-question alternative, the engine uses it instead of silently
+     * asking a second question.
+     */
+    _filterForQuestionBudget(pool) {
+      const options = Array.isArray(pool) ? pool : [];
+      const now = this.memory.turnCount;
+      this.memory.askedQuestionTurns = this.memory.askedQuestionTurns.filter(
+        (turn) => now - turn < QUESTION_BUDGET_WINDOW
+      );
+      const budgetUsed = this.memory.askedQuestionTurns.length >= QUESTION_BUDGET_LIMIT;
+      const consecutiveUsed = this.memory.consecutiveQuestions >= CONSECUTIVE_QUESTION_LIMIT;
+      if (!budgetUsed && !consecutiveUsed) return options;
+      const alternatives = options.filter((option) => !this._isQuestionResponse(option));
+      return alternatives;
+    }
+
+    /** Records whether a selected response used a question turn. */
+    _noteAskedQuestion(response) {
+      if (this._isQuestionResponse(response)) {
+        this.memory.consecutiveQuestions += 1;
+        this.memory.askedQuestionTurns.push(this.memory.turnCount);
+        this.memory.noteBotQuestion(response, this.currentTurnTopics[0] || this.memory.currentSubject.topic);
+      } else {
+        this.memory.consecutiveQuestions = 0;
+      }
+    }
+
+    /** Whether a response pool contains a budget-safe non-question option. */
+    _alternativeAvailable(pool) {
+      return Array.isArray(pool) && pool.some((option) => !this._isQuestionResponse(option));
+    }
+
+    /** Returns a generic non-question alternative without consuming a budget. */
+    _alternativeFor(response) {
+      const topic = this.currentTurnTopics[0] || this.memory.currentSubject.topic;
+      if (topic && this._canAskTopicQuestion(topic)) {
+        const specific = this.lang.topicSpecificQuestions?.[topic] || [];
+        if (specific.length) return specific[0];
+      }
+      const pools = [this.lang.genericFallbacks, this.lang.strategyShiftFallbacks];
+      for (const pool of pools) {
+        const candidate = pool.find((line) => !this._isQuestionResponse(line) && line !== response);
+        if (candidate) return candidate;
+      }
+      return this.lang.genericFallbacks[0] || '';
+    }
+
+    scoreResponseCandidate(candidate) {
+      let score = 1;
+      if (this.memory.recentBotMessages.includes(candidate)) score -= 0.9;
+      if (this._isQuestionResponse(candidate)) score -= this.memory.consecutiveQuestions * 0.25;
+      if (candidate.length > 220) score -= 0.08;
+      if (/^(?:I see|Okay|Understood|متوجه شدم|باشه)[.!،؟]?$/iu.test(candidate)) score -= 0.12;
+      return score;
+    }
+
+    _pickVaried(pool, options = {}) {
+      const original = Array.isArray(pool) ? pool : [];
+      if (original.length === 0) return '';
+      let budgeted = options.ignoreQuestionBudget
+        ? original
+        : this._filterForQuestionBudget(original);
+      if (budgeted.length === 0) budgeted = [this._alternativeFor(original[0])];
+      if (budgeted.length === 1) {
+        const only = budgeted[0];
+        if (options.trackQuestions !== false) this._noteAskedQuestion(only);
+        return only;
+      }
 
       const recent = this.memory.recentBotMessages;
-      let candidates = pool.filter((p) => !recent.includes(p));
+      let candidates = budgeted.filter((item) => !recent.includes(item));
 
       if (candidates.length === 0) {
         const last = recent[recent.length - 1];
-        candidates = pool.filter((p) => p !== last);
+        candidates = budgeted.filter((item) => item !== last);
       }
-      if (candidates.length === 0) candidates = pool;
+      if (candidates.length === 0) candidates = budgeted;
 
-      return candidates[Math.floor(Math.random() * candidates.length)];
+      const ranked = candidates.map((candidate) => ({ candidate, score: this.scoreResponseCandidate(candidate) }));
+      const bestScore = Math.max(...ranked.map((item) => item.score));
+      const best = ranked.filter((item) => item.score >= bestScore - 0.12).map((item) => item.candidate);
+      const picked = best[Math.floor(Math.random() * best.length)];
+      if (options.trackQuestions !== false) this._noteAskedQuestion(picked);
+      return picked;
     }
   }
 
@@ -482,6 +1135,13 @@
   global.DaryaEngine = {
     isValidScript,
     scoreSentiment,
+    normalizeForMatching,
+    ENTITY_DECAY_PER_TURN,
+    ENTITY_CALLBACK_PROBABILITY,
+    CONSECUTIVE_QUESTION_LIMIT,
+    QUESTION_BUDGET_WINDOW,
+    QUESTION_BUDGET_LIMIT,
+    ConversationMemory,
     DaryaResponseEngine,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
