@@ -1155,6 +1155,20 @@ html[data-theme="beach"] .beach-scene {
   to { background-position-x: -1200px; }
 }
 
+/* A quiet reflection sheen breaks up the flat fill without adding another
+   animated layer or a costly filter. The tile remains the only moving part. */
+.beach-scene__ocean::after {
+  content: '';
+  position: absolute;
+  inset: 14% 0 auto;
+  height: 18%;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent 0%, rgba(235, 251, 246, 0.22) 28%, rgba(235, 251, 246, 0.08) 58%, transparent 100%);
+  opacity: 0.7;
+}
+
+.beach-scene__ocean--near::after { opacity: 0.42; }
+
 .beach-scene__foam {
   position: absolute;
   left: 8%;
@@ -1196,7 +1210,7 @@ html[data-theme="beach"] .beach-scene {
   right: 0;
   bottom: 0;
   height: 110px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(103, 73, 42, 0.12) 24%, rgba(72, 48, 30, 0.58) 100%);
+  background: linear-gradient(to bottom, transparent 0%, rgba(126, 91, 52, 0.06) 28%, rgba(91, 61, 35, 0.28) 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }

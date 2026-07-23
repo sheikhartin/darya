@@ -32,6 +32,23 @@ function fresh(lang) {
   return new DaryaResponseEngine(lang);
 }
 
+test('reference resolution follows a recent subject when the user says it happened again', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  const context = engine.resolveReferenceContext('it happened again');
+  assert.ok(context);
+  assert.equal(context.topic, 'work');
+  assert.ok(context.confidence >= 0.6);
+});
+
+test('reference resolution refuses an absent or stale subject', () => {
+  const engine = fresh(EN);
+  assert.equal(engine.resolveReferenceContext('it happened again'), null);
+  engine.memory.currentSubject = { topic: 'work', entityRefs: [], since: -10 };
+  engine.memory.turnCount = 1;
+  assert.equal(engine.resolveReferenceContext('it happened again'), null);
+});
+
 test('quality fixture: all application shell files exist', () => {
   for (const file of ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'sw.js', 'manifest.json']) {
     assert.ok(fs.existsSync(path.join(ROOT, file)), file);
@@ -180,6 +197,14 @@ test('beach theme has three masked tiled layers and a full-scene sky', () => {
   assert.ok((css.match(/background-repeat: repeat-x/gu) || []).length >= 3);
   assert.ok((css.match(/mask-image:/gu) || []).length >= 3);
   assert.doesNotMatch(css, /beach-ocean-drift[\s\S]*translate3d\([^,]+,\s*-[123]px/u);
+});
+
+test('beach composer scrim is warm and restrained rather than a black shadow', () => {
+  const css = read('css/style.css');
+  const scrim = css.match(/\.backdrop__scrim\s*\{[\s\S]*?\n\}/u)?.[0] || '';
+  assert.match(scrim, /rgba\(91, 61, 35, 0\.28\)/u);
+  assert.doesNotMatch(scrim, /rgba\(0, 0, 0/u);
+  assert.match(css, /beach-scene__ocean::after/);
 });
 
 test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', () => {
