@@ -771,7 +771,7 @@ test('back-to-back user questions take a non-question alternative path', () => {
     engine.respond('Why does this keep happening?');
     const second = engine.respond('What should I do next?');
     assert.doesNotMatch(second, /[?]/);
-    assert.match(second, /listen|go on|share|more/i);
+    assert.match(second, /thread|piece|listening|detail/i);
   } finally { Math.random = oldRandom; }
 });
 
@@ -1158,6 +1158,22 @@ test('theme surfaces expose descriptive group, status, and composer semantics', 
   assert.match(html, /id=\"theme-picker\"[\s\S]*role=\"group\"/);
   assert.match(html, /id=\"typing-row\"[\s\S]*role=\"status\"/);
   assert.match(html, /id=\"composer\"[\s\S]*autocomplete=\"off\"/);
+});
+
+
+test('response strategy records purposeful decisions and avoids generic filler', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('hello');
+  assert.equal(engine.lastResponseStrategy, 'greeting');
+  assert.equal(engine.memory.responseStrategies.at(-1).strategy, 'greeting');
+  assert.doesNotMatch(reply, /tell me more|go on/i);
+});
+
+test('serious strategy is not replaced by light warmth', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('I feel anxious about everything');
+  assert.equal(engine.lastResponseStrategy, 'topic-question');
+  assert.doesNotMatch(reply, /charmed|delightful|plot twist/i);
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

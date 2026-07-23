@@ -47,6 +47,13 @@
       "That sounds like a very heavy weight to carry, and it deserves real, immediate support. Please reach out to a crisis line or someone you trust right now. I'm here with you, but I'm not a substitute for urgent professional help.",
     ]),
 
+    rule('greeting', 65, /^(?:hi|hello|hey|good morning|good evening|good afternoon)[!.?]*$/i, [
+      'Hi. It is good to see you. What would you like to share today?',
+      'Hello. I am here. We can keep it brief or follow a thread. What suits you?',
+      'Hey. Good to have you here. What has your attention?',
+      'Hello. No rush. What kind of conversation would feel right?',
+    ]),
+
     rule('family', 50, /\b(my (?:mom|mother|dad|father|parents|sister|brother|family))\b\s*(.*)/i, [
       'Which part of {captured} stands out most right now?',
       'How does your relationship with your family feel to you these days?',
@@ -203,11 +210,11 @@
   ]);
 
   const genericFallbacks = [
-    'Which part of that feels most worth staying with right now?',
-    'Why does this matter to you?',
-    'Please, go on, tell me a bit more.',
-    'I see. And then what happened?',
-    'What made you want to share this with me?',
+    'There is a thread here worth following.',
+    'We can take this one piece at a time.',
+    'That gives me a clearer place to begin.',
+    'I am listening for the detail that matters most.',
+    'This feels worth giving a little room to.',
   ];
 
 
@@ -406,7 +413,7 @@
     blend_joy_gratitude: ['There is a lovely little loop here: something went well, and you noticed its value.', 'The good feeling seems to have made room for appreciation too.', 'It is nice when a bright moment is not rushed past before it can land.', 'This sounds like a moment worth letting stay bright for another minute.'],
   };
 
-  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35 };
+  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35 };
   const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough - I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
   const warmth = ['That sounds like a lot to carry.', 'I can hear that this matters to you.', 'You do not have to have it all figured out at once.', 'It is okay to take your time with this.'];
   const smalltalk = ['Nice. That has a good bit of character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];

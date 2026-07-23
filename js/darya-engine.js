@@ -222,6 +222,7 @@
       this.lightStreak = 0;
       this.lastWarmthTurn = -Infinity;
       this.smalltalkTurns = [];
+      this.responseStrategies = [];
     }
 
     rememberUtterance(utterance) {
@@ -263,6 +264,11 @@
       }
       const refs = (entities || []).map((entity) => `${entity.type}:${entity.surface}`);
       this.currentSubject.entityRefs = [...new Set([...this.currentSubject.entityRefs, ...refs])].slice(-8);
+    }
+
+    rememberStrategy(strategy) {
+      this.responseStrategies.push({ strategy, turn: this.turnCount });
+      if (this.responseStrategies.length > 8) this.responseStrategies.shift();
     }
 
     rememberBotMessage(message) {
@@ -483,8 +489,12 @@
       this.memory.rememberTopics(this.currentTurnTopics);
       this.memory.updateSubject(this.currentTurnTopics, entities);
 
-      let reply;
       const blendKey = this._blendKey(this.currentTurnTopics);
+      const strategy = this.selectResponseStrategy({ matchedRule, blendKey, matchingText });
+      this.lastResponseStrategy = strategy;
+      this.memory.rememberStrategy(strategy);
+
+      let reply;
       if (blendKey && this.lang.blendResponses?.[blendKey]) {
         reply = this._pickVaried(this.lang.blendResponses[blendKey]);
       } else if (matchedRule) {
@@ -538,6 +548,19 @@
       const confidence = subject.entityRefs.length ? 0.92 - age * 0.08 : 0.72 - age * 0.08;
       if (confidence < 0.6) return null;
       return { topic: subject.topic, entityRefs: [...subject.entityRefs], confidence };
+    }
+
+    selectResponseStrategy({ matchedRule, blendKey, matchingText }) {
+      if (matchedRule?.topic === 'safety') return 'safety';
+      if (matchedRule?.topic === 'professional_boundary') return 'professional-boundary';
+      if (matchedRule?.topic === 'recap') return 'recap';
+      if (blendKey) return 'topic-blend';
+      if (!matchedRule && this.currentReferenceContext) return 'context-reference';
+      if (matchedRule && this._canAskTopicQuestion(matchedRule.topic)) return 'topic-question';
+      if (matchedRule) return matchedRule.topic === 'greeting' ? 'greeting' : 'topic-reflection';
+      if (matchingText && this.lang.questionPattern.test(matchingText)) return 'question-acknowledgement';
+      if (this.canHumorFire()) return 'light-warmth';
+      return 'contextual-fallback';
     }
 
     _seriousnessForTurn(topics) {
