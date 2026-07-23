@@ -297,6 +297,31 @@ else
   fail "intelligence topic-depth wiring is incomplete"
 fi
 
+if grep -q 'contextTopics' js/darya-engine.js && grep -q '_entityContextConfidence' js/darya-engine.js; then
+  ok "entity callbacks carry topic context confidence"
+else
+  fail "entity context confidence guard is missing"
+fi
+
+if [[ "$(grep -n 'id="menu-export-txt"' index.html | cut -d: -f1)" -lt "$(grep -n 'id="menu-export-md"' index.html | cut -d: -f1)" ]] && grep -q 'پوسته' js/languages/fa.js; then
+  ok "plain text export precedes Markdown and Persian uses پوسته"
+else
+  fail "export order or Persian theme wording is wrong"
+fi
+
+if grep -q 'initBeachWaveVariation' js/app.js && grep -q -- '--wave-duration' js/app.js && grep -q -- '--wave-delay' js/app.js && ! grep -Eq 'beach-ocean-drift[^}]*translate3d' css/style.css; then
+  ok "beach waves have randomized horizontal-only timing"
+else
+  fail "beach wave variation regression detected"
+fi
+
+emdash=$'\u2014'
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' "$emdash" . >/tmp/darya-emdash.log 2>&1; then
+  ok "no em dash characters remain"
+else
+  fail "em dash characters found: $(tr '\n' ' ' </tmp/darya-emdash.log)"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================

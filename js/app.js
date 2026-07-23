@@ -1,5 +1,5 @@
 /**
- * Darya — front-end chat controller for the static (GitHub Pages) build.
+ * Darya - front-end chat controller for the static (GitHub Pages) build.
  * Runs entirely client-side against `window.DaryaEngine` and the active
  * `window.DaryaLang` pack (fa or en).
  *
@@ -344,7 +344,9 @@
         : lang.ui.themeBeachTitle);
     });
     menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
+    menuExportMdEl.setAttribute('aria-label', lang.ui.ariaExportMdLabel);
     menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
+    menuExportTxtEl.setAttribute('aria-label', lang.ui.ariaExportTxtLabel);
     menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
     themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
     typingRowLabelEl.setAttribute('aria-label', lang.ui.typingLabel);
@@ -627,6 +629,17 @@
     return min + Math.random() * (max - min);
   }
 
+  function initBeachWaveVariation() {
+    const layers = document.querySelectorAll('.beach-scene__ocean');
+    const ranges = [[56, 72], [42, 58], [30, 46]];
+    layers.forEach((layer, index) => {
+      const [min, max] = ranges[index] || ranges[ranges.length - 1];
+      const duration = randomBetween(min, max);
+      layer.style.setProperty('--wave-duration', `${duration.toFixed(2)}s`);
+      layer.style.setProperty('--wave-delay', `-${randomBetween(0, duration).toFixed(2)}s`);
+    });
+  }
+
   function initBubbles() {
     const container = document.querySelector('.bubbles');
     if (!container) return;
@@ -722,6 +735,7 @@
   // however, is restored immediately so returning visitors see their
   // chosen look right away.
   applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
+  initBeachWaveVariation();
   initBubbles();
   initWindGusts();
   initWetPatches();

@@ -1,5 +1,5 @@
 /**
- * Darya — generic Rogerian conversation engine core.
+ * Darya - generic Rogerian conversation engine core.
  *
  * This file contains no language-specific content at all: every string,
  * pattern, and lexicon lives in a "language pack" (see js/languages/fa.js
@@ -292,7 +292,8 @@
      * a brand-new entity cannot be used to fabricate an "earlier" callback
      * in the same turn.
      */
-    rememberEntities(entities, turn = this.turnCount) {
+    rememberEntities(entities, turn = this.turnCount, context = {}) {
+      const contextTopics = [...new Set(context.topics || [])];
       for (const item of entities || []) {
         if (!item || !item.type || !item.surface) continue;
         const key = item.key || `${item.type}:${item.surface.toLocaleLowerCase()}`;
@@ -304,6 +305,9 @@
           old.mentions += 1;
           old.lastMentionTurn = turn;
           old.age = 0;
+          old.contextTopics = [...new Set([...(old.contextTopics || []), ...contextTopics])].slice(-5);
+          old.contextConfidence = Math.max(old.contextConfidence || 0, item.confidence);
+          old.contextSeriousness = context.seriousness ?? old.contextSeriousness ?? 0;
         } else {
           this.namedEntities.set(key, {
             type: item.type,
@@ -314,6 +318,9 @@
             firstMentionTurn: turn,
             lastMentionTurn: turn,
             age: 0,
+            contextTopics,
+            contextConfidence: item.confidence,
+            contextSeriousness: context.seriousness ?? 0,
           });
         }
       }
@@ -477,7 +484,7 @@
 
       // Remember after choosing the reply. This ordering is the first-
       // mention guard: a fresh entity is never described as remembered.
-      this.memory.rememberEntities(entities);
+      this.memory.rememberEntities(entities, this.memory.turnCount, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
 
       const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
       if (!isSafetyTurn && this.memory.isInDistressStreak() && !this.memory.distressNudgeGiven) {
@@ -751,6 +758,20 @@
      * one, keeping callbacks conversational rather than mechanical.
      * @returns {string|null}
      */
+    _entityContextConfidence(entity) {
+      const activeTopics = new Set(this.currentTurnTopics.length
+        ? this.currentTurnTopics
+        : [this.memory.currentSubject.topic].filter(Boolean));
+      const rememberedTopics = new Set(entity.contextTopics || []);
+      if (activeTopics.size === 0 || rememberedTopics.size === 0) {
+        return entity.age <= 4 ? 0.72 : 0.45;
+      }
+      const overlap = [...activeTopics].some((topic) => rememberedTopics.has(topic));
+      if (overlap) return 1;
+      const recentTopic = this.memory.topicHistory.slice(-4).some((entry) => rememberedTopics.has(entry.topic));
+      return recentTopic ? 0.64 : 0.22;
+    }
+
     _respondToEntityReference() {
       const threshold = Number.isFinite(this.entityCallbackThreshold)
         ? Math.max(0, Math.min(1, this.entityCallbackThreshold))
@@ -759,10 +780,13 @@
         ? Math.max(0, Math.min(1, this.entityCallbackProbability))
         : ENTITY_CALLBACK_PROBABILITY;
       const candidates = this.memory.eligibleNamedEntities(threshold)
-        .filter((entity) => entity.lastMentionTurn < this.memory.turnCount);
+        .filter((entity) => entity.lastMentionTurn < this.memory.turnCount)
+        .map((entity) => ({ entity, context: this._entityContextConfidence(entity) }))
+        .filter((entry) => entry.context >= 0.6)
+        .sort((a, b) => (b.entity.activation * b.context) - (a.entity.activation * a.context));
       if (candidates.length === 0 || Math.random() >= probability) return null;
 
-      const entity = candidates[0];
+      const entity = candidates[0].entity;
       const templates = this.lang.entityCallbackTemplates || {};
       const pool = templates[entity.type] || templates.object || [];
       if (pool.length === 0) return null;

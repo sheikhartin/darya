@@ -463,7 +463,7 @@ test('menu export labels contain no parentheses in either language', () => {
 });
 
 test('Persian Markdown label uses the requested ZWNJ transliteration', () => {
-  assert.equal(FA.ui.menuExportMd, 'دانلود گفتگو — مارک\u200cداون');
+  assert.equal(FA.ui.menuExportMd, 'دانلود گفتگوی مارک\u200cداون');
 });
 
 test('new title keys are present symmetrically in both UI packs', () => {
@@ -673,10 +673,10 @@ test('beach readability scrim is the narrow 110px treatment', () => {
   assert.doesNotMatch(css, /24vh/);
 });
 
-test('service worker caches the new scripts and uses darya-v4', () => {
+test('service worker caches the new scripts and uses darya-v5', () => {
   const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   const cacheConstant = ['CACHE', '_', 'VER', 'SION'].join('');
-  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v4'`));
+  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v5'`));
   assert.match(sw, /languages\/halfspace\.js/);
   assert.match(sw, /languages\/entity-extractor\.js/);
 });
@@ -697,7 +697,7 @@ test('export labels stay descriptive after removing the parenthesized forms', ()
   assert.match(FA.ui.menuExportMd, /دانلود گفتگو/);
   assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
   assert.match(EN.ui.menuExportMd, /Markdown/);
-  assert.match(EN.ui.menuExportTxt, /plain text/);
+  assert.match(EN.ui.menuExportTxt, /plain-?text/);
 });
 
 
@@ -1054,6 +1054,61 @@ test('no generated reply uses should more than once', () => {
   for (const lang of [EN, FA]) {
     const values = [...lang.genericFallbacks, ...lang.strategyShiftFallbacks, ...lang.rules.flatMap((rule) => rule.responses)];
     for (const line of values) assert.ok((line.match(/\\bshould\\b/giu) || []).length <= 1, line);
+  }
+});
+
+
+test('initial greeting pools always invite a response with a question', () => {
+  for (const lang of [EN, FA]) {
+    for (const line of [...lang.greetingsOpen, ...lang.greetingsInviting, ...lang.greetingsReturning]) {
+      assert.match(line, /[?؟]/u, line);
+    }
+  }
+});
+
+test('entity memory keeps topic context and rejects unrelated callbacks', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    engine.memory.turnCount = 1;
+    engine.currentTurnTopics = ['family', 'sadness'];
+    engine.memory.rememberEntities([{ type: 'person', surface: 'mother', confidence: 0.95 }], 1, { topics: ['family', 'sadness'], seriousness: 0.8 });
+    const remembered = engine.memory.namedEntities.get('person:mother');
+    assert.deepEqual(remembered.contextTopics, ['family', 'sadness']);
+    engine.memory.turnCount = 2;
+    engine.currentTurnTopics = ['work'];
+    assert.equal(engine._respondToEntityReference(), null);
+    engine.currentTurnTopics = ['family'];
+    assert.match(engine._respondToEntityReference(), /mother/i);
+  } finally { Math.random = oldRandom; }
+});
+
+test('plain text export precedes Markdown and Persian theme copy uses پوسته', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.ok(html.indexOf('id="menu-export-txt"') < html.indexOf('id="menu-export-md"'));
+  assert.match(FA.ui.themeOceanLabel, /پوسته/);
+  assert.match(FA.ui.themeBeachLabel, /پوسته/);
+  assert.doesNotMatch(FA.ui.themeOceanLabel, /تم/);
+  assert.doesNotMatch(FA.ui.themeBeachLabel, /تم/);
+});
+
+test('wave variation is randomized per layer without changing its vertical position', () => {
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(app, /initBeachWaveVariation/);
+  assert.match(app, /--wave-duration/);
+  assert.match(app, /--wave-delay/);
+  assert.match(css, /background-position-x/);
+  assert.doesNotMatch(css, /beach-ocean-drift[\s\S]*translate3d/);
+});
+
+test('new UI copy contains no em dash characters', () => {
+  const fs = require('node:fs');
+  for (const file of ['index.html', 'js/app.js', 'js/languages/fa.js', 'js/languages/en.js', 'README.md']) {
+    const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    assert.equal(source.includes(String.fromCodePoint(0x2014)), false, file);
   }
 });
 

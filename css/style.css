@@ -1,5 +1,5 @@
 /*
- * Darya — visual identity: the calm and rhythm of the sea.
+ * Darya - visual identity: the calm and rhythm of the sea.
  *
  * Mobile-first: base rules target small screens (tight spacing, full-bleed
  * layout), then min-width breakpoints add breathing room for larger
@@ -1095,7 +1095,7 @@ html[data-theme="beach"] .beach-scene {
 
 /* Each ocean is one period-wide SVG tile repeated horizontally. The tile
    begins and ends at the same y coordinate, while the symmetric mask hides
-   only the viewport cut—not an animation seam. Background position is the
+   only the viewport cut-not an animation seam. Background position is the
    only animated property, so the sheet stays perfectly level. */
 .beach-scene__ocean {
   position: absolute;
@@ -1113,6 +1113,8 @@ html[data-theme="beach"] .beach-scene {
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   animation-name: beach-ocean-drift;
+  animation-duration: var(--wave-duration, 64s);
+  animation-delay: var(--wave-delay, 0s);
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: background-position-x;
@@ -1125,7 +1127,7 @@ html[data-theme="beach"] .beach-scene {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 74 C100 38 200 38 300 74 S500 110 600 74 S800 38 900 74 S1100 110 1200 74 L1200 160 L0 160 Z' fill='%23d9f0ed' fill-opacity='.82'/%3E%3C/svg%3E");
   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  animation-duration: 64s;
+  animation-duration: var(--wave-duration, 64s);
 }
 
 .beach-scene__ocean--mid {
@@ -1135,7 +1137,7 @@ html[data-theme="beach"] .beach-scene {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 70 C100 28 200 28 300 70 S500 112 600 70 S800 28 900 70 S1100 112 1200 70 L1200 160 L0 160 Z' fill='%235aa9aa' fill-opacity='.62'/%3E%3C/svg%3E");
   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  animation-duration: 48s;
+  animation-duration: var(--wave-duration, 48s);
 }
 
 .beach-scene__ocean--near {
@@ -1145,7 +1147,7 @@ html[data-theme="beach"] .beach-scene {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cpath d='M0 68 C100 20 200 20 300 68 S500 116 600 68 S800 20 900 68 S1100 116 1200 68 L1200 160 L0 160 Z' fill='%232c777d' fill-opacity='.76'/%3E%3C/svg%3E");
   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  animation-duration: 36s;
+  animation-duration: var(--wave-duration, 36s);
 }
 
 @keyframes beach-ocean-drift {

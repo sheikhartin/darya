@@ -1,5 +1,5 @@
 /**
- * Darya — English language pack.
+ * Darya - English language pack.
  *
  * Mirrors js/languages/fa.js in structure and capability so English and
  * Persian get identical engine features with no compromises on either
@@ -281,7 +281,7 @@
   // grammar risk, since their words are inserted verbatim.
   const quotedCallbackTemplates = [
     'The phrase "{excerpt}" still has some weight. What part of it stays with you?',
-    'That phrase — "{excerpt}" — still seems present. Has it shifted at all?',
+    'That phrase - "{excerpt}" - still seems present. Has it shifted at all?',
   ];
 
   // Gentle, optional coping offer shown when several consecutive messages
@@ -338,9 +338,9 @@
   const greetingsInviting = [
     `Hey. Anything in particular you would like to talk through, or shall we just see where it goes?`,
     `Hi. If you have something on your chest, would you like to start there?`,
-    `Hello. I am here and curious — what brought you in today?`,
+    `Hello. I am here and curious - what brought you in today?`,
     `Hey. Want to tell me a little about what is going on?`,
-    `Hi. There is no rush — what would feel good to start with?`,
+    `Hi. There is no rush - what would feel good to start with?`,
     `Hello. Where would feel easiest to start?`,
     `Hi there. Is there something specific, or would you rather just chat for a while?`,
     `Hey. What thought keeps wandering back today?`,
@@ -399,7 +399,7 @@
 
   const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need']);
   const blendResponses = {
-    blend_sleep_anxiety: ['Your restless nights and the worry seem to be feeding each other a little; noticing which one arrives first may give you a useful opening.', 'When sleep and worry travel together, the evening can feel much longer than it is. A gentler wind-down might be worth protecting.', 'The tiredness may be making the worry louder, while the worry keeps sleep out of reach. That is a tiring loop, not a personal failure.', 'There are two threads here — a body asking for rest and a mind staying on watch. We can look at either one first.'],
+    blend_sleep_anxiety: ['Your restless nights and the worry seem to be feeding each other a little; noticing which one arrives first may give you a useful opening.', 'When sleep and worry travel together, the evening can feel much longer than it is. A gentler wind-down might be worth protecting.', 'The tiredness may be making the worry louder, while the worry keeps sleep out of reach. That is a tiring loop, not a personal failure.', 'There are two threads here - a body asking for rest and a mind staying on watch. We can look at either one first.'],
     blend_work_anger: ['The anger seems tied to what work is asking of you, not floating free of the situation.', 'When a work pressure keeps crossing a line, frustration can become its own daily workload.', 'It sounds as if the workplace problem is also taking a piece of your patience home with you.', 'There is a work problem and a boundary problem sitting close together here.'],
     blend_family_sadness: ['The sadness has a relationship-shaped edge to it, which may be why it keeps returning.', 'Family can make an ordinary disappointment feel unusually close to the heart.', 'There is both the event itself and what it says about belonging; those are different things to hold.', 'This sounds like a tender family thread rather than a passing bad mood.'],
     blend_loneliness_sleep: ['Quiet nights can make loneliness louder, and loneliness can make the night feel longer.', 'Your sleep and your sense of company seem to be touching the same quiet hours.', 'When the day goes still, both tiredness and wanting someone nearby may arrive together.', 'There may be a small evening ritual that gives those hours a little more warmth.'],
@@ -407,12 +407,12 @@
   };
 
   const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35 };
-  const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough — I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
+  const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough - I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
   const warmth = ['That sounds like a lot to carry.', 'I can hear that this matters to you.', 'You do not have to have it all figured out at once.', 'It is okay to take your time with this.'];
   const smalltalk = ['Nice. That has a good bit of character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];
   const gratitudeResponses = ['Of course.', 'Anytime.', 'I am here.', 'That is kind of you to say.'];
   const topicShiftTemplates = ['That is a different thread from a moment ago, and it deserves its own space.', 'We have moved from one part of your day to another; I am with you.', 'This feels like a new angle on what has been going on.'];
-  const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads — {topics} — alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}; {entities} gives it a more personal shape. What feels most present?'];
+  const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads - {topics} - alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}; {entities} gives it a more personal shape. What feels most present?'];
   const humanTouch = ['That {surface} detail is still with me; does it feel different now?', 'The {surface} thread has a little more to it than it first seemed.'];
   const professionalBoundary = ['For medical, legal, or financial decisions, a qualified human professional is the safest source of advice. I can help you organize the questions you want to bring them.', 'This is one of those areas where a licensed human professional should guide the decision. We can sort the facts and concerns you want to take with you.'];
 
@@ -473,6 +473,8 @@
       ariaSendLabel: 'Send your message to Darya',
       ariaMenuLabel: 'Open the conversation options menu',
       ariaInputLabel: 'Your message to Darya',
+      ariaExportMdLabel: 'Download the conversation as Markdown',
+      ariaExportTxtLabel: 'Download the conversation as plain text',
       pickerFaTitle: 'Start a new conversation in Persian',
       pickerEnTitle: 'Start a new conversation in English',
       themeOceanTitle: 'Choose the ocean theme',
@@ -486,8 +488,8 @@
       themeGroupLabel: 'Choose a conversation theme',
       typingLabel: 'Darya is thinking',
       menuNewChat: 'New chat',
-      menuExportMd: 'Download chat — Markdown',
-      menuExportTxt: 'Download chat — plain text',
+      menuExportMd: 'Download Markdown conversation',
+      menuExportTxt: 'Download plain-text conversation',
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       disclaimer: "Darya is a listening companion, not a substitute for professional help. In a crisis, please contact a professional or a crisis line.",

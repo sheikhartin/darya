@@ -2,16 +2,16 @@
 
 ## What changed to make this possible
 
-Fonts were previously loaded from Google Fonts' CDN — that alone breaks
+Fonts were previously loaded from Google Fonts' CDN - that alone breaks
 full offline use, regardless of anything else. They're now self-hosted in
 `fonts/` (converted to WOFF2, licenses included in `fonts/licenses/`), and
-a service worker (`sw.js`) precaches the entire app — HTML, CSS, JS,
-fonts, and icons — on first load. After that first load, the app needs
+a service worker (`sw.js`) precaches the entire app - HTML, CSS, JS,
+fonts, and icons - on first load. After that first load, the app needs
 no network at all: verified by loading it once, then cutting network
 access entirely and confirming a full conversation still works end to
 end. A web app manifest (`manifest.json`) makes it installable.
 
-So: no, self-hosting the fonts alone wouldn't have been enough — the
+So: no, self-hosting the fonts alone wouldn't have been enough - the
 service worker and manifest are what actually make it installable and
 usable with zero connectivity, not just font-independent.
 
@@ -27,10 +27,10 @@ python3 -m http.server 8080
 Open it in Chrome or Edge on desktop or Android and use "Install app" /
 "Add to Home screen." On iOS Safari, use the Share button →
 "Add to Home Screen" (iOS doesn't support the install prompt itself, but
-the app still runs standalone and offline once added — that's what the
+the app still runs standalone and offline once added - that's what the
 `apple-mobile-web-app-*` tags in `index.html` are for).
 
-To ship an update later, bump `CACHE_VERSION` in `sw.js` — that's what
+To ship an update later, bump `CACHE_VERSION` in `sw.js` - that's what
 tells returning visitors' browsers to fetch the new files instead of
 continuing to serve the old cached ones.
 
@@ -44,7 +44,7 @@ so the wrapping step is just running commands, but you'll need to run
 them yourself and click through Android Studio once.
 
 **Capacitor** wraps the web files directly into the APK's assets, so the
-result is truly offline — it doesn't rely on your earlier PWA caching at
+result is truly offline - it doesn't rely on your earlier PWA caching at
 all, it just ships the files inside the app package.
 
 On your Arch machine:
@@ -68,7 +68,7 @@ From Android Studio: **Build → Build Bundle(s) / APK(s) → Build APK(s)**
 gives you a debug APK immediately, installable via `adb install` or
 copying it to a phone. For a **release** APK to actually distribute,
 Android Studio's Build menu also has a signing wizard (Build → Generate
-Signed Bundle / APK) — you'll need to create a signing key the first
+Signed Bundle / APK) - you'll need to create a signing key the first
 time, which Android Studio walks you through.
 
 A few things worth knowing before you do:
@@ -80,7 +80,7 @@ A few things worth knowing before you do:
   rather than Capacitor's default.
 - **Permissions**: this app makes zero network requests once loaded (no
   analytics, no external calls), so the generated `AndroidManifest.xml`
-  shouldn't need the internet permission at all — Capacitor may add it by
+  shouldn't need the internet permission at all - Capacitor may add it by
   default; removing it is a nice, verifiable way to confirm to yourself
   that nothing's phoning home.
 - **App size**: the whole web app, fonts included, is under 1 MB. The APK

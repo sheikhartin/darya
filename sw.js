@@ -14,7 +14,7 @@
 
 'use strict';
 
-const CACHE_VERSION = 'darya-v4';
+const CACHE_VERSION = 'darya-v5';
 
 const PRECACHE_URLS = [
   './',
