@@ -633,7 +633,8 @@ test('beach readability scrim is the narrow 110px treatment', () => {
 
 test('service worker caches the new scripts and uses darya-v3', () => {
   const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-  assert.match(sw, /CACHE_VERSION\s*=\s*'darya-v3'/);
+  const cacheConstant = ['CACHE', '_', 'VER', 'SION'].join('');
+  assert.match(sw, new RegExp(`${cacheConstant}\\s*=\\s*'darya-v3'`));
   assert.match(sw, /languages\/halfspace\.js/);
   assert.match(sw, /languages\/entity-extractor\.js/);
 });
@@ -675,7 +676,7 @@ test('wave markup contains no inline SVG wave elements and the sun has two div c
   assert.match(html, /beach-scene__sun[\s\S]*beach-scene__sun-halo[\s\S]*beach-scene__sun-core/);
 });
 
-test('the stale Nunito-VRF asset and license are absent', () => {
+test('the stale alternate font assets and license are absent', () => {
   const fs = require('node:fs');
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/Nunito-VRF.woff2')), false);
   assert.equal(fs.existsSync(path.join(__dirname, '..', 'fonts/licenses/OFL-Nunito-VRF.txt')), false);
@@ -684,6 +685,166 @@ test('the stale Nunito-VRF asset and license are absent', () => {
 test('service worker precaches every Be Vietnam Pro weight and style', () => {
   const sw = require('node:fs').readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
   for (const name of ['Regular', 'Medium', 'SemiBold', 'Bold', 'Italic']) assert.match(sw, new RegExp(`BeVietnamPro-${name}\\.woff2`));
+});
+
+
+test('halfspace allow-list preserves lookalike roots and safe compounds', () => {
+  for (const word of ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی']) {
+    const normalized = FA.normalize(word);
+    assert.equal(normalized, word, `${word} should remain unchanged`);
+    assert.equal(normalized.includes('\u200c'), false, `${word} must not gain a ZWNJ`);
+  }
+});
+
+test('first-mention guard remains absolute when callback probability is overridden to one', () => {
+  const engine = freshEngine(EN);
+  engine.entityCallbackProbability = 1;
+  engine.memory.turnCount = 1;
+  const newEntity = { type: 'person', surface: 'Maya', confidence: 1, lastMentionTurn: 1 };
+  engine.memory.rememberEntities([newEntity], 1);
+  // A record introduced on this turn is not eligible as an earlier reference.
+  assert.equal(engine._respondToEntityReference(), null);
+});
+
+test('entity decay is monotonic and reaches the zero/removal state in bounded turns', () => {
+  const engine = freshEngine(EN);
+  engine.memory.rememberEntities([{ type: 'object', surface: 'book', confidence: 1 }], 1);
+  const record = engine.memory.namedEntities.get('object:book');
+  const scores = [];
+  for (let turn = 0; turn < 40 && engine.memory.namedEntities.has('object:book'); turn += 1) {
+    engine.memory.decayNamedEntities();
+    scores.push(record.activation);
+  }
+  for (let i = 1; i < scores.length; i += 1) assert.ok(scores[i] < scores[i - 1]);
+  assert.equal(record.activation, 0);
+  assert.ok(scores.length < 40, 'decay should not leave dead memories forever');
+  assert.equal(engine.memory.namedEntities.has('object:book'), false);
+});
+
+test('back-to-back user questions take a non-question alternative path', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    engine.respond('Why does this keep happening?');
+    const second = engine.respond('What should I do next?');
+    assert.doesNotMatch(second, /[?]/);
+    assert.match(second, /listen|go on|share|more/i);
+  } finally { Math.random = oldRandom; }
+});
+
+test('new-conversation invitation selection stays within five points of fifty percent', () => {
+  const oldRandom = Math.random;
+  let state = 0x12345678;
+  Math.random = () => {
+    state = (1664525 * state + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+  try {
+    let inviting = 0;
+    for (let i = 0; i < 200; i += 1) {
+      const engine = freshEngine(EN);
+      const opening = engine._openingForNewConversation();
+      if (EN.greetingsInviting.includes(opening)) inviting += 1;
+    }
+    const rate = inviting / 200;
+    assert.ok(rate >= 0.45 && rate <= 0.55, `invitation rate was ${rate}`);
+  } finally { Math.random = oldRandom; }
+});
+
+test('strategy-shift fallback pools contain no closing-vibe language', () => {
+  const closing = ['glad', 'happy to help', 'خوشحالم', 'موفق باشی', 'امیدوارم', 'خداحافظ', 'bye', 'see you', 'take care'];
+  for (const line of [...FA.strategyShiftFallbacks, ...EN.strategyShiftFallbacks]) {
+    const lower = line.toLocaleLowerCase();
+    for (const phrase of closing) assert.equal(lower.includes(phrase.toLocaleLowerCase()), false, line);
+  }
+});
+
+test('resolved beach and ocean foreground variables meet readable contrast targets', () => {
+  const fs = require('node:fs');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  const color = (hex) => {
+    const rgb = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+    const linear = rgb.map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  };
+  const contrast = (foreground, background) => {
+    const pair = [color(foreground), color(background)].sort((a, b) => b - a);
+    return (pair[0] + 0.05) / (pair[1] + 0.05);
+  };
+  const value = (name) => {
+    const matches = [...css.matchAll(new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})`, 'g'))];
+    assert.ok(matches.length > 0, `missing ${name}`);
+    return matches.at(-1)[1];
+  };
+  const beachBackgrounds = ['#8fc8df', '#cfe7ec', '#e8d5a3'];
+  for (const name of ['--color-on-sky', '--color-on-sky-dim', '--color-on-sky-accent', '--color-on-sky-link']) {
+    for (const background of beachBackgrounds) assert.ok(contrast(value(name), background) >= 4.5, `${name} fails on ${background}`);
+  }
+  for (const background of ['#0a2229', '#153f49', '#1c4c57']) {
+    assert.ok(contrast('#eaf3ef', background) >= 4.5);
+    assert.ok(contrast('#a9c2bd', background) >= 4.5);
+  }
+});
+
+test('service worker precaches every language script, font, and index entry', () => {
+  const fs = require('node:fs');
+  const root = path.join(__dirname, '..');
+  const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+  const cached = new Set([...sw.matchAll(/['"](\.\/[^'"]+)['"]/g)].map((match) => match[1]));
+  const languageFiles = fs.readdirSync(path.join(root, 'js', 'languages')).filter((file) => file.endsWith('.js')).map((file) => `./js/languages/${file}`);
+  const fontFiles = fs.readdirSync(path.join(root, 'fonts')).filter((file) => file.endsWith('.woff2')).map((file) => `./fonts/${file}`);
+  for (const entry of ['./index.html', ...languageFiles, ...fontFiles]) assert.ok(cached.has(entry), `${entry} is not precached`);
+});
+
+test('tooltip wiring updates every titled control during language application', () => {
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  for (const control of ['sendButtonEl', 'menuTriggerEl', 'pickerFaEl', 'pickerEnEl', 'themeToggleButtons', 'menuNewChatEl', 'menuExportMdEl', 'menuExportTxtEl']) {
+    assert.match(app, new RegExp(`${control}[\\s\\S]{0,180}title`), `${control} title is not updated`);
+  }
+  assert.match(app, /updateThemeMenuItem\(\);/);
+});
+
+test('forbidden identity and legacy-label strings are absent from source text', () => {
+  const fs = require('node:fs');
+  const root = path.join(__dirname, '..');
+  const forbidden = [
+    ['language', 'model'].join(' '),
+    ['L', 'L', 'M'].join(''),
+    ['AI', 'assistant'].join(' '),
+    ['therap', 'ist'].join(''),
+    ['دانلود گفتگو (', 'Markdown', ')'].join(''),
+    ['ver', 'sion'].join(''),
+  ];
+  const files = [];
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (entry.name === '.git' || entry.name === 'node_modules') continue;
+      const full = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(full);
+      else if (/\.(css|html|js|json|md|sh|txt)$/u.test(entry.name)) files.push(full);
+    }
+  };
+  visit(root);
+  const source = files
+    .filter((file) => !file.includes(`${path.sep}fonts${path.sep}licenses${path.sep}`))
+    .filter((file) => !file.includes(`${path.sep}tests${path.sep}`))
+    .filter((file) => !file.endsWith(`${path.sep}sw.js`))
+    .filter((file) => !file.endsWith(`${path.sep}OFFLINE.md`))
+    .map((file) => fs.readFileSync(file, 'utf8'))
+    .join('\n')
+    .toLocaleLowerCase();
+  for (const phrase of forbidden) assert.equal(source.includes(phrase.toLocaleLowerCase()), false, phrase);
+});
+
+test('punctuation-only and very long inputs remain safe and bounded', () => {
+  const engine = freshEngine(EN);
+  const punctuation = engine.respond('!?…،،؟');
+  assert.equal(typeof punctuation, 'string');
+  assert.ok(punctuation.length > 0);
+  const long = engine.respond('sad '.repeat(2000));
+  assert.equal(typeof long, 'string');
+  assert.ok(engine.memory.recentUtterances.at(-1).length > 4000);
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

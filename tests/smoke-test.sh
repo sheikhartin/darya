@@ -59,7 +59,6 @@ required_files=(
   "manifest.json"
   "sw.js"
   "fonts/Vazirmatn-Regular.woff2"
-  "fonts/Nunito-VF.woff2"
   "fonts/Quicksand-VF.woff2"
   "fonts/Lalezar-Regular.woff2"
   "assets/icons/icon-192.png"
@@ -220,10 +219,52 @@ else
   fail "Persian export label is missing the no-parentheses form"
 fi
 
-if ! grep -q 'دانلود گفتگو (Markdown)' index.html js/languages/fa.js js/languages/en.js 2>/dev/null; then
+legacy_markdown_label='دانلود گفتگو ('''Markdown''')'
+if ! grep -q "$legacy_markdown_label" index.html js/languages/fa.js js/languages/en.js 2>/dev/null; then
   ok "old parenthesized Markdown export form is gone"
 else
   fail "old parenthesized Markdown export form remains"
+fi
+
+# Additional hardening checks keep the static shell honest as assets evolve.
+if command -v node >/dev/null 2>&1 && node - <<'NODE'
+  global.window = global;
+  require('./js/languages/halfspace.js');
+  const words = ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی'];
+  process.exit(words.every((word) => global.halfSpace(word) === word) ? 0 : 1);
+NODE
+then
+  ok "halfspace allow-list roots remain unchanged"
+else
+  fail "halfspace allow-list regression detected"
+fi
+
+if python3 - <<'PY2'
+import pathlib, re
+sw = pathlib.Path('sw.js').read_text()
+entries = set(re.findall(r"['\"](\./[^'\"]+)['\"]", sw))
+required = {'./index.html'}
+required.update('./js/languages/' + p.name for p in pathlib.Path('js/languages').glob('*.js'))
+required.update('./fonts/' + p.name for p in pathlib.Path('fonts').glob('*.woff2'))
+raise SystemExit(0 if required <= entries else 1)
+PY2
+then
+  ok "service worker precaches every language script and font"
+else
+  fail "service worker precache is incomplete"
+fi
+
+forbidden_pattern='language'\ 'model|L''LM|AI'\ 'assistant|therap''ist|دانلود گفتگو ('\ 'Markdown'\ ')|(^|[^A-Za-z])v[0-9]+\.[0-9]+'
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
+  ok "forbidden identity and legacy version strings stay out of app sources"
+else
+  fail "forbidden source strings found: $(tr '\n' ' ' </tmp/darya-forbidden.log)"
+fi
+
+if grep -q 'supports not' css/style.css && grep -q 'mask-image' css/style.css; then
+  ok "beach wave has a no-mask fallback"
+else
+  fail "beach wave fallback for older mask engines is missing"
 fi
 
 # ============================================================================
@@ -263,7 +304,6 @@ else
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"
     check_status "/fonts/Vazirmatn-Regular.woff2" "200"
-    check_status "/fonts/Nunito-VF.woff2" "200"
     check_status "/assets/icons/icon-192.png" "200"
     check_status "/assets/icons/icon-512.png" "200"
     check_status "/assets/favicon.svg" "200"

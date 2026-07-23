@@ -233,9 +233,16 @@
      */
     decayNamedEntities() {
       for (const [key, entity] of this.namedEntities) {
-        entity.activation *= (1 - ENTITY_DECAY_PER_TURN);
-        entity.age += 1;
-        if (entity.activation < 0.05) this.namedEntities.delete(key);
+        const current = Number.isFinite(entity.activation) ? entity.activation : 0;
+        entity.activation = Math.max(0, current * (1 - ENTITY_DECAY_PER_TURN));
+        entity.age = Math.max(0, Number.isFinite(entity.age) ? entity.age + 1 : 1);
+        // Remove a memory once its practical score is zero. This keeps the
+        // map bounded and makes decay monotonic even if a malformed record
+        // enters the map from an integration test or future adapter.
+        if (entity.activation < 0.05) {
+          entity.activation = 0;
+          this.namedEntities.delete(key);
+        }
       }
     }
 
@@ -353,6 +360,9 @@
       this.memory = new ConversationMemory();
       this._fallbackToggle = false;
       this.entityCallbackThreshold = 0.6;
+      // Public for deterministic integration tests and future product tuning;
+      // every value is clamped at the decision point before it is used.
+      this.entityCallbackProbability = ENTITY_CALLBACK_PROBABILITY;
     }
 
     /**
@@ -560,9 +570,15 @@
      * @returns {string|null}
      */
     _respondToEntityReference() {
-      const candidates = this.memory.eligibleNamedEntities(this.entityCallbackThreshold)
+      const threshold = Number.isFinite(this.entityCallbackThreshold)
+        ? Math.max(0, Math.min(1, this.entityCallbackThreshold))
+        : 0.6;
+      const probability = Number.isFinite(this.entityCallbackProbability)
+        ? Math.max(0, Math.min(1, this.entityCallbackProbability))
+        : ENTITY_CALLBACK_PROBABILITY;
+      const candidates = this.memory.eligibleNamedEntities(threshold)
         .filter((entity) => entity.lastMentionTurn < this.memory.turnCount);
-      if (candidates.length === 0 || Math.random() >= ENTITY_CALLBACK_PROBABILITY) return null;
+      if (candidates.length === 0 || Math.random() >= probability) return null;
 
       const entity = candidates[0];
       const templates = this.lang.entityCallbackTemplates || {};
@@ -583,7 +599,14 @@
      */
     /** True when a bot line consumes one question from the small budget. */
     _isQuestionResponse(text) {
-      return /[?؟]/u.test(text) || Boolean(this.lang.questionPattern && this.lang.questionPattern.test(text));
+      if (/[?؟]/u.test(text)) return true;
+      if (this.lang.questionPattern && this.lang.questionPattern.test(text)) return true;
+      // Fallback templates can contain an embedded question clause without
+      // ending in a question mark (for example, "I'm curious what's...").
+      // Count those too, otherwise two question-shaped replies can bypass
+      // the budget simply by using a period at the end.
+      return /\b(?:what|why|how|who|when|where|which)\b/iu.test(text)
+        || /(?<!\p{L})(?:چرا|چطور|چگونه|چیست|چیه|کجا|کیست|کیه|آیا)(?!\p{L})/u.test(text);
     }
 
     /**
