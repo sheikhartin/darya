@@ -1,0 +1,239 @@
+/**
+ * Cross-cutting quality checks for the static Darya application.
+ *
+ * These checks complement the conversation-focused suite with file, style,
+ * accessibility, offline-shell, and localization assertions. They use only
+ * Node built-ins so the PWA remains dependency-free.
+ */
+
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+global.window = global;
+require(path.join(__dirname, '..', 'js', 'languages', 'halfspace.js'));
+require(path.join(__dirname, '..', 'js', 'languages', 'entity-extractor.js'));
+require(path.join(__dirname, '..', 'js', 'languages', 'fa.js'));
+require(path.join(__dirname, '..', 'js', 'languages', 'en.js'));
+require(path.join(__dirname, '..', 'js', 'darya-engine.js'));
+
+const ROOT = path.join(__dirname, '..');
+const { DaryaResponseEngine, normalizeForMatching } = global.DaryaEngine;
+const { fa: FA, en: EN } = global.DaryaLang;
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
+}
+
+function fresh(lang) {
+  return new DaryaResponseEngine(lang);
+}
+
+test('quality fixture: all application shell files exist', () => {
+  for (const file of ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'sw.js', 'manifest.json']) {
+    assert.ok(fs.existsSync(path.join(ROOT, file)), file);
+  }
+});
+
+test('quality fixture: no runtime dependencies were added', () => {
+  const packageJson = JSON.parse(read('package.json'));
+  assert.equal(packageJson.dependencies, undefined);
+});
+
+test('punctuation matching canonicalizes Persian and English sentence marks', () => {
+  assert.equal(normalizeForMatching('سلام!', FA), 'سلام');
+  assert.equal(normalizeForMatching('سلام.', FA), 'سلام');
+  assert.equal(normalizeForMatching('hello!', EN), 'hello');
+  assert.equal(normalizeForMatching('hello.', EN), 'hello');
+});
+
+test('punctuation matching does not erase meaningful internal words', () => {
+  assert.equal(normalizeForMatching('سلام، دوست من.', FA), 'سلام دوست من');
+  assert.equal(normalizeForMatching('hello, dear friend.', EN), 'hello dear friend');
+});
+
+test('professional half-space normalizer handles joined and spaced forms', () => {
+  assert.equal(FA.normalize('میخواهم'), 'می‌خواهم');
+  assert.equal(FA.normalize('می روم'), 'می‌روم');
+  assert.equal(FA.normalize('بیخبر'), 'بی‌خبر');
+  assert.equal(FA.normalize('کتابهایم'), 'کتاب‌هایم');
+});
+
+test('professional half-space normalizer protects safe Persian roots', () => {
+  for (const word of ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی']) {
+    assert.equal(FA.normalize(word), word, word);
+  }
+});
+
+test('entity memory stores topic and emotional context with each detail', () => {
+  const engine = fresh(EN);
+  engine.memory.rememberEntities([{ type: 'person', surface: 'Maya', confidence: 0.9 }], 1, {
+    topics: ['family', 'sadness'],
+    seriousness: 0.8,
+  });
+  const detail = engine.memory.namedEntities.get('person:maya');
+  assert.deepEqual(detail.contextTopics, ['family', 'sadness']);
+  assert.equal(detail.contextSeriousness, 0.8);
+});
+
+test('entity callback rejects a remembered detail from an unrelated current topic', () => {
+  const engine = fresh(EN);
+  engine.entityCallbackProbability = 1;
+  engine.memory.turnCount = 1;
+  engine.memory.rememberEntities([{ type: 'person', surface: 'Maya', confidence: 0.9 }], 1, { topics: ['family'] });
+  engine.memory.turnCount = 2;
+  engine.currentTurnTopics = ['work'];
+  assert.equal(engine._respondToEntityReference(), null);
+});
+
+test('every opening pool contains invitations rather than passive closers', () => {
+  for (const lang of [FA, EN]) {
+    for (const pool of [lang.greetingsOpen, lang.greetingsInviting, lang.greetingsReturning]) {
+      assert.ok(pool.length >= 8);
+      assert.ok(pool.every((line) => /[?؟]/u.test(line)));
+    }
+  }
+});
+
+test('topic question pools are present for every declared topic', () => {
+  for (const lang of [FA, EN]) {
+    for (const [topic, pool] of Object.entries(lang.topicSpecificQuestions)) {
+      assert.ok(pool.length >= 4, `${lang.code}:${topic}`);
+      assert.equal(new Set(pool).size, pool.length);
+    }
+  }
+});
+
+test('topic blend pools cover the five common combinations', () => {
+  for (const lang of [FA, EN]) {
+    for (const key of ['blend_sleep_anxiety', 'blend_work_anger', 'blend_family_sadness', 'blend_loneliness_sleep', 'blend_joy_gratitude']) {
+      assert.ok(Array.isArray(lang.blendResponses[key]), `${lang.code}:${key}`);
+      assert.ok(lang.blendResponses[key].length >= 4);
+    }
+  }
+});
+
+test('seriousness and humor gates are explicit and conservative', () => {
+  const serious = fresh(EN);
+  serious.memory.turnCount = 4;
+  serious.currentTurnSeriousness = 0.8;
+  serious.lastTurnNeedsCare = true;
+  assert.equal(serious.canHumorFire(), false);
+  const light = fresh(EN);
+  light.memory.turnCount = 3;
+  light.currentTurnSeriousness = 0.2;
+  light.lastTurnNeedsCare = false;
+  assert.equal(light.canHumorFire(), true);
+});
+
+test('question budget constants remain bounded', () => {
+  assert.equal(global.DaryaEngine.CONSECUTIVE_QUESTION_LIMIT, 1);
+  assert.equal(global.DaryaEngine.QUESTION_BUDGET_WINDOW, 3);
+  assert.equal(global.DaryaEngine.QUESTION_BUDGET_LIMIT, 1);
+});
+
+test('every static button has a title and every status surface is labelled', () => {
+  const html = read('index.html');
+  for (const button of html.matchAll(/<button\b[^>]*>/gu)) {
+    assert.match(button[0], /title="[^"]+"/u, button[0]);
+  }
+  assert.match(html, /id="typing-row"[^>]*role="status"/u);
+  assert.match(html, /id="theme-picker"[^>]*role="group"/u);
+});
+
+test('export controls have the intended order and accessible names', () => {
+  const html = read('index.html');
+  assert.ok(html.indexOf('id="menu-export-txt"') < html.indexOf('id="menu-export-md"'));
+  assert.match(html, /menu-export-txt[^>]*aria-label="[^"]+"/u);
+  assert.match(html, /menu-export-md[^>]*aria-label="[^"]+"/u);
+  assert.match(FA.ui.menuExportMd, /مارک‌داون/);
+  assert.doesNotMatch(FA.ui.menuExportMd, /[()]/u);
+});
+
+test('Persian theme terminology uses پوسته consistently', () => {
+  for (const value of [FA.ui.themeOceanLabel, FA.ui.themeBeachLabel, FA.ui.themeOceanTitle, FA.ui.themeBeachTitle, FA.ui.themeGroupLabel, FA.ui.themeToggleTitle]) {
+    assert.match(value, /پوسته/u);
+    assert.doesNotMatch(value, /تم/u);
+  }
+});
+
+test('English body font is Be Vietnam Pro with readable weights', () => {
+  const css = read('css/style.css');
+  assert.match(css, /--font-body: 'Be Vietnam Pro'/u);
+  assert.match(css, /font-family: 'Be Vietnam Pro'/u);
+  assert.doesNotMatch(css, /font-family: 'Be Vietnam Pro';[\s\S]{0,180}font-weight: (?:100|200|300)/u);
+  for (const weight of ['Regular', 'Medium', 'SemiBold', 'Bold', 'Italic']) {
+    const file = path.join(ROOT, `fonts/BeVietnamPro-${weight}.woff2`);
+    assert.ok(fs.existsSync(file), file);
+    assert.ok(fs.statSync(file).size > 1000, file);
+  }
+});
+
+test('beach theme has three masked tiled layers and a full-scene sky', () => {
+  const html = read('index.html');
+  const css = read('css/style.css');
+  assert.equal((html.match(/class="beach-scene__ocean /gu) || []).length, 3);
+  assert.match(css, /beach-scene__sky[\s\S]*height: 100%/u);
+  assert.ok((css.match(/background-repeat: repeat-x/gu) || []).length >= 3);
+  assert.ok((css.match(/mask-image:/gu) || []).length >= 3);
+  assert.doesNotMatch(css, /beach-ocean-drift[\s\S]*translate3d\([^,]+,\s*-[123]px/u);
+});
+
+test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', () => {
+  const app = read('js/app.js');
+  const css = read('css/style.css');
+  assert.match(app, /const count = 8/u);
+  assert.match(app, /randomBetween\(4, 14\)/u);
+  assert.match(app, /randomBetween\(14, 22\)/u);
+  assert.match(css, /backdrop__depth-breath/u);
+  assert.match(css, /@keyframes depth-breathe/u);
+  assert.match(css, /@keyframes horizon-drift[\s\S]*translateX/u);
+  assert.doesNotMatch(css.match(/@keyframes horizon-drift[\s\S]*?\}/u)?.[0] || '', /translateY/u);
+});
+
+test('representative theme foregrounds meet WCAG AA contrast', () => {
+  const css = read('css/style.css');
+  const luminance = (hex) => {
+    const channels = [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16) / 255);
+    const linear = channels.map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  };
+  const ratio = (foreground, background) => {
+    const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+    return (values[0] + 0.05) / (values[1] + 0.05);
+  };
+  assert.ok(ratio('#123847', '#b3d6e0') >= 4.5);
+  assert.ok(ratio('#204957', '#b3d6e0') >= 4.5);
+  assert.ok(ratio('#eaf3ef', '#153f49') >= 4.5);
+  assert.ok(ratio('#a9c2bd', '#153f49') >= 4.5);
+});
+
+test('service worker uses a non-versioned cache name and precaches the app shell', () => {
+  const sw = read('sw.js');
+  assert.match(sw, /const CACHE_NAME = 'darya-cache-current'/u);
+  assert.doesNotMatch(sw, /CACHE_VERSION|darya-v\d/u);
+  for (const entry of ['./index.html', './css/style.css', './js/app.js', './js/darya-engine.js', './js/languages/fa.js', './js/languages/en.js', './js/languages/entity-extractor.js', './js/languages/halfspace.js']) {
+    assert.match(sw, new RegExp(entry.replaceAll('.', '\\.'), 'u'), entry);
+  }
+});
+
+test('application text contains no em dash or identity claims', () => {
+  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'package.json'];
+  const forbidden = ['language model', 'LLM', 'AI assistant', 'therapist', 'counselor'];
+  for (const file of files) {
+    const text = read(file);
+    assert.equal(text.includes(String.fromCodePoint(0x2014)), false, file);
+    for (const phrase of forbidden) assert.equal(text.toLocaleLowerCase().includes(phrase.toLocaleLowerCase()), false, `${file}:${phrase}`);
+  }
+});
+
+test('application has no numeric release or cache identifier', () => {
+  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'sw.js', 'package.json'];
+  for (const file of files) {
+    const text = read(file);
+    assert.doesNotMatch(text, /darya-v\d|CACHE_VERSION|"version"\s*:/u, file);
+  }
+});

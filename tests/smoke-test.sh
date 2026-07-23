@@ -94,9 +94,9 @@ section "Node engine test suite"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  if node --test tests/engine.test.js > /tmp/darya-node-test.log 2>&1; then
+  if node --test tests/engine.test.js tests/quality.test.js > /tmp/darya-node-test.log 2>&1; then
     node_pass=$(grep -oP '(?<=# pass )\d+' /tmp/darya-node-test.log || echo "?")
-    ok "engine tests passed ($node_pass tests)"
+    ok "engine and quality tests passed ($node_pass tests)"
   else
     fail "engine test suite failed -- see details below"
     grep -E "^not ok|AssertionError" /tmp/darya-node-test.log | sed 's/^/      /'
