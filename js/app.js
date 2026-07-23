@@ -53,6 +53,8 @@
 
   const menuTriggerEl = document.getElementById('menu-trigger');
   const menuPopoverEl = document.getElementById('menu-popover');
+  const menuItemElements = [...menuPopoverEl.querySelectorAll('[role="menuitem"]')];
+  let menuFocusIndex = 0;
   const menuNewChatEl = document.getElementById('menu-new-chat');
   const menuNewChatLabelEl = document.getElementById('menu-new-chat-label');
   const menuExportMdEl = document.getElementById('menu-export-md');
@@ -502,11 +504,20 @@
   function openMenu() {
     menuPopoverEl.hidden = false;
     menuTriggerEl.setAttribute('aria-expanded', 'true');
+    menuFocusIndex = 0;
+    requestAnimationFrame(() => menuItemElements[menuFocusIndex]?.focus());
   }
 
-  function closeMenu() {
+  function closeMenu(restoreFocus = false) {
     menuPopoverEl.hidden = true;
     menuTriggerEl.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) menuTriggerEl.focus();
+  }
+
+  function moveMenuFocus(step) {
+    if (menuItemElements.length === 0) return;
+    menuFocusIndex = (menuFocusIndex + step + menuItemElements.length) % menuItemElements.length;
+    menuItemElements[menuFocusIndex].focus();
   }
 
   function toggleMenu() {
@@ -557,6 +568,27 @@
     toggleMenu();
   });
 
+  menuPopoverEl.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveMenuFocus(1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveMenuFocus(-1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      menuFocusIndex = 0;
+      menuItemElements[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      menuFocusIndex = menuItemElements.length - 1;
+      menuItemElements.at(-1)?.focus();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(true);
+    }
+  });
+
   document.addEventListener('click', (event) => {
     if (!menuPopoverEl.hidden && !menuPopoverEl.contains(event.target) && event.target !== menuTriggerEl) {
       closeMenu();
@@ -565,8 +597,7 @@
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !menuPopoverEl.hidden) {
-      closeMenu();
-      menuTriggerEl.focus();
+      closeMenu(true);
     }
   });
 

@@ -32,6 +32,36 @@ function fresh(lang) {
   return new DaryaResponseEngine(lang);
 }
 
+test('turn frames classify intent, dialogue act, phase, and strategy together', () => {
+  const engine = fresh(EN);
+  const reply = engine.respond('My job has been stressful');
+  const frame = engine.conversationState;
+  assert.equal(frame.dialogueAct, 'statement');
+  assert.equal(frame.intent, 'topic_statement');
+  assert.equal(frame.phase, 'clarifying');
+  assert.equal(frame.strategy, 'topic-question');
+  assert.ok(reply.length > 0);
+  assert.equal(engine.memory.turnFrames.at(-1).turn, 1);
+});
+
+test('questions do not trigger another question simply to sound active', () => {
+  const engine = fresh(EN);
+  const reply = engine.respond('What do you think about this?');
+  assert.equal(engine.currentTurnDialogueAct, 'question');
+  assert.equal(engine.currentTurnQuestionNeed, 0);
+  assert.doesNotMatch(reply, /[?]/u);
+});
+
+test('multi-turn scenario preserves the latest relevant subject after a topic shift', () => {
+  const engine = fresh(EN);
+  engine.respond('My job has been stressful');
+  engine.respond('My family is also worried');
+  const reply = engine.respond('it happened again');
+  assert.equal(engine.currentReferenceContext.topic, 'family');
+  assert.equal(engine.conversationState.phase, 'contextualContinuation');
+  assert.doesNotMatch(reply, /work thread|workday/i);
+});
+
 test('entity correction removes the old referent and promotes the corrected one', () => {
   const engine = fresh(EN);
   engine.memory.turnCount = 1;
@@ -169,6 +199,16 @@ test('question budget constants remain bounded', () => {
   assert.equal(global.DaryaEngine.CONSECUTIVE_QUESTION_LIMIT, 1);
   assert.equal(global.DaryaEngine.QUESTION_BUDGET_WINDOW, 3);
   assert.equal(global.DaryaEngine.QUESTION_BUDGET_LIMIT, 1);
+});
+
+test('chat menu exposes a complete keyboard navigation contract', () => {
+  const html = read('index.html');
+  const app = read('js/app.js');
+  assert.match(html, /menu-trigger[^>]*aria-controls="menu-popover"/u);
+  assert.match(app, /menuItemElements/);
+  assert.match(app, /ArrowDown/);
+  assert.match(app, /ArrowUp/);
+  assert.match(app, /closeMenu\(true\)/);
 });
 
 test('every static button has a title and every status surface is labelled', () => {
