@@ -729,15 +729,37 @@
       const size = randomBetween(46, 130);
       const duration = randomBetween(7, 16);
       patch.style.setProperty('--left', `${randomBetween(0, 92).toFixed(1)}%`);
-      // Weighted toward the top of the sand band, closer to the waterline,
-      // so patches thin out (and dry sand becomes more likely) further
-      // from the water -- like a real shoreline.
       patch.style.setProperty('--top', `${randomBetween(2, 55).toFixed(1)}%`);
       patch.style.setProperty('--size', `${size.toFixed(0)}px`);
       patch.style.setProperty('--duration', `${duration.toFixed(1)}s`);
       patch.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
       patch.style.setProperty('--peak-opacity', randomBetween(0.3, 0.6).toFixed(2));
       container.appendChild(patch);
+    }
+  }
+
+  function initBirdShadows() {
+    const container = document.querySelector('.bird-shadows');
+    if (!container) return;
+    // Each bird shadow is a CSS-only silhouette (two curved wing shapes
+    // created with ::before and ::after pseudo-elements) that drifts
+    // laterally across the sky. The effect implies birds overhead without
+    // rendering actual bird graphics.
+    const count = 5;
+    for (let i = 0; i < count; i += 1) {
+      const bird = document.createElement('span');
+      bird.className = 'bird-shadow';
+      const wingspan = randomBetween(28, 64);
+      const duration = randomBetween(18, 36);
+      const flapSpeed = randomBetween(1.0, 2.0);
+      bird.style.setProperty('--top', `${randomBetween(6, 38).toFixed(1)}vh`);
+      bird.style.setProperty('--wingspan', `${wingspan.toFixed(0)}px`);
+      bird.style.setProperty('--bird-duration', `${duration.toFixed(1)}s`);
+      bird.style.setProperty('--bird-delay', `-${randomBetween(0, duration).toFixed(1)}s`);
+      bird.style.setProperty('--bird-opacity', randomBetween(0.08, 0.18).toFixed(2));
+      bird.style.setProperty('--flap-speed', `${flapSpeed.toFixed(2)}s`);
+      bird.style.setProperty('--drift-y', `${randomBetween(-12, -3).toFixed(0)}px`);
+      container.appendChild(bird);
     }
   }
 
@@ -770,4 +792,5 @@
   initBubbles();
   initWindGusts();
   initWetPatches();
+  initBirdShadows();
 })();

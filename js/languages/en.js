@@ -127,8 +127,8 @@
     ]),
 
     rule('smalltalk_capability', 60, /\b(what can you do|how can you help|what do you do|how do you work)\b/i, [
-      'I am here to listen, ask questions, and sit with you when something is on your mind. I am not a substitute for a professional, but I can be a patient ear.',
-      'I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you are feeling.',
+      'I am here to listen, ask questions, and sit with you when something is on your mind. I am not a substitute for a professional, but I can be a patient companion.',
+      'I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on what you are feeling.',
     ]),
 
     rule('motivation', 35, /\b(no motivation|can'?t get started|procrastinating|unmotivated|no energy to)\b/i, [
@@ -425,7 +425,7 @@
   const exitKeywords = ['bye', 'goodbye', 'i have to go', 'i need to go', 'exit', 'quit'];
 
   const greetingsOpen = [
-    'Hi. Would you like to start with how today feels, or with what is on your mind?',
+    'Hi. I am Darya. Would you like to start with how today feels, or with what is on your mind?',
     'Hello. What has been taking up the most space in your mind lately?',
     'Hi there. What brought you here today?',
     'Hello. Where would feel natural to begin?',
@@ -435,8 +435,8 @@
     'Hello. What has your attention at the moment?',
   ];
   const greetingsInviting = [
-    'Hey. Would you like to start with a gentle question, or should we go straight to the main topic?',
-    'Hi. If you have something on your chest, would you like to start there?',
+    'Hey. Would you like me to ask a gentle question, or should we go straight to what is on your mind?',
+    'Hi. If something is on your chest, would you like to start there?',
     'Hello. I am here and genuinely curious. What brought you in today?',
     'Hey. Want to tell me a little about what is going on?',
     'Hi. There is no rush. What would feel good to start with?',

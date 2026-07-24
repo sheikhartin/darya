@@ -481,7 +481,7 @@ test('English body font is Be Vietnam Pro with readable weights', () => {
 test('beach controls and validation hints remain visible on the bright sky', () => {
   const css = read('css/style.css');
   assert.match(css, /html\[data-theme="beach"\] \.menu__trigger[\s\S]*color: var\(--color-on-sky\)/u);
-  assert.match(css, /html\[data-theme="beach"\] \.input-hint[\s\S]*background: rgba\(255, 255, 255, 0\.65\)/u);
+  assert.match(css, /html\[data-theme="beach"\] \.input-hint[\s\S]*background: var\(--surface-beach-card\)/u);
   assert.match(css, /html\[data-theme="beach"\] \.disclaimer[\s\S]*color: #f7ead5/u);
 });
 
@@ -571,13 +571,13 @@ test('casual topic blends cover food+joy, hobby+joy, and weather+sadness', () =>
 
 test('beach menu popover uses a solid surface for readability', () => {
   const css = read('css/style.css');
-  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: #d4c4a8/u);
+  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: var\(--surface-beach-card\)/u);
   assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*box-shadow:/u);
 });
 
 test('beach bot bubbles use solid surface matching menu', () => {
   const css = read('css/style.css');
-  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: #d4c4a8/u);
+  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: var\(--surface-beach-card\)/u);
   assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*color: #1a2f36/u);
 });
 

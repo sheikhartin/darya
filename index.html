@@ -36,11 +36,10 @@
        silhouette, and randomly-placed rising bubbles (populated by
        app.js, so each one gets a genuinely random size/position/timing
        rather than a repeating formula). Beach theme: a proper shoreline
-       scene (sea strip, scalloped foam edge, tall sand band, patchy wet
-       spots that fade in and out unevenly) plus drifting wind gusts
-       instead of bubbles, since floating bubbles read as underwater, not
-       beach. Both themes' elements live here; CSS shows only the active
-       theme's set. -->
+       scene (sea strip, scalloped foam edge, tall sand band) plus
+       drifting wind gusts and subtle bird-shadow silhouettes drifting
+       across the sky. Both themes' elements live here; CSS shows only
+       the active theme's set. -->
   <div class="backdrop" aria-hidden="true">
     <div class="backdrop__glow backdrop__glow--one"></div>
     <div class="backdrop__glow backdrop__glow--two"></div>
@@ -62,6 +61,7 @@
       <div class="beach-scene__foam"></div>
       <div class="beach-scene__sand"></div>
       <div class="beach-scene__wet-patches"></div>
+      <div class="bird-shadows"></div>
     </div>
 
     <div class="backdrop__scrim"></div>
@@ -108,12 +108,6 @@
           </span>
         </button>
       </div>
-
-      <p class="picker__note">
-        <span lang="fa" dir="rtl">زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است.</span>
-        <span class="picker__note-sep">·</span>
-        <span lang="en" dir="ltr">Language locks once your conversation begins.</span>
-      </p>
     </div>
   </div>
 

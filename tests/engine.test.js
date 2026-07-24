@@ -1336,21 +1336,50 @@ test('new casual blends have four distinct non-question lines in both languages'
 // UI improvements
 // ============================================================================
 
-test('menu language note exists in HTML', () => {
+test('menu language note exists in HTML dropdown', () => {
   const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   assert.match(html, /menu-language-note/);
   assert.match(html, /زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است/);
   assert.match(html, /Language locks once your conversation begins/);
 });
 
+test('language lock notice is in the dropdown menu, not the picker', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  // The picker should not have the language lock note
+  const pickerSection = html.slice(html.indexOf('id="picker"'), html.indexOf('id="app"'));
+  assert.doesNotMatch(pickerSection, /Language locks once your conversation begins/);
+  // The menu popover should have it
+  const menuSection = html.slice(html.indexOf('id="menu-popover"'), html.indexOf('</main>'));
+  assert.match(menuSection, /Language locks once your conversation begins/);
+});
+
+test('bird shadow silhouettes replace wet-patch rain drops for beach theme', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  const app = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  // HTML has bird-shadows container
+  assert.match(html, /bird-shadows/);
+  // CSS defines bird shadow animations
+  assert.match(css, /bird-shadow/);
+  assert.match(css, /@keyframes bird-fly/);
+  assert.match(css, /@keyframes wing-flap/);
+  // Beach theme shows bird shadows
+  assert.match(css, /html\[data-theme="beach"\] \.bird-shadows[\s\S]*display: block/);
+  // Ocean theme hides bird shadows
+  assert.match(css, /\.bird-shadows[\s\S]*display: none/);
+  // JS initializes them
+  assert.match(app, /initBirdShadows/);
+  assert.match(app, /bird-shadow/);
+});
+
 test('beach bot bubbles use solid surface for contrast', () => {
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
-  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: #d4c4a8/);
+  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: var\(--surface-beach-card\)/);
 });
 
 test('beach menu popover uses solid surface matching bot bubbles', () => {
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
-  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: #d4c4a8/);
+  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: var\(--surface-beach-card\)/);
 });
 
 test('menu popover uses elevated shadow', () => {
