@@ -183,9 +183,17 @@ html[lang="en"] {
   --font-body: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
 }
 
+/* English header title needs a heavier weight to match Persian Lalezar's
+   visual thickness. Quicksand 700 is lighter than Lalezar 400, so we
+   compensate with a bolder weight on the header wordmark specifically. */
+html[lang="en"] .header__title {
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
 /* Beach theme: warm sand and shell palette. Coordinated with ocean but
-   clearly its own personality. Surfaces use opaque cream/sand tones
-   instead of transparent overlays for reliable contrast. */
+   clearly its own personality. All interactive surfaces use #d4c4a8
+   (warm sand cream) for a cohesive, readable look against the bright sky. */
 html[data-theme="beach"] {
   --color-abyss: #12312f;
   --color-abyss-deep: #0a201f;
@@ -202,12 +210,13 @@ html[data-theme="beach"] {
   --color-on-sky-link: #06495c;
   --text-on-bright: #123847;
   --border-focus: #06495c;
-  /* Beach-specific surfaces: opaque cream palette for reliable contrast. */
+  /* Beach-specific surfaces: unified #d4c4a8 cream for all interactive
+     surfaces, ensuring consistent readability against the bright sky. */
   --surface-menu: #d4c4a8;
   --timestamp-text: #3d5a5e;
   --surface-beach-card: #d4c4a8;
   --surface-beach-card-hover: #c9b89a;
-  --surface-beach-input: rgba(212, 196, 168, 0.85);
+  --surface-beach-input: #d4c4a8;
 }
 
 * {
@@ -1293,17 +1302,17 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
  * Beach theme component overrides: opaque cream surfaces, no hard borders
  * ====================================================================== */
 
-/* Beach menu trigger: visible but soft against the sky. */
+/* Beach menu trigger: #d4c4a8 surface, visible against the sky. */
 html[data-theme="beach"] .menu__trigger {
   color: var(--color-on-sky);
-  background: rgba(212, 196, 168, 0.7);
+  background: #d4c4a8;
   box-shadow: 0 3px 14px rgba(91, 61, 35, 0.18);
 }
 
 html[data-theme="beach"] .menu__trigger:hover,
 html[data-theme="beach"] .menu__trigger[aria-expanded="true"] {
   color: var(--color-on-sky-link);
-  background: rgba(212, 196, 168, 0.9);
+  background: var(--surface-beach-card-hover);
 }
 
 /* Beach input hint */
@@ -1316,13 +1325,13 @@ html[data-theme="beach"] .input-hint {
   box-shadow: 0 2px 8px rgba(91, 61, 35, 0.1);
 }
 
-/* Beach disclaimer */
+/* Beach disclaimer: warm light text with strong shadow for readability */
 html[data-theme="beach"] .disclaimer {
   color: #f7ead5;
-  text-shadow: 0 1px 3px rgba(60, 40, 20, 0.7);
+  text-shadow: 0 1px 4px rgba(60, 40, 20, 0.8);
 }
 
-/* Beach picker options: opaque cream surface */
+/* Beach picker options: unified #d4c4a8 cream surface */
 html[data-theme="beach"] .picker__option {
   background: var(--surface-beach-card);
   box-shadow: 0 4px 16px rgba(91, 61, 35, 0.12);
@@ -1333,22 +1342,23 @@ html[data-theme="beach"] .picker__option:hover {
   box-shadow: 0 6px 20px rgba(91, 61, 35, 0.18);
 }
 
-/* Beach theme picker */
+/* Beach theme picker: consistent #d4c4a8 surface */
 html[data-theme="beach"] .theme-picker__option {
-  background: rgba(212, 196, 168, 0.6);
+  background: #d4c4a8;
 }
 
 html[data-theme="beach"] .theme-picker__option[aria-pressed="true"] {
   background: var(--surface-beach-card);
+  box-shadow: 0 2px 8px rgba(91, 61, 35, 0.14);
 }
 
 html[data-theme="beach"] .theme-picker__option:hover {
-  background: rgba(212, 196, 168, 0.75);
+  background: var(--surface-beach-card-hover);
 }
 
-/* Beach composer: solid cream surface */
+/* Beach composer: #d4c4a8 cream surface */
 html[data-theme="beach"] .composer {
-  background: var(--surface-beach-input);
+  background: #d4c4a8;
   box-shadow: 0 6px 20px rgba(91, 61, 35, 0.14);
 }
 
