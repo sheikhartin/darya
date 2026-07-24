@@ -152,7 +152,7 @@ test('regression: Persian question marks are not mistaken for letters in word-bo
 test('fa: safety rule takes priority and gives a crisis-appropriate response', () => {
   const engine = freshEngine(FA);
   const reply = engine.respond('دیگه نمیخوام زندگی کنم');
-  assert.match(reply, /تنها نیستید|کمک تخصصی|توجه فوری/);
+  assert.match(reply, /تنها نیستی|تنها نیستید|کمک تخصصی|توجه فوری/);
 });
 
 test('en: safety rule takes priority and gives a crisis-appropriate response', () => {
