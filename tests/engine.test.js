@@ -1194,7 +1194,9 @@ test('loop detection: repeated identical input triggers loop-handling strategy',
   // The loop detection fires as identical-repeat or greeting-loop.
   assert.ok(engine.memory.loopDetected, 'loop should be detected');
   assert.equal(engine.lastResponseStrategy, 'loop-handling');
-  assert.match(reply, /greeting|hello|start fresh|start over|heard you|repeat/i);
+  // The reply should come from the loop response pool, not generic fallbacks.
+  const loopPool = EN.loopResponses['identical-repeat'] || EN.loopResponses['greeting-loop'] || [];
+  assert.ok(loopPool.some((line) => reply.includes(line) || line.includes(reply)), `expected loop response, got: ${reply}`);
 });
 
 test('loop detection: repeated greetings after initial exchange are caught', () => {
@@ -1205,7 +1207,11 @@ test('loop detection: repeated greetings after initial exchange are caught', () 
   const reply = engine.respond('hey');
   // The loop should be detected as either identical-repeat or greeting-loop.
   assert.ok(engine.memory.loopDetected, 'loop should be detected');
-  assert.match(reply, /greeting|fresh|start|heard you|repeat/i);
+  const allLoopResponses = [
+    ...(EN.loopResponses['identical-repeat'] || []),
+    ...(EN.loopResponses['greeting-loop'] || []),
+  ];
+  assert.ok(allLoopResponses.some((line) => reply.includes(line) || line.includes(reply)), `expected loop response, got: ${reply}`);
 });
 
 test('loop detection is exempt for safety messages', () => {
