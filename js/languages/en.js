@@ -260,6 +260,11 @@
       'No rush at all. When you are ready, I would love to hear what is actually on your mind.',
       'We can slow down. There is no pressure to keep responding. What feels right?',
     ],
+    'vague-response': [
+      'I notice your answers have been brief. If you do not want to answer that question, that is okay. We can change the topic.',
+      'It seems like you might not be in the mood to answer right now. I am here whenever you are ready.',
+      'It is okay if you do not want to talk about this right now. I am here whenever you would like.',
+    ],
   };
 
   // Reflective responses that acknowledge the user's emotional content

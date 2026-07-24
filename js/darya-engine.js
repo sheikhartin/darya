@@ -66,6 +66,7 @@
   const IDENTICAL_INPUT_STREAK_THRESHOLD = 2;
   const INPUT_HISTORY_SIZE = 6;
   const EMOJI_ONLY_THRESHOLD = 1;
+  const VAGUE_RESPONSE_THRESHOLD = 2;
 
   /* Conversation design notes: keep replies relevant and proportionate,
      alternate reflection with a small number of concrete questions, and
@@ -237,6 +238,7 @@
       this.recentShortInputTurns = [];
       this.recentNormalizedInputs = [];
       this.recentEmojiOnlyTurns = [];
+      this.recentVagueTurns = [];
       this.loopDetected = false;
       this.loopType = null;
     }
@@ -497,6 +499,16 @@
       this.recentEmojiOnlyTurns = this.recentEmojiOnlyTurns.filter(
         (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
       );
+      // Track vague responses (very short, non-committal) when there is
+      // a pending question from the bot. These are signals that the user
+      // is not engaging with the question.
+      const pendingQuestion = [...this.pendingQuestions].reverse().find((q) => !q.answered);
+      if (pendingQuestion && wordCount <= 2 && !isEmojiOrPunct && dialogueAct !== 'greeting') {
+        this.recentVagueTurns.push(this.turnCount);
+      }
+      this.recentVagueTurns = this.recentVagueTurns.filter(
+        (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
+      );
     }
 
     /**
@@ -537,6 +549,12 @@
       if (this.recentShortInputTurns.length >= SHORT_INPUT_STREAK_THRESHOLD
         && this.turnCount > 2) {
         return 'short-input-streak';
+      }
+
+      // Check for vague responses to pending questions.
+      if (this.recentVagueTurns.length >= VAGUE_RESPONSE_THRESHOLD
+        && this.turnCount > 2) {
+        return 'vague-response';
       }
 
       return null;
@@ -1064,6 +1082,9 @@
       if (loopType === 'greeting-loop' && matchedRule?.topic === 'greeting') {
         return this._pickVaried(this.lang.loopResponses?.['greeting-loop'] || this.lang.genericFallbacks);
       }
+      if (loopType === 'vague-response') {
+        return this._pickVaried(this.lang.loopResponses?.['vague-response'] || this.lang.genericFallbacks);
+      }
       if (loopType === 'identical-repeat') {
         return this._pickVaried(this.lang.loopResponses?.['identical-repeat'] || this.lang.genericFallbacks);
       }
@@ -1300,6 +1321,7 @@
     SHORT_INPUT_STREAK_THRESHOLD,
     IDENTICAL_INPUT_STREAK_THRESHOLD,
     EMOJI_ONLY_THRESHOLD,
+    VAGUE_RESPONSE_THRESHOLD,
     ConversationMemory,
     DaryaResponseEngine,
   };
