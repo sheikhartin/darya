@@ -48,60 +48,60 @@
     ]),
 
     rule('greeting', 65, /^(?:hi|hello|hey|good morning|good evening|good afternoon)[!.?]*$/i, [
-      'Hi. I am Darya. Take your time. What is on your mind?',
-      'Hello. Good to be here with you. What would feel right to start with?',
-      'Hey. I am here. No rush at all. What has been on your mind?',
+      'Hi. I am Darya. Would you like to start with how you feel, or with what is on your mind?',
+      'Hello. Good to have you here. What would feel right to begin with?',
+      'Hey. I am here. No rush at all. What is on your mind right now?',
       'Hello. Welcome. We can go at whatever pace feels right for you.',
     ]),
 
     rule('family', 50, /\b(my (?:mom|mother|dad|father|parents|sister|brother|family))\b\s*(.*)/i, [
-      'Which part of {captured} stands out most right now?',
-      'How does your relationship with your family feel to you these days?',
+      'What comes to mind when you think about {captured}?',
+      'How does your relationship with your family feel these days?',
       'What comes up for you when you think about {captured}?',
-      'What made {captured} come to mind just now?',
+      'What brought {captured} to mind just now?',
     ]),
 
     rule('work', 50, /\b(my job|my work|my boss|my career|my coworker|got fired|got laid off)\b\s*(.*)/i, [
-      'Work can weigh on you in ways that spill into everything else. How has {captured} been affecting you?',
+      'Work can really weigh on you. How has {captured} been affecting you?',
       'Which part of your work situation feels hardest right now?',
       'If things at work were better, what would actually be different?',
     ]),
 
     rule('sleep', 50, /\b(can'?t sleep|insomnia|nightmares|sleeping badly|trouble sleeping|waking up|wake up at night)\b\s*(.*)/i, [
-      "It sounds like your sleep hasn't been restful lately. When did that start?",
-      "Trouble sleeping can be a sign that something's weighing on your mind. What's been occupying your thoughts lately?",
-      'When you can\'t sleep, where does your mind usually go?',
+      'It sounds like your sleep has not been restful lately. When did that start?',
+      'Trouble sleeping can be a sign that something is weighing on you. What has been on your mind?',
+      'When you cannot sleep, where does your mind usually go?',
     ]),
 
     rule('sadness', 40, /\b(sad|down|depressed|heartbroken|crying|low)\b/i, [
-      'I can hear that there is a lot of sadness here. Would you like to talk more about it?',
+      'I hear that there is a lot of sadness here. Would you like to talk about it?',
       'Sadness is hard to sit with. What brought this feeling on?',
-      "Let's stay with this for a moment. How long have you been feeling this way?",
+      'Let us stay with this for a moment. How long have you been feeling this way?',
       'Where in your body do you feel this sadness most?',
     ]),
 
     rule('anxiety', 40, /\b(anxious|anxiety|stressed|stress|scared|afraid|worried|panicking)\b/i, [
-      'Anxiety can be so tiring. What exactly has been worrying you?',
+      'Anxiety can be really tiring. What exactly has been worrying you?',
       'When that stress hits, what does it feel like in your body?',
       'On a scale of 1 to 10, how heavy is this worry right now?',
     ]),
 
     rule('anger', 40, /\b(angry|furious|pissed off|mad at|so annoyed)\b/i, [
       'It sounds like there is a lot of frustration built up. What triggered it?',
-      'That anger makes sense given what you are describing. Do you want to walk me through what happened?',
+      'That anger makes sense given what you are describing. Tell me what happened.',
       'Where do you feel that anger most in your body?',
     ]),
 
     rule('joy', 35, /\b(happy|glad|excited|thrilled|great news|feeling good)\b/i, [
-      "I'm glad you're feeling this way! What brought it on?",
-      "That's good to hear. What part of it stands out to you?",
+      'I am glad you are feeling this way! What brought it on?',
+      'That is good to hear. What part of it stands out to you?',
       'Where do you feel that good feeling in your body?',
     ]),
 
     rule('loneliness', 40, /\b(lonely|alone|no one to talk to|nobody understands|isolated)\b/i, [
       'Loneliness can feel really heavy. How long has this been with you?',
       'When you say you feel alone, is it more about not having people around, or something deeper?',
-      "Who is the person you feel closest to these days, even if you do not see them often?",
+      'Who is the person you feel closest to these days, even if you do not see them often?',
     ]),
 
     rule('self_esteem', 40, /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure)\b/i, [
@@ -112,23 +112,23 @@
 
     rule('grief', 45, /\b(lost my|passed away|passed away|death of|grieving|my .* died)\b/i, [
       'Losing someone is one of the hardest things a person can go through. I am here if you want to talk about it.',
-      "Whatever you are feeling about this loss is valid. How have you been coping with it lately?",
-      "I would like to hear about them, if you would like to share.",
+      'Whatever you are feeling about this loss is valid. How have you been coping with it lately?',
+      'I would like to hear about them, if you would like to share.',
     ]),
 
     rule('smalltalk_howareyou', 60, /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing)\b/i, [
-      "I'm doing well, thank you for asking! I'm glad to be here with you. How are you doing today?",
-      "I'm good, thanks for asking! I'd love to hear how you're doing.",
+      'I am doing well, thank you for asking! I am glad to be here with you. How are you doing today?',
+      'I am good, thanks for asking! I would love to hear how you are doing.',
     ]),
 
     rule('smalltalk_identity', 60, /\b(who are you|what are you|are you (?:a )?(?:robot|bot|ai|real|human|person))\b/i, [
-      "I'm Darya, a companion here to listen. I'm not a real person, just a calm space to think out loud.",
-      "I'm a simple chat companion, not a human. But I'm genuinely here to listen.",
+      'I am Darya, a companion here to listen. I am not a real person, just a calm space to think out loud.',
+      'I am a simple chat companion, not a human. But I am genuinely here to listen.',
     ]),
 
     rule('smalltalk_capability', 60, /\b(what can you do|how can you help|what do you do|how do you work)\b/i, [
-      "I'm here to listen, ask questions, and sit with you when something's on your mind. I'm not a substitute for a professional, but I can be a patient ear.",
-      "I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you're feeling.",
+      'I am here to listen, ask questions, and sit with you when something is on your mind. I am not a substitute for a professional, but I can be a patient ear.',
+      'I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you are feeling.',
     ]),
 
     rule('motivation', 35, /\b(no motivation|can'?t get started|procrastinating|unmotivated|no energy to)\b/i, [
@@ -150,8 +150,8 @@
     ]),
 
     rule('gratitude', 25, /\b(thanks?|thank you|thanks darya|i appreciate you|grateful for you)\b/i, [
-      'That means a lot to hear, thank you for saying so.',
-      "I'm glad this conversation has been helpful.",
+      'That means a lot to hear. Thank you for saying so.',
+      'I am glad this conversation has been helpful.',
       'Being here with you matters to me too.',
     ]),
 
