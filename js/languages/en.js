@@ -241,6 +241,9 @@
     'I can hear that this matters to you.',
     'There is something important underneath those words.',
     'Let us stay with this for a moment.',
+    'I am curious to hear more about that.',
+    'There is a story here. I would like to hear it.',
+    'That has a shape to it. I am listening.',
   ];
 
   // Responses for detected repetition and loop patterns.
@@ -325,6 +328,8 @@
     'If you described this feeling to a friend, where would you start?',
     'Alongside this, what else has been taking up space in your mind?',
     'What could make this moment feel a little more manageable?',
+    'Sometimes stepping back helps. What would you see if you looked at this from further away?',
+    'There might be more than one layer here. Which one feels closest to the surface?',
   ];
 
   const sessionCheckIns = [
