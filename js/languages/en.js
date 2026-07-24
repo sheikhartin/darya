@@ -239,10 +239,10 @@
   ];
 
   const entityCallbackTemplates = {
-    person: ['That {surface} thread is still with us. Its place in your day seems worth noticing.'],
-    place: ['The place you named, {surface}, still seems relevant to the shape of this story.'],
+    person: ['That {surface} thread is still here. Its place in your story seems worth noticing.'],
+    place: ['The place you mentioned, {surface}, still seems relevant to how this story feels.'],
     time: ['That {surface} timing detail gives this some shape and keeps the moment specific.'],
-    activity: ['The {surface} part of the story seems important and worth keeping in view.'],
+    activity: ['The {surface} part of what you shared seems important and worth keeping in view.'],
     object: ['That {surface} detail is still present and gives the story a particular texture.'],
   };
 
@@ -296,8 +296,8 @@
   // to them is a core reflective-listening technique and carries no
   // grammar risk, since their words are inserted verbatim.
   const quotedCallbackTemplates = [
-    'The phrase "{excerpt}" still has some weight. What part of it stays with you?',
-    'That phrase - "{excerpt}" - still seems present. Has it shifted at all?',
+    'The phrase "{excerpt}" still has weight. What part of it stays with you?',
+    'That phrase, "{excerpt}", still seems present. Has it shifted at all?',
   ];
 
   // Gentle, optional coping offer shown when several consecutive messages
@@ -428,9 +428,9 @@
   const smalltalk = ['Nice. That has character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];
   const gratitudeResponses = ['Of course.', 'Anytime.', 'I am here.', 'That is kind of you to say.'];
   const topicShiftTemplates = ['That is a different thread from a moment ago, and it deserves its own space.', 'We have moved from one part of your day to another. I am with you.', 'This feels like a new angle on things. Let me stay with it.'];
-  const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads - {topics} - alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}; {entities} gives it a more personal shape. What feels most present?'];
+  const recapTemplates = ['So far, {topics} have been part of the conversation, and {entities} stood out. Which thread feels most useful to pick up?', 'The short summary is: {topics}. You also brought up {entities}. Where would you like to go from here?', 'I have heard a few connected threads, {topics}, alongside {entities}. Which one is asking for your attention now?', 'The conversation has touched {topics}, and {entities} gives it a more personal shape. What feels most present?'];
   const humanTouch = ['That {surface} detail is still with me; does it feel different now?', 'The {surface} thread has a little more to it than it first seemed.'];
-  const professionalBoundary = ['For medical, legal, or financial decisions, a qualified human professional is the safest source of advice. I can help you organize the questions you want to bring them.', 'This is one of those areas where a licensed human professional should guide the decision. We can sort the facts and concerns you want to take with you.'];
+  const professionalBoundary = ['For medical, legal, or financial decisions, a qualified human professional is the safest source of guidance. I can help you organize the questions you want to bring them.', 'This is one of those areas where a licensed human professional should guide the decision. We can sort through the facts and concerns you want to take with you.'];
 
   const selfAwareness = {
     approach: 'I use conversation patterns, short-term context, and careful response selection.',
