@@ -697,7 +697,7 @@ test('export labels stay descriptive after removing the parenthesized forms', ()
   assert.match(FA.ui.menuExportMd, /دانلود گفتگو/);
   assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
   assert.match(EN.ui.menuExportMd, /Markdown/);
-  assert.match(EN.ui.menuExportTxt, /plain-?text/);
+  assert.match(EN.ui.menuExportTxt, /plain[\s-]?text/);
 });
 
 
