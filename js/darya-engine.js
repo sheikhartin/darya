@@ -860,6 +860,7 @@
       const pairs = [
         ['sleep', 'anxiety'], ['work', 'anger'], ['family', 'sadness'],
         ['loneliness', 'sleep'], ['joy', 'gratitude'],
+        ['food', 'joy'], ['hobby', 'joy'], ['weather', 'sadness'],
       ];
       const found = pairs.find((pair) => pair.every((topic) => topics.includes(topic)));
       return found ? `blend_${found.join('_')}` : null;
