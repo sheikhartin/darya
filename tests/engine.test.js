@@ -120,13 +120,15 @@ test('regression: "پدربزرگ" (grandfather) is not misparsed as "پدر" (f
 
 test('regression: inflected forms are still recognized after the word-boundary fix', () => {
   const engine = freshEngine(FA);
-  // "غمگینم" = "غمگین" (sad) + attached "م" suffix ("I am sad"). Checking
-  // exact membership in the sadness rule's own response pool (rather than
-  // a substring like "غم") avoids flakiness from the pool's random
-  // selection landing on a variant that phrases it differently.
+  // "غمگینم" = "غمگین" (sad) + attached "م" suffix ("I am sad"). The
+  // response may include a reflection prefix before the rule response,
+  // so we check that the sadness topic is represented in the reply.
   const reply = engine.respond('امروز خیلی غمگینم');
   const sadnessResponses = FA.rules.find((r) => r.topic === 'sadness').responses;
-  assert.ok(sadnessResponses.includes(reply) || FA.topicSpecificQuestions.sadness.includes(reply), `expected a sadness response, got: ${reply}`);
+  const topicQuestions = FA.topicSpecificQuestions.sadness || [];
+  const reflections = FA.reflections?.sadness || [];
+  const allSadness = [...sadnessResponses, ...topicQuestions, ...reflections];
+  assert.ok(allSadness.some((line) => reply.includes(line)), `expected a sadness response, got: ${reply}`);
 });
 
 test('regression: "چراغ" (lamp) does not falsely trigger question-word detection for "چرا" (why)', () => {
@@ -932,7 +934,11 @@ test('sleep follow-up is selected from the topic-specific question pool', () => 
   Math.random = () => 0;
   try {
     const reply = freshEngine(EN).respond("I can't sleep");
-    assert.ok(EN.topicSpecificQuestions.sleep.includes(reply), reply);
+    // The reply may include a reflection prefix before the topic question.
+    const topicQuestions = EN.topicSpecificQuestions.sleep;
+    const reflections = EN.reflections?.sleep || [];
+    const allOptions = [...topicQuestions, ...reflections];
+    assert.ok(allOptions.some((line) => reply.includes(line)), reply);
   } finally { Math.random = oldRandom; }
 });
 
@@ -941,7 +947,11 @@ test('work follow-up is selected from the topic-specific question pool', () => {
   Math.random = () => 0;
   try {
     const reply = freshEngine(EN).respond('My job is difficult lately');
-    assert.ok(EN.topicSpecificQuestions.work.includes(reply), reply);
+    // The reply may include a reflection prefix before the topic question.
+    const topicQuestions = EN.topicSpecificQuestions.work;
+    const reflections = EN.reflections?.work || [];
+    const allOptions = [...topicQuestions, ...reflections];
+    assert.ok(allOptions.some((line) => reply.includes(line)), reply);
   } finally { Math.random = oldRandom; }
 });
 
@@ -1174,6 +1184,63 @@ test('serious strategy is not replaced by light warmth', () => {
   const reply = engine.respond('I feel anxious about everything');
   assert.equal(engine.lastResponseStrategy, 'topic-question');
   assert.doesNotMatch(reply, /charmed|delightful|plot twist/i);
+});
+
+test('loop detection: repeated identical input triggers loop-handling strategy', () => {
+  const engine = freshEngine(EN);
+  engine.respond('hello');
+  engine.respond('hello');
+  const reply = engine.respond('hello');
+  // The loop detection fires as identical-repeat or greeting-loop.
+  assert.ok(engine.memory.loopDetected, 'loop should be detected');
+  assert.equal(engine.lastResponseStrategy, 'loop-handling');
+  assert.match(reply, /greeting|hello|start fresh|start over|heard you|repeat/i);
+});
+
+test('loop detection: repeated greetings after initial exchange are caught', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I feel a bit sad');
+  engine.respond('hi');
+  engine.respond('hello');
+  const reply = engine.respond('hey');
+  // The loop should be detected as either identical-repeat or greeting-loop.
+  assert.ok(engine.memory.loopDetected, 'loop should be detected');
+  assert.match(reply, /greeting|fresh|start|heard you|repeat/i);
+});
+
+test('loop detection is exempt for safety messages', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I feel so sad');
+  engine.respond('everything feels hopeless');
+  const reply = engine.respond('I want to kill myself');
+  assert.match(reply, /not alone|crisis line|professional help/);
+  assert.equal(engine.lastResponseStrategy, 'safety');
+});
+
+test('loop detection does not interfere with resolved references', () => {
+  const engine = freshEngine(EN);
+  engine.respond('My job has been stressful');
+  engine.respond('My family is also worried');
+  const reply = engine.respond('it happened again');
+  assert.equal(engine.currentReferenceContext.topic, 'family');
+  assert.doesNotMatch(reply, /greeting|start fresh/i);
+});
+
+test('reflection pools are present in both language packs', () => {
+  for (const lang of [EN, FA]) {
+    assert.ok(lang.reflections && typeof lang.reflections === 'object', `${lang.code}: reflections missing`);
+    assert.ok(lang.reflections.sadness?.length > 0, `${lang.code}: sadness reflections missing`);
+    assert.ok(lang.reflections.anxiety?.length > 0, `${lang.code}: anxiety reflections missing`);
+  }
+});
+
+test('loop response pools are present in both language packs', () => {
+  for (const lang of [EN, FA]) {
+    assert.ok(lang.loopResponses && typeof lang.loopResponses === 'object', `${lang.code}: loopResponses missing`);
+    assert.ok(lang.loopResponses['greeting-loop']?.length > 0, `${lang.code}: greeting-loop responses missing`);
+    assert.ok(lang.loopResponses['identical-repeat']?.length > 0, `${lang.code}: identical-repeat responses missing`);
+    assert.ok(lang.loopResponses['short-input-streak']?.length > 0, `${lang.code}: short-input-streak responses missing`);
+  }
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

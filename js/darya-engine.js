@@ -60,6 +60,11 @@
   const CONSECUTIVE_QUESTION_LIMIT = 1;
   const QUESTION_BUDGET_WINDOW = 3;
   const QUESTION_BUDGET_LIMIT = 1;
+  // Repetition and loop detection thresholds.
+  const GREETING_STREAK_THRESHOLD = 2;
+  const SHORT_INPUT_STREAK_THRESHOLD = 3;
+  const IDENTICAL_INPUT_STREAK_THRESHOLD = 2;
+  const INPUT_HISTORY_SIZE = 6;
 
   /* Conversation design notes: keep replies relevant and proportionate,
      alternate reflection with a small number of concrete questions, and
@@ -226,6 +231,12 @@
       this.turnFrames = [];
       this.pendingQuestions = [];
       this.answeredQuestions = [];
+      // Repetition and loop detection.
+      this.recentGreetingTurns = [];
+      this.recentShortInputTurns = [];
+      this.recentNormalizedInputs = [];
+      this.loopDetected = false;
+      this.loopType = null;
     }
 
     rememberUtterance(utterance) {
@@ -449,6 +460,69 @@
       const recent = this.sentimentHistory.slice(-DISTRESS_STREAK_LENGTH);
       return recent.every((score) => score < 0);
     }
+
+    /**
+     * Tracks normalized inputs for repetition detection.
+     * @param {string} normalized
+     * @param {string} dialogueAct
+     */
+    trackInputPattern(normalized, dialogueAct) {
+      this.recentNormalizedInputs.push(normalized);
+      if (this.recentNormalizedInputs.length > INPUT_HISTORY_SIZE) {
+        this.recentNormalizedInputs.shift();
+      }
+      if (dialogueAct === 'greeting') {
+        this.recentGreetingTurns.push(this.turnCount);
+      }
+      // Trim old greeting turns.
+      this.recentGreetingTurns = this.recentGreetingTurns.filter(
+        (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
+      );
+      const wordCount = normalized.split(/\\s+/u).filter(Boolean).length;
+      if (wordCount <= 2 && dialogueAct !== 'greeting') {
+        this.recentShortInputTurns.push(this.turnCount);
+      }
+      this.recentShortInputTurns = this.recentShortInputTurns.filter(
+        (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
+      );
+    }
+
+    /**
+     * Detects whether the user is stuck in a loop or giving low-quality input.
+     * Returns null for normal input, or a string describing the pattern.
+     * @returns {string|null}
+     */
+    detectLoop() {
+      const recent = this.recentNormalizedInputs;
+      if (recent.length < 2) return null;
+
+      // Check for repeated identical input.
+      const last = recent.at(-1);
+      const secondLast = recent.at(-2);
+      if (last === secondLast && recent.length >= IDENTICAL_INPUT_STREAK_THRESHOLD + 1) {
+        let identicalStreak = 0;
+        for (let i = recent.length - 1; i >= 1; i -= 1) {
+          if (recent[i] === recent[i - 1]) identicalStreak += 1;
+          else break;
+        }
+        if (identicalStreak >= IDENTICAL_INPUT_STREAK_THRESHOLD) {
+          return 'identical-repeat';
+        }
+      }
+
+      // Check for repeated greetings after the first exchange.
+      if (this.turnCount > 2 && this.recentGreetingTurns.length >= GREETING_STREAK_THRESHOLD) {
+        return 'greeting-loop';
+      }
+
+      // Check for very short non-substantive input streak.
+      if (this.recentShortInputTurns.length >= SHORT_INPUT_STREAK_THRESHOLD
+        && this.turnCount > 2) {
+        return 'short-input-streak';
+      }
+
+      return null;
+    }
   }
 
   // ==========================================================================
@@ -573,6 +647,23 @@
       this.memory.rememberTopics(this.currentTurnTopics);
       this.memory.updateSubject(this.currentTurnTopics, entities);
 
+      // Detect repetitive or loop-like input patterns. Run AFTER reference
+      // resolution and topic classification so topic-aware context is set
+      // first. Safety turns are always exempt. Turns with resolved
+      // anaphoric references are also exempt so topic recovery works.
+      // Greeting loops are NOT exempt: repeated "hello" after the first
+      // exchange should be caught by loop detection.
+      this.memory.trackInputPattern(matchingText, this.currentTurnDialogueAct);
+      const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
+      const hasResolvedReference = this.currentReferenceContext
+        && this.currentTurnTopics.length > 0
+        && this.currentTurnDialogueAct !== 'greeting';
+      const loopType = (isSafetyTurn || hasResolvedReference)
+        ? null
+        : this.memory.detectLoop();
+      this.memory.loopDetected = !!loopType;
+      this.memory.loopType = loopType;
+
       const blendKey = this._blendKey(this.currentTurnTopics);
       const strategy = this.selectResponseStrategy({ matchedRule, blendKey, matchingText });
       this.lastResponseStrategy = strategy;
@@ -589,7 +680,9 @@
       this.memory.rememberTurnFrame({ ...this.conversationState, turn: this.memory.turnCount });
 
       let reply;
-      if (blendKey && this.lang.blendResponses?.[blendKey]) {
+      if (this.memory.loopDetected) {
+        reply = this._handleLoop(this.memory.loopType, matchedRule, normalized);
+      } else if (blendKey && this.lang.blendResponses?.[blendKey]) {
         reply = this._pickVaried(this.lang.blendResponses[blendKey]);
       } else if (matchedRule) {
         reply = this._respondWithRule(matchedRule, captured);
@@ -608,7 +701,6 @@
       // mention guard: a fresh entity is never described as remembered.
       this.memory.rememberEntities(entities, this.memory.turnCount, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
 
-      const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
       if (!isSafetyTurn && this.memory.isInDistressStreak() && !this.memory.distressNudgeGiven) {
         this.memory.distressNudgeGiven = true;
         reply = this._pickVaried(this.lang.distressNudges);
@@ -616,8 +708,8 @@
         this.memory.distressNudgeGiven = false;
       }
 
-      if (!isSafetyTurn) reply = this._maybeHumanTone(reply, normalized);
-      if (!isSafetyTurn && this._shouldAddHumanTouch()) {
+      if (!isSafetyTurn && !this.memory.loopDetected) reply = this._maybeHumanTone(reply, normalized);
+      if (!isSafetyTurn && !this.memory.loopDetected && this._shouldAddHumanTouch()) {
         reply = `${reply} ${this._humanTouchLine()}`.trim();
       }
 
@@ -685,6 +777,7 @@
 
     _phaseForTurn(strategy, seriousness) {
       if (strategy === 'safety') return 'safetySupport';
+      if (strategy === 'loop-handling') return 'resetting';
       if (strategy === 'context-reference') return 'contextualContinuation';
       if (strategy === 'topic-question' || strategy === 'question-acknowledgement') return 'clarifying';
       if (seriousness >= 0.5) return 'reflecting';
@@ -695,6 +788,11 @@
       if (matchedRule?.topic === 'safety') return 'safety';
       if (matchedRule?.topic === 'professional_boundary') return 'professional-boundary';
       if (matchedRule?.topic === 'recap') return 'recap';
+      // Loop detection overrides greeting strategy so repeated greetings
+      // are caught even when the greeting rule matches.
+      if (this.memory.loopDetected) {
+        return 'loop-handling';
+      }
       if (blendKey) return 'topic-blend';
       if (!matchedRule && this.currentReferenceContext) return 'context-reference';
       if (matchedRule && this._canAskTopicQuestion(matchedRule.topic)) return 'topic-question';
@@ -882,12 +980,25 @@
       }
 
       if (this._canAskTopicQuestion(matchedRule.topic)) {
+        // Before asking a topic question, sometimes reflect first.
+        const reflections = this.lang.reflections?.[matchedRule.topic] || [];
+        if (reflections.length > 0 && Math.random() < 0.5) {
+          const reflection = this._pickVaried(reflections);
+          const question = this._pickVaried(this.lang.topicSpecificQuestions[matchedRule.topic]);
+          return `${reflection} ${question}`;
+        }
         const question = this._pickVaried(this.lang.topicSpecificQuestions[matchedRule.topic]);
         if (this.lang.topicSpecificQuestions[matchedRule.topic].includes(question)) return question;
       }
 
       const needsCapture = matchedRule.responses.some((r) => r.includes('{captured}'));
       if (!needsCapture) {
+        // For emotional topics, sometimes add a reflection before the response.
+        const reflections = this.lang.reflections?.[matchedRule.topic] || [];
+        if (reflections.length > 0 && this.currentTurnSeriousness >= 0.3 && Math.random() < 0.35) {
+          const reflection = this._pickVaried(reflections);
+          return `${reflection} ${this._pickVaried(matchedRule.responses)}`;
+        }
         return this._pickVaried(matchedRule.responses);
       }
 
@@ -913,6 +1024,32 @@
       return this._pickVaried(pool, { ignoreQuestionBudget: true, trackQuestions: false })
         .replace(/\{topics\}/gu, topicText)
         .replace(/\{entities\}/gu, entityText);
+    }
+
+    /**
+     * Handles detected repetition or loop patterns. Instead of treating
+     * repeated greetings or noise as real conversation, Darya gently
+     * names the pattern and offers a fresh start.
+     * @param {string} loopType - From detectLoop()
+     * @param {object|null} matchedRule - The rule that matched, if any.
+     * @param {string} normalized - The current normalized input.
+     * @returns {string}
+     */
+    _handleLoop(loopType, matchedRule, normalized) {
+      const pool = this.lang.loopResponses?.[loopType];
+      if (pool && pool.length > 0) {
+        // Loop responses bypass the question budget since they need to ask
+        // questions to redirect the conversation.
+        return this._pickVaried(pool, { ignoreQuestionBudget: true });
+      }
+      // Fallback for unrecognized loop types.
+      if (loopType === 'greeting-loop' && matchedRule?.topic === 'greeting') {
+        return this._pickVaried(this.lang.loopResponses?.['greeting-loop'] || this.lang.genericFallbacks);
+      }
+      if (loopType === 'identical-repeat') {
+        return this._pickVaried(this.lang.loopResponses?.['identical-repeat'] || this.lang.genericFallbacks);
+      }
+      return this._pickVaried(this.lang.loopResponses?.['short-input-streak'] || this.lang.genericFallbacks);
     }
 
     /**
@@ -1141,6 +1278,9 @@
     CONSECUTIVE_QUESTION_LIMIT,
     QUESTION_BUDGET_WINDOW,
     QUESTION_BUDGET_LIMIT,
+    GREETING_STREAK_THRESHOLD,
+    SHORT_INPUT_STREAK_THRESHOLD,
+    IDENTICAL_INPUT_STREAK_THRESHOLD,
     ConversationMemory,
     DaryaResponseEngine,
   };

@@ -48,10 +48,10 @@
     ]),
 
     rule('greeting', 65, /^(?:hi|hello|hey|good morning|good evening|good afternoon)[!.?]*$/i, [
-      'Hi. It is good to see you. What would you like to share today?',
-      'Hello. I am here. We can keep it brief or follow a thread. What suits you?',
-      'Hey. Good to have you here. What has your attention?',
-      'Hello. No rush. What kind of conversation would feel right?',
+      'Hi. I am Darya. Take your time. What is on your mind?',
+      'Hello. Good to be here with you. What would feel right to start with?',
+      'Hey. I am here. No rush at all. What has been on your mind?',
+      'Hello. Welcome. We can go at whatever pace feels right for you.',
     ]),
 
     rule('family', 50, /\b(my (?:mom|mother|dad|father|parents|sister|brother|family))\b\s*(.*)/i, [
@@ -218,6 +218,47 @@
     'There is something important underneath those words.',
     'Let us stay with this for a moment.',
   ];
+
+  // Responses for detected repetition and loop patterns.
+  const loopResponses = {
+    'greeting-loop': [
+      'Hi again. It looks like you are just greeting me. Would you like to start fresh?',
+      'Got it. That is a greeting, not really an answer to the last question. We can start over if you want.',
+      'I notice we keep saying hello. No pressure. Would you like to begin again?',
+    ],
+    'identical-repeat': [
+      'I notice you sent the same thing again. I heard you the first time. Would you like to talk about something else?',
+      'That came through twice. I am still here. What would you like to do next?',
+      'I see a repeat. No problem. We can stay here or move on. What feels right?',
+    ],
+    'short-input-streak': [
+      'I notice the last few messages have been very short. I am here whenever you are ready to say more.',
+      'No rush at all. When you are ready, I would love to hear what is actually on your mind.',
+      'We can slow down. There is no pressure to keep responding. What feels right?',
+    ],
+  };
+
+  // Reflective responses that acknowledge the user's emotional content
+  // before the engine moves into a question or deeper strategy.
+  const reflections = {
+    sadness: ['I hear you. That sounds heavy.', 'So the sadness is close right now.', 'That takes courage to say.'],
+    anxiety: ['I can feel the weight of that worry.', 'So the anxiety has been building.', 'That sounds tiring to carry.'],
+    anger: ['I hear the frustration.', 'That makes sense given what you described.', 'That sounds really hard.'],
+    grief: ['That loss sounds deeply painful.', 'I am sitting with you in this.', 'Thank you for telling me.'],
+    loneliness: ['That sounds isolating.', 'I hear that there is a gap right now.', 'Being alone with this is hard.'],
+    self_esteem: ['Those are heavy words to carry about yourself.', 'I hear how hard you are being on yourself.', 'That sounds painful.'],
+    work: ['Work stress can be relentless.', 'That sounds like a heavy burden to carry.', 'I hear how much this is weighing.'],
+    family: ['Family can touch the deepest parts of us.', 'That sounds like a tender situation.', 'I hear the complexity there.'],
+    sleep: ['Not sleeping well takes a real toll.', 'That exhaustion is real.', 'I hear how disruptive this has been.'],
+    motivation: ['When motivation is gone, everything feels heavier.', 'That stuck feeling is real.', 'I hear you.'],
+    relationship: ['Relationships can be the hardest thing.', 'That sounds painful.', 'I hear the tension there.'],
+    health: ['Health worries take up so much space.', 'That sounds stressful.', 'I hear the concern.'],
+    money: ['Money stress can feel all-consuming.', 'That pressure sounds real.', 'I hear the worry about this.'],
+    school: ['Academic pressure is real.', 'That sounds like a lot to manage.', 'I hear how demanding this is.'],
+    feeling: ['Thank you for naming that feeling.', 'I hear you.', 'That takes honesty.'],
+    joy: ['That is wonderful to hear.', 'I can feel the brightness there.', 'That sounds really good.'],
+    gratitude: ['That is kind of you.', 'I appreciate you saying that.', 'Thank you.'],
+  };
 
 
   // Vocabulary for the language-neutral named-entity extractor. Terms are
@@ -449,6 +490,8 @@
     rules,
     trivialCaptures,
     genericFallbacks,
+    loopResponses,
+    reflections,
     strategyShiftFallbacks,
     sessionCheckIns,
     checkInEvery: 8,
