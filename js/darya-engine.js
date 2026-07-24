@@ -65,6 +65,7 @@
   const SHORT_INPUT_STREAK_THRESHOLD = 3;
   const IDENTICAL_INPUT_STREAK_THRESHOLD = 2;
   const INPUT_HISTORY_SIZE = 6;
+  const EMOJI_ONLY_THRESHOLD = 1;
 
   /* Conversation design notes: keep replies relevant and proportionate,
      alternate reflection with a small number of concrete questions, and
@@ -235,6 +236,7 @@
       this.recentGreetingTurns = [];
       this.recentShortInputTurns = [];
       this.recentNormalizedInputs = [];
+      this.recentEmojiOnlyTurns = [];
       this.loopDetected = false;
       this.loopType = null;
     }
@@ -485,6 +487,16 @@
       this.recentShortInputTurns = this.recentShortInputTurns.filter(
         (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
       );
+      // Track emoji-only or punctuation-only input.
+      const letters = [...normalized].filter((ch) => /\p{L}/u.test(ch));
+      const hasNoLetters = letters.length === 0;
+      const isEmojiOrPunct = hasNoLetters && normalized.trim().length > 0;
+      if (isEmojiOrPunct) {
+        this.recentEmojiOnlyTurns.push(this.turnCount);
+      }
+      this.recentEmojiOnlyTurns = this.recentEmojiOnlyTurns.filter(
+        (turn) => this.turnCount - turn < INPUT_HISTORY_SIZE
+      );
     }
 
     /**
@@ -513,6 +525,12 @@
       // Check for repeated greetings after the first exchange.
       if (this.turnCount > 2 && this.recentGreetingTurns.length >= GREETING_STREAK_THRESHOLD) {
         return 'greeting-loop';
+      }
+
+      // Check for emoji-only or punctuation-only input streak.
+      if (this.recentEmojiOnlyTurns.length >= EMOJI_ONLY_THRESHOLD + 1
+        && this.turnCount > 2) {
+        return 'short-input-streak';
       }
 
       // Check for very short non-substantive input streak.
@@ -1281,6 +1299,7 @@
     GREETING_STREAK_THRESHOLD,
     SHORT_INPUT_STREAK_THRESHOLD,
     IDENTICAL_INPUT_STREAK_THRESHOLD,
+    EMOJI_ONLY_THRESHOLD,
     ConversationMemory,
     DaryaResponseEngine,
   };
