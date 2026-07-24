@@ -560,6 +560,41 @@ test('application text contains no em dash or identity claims', () => {
   }
 });
 
+test('casual topic blends cover food+joy, hobby+joy, and weather+sadness', () => {
+  for (const lang of [FA, EN]) {
+    for (const key of ['blend_food_joy', 'blend_hobby_joy', 'blend_weather_sadness']) {
+      assert.ok(Array.isArray(lang.blendResponses[key]), `${lang.code}:${key}`);
+      assert.ok(lang.blendResponses[key].length >= 4);
+    }
+  }
+});
+
+test('beach menu popover uses a solid surface for readability', () => {
+  const css = read('css/style.css');
+  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: #d4c4a8/u);
+  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*box-shadow:/u);
+});
+
+test('beach bot bubbles use solid surface matching menu', () => {
+  const css = read('css/style.css');
+  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: #d4c4a8/u);
+  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*color: #1a2f36/u);
+});
+
+test('menu language lock note is present in HTML', () => {
+  const html = read('index.html');
+  assert.match(html, /id="menu-language-note"/u);
+  assert.match(html, /زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است/u);
+  assert.match(html, /Language locks once your conversation begins/u);
+});
+
+test('semantic token system includes menu and timestamp roles', () => {
+  const css = read('css/style.css');
+  assert.match(css, /--surface-menu:/u);
+  assert.match(css, /--timestamp-text:/u);
+  assert.match(css, /--shadow-elevated:/u);
+});
+
 test('application has no numeric release or cache identifier', () => {
   const files = ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'sw.js', 'package.json'];
   for (const file of files) {

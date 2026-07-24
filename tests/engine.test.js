@@ -1249,4 +1249,119 @@ test('loop response pools are present in both language packs', () => {
   }
 });
 
+// ============================================================================
+// Casual conversation rules
+// ============================================================================
+
+test('casual topics are recognized in both languages', () => {
+  for (const lang of [EN, FA]) {
+    const topics = new Set(lang.rules.map((r) => r.topic));
+    for (const topic of ['food', 'weather', 'hobby', 'daily_life']) {
+      assert.ok(topics.has(topic), `${lang.code}: missing casual topic ${topic}`);
+    }
+  }
+});
+
+test('casual topics have low seriousness scores', () => {
+  for (const lang of [EN, FA]) {
+    for (const topic of ['food', 'weather', 'hobby', 'daily_life']) {
+      assert.ok(lang.topicSeriousness[topic] <= 0.2, `${lang.code}: ${topic} seriousness too high`);
+    }
+  }
+});
+
+test('casual topics have topic-specific questions in both languages', () => {
+  for (const lang of [EN, FA]) {
+    for (const topic of ['food', 'weather', 'hobby', 'daily_life']) {
+      assert.ok(lang.topicSpecificQuestions[topic]?.length >= 4, `${lang.code}: ${topic} needs 4+ questions`);
+    }
+  }
+});
+
+test('casual topics have reflections in both languages', () => {
+  for (const lang of [EN, FA]) {
+    for (const topic of ['food', 'weather', 'hobby', 'daily_life']) {
+      assert.ok(lang.reflections[topic]?.length > 0, `${lang.code}: ${topic} reflections missing`);
+    }
+  }
+});
+
+test('casual topics have callbacks in both languages', () => {
+  for (const lang of [EN, FA]) {
+    for (const topic of ['food', 'weather', 'hobby', 'daily_life']) {
+      assert.ok(lang.topicCallbacks[topic]?.length > 0, `${lang.code}: ${topic} callbacks missing`);
+    }
+  }
+});
+
+test('greeting priority is lower than topic rules', () => {
+  const greetingRuleFA = FA.rules.find((r) => r.topic === 'greeting');
+  const greetingRuleEN = EN.rules.find((r) => r.topic === 'greeting');
+  assert.ok(greetingRuleFA.priority < 30, 'fa greeting priority should be below 30');
+  assert.ok(greetingRuleEN.priority < 30, 'en greeting priority should be below 30');
+});
+
+// ============================================================================
+// Vague response detection
+// ============================================================================
+
+test('vague-response loop pool exists in both languages', () => {
+  for (const lang of [EN, FA]) {
+    assert.ok(lang.loopResponses['vague-response']?.length > 0, `${lang.code}: vague-response pool missing`);
+  }
+});
+
+test('VAGUE_RESPONSE_THRESHOLD is exported', () => {
+  assert.equal(typeof DaryaEngine.VAGUE_RESPONSE_THRESHOLD, 'number');
+  assert.ok(DaryaEngine.VAGUE_RESPONSE_THRESHOLD >= 2);
+});
+
+// ============================================================================
+// Casual topic blends
+// ============================================================================
+
+test('new casual blends have four distinct non-question lines in both languages', () => {
+  for (const lang of [EN, FA]) {
+    for (const name of ['blend_food_joy', 'blend_hobby_joy', 'blend_weather_sadness']) {
+      const pool = lang.blendResponses[name];
+      assert.ok(pool, `${lang.code}: ${name} missing`);
+      assert.ok(pool.length >= 4, `${lang.code}:${name} needs 4+ lines`);
+      assert.equal(new Set(pool).size, pool.length);
+      assert.ok(pool.every((line) => !/[?؟]/u.test(line)), `${lang.code}:${name} contains a question`);
+    }
+  }
+});
+
+// ============================================================================
+// UI improvements
+// ============================================================================
+
+test('menu language note exists in HTML', () => {
+  const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /menu-language-note/);
+  assert.match(html, /زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است/);
+  assert.match(html, /Language locks once your conversation begins/);
+});
+
+test('beach bot bubbles use solid surface for contrast', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /html\[data-theme="beach"\] \.bubble--bot[\s\S]*background: #d4c4a8/);
+});
+
+test('beach menu popover uses solid surface matching bot bubbles', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /html\[data-theme="beach"\] \.menu__popover[\s\S]*background: #d4c4a8/);
+});
+
+test('menu popover uses elevated shadow', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /\.menu__popover[\s\S]*box-shadow: var\(--shadow-elevated\)/);
+});
+
+test('surface-menu and timestamp-text tokens are defined', () => {
+  const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  assert.match(css, /--surface-menu/);
+  assert.match(css, /--timestamp-text/);
+});
+
 console.log(`\nTests loaded from: ${__filename}`);
