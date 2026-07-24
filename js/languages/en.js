@@ -47,7 +47,7 @@
       "That sounds like a very heavy weight to carry, and it deserves real, immediate support. Please reach out to a crisis line or someone you trust right now. I'm here with you, but I'm not a substitute for urgent professional help.",
     ]),
 
-    rule('greeting', 65, /^(?:hi|hello|hey|good morning|good evening|good afternoon)[!.?]*$/i, [
+    rule('greeting', 20, /^(?:hi|hello|hey|good morning|good evening|good afternoon)[!.?]*$/i, [
       'Hi. I am Darya. Would you like to start with how you feel, or with what is on your mind?',
       'Hello. Good to have you here. What would feel right to begin with?',
       'Hey. I am here. No rush at all. What is on your mind right now?',
@@ -186,6 +186,30 @@
       'What might a small first step toward {captured} look like?',
     ]),
 
+    rule('food', 15, /\b(food|dinner|lunch|breakfast|cooking|restaurant|hungry|eat|meal|snack|coffee|tea|pizza|cake|dessert|drink|recipe)\b/i, [
+      'Food can be a really nice part of the day. Would you like to talk about it?',
+      'What is your relationship with food and cooking like?',
+      'Eating can also be a moment of calm. What do you enjoy eating?',
+    ]),
+
+    rule('weather', 15, /\b(weather|sun|rain|snow|cold|hot|spring|summer|fall|autumn|winter|sunny|cloudy|windy|storm)\b/i, [
+      'Weather can really affect how we feel. How is it where you are today?',
+      'Changes in season sometimes bring a shift in mood too. What kind of day is it for you?',
+      'How is the weather today? Would you like to share?',
+    ]),
+
+    rule('hobby', 15, /\b(hobby|hobbies|movie|music|book|sport|game|painting|photography|read|watch|play|cinema|theater|concert|podcast|exercise|gym|travel|cooking|drawing)\b/i, [
+      'Hobbies can be a really good space for breathing. What do you enjoy?',
+      'What is your relationship with this part of your life?',
+      'What brings you calm or excitement outside of your daily routine?',
+    ]),
+
+    rule('daily_life', 15, /\b(my day|day off|how was your day|how was your weekend|daily routine|daily life|my morning|my evening|my night|what a day|long day|busy day|tough day|good day|bad day)\b/i, [
+      'Ordinary days can have their own stories. How has your day been?',
+      'Sometimes the most ordinary days say the most. Was there anything that caught your attention today?',
+      'Would you like to tell me about your day?',
+    ]),
+
     rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative)\b/i, []),
 
     rule('professional_boundary', 90, /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i, []),
@@ -258,6 +282,10 @@
     feeling: ['Thank you for naming that feeling.', 'I hear you.', 'That takes honesty.'],
     joy: ['That is wonderful to hear.', 'I can feel the brightness there.', 'That sounds really good.'],
     gratitude: ['That is kind of you.', 'I appreciate you saying that.', 'Thank you.'],
+    food: ['Food can be a nice moment in the day.', 'Our relationship with food matters.', 'Cooking is a kind of art too.'],
+    weather: ['Weather is part of how we feel.', 'The change of seasons is interesting.', 'Weather can really shape a day.'],
+    hobby: ['Hobbies create a good space.', 'Enjoying things matters.', 'It is good to have something for yourself.'],
+    daily_life: ['Ordinary days are valuable too.', 'The small details matter more than we think.', 'Daily life is full of stories.'],
   };
 
 
@@ -331,6 +359,10 @@
     health: ['How are you feeling physically these days?'],
     school: ['How are things going with school or exams?'],
     money: ['Is that financial worry still on your mind?'],
+    food: ['How is your relationship with food and cooking these days?'],
+    weather: ['How has the weather been for you lately?'],
+    hobby: ['How are your hobbies going?'],
+    daily_life: ['How have your days been going lately?'],
   };
 
   // A safe, low-risk callback: quoting the person's own earlier words back
@@ -452,9 +484,13 @@
     smalltalk_capability: ['What sort of conversation would suit you right now?', 'Would reflection, brainstorming, or simple company be most useful?', 'What topic would you like to try first?', 'What would make this feel natural rather than mechanical?'],
     professional_boundary: ['Which questions would you like to take to a qualified professional?', 'What facts would be useful to collect before that appointment?', 'Is there a deadline that makes professional guidance especially important?', 'Would organizing the situation into a short list help?'],
     recap: ['Which of those threads feels most worth returning to?', 'Has one of those topics become more important since you mentioned it?', 'Which detail from the conversation feels clearest to you now?', 'Where would you like the recap to lead next?'],
+    food: ['What is your favorite food?', 'Do you enjoy cooking or eating out more?', 'What was the last really good meal you had?', 'Is eating more of a daily routine or a pleasure for you?'],
+    weather: ['How does the weather affect your mood?', 'Which season do you enjoy most?', 'How is the weather where you are today?', 'Does a change in weather change how you feel?'],
+    hobby: ['What hobby brings you the most calm?', 'When was the last time you truly enjoyed doing something?', 'What kind of movies or music do you like?', 'Do you play any sports or games?'],
+    daily_life: ['How has your day been so far?', 'What part of your day gives you the most energy?', 'What does a typical day look like for you?', 'Was there anything today that caught your attention?'],
   };
 
-  const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need']);
+  const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need', 'food', 'weather', 'hobby', 'daily_life']);
   const blendResponses = {
     blend_sleep_anxiety: ['Your restless nights and the worry seem to be feeding each other a little; noticing which one arrives first may give you a useful opening.', 'When sleep and worry travel together, the evening can feel much longer than it is. A gentler wind-down might be worth protecting.', 'The tiredness may be making the worry louder, while the worry keeps sleep out of reach. That is a tiring loop, not a personal failure.', 'There are two threads here - a body asking for rest and a mind staying on watch. We can look at either one first.'],
     blend_work_anger: ['The anger seems tied to what work is asking of you, not floating free of the situation.', 'When a work pressure keeps crossing a line, frustration can become its own daily workload.', 'It sounds as if the workplace problem is also taking a piece of your patience home with you.', 'There is a work problem and a boundary problem sitting close together here.'],
@@ -463,7 +499,7 @@
     blend_joy_gratitude: ['There is a lovely little loop here: something went well, and you noticed its value.', 'The good feeling seems to have made room for appreciation too.', 'It is nice when a bright moment is not rushed past before it can land.', 'This sounds like a moment worth letting stay bright for another minute.'],
   };
 
-  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25 };
+  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25, food: 0.15, weather: 0.12, hobby: 0.15, daily_life: 0.15 };
   const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough - I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
   const warmth = ['That sounds like a lot to hold.', 'I can hear that this really matters to you.', 'You do not have to figure it all out at once.', 'It is okay to take your time with this.'];
   const smalltalk = ['Nice. That has character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];

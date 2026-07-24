@@ -146,8 +146,10 @@
 
   /* --- Extra semantic tokens for a coherent design system --- */
   --surface-elevated: var(--color-tide-soft);
+  --surface-menu: var(--color-tide);
   --accent: var(--color-seafoam);
   --muted-text: var(--color-foam-dim);
+  --timestamp-text: var(--color-foam-dim);
 
   /* --- Spacing scale (mobile-first, generous enough for comfort) --- */
   --space-1: 4px;
@@ -678,12 +680,12 @@ html[data-theme="beach"] .picker__note {
   top: calc(100% + 8px);
   inset-inline-end: 0;
   max-width: calc(100vw - 2 * var(--space-3));
-  min-width: 216px;
-  background: var(--surface-panel);
+  min-width: 240px;
+  background: var(--surface-menu);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
-  padding: var(--space-2);
+  box-shadow: var(--shadow-elevated);
+  padding: var(--space-3);
   z-index: 10;
   animation: menu-in 0.16s var(--ease-tide) both;
 }
@@ -729,6 +731,17 @@ html[data-theme="beach"] .picker__note {
   height: 1px;
   background: var(--color-line);
   margin: var(--space-1) 4px;
+}
+
+.menu__note {
+  font-size: 10.5px;
+  color: var(--muted-text);
+  text-align: center;
+  padding: var(--space-2) var(--space-1) 0;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* --------------------------------------------------------------------- */
@@ -826,10 +839,11 @@ html[dir="ltr"] .bubble-row--bot { justify-content: flex-start; }  /* left in LT
 }
 
 .bubble-meta {
-  font-size: 10.5px;
-  color: var(--color-foam-dim);
-  margin-top: 3px;
+  font-size: 11px;
+  color: var(--timestamp-text);
+  margin-top: 4px;
   padding-inline: 4px;
+  font-weight: 500;
 }
 
 /* Same reasoning as .picker__note above: a timestamp can end up
@@ -1307,6 +1321,12 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
   }
 }
 
+/* Beach theme semantic overrides for surface-menu and timestamp. */
+html[data-theme="beach"] {
+  --surface-menu: #d4c4a8;
+  --timestamp-text: #3d5a5e;
+}
+
 /* Bright-sky controls need their own ink and surface treatment. The ocean
    trigger uses subdued foam tones, but those same tones disappear against
    the beach sky. These are deliberately strong so the three-dot menu,
@@ -1314,22 +1334,22 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
    the light background. */
 html[data-theme="beach"] .menu__trigger {
   color: var(--color-on-sky);
-  border-color: rgba(18, 56, 71, 0.45);
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 3px 14px rgba(91, 61, 35, 0.14);
+  border-color: rgba(18, 56, 71, 0.55);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 3px 14px rgba(91, 61, 35, 0.18);
 }
 
 html[data-theme="beach"] .menu__trigger:hover,
 html[data-theme="beach"] .menu__trigger[aria-expanded="true"] {
   color: var(--color-on-sky-link);
   border-color: var(--color-on-sky-link);
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.88);
 }
 
 html[data-theme="beach"] .input-hint {
   color: var(--color-on-sky);
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(18, 56, 71, 0.3);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(18, 56, 71, 0.35);
   border-radius: var(--radius-sm);
   font-weight: 600;
   text-shadow: none;
@@ -1337,38 +1357,38 @@ html[data-theme="beach"] .input-hint {
 
 html[data-theme="beach"] .disclaimer {
   color: #f7ead5;
-  text-shadow: 0 1px 3px rgba(60, 40, 20, 0.6);
+  text-shadow: 0 1px 3px rgba(60, 40, 20, 0.7);
 }
 
-/* Beach picker options and theme picker need visible surfaces against the sky. */
+/* Beach picker options: strong opaque surface for readability. */
 html[data-theme="beach"] .picker__option {
-  background: rgba(255, 255, 255, 0.55);
-  border-color: rgba(18, 56, 71, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(18, 56, 71, 0.3);
 }
 
 html[data-theme="beach"] .picker__option:hover {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.88);
   border-color: var(--color-on-sky-link);
 }
 
 html[data-theme="beach"] .theme-picker__option {
-  background: rgba(255, 255, 255, 0.45);
-  border-color: rgba(18, 56, 71, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(18, 56, 71, 0.3);
 }
 
 html[data-theme="beach"] .theme-picker__option[aria-pressed="true"] {
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.8);
   border-color: var(--color-on-sky-link);
 }
 
 html[data-theme="beach"] .theme-picker__option:hover {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.75);
 }
 
-/* Beach composer needs stronger surface treatment. */
+/* Beach composer: solid surface for readability. */
 html[data-theme="beach"] .composer {
-  background: rgba(255, 255, 255, 0.5);
-  border-color: rgba(18, 56, 71, 0.2);
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(18, 56, 71, 0.3);
 }
 
 html[data-theme="beach"] .composer__input {
@@ -1388,19 +1408,47 @@ html[data-theme="beach"] .composer__send:hover:not(:disabled) {
   background: #8a4930;
 }
 
-/* Beach bubbles and user messages need clear contrast on light background. */
+/* Beach user bubbles: dark ink on light sky. */
 html[data-theme="beach"] .bubble--user {
   background: var(--color-on-sky);
   color: #e8f0ee;
 }
 
+/* Beach bot bubbles: solid cream surface with dark text for strong contrast. */
 html[data-theme="beach"] .bubble--bot {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(18, 56, 71, 0.15);
-  color: var(--color-on-sky);
+  background: #d4c4a8;
+  border-color: rgba(18, 56, 71, 0.25);
+  color: #1a2f36;
 }
 
 html[data-theme="beach"] .typing-row .bubble--typing {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(18, 56, 71, 0.15);
+  background: #d4c4a8;
+  border-color: rgba(18, 56, 71, 0.25);
+}
+
+/* Beach menu popover: matches bot bubble surface for visual consistency. */
+html[data-theme="beach"] .menu__popover {
+  background: #d4c4a8;
+  border-color: rgba(18, 56, 71, 0.3);
+  box-shadow: 0 12px 32px rgba(91, 61, 35, 0.25);
+}
+
+html[data-theme="beach"] .menu__item {
+  color: #1a2f36;
+}
+
+html[data-theme="beach"] .menu__item:hover {
+  background: rgba(18, 56, 71, 0.1);
+}
+
+html[data-theme="beach"] .menu__item-icon {
+  color: var(--color-on-sky-accent);
+}
+
+html[data-theme="beach"] .menu__divider {
+  background: rgba(18, 56, 71, 0.15);
+}
+
+html[data-theme="beach"] .menu__note {
+  color: var(--color-on-sky-dim);
 }
