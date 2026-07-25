@@ -379,6 +379,81 @@
     "Until next time. Be gentle with yourself.",
   ];
 
+  const repeatedGreetingResponses = [
+    'You have said hello a few times now. It seems like you are not quite ready to start yet, and that is completely okay. I am here whenever you are.',
+    'Hello again. I can see you are still finding the right words. There is no rush at all.',
+    'Hi there. It looks like you might be wondering where to begin. That is a natural place to be, and I am happy to wait.',
+    'I notice you keep saying hi. If you are not sure what to say, we can start with something small or just sit with the quiet for a moment.',
+  ];
+
+  const spamNoiseResponses = [
+    'It looks like that might have been accidental. Whenever you are ready, I am here to listen.',
+    'I am not quite sure what you meant by that. Would you like to try again?',
+    'That did not come through clearly. Take your time, and I will be here when you are ready to share.',
+  ];
+
+  const ambiguousInputResponses = [
+    'I hear you. Could you tell me a little more so I can follow along better?',
+    'That was brief, and I want to make sure I understand. What more can you share about that?',
+    'Got it. If you would like to expand on that, I am all ears.',
+  ];
+
+  const acknowledgementResponses = [
+    'I notice you are acknowledging what I said, but I am curious what your own thoughts are on this.',
+    'Thank you for that. How do you see the situation yourself?',
+    'I appreciate the acknowledgement. What part of this feels most relevant to you right now?',
+  ];
+
+  const correctionResponses = [
+    'Thank you for clarifying. Let me adjust my understanding. What did you mean by that?',
+    'I appreciate the correction. That helps me understand better. What else should I know?',
+    'Got it, thanks for making that clear. How does this change things for you?',
+  ];
+
+  const topicChangeResponses = [
+    'I notice we have moved to something new. I am here for this new thread whenever you are ready.',
+    'That is a different direction, and I am happy to follow. Where would you like to start with this?',
+    'I am with you on this new topic. What feels most important to share about it?',
+  ];
+
+  const testInputResponses = [
+    'I am here and ready whenever you would like to have a real conversation.',
+    'Hello! I am Darya. When you are ready to talk about something on your mind, I am listening.',
+    'It looks like you might be testing me out. That is fine! When you are ready to share something real, I am here.',
+  ];
+
+  const mixedLanguageResponses = [
+    'I notice you are mixing languages. I am most helpful when we stick to English so I can follow along well. Could you write in English?',
+    'It seems like you are switching between languages. I follow English best, so if you could stick to one, that would help me respond more thoughtfully.',
+    'I want to make sure I understand you fully. Could we continue in English so I can give you my best attention?',
+  ];
+
+  const topicRecoveryResponses = {
+    _default: [
+      'We touched on something important earlier. Would you like to come back to it, or is there something else on your mind?',
+      'I noticed we moved away from something that seemed to matter. Do you want to return to it?',
+    ],
+    family: ['I am still curious about your family. Would you like to continue there?'],
+    work: ['The work thread is still open. What has changed there since then?'],
+    sleep: ['How has your sleep been since we last talked about it?'],
+    sadness: ['Is that sadness still with you?'],
+    anxiety: ['Is that worry you mentioned still there?'],
+    anger: ['Is that anger still sitting with you?'],
+    loneliness: ['Is that feeling of loneliness still around?'],
+    grief: ['Would you like to talk more about that loss?'],
+    relationship: ['How are things going with that relationship?'],
+  };
+
+  const emotionCalibration = {
+    hurt: 'That sounds painful.',
+    confused: 'It is okay to feel uncertain about this.',
+    excited: 'That is wonderful!',
+    angry: 'I hear the frustration in your words.',
+    grieving: 'I am here with you in this.',
+    anxious: 'Take your time with this.',
+    sad: 'I can hear the sadness in what you are saying.',
+  };
+
   const emptyInputReply = "I notice you've gone quiet. Whenever you're ready, I'm here.";
 
   function foreignLanguageRedirect() {
@@ -489,31 +564,42 @@
     farewells,
     emptyInputReply,
     foreignLanguageRedirect,
+    repeatedGreetingResponses,
+    spamNoiseResponses,
+    ambiguousInputResponses,
+    acknowledgementResponses,
+    correctionResponses,
+    topicChangeResponses,
+    testInputResponses,
+    mixedLanguageResponses,
+    topicRecoveryResponses,
+    emotionCalibration,
     ui: {
       appTitle: 'Darya · A Calm Conversation Companion',
       appDescription: 'Darya, an English-language conversation companion for listening and support.',
       placeholderDefault: "Write whatever's on your mind…",
       placeholderEnded: 'This conversation has ended. Choose "New chat" from the menu to start again.',
-      ariaSendLabel: 'Send your message to Darya',
-      ariaMenuLabel: 'Open the conversation options menu',
-      ariaInputLabel: 'Your message to Darya',
-      ariaExportMdLabel: 'Download the conversation as Markdown',
-      ariaExportTxtLabel: 'Download the conversation as plain text',
-      pickerFaTitle: 'Start a new conversation in Persian',
-      pickerEnTitle: 'Start a new conversation in English',
-      themeOceanTitle: 'Choose the ocean theme',
-      themeBeachTitle: 'Choose the beach theme',
-      sendButtonTitle: 'Send the current message',
-      menuTriggerTitle: 'Open the conversation options menu',
-      newChatTitle: 'Start a new conversation',
-      exportMdTitle: 'Download the conversation as Markdown',
-      exportTxtTitle: 'Download the conversation as plain text',
-      themeToggleTitle: 'Change the conversation theme',
-      themeGroupLabel: 'Choose a conversation theme',
+      ariaSendLabel: 'Send',
+      ariaMenuLabel: 'Conversation',
+      ariaInputLabel: 'Your message',
+      ariaExportMdLabel: 'Download as Markdown',
+      ariaExportTxtLabel: 'Download as plain text',
+      // Canonical labels: aria-label === title === visible text
+      pickerFaTitle: 'New Persian conversation',
+      pickerEnTitle: 'New English conversation',
+      themeOceanTitle: 'Ocean theme',
+      themeBeachTitle: 'Beach theme',
+      sendButtonTitle: 'Send',
+      menuTriggerTitle: 'Menu',
+      newChatTitle: 'New chat',
+      exportMdTitle: 'Download as Markdown',
+      exportTxtTitle: 'Download as plain text',
+      themeToggleTitle: 'Switch theme',
+      themeGroupLabel: 'Choose a theme',
       typingLabel: 'Darya is thinking',
       menuNewChat: 'New chat',
-      menuExportMd: 'Download Markdown conversation',
-      menuExportTxt: 'Download plain-text conversation',
+      menuExportMd: 'Download as Markdown',
+      menuExportTxt: 'Download as plain text',
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       disclaimer: "Darya is a listening companion, not a substitute for professional help. In a crisis, please contact a professional or a crisis line.",
@@ -523,6 +609,17 @@
       exportDivider: '-----------------------------',
       dateLocale: 'en-US',
       connectionError: 'Something went wrong connecting. Please reload the page.',
+      breatheTitle: 'Breathing exercise',
+      breatheIn: 'Breathe in (4 counts)',
+      breatheHold: 'Hold (7 counts)',
+      breatheOut: 'Breathe out (8 counts)',
+      breatheDismiss: 'Close',
+      breatheOffer: 'Would you like to try a calming breathing exercise together?',
+      breatheAccept: 'Yes, let us begin',
+      breatheDecline: 'No, thank you',
+      chatTitlePrefix: 'Conversation: ',
+      anchorBtnLabel: 'Bookmark this message',
+      anchorRemoveLabel: 'Remove bookmark',
     },
   };
 })(typeof window !== 'undefined' ? window : globalThis);

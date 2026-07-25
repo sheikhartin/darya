@@ -110,23 +110,20 @@
 }
 
 :root {
-  /* --- Color: named after what they represent in the "sea" metaphor --- */
-  --color-abyss: #0a2229;
-  --color-abyss-deep: #061419;
-  --color-tide: #153f49;
-  --color-tide-soft: #1c4c57;
+  /* --- Color: deep ocean slate and midnight, seafoam accents --- */
+  --color-abyss: #071d24;
+  --color-abyss-deep: #040f14;
+  --color-tide: #133b44;
+  --color-tide-soft: #1a4a55;
   --color-foam: #eaf3ef;
-  --color-foam-dim: #a9c2bd;
-  --color-coral: #e98973;
-  --color-coral-soft: #f3ab99;
+  --color-foam-dim: #9bbcb5;
+  --color-coral: #e8876c;
+  --color-coral-soft: #f2a790;
   --color-seafoam: #7fbeb0;
   --color-warning: #f0b986;
-  --color-line: rgba(234, 243, 239, 0.12);
-  /* Dedicated ink colors for the bright beach sky. */
-  --color-on-sky: #123847;
-  --color-on-sky-dim: #204957;
-  --color-on-sky-accent: #7b3d2b;
-  --color-on-sky-link: #06495c;
+  --color-success: #6cc4a8;
+  --color-danger: #e8876c;
+  --color-line: rgba(234, 243, 239, 0.10);
   /* Semantic roles keep component contrast consistent across themes. */
   --surface-app: var(--color-abyss-deep);
   --surface-panel: var(--color-tide);
@@ -135,7 +132,6 @@
   --surface-control-hover: var(--color-tide-soft);
   --text-primary: var(--color-foam);
   --text-secondary: var(--color-foam-dim);
-  --text-on-bright: var(--color-on-sky);
   --border-subtle: var(--color-line);
   --border-strong: var(--color-seafoam);
   --border-focus: var(--color-seafoam);
@@ -152,12 +148,18 @@
   --space-5: 20px;
   --space-6: 28px;
 
-  /* --- Layout: moderate, friendly rounding -- not exaggerated pills --- */
-  --radius-lg: 18px;
-  --radius-md: 14px;
-  --radius-sm: 10px;
+  /* --- Layout: design-system radii --- */
+  /* Panels (picker, menu popover): 24px */
+  --radius-lg: 24px;
+  /* Buttons, inputs, theme picker: 16px */
+  --radius-md: 16px;
+  /* Chips, tags, small controls: 12px */
+  --radius-sm: 12px;
   --radius-full: 999px; /* reserved for small circular icon buttons only */
-  --shadow-soft: 0 8px 22px rgba(3, 12, 15, 0.38);
+  --shadow-sm: 0 2px 8px rgba(3, 12, 15, 0.20);
+  --shadow-md: 0 4px 14px rgba(3, 12, 15, 0.28);
+  --shadow-soft: 0 6px 18px rgba(3, 12, 15, 0.35);
+  --shadow-elevated: 0 10px 30px rgba(3, 12, 15, 0.42);
 
   /* --- Motion --- */
   --ease-tide: cubic-bezier(0.37, 0, 0.24, 1);
@@ -173,20 +175,21 @@ html[lang="en"] {
   --font-body: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* Beach theme: same structure, warmer sunset/turquoise hues. Kept dark
-   enough at every stop to preserve text contrast; the literal sand and
-   surf imagery lives in the decorative .backdrop layer below, not in
-   this background gradient, so contrast never depends on it. */
+/* Beach theme: warm sand and shell tones. Dark ink surfaces sit on top of
+   the bright sky so every control, menu, and panel reads clearly. The
+   literal sand/surf imagery lives in the decorative .backdrop layer below. */
 html[data-theme="beach"] {
-  --color-abyss: #12312f;
-  --color-abyss-deep: #0a201f;
-  --color-tide: #1d4a42;
-  --color-tide-soft: #26594f;
-  --color-coral: #f0916d;
-  --color-coral-soft: #f7ae8f;
-  --color-seafoam: #8fd8ba;
-  --color-warning: #f2c078;
-  --color-line: rgba(255, 247, 230, 0.14);
+  --color-abyss: #1a3c38;
+  --color-abyss-deep: #0e2a26;
+  --color-tide: #1f5449;
+  --color-tide-soft: #28645a;
+  --color-coral: #d97a5c;
+  --color-coral-soft: #e8a088;
+  --color-seafoam: #6cc4a8;
+  --color-warning: #c97a2a;
+  --color-success: #7ac4a8;
+  --color-danger: #d97a5c;
+  --color-line: rgba(15, 46, 58, 0.18);
 }
 
 * {
@@ -217,10 +220,11 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-align: start;
+  transition: color 0.35s var(--ease-tide), background 0.35s var(--ease-tide);
 }
 
 :focus-visible {
-  outline: 2px solid var(--border-focus);
+  outline: 2.5px solid var(--border-focus);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -350,56 +354,48 @@ html[data-theme="beach"] .bubbles {
 }
 
 /* --------------------------------------------------------------------- */
-/* Beach-theme wind gusts, replacing bubbles: floating particles read as */
-/* underwater, which doesn't fit a beach scene, so a breeze -- a couple  */
-/* of tapered curved lines suggesting a head and a trailing tail, like   */
-/* classic wind/speed-line iconography -- drifts across instead.        */
+/* Beach-theme bird shadows on the sand: subtle, horizontally-drifting   */
+/* dark silhouettes suggesting distant birds flying overhead. Each       */
+/* shadow is a blurred, tapered oval that drifts at random heights and   */
+/* speeds across the sand layer -- appearing only now and then so the    */
+/* effect feels organic rather than mechanical.                          */
 /* --------------------------------------------------------------------- */
 
-.wind-gusts {
+.bird-shadows {
   position: absolute;
-  inset: 0;
+  inset-inline: 0;
+  top: 66%;
+  bottom: 0;
   overflow: hidden;
   display: none;
+  pointer-events: none;
 }
 
-html[data-theme="beach"] .wind-gusts {
+html[data-theme="beach"] .bird-shadows {
   display: block;
 }
 
-.wind-gust {
+.bird-shadow {
   position: absolute;
-  top: var(--top, 20vh);
-  left: -20vw;
-  width: calc(96px * var(--scale, 1));
-  height: calc(38px * var(--scale, 1));
-  animation: gust-drift var(--duration, 18s) linear infinite;
+  top: var(--top, 10%);
+  left: -15vw;
+  width: calc(70px * var(--scale, 1));
+  height: calc(14px * var(--scale, 1));
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 45% 50%, rgba(91, 61, 35, 0.30) 0%, rgba(91, 61, 35, 0.16) 35%, rgba(91, 61, 35, 0.05) 62%, transparent 80%);
+  filter: blur(2px);
+  animation: bird-shadow-drift var(--duration, 20s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
   opacity: 0;
+  will-change: transform, opacity;
 }
 
-/*
- * `linear` timing plus exactly two keyframe stops that set `transform`
- * (0% and 32%) is what makes the crossing itself constant-speed: with
- * nothing else in between touching `transform`, the browser interpolates
- * it as one continuous, evenly-paced motion across that whole span,
- * rather than the "hold still, then suddenly move" effect an uneven
- * spread of stops (or a non-linear timing function) produces. The 130vw
- * travel distance clears a full 100vw viewport with room to spare, so
- * the gust genuinely exits past the right edge before fading rather than
- * fading out mid-screen. Opacity fades in/out quickly at each end of
- * that same span, independent of the constant-speed movement. The gust
- * then sits invisible, parked off-screen, for the remaining ~65% of the
- * cycle -- combined with a randomized `--duration` (see app.js) and a
- * small particle count, that's what makes a new gust appear only
- * occasionally rather than there always being one in motion.
- */
-@keyframes gust-drift {
-  0% { transform: translate(0, 0); opacity: 0; }
-  3% { opacity: var(--peak-opacity, 0.3); }
-  29% { opacity: var(--peak-opacity, 0.3); }
-  32% { transform: translate(130vw, 6px); opacity: 0; }
-  100% { transform: translate(130vw, 6px); opacity: 0; }
+@keyframes bird-shadow-drift {
+  0%   { transform: translateX(0); opacity: 0; }
+  4%   { opacity: var(--peak-opacity, 0.45); }
+  28%  { opacity: var(--peak-opacity, 0.45); }
+  32%  { transform: translateX(130vw); opacity: 0; }
+  100% { transform: translateX(130vw); opacity: 0; }
 }
 
 /* --------------------------------------------------------------------- */
@@ -443,6 +439,7 @@ html[data-theme="beach"] .wind-gusts {
 .picker__intro-en {
   font-family: 'Quicksand', 'Be Vietnam Pro', sans-serif;
   font-weight: 700;
+  font-size: 1.05em;
   color: var(--color-seafoam);
 }
 
@@ -463,22 +460,25 @@ html[data-theme="beach"] .wind-gusts {
   flex-direction: column;
   gap: 2px;
   padding: var(--space-4);
+  min-height: 52px;
   background: var(--surface-panel);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.2s var(--ease-tide), transform 0.15s var(--ease-tide), background 0.2s var(--ease-tide);
+  transition: border-color 0.2s var(--ease-tide), transform 0.15s var(--ease-tide), background 0.2s var(--ease-tide), box-shadow 0.2s var(--ease-tide);
 }
 
 .picker__option:hover {
   border-color: var(--color-seafoam);
   background: var(--color-tide-soft);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
 }
 
 .picker__option:active {
   transform: translateY(0);
+  box-shadow: var(--shadow-soft);
 }
 
 .picker__option-title {
@@ -488,17 +488,19 @@ html[data-theme="beach"] .wind-gusts {
 
 #picker-fa .picker__option-title {
   font-family: 'Lalezar', 'Vazirmatn', sans-serif;
+  font-size: 22px;
   color: var(--color-coral);
 }
 
 #picker-en .picker__option-title {
   font-family: 'Quicksand', 'Be Vietnam Pro', sans-serif;
   font-weight: 700;
+  font-size: 22px;
   color: var(--color-seafoam);
 }
 
 .picker__option-desc {
-  font-family: 'Vazirmatn', 'Arial', sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   color: var(--color-foam-dim);
 }
@@ -513,15 +515,12 @@ html[data-theme="beach"] .wind-gusts {
   gap: var(--space-2);
 }
 
-/* Unlike .disclaimer/.input-hint, this text's vertical position shifts
-   with how tall the rest of the picker content is, so it can't reliably
-   count on falling within a small, fixed-height scrim the way elements
-   pinned to the very bottom of the screen can. A dark halo around the
-   letterforms themselves works regardless of exactly what's behind them
-   -- the same principle video subtitles use -- without needing a large
-   overlay that would otherwise have to cover much more of the screen. */
 html[data-theme="beach"] .picker__note {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-on-sky);
+  text-shadow: none;
 }
 
 .picker__note-sep {
@@ -545,6 +544,7 @@ html[data-theme="beach"] .picker__note {
   align-items: center;
   gap: 4px;
   padding: var(--space-3) var(--space-2);
+  min-height: 44px;
   background: var(--color-tide);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
@@ -627,12 +627,19 @@ html[data-theme="beach"] .picker__note {
   padding: var(--space-4) var(--space-4) var(--space-2);
 }
 
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .header__title {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 24px;
   color: var(--color-coral);
   letter-spacing: 0.5px;
   line-height: 1;
+  font-weight: 700;
 }
 
 /* --------------------------------------------------------------------- */
@@ -695,9 +702,11 @@ html[data-theme="beach"] .picker__note {
   font-family: var(--font-body);
   font-size: 13.5px;
   text-align: start;
-  padding: 9px 10px;
+  padding: 10px 12px;
+  min-height: 40px;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.15s var(--ease-tide);
 }
 
@@ -823,12 +832,8 @@ html[dir="ltr"] .bubble-row--bot { justify-content: flex-start; }  /* left in LT
   padding-inline: 4px;
 }
 
-/* Same reasoning as .picker__note above: a timestamp can end up
-   anywhere in the chat as the conversation scrolls, so a halo around the
-   text itself is the reliable fix here rather than trying to predict
-   where it'll land relative to a fixed scrim. */
 html[data-theme="beach"] .bubble-meta {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
+  color: var(--color-on-sky-dim);
 }
 
 /* Meta text follows the same intentional physical-side convention as the
@@ -875,9 +880,12 @@ html[dir="ltr"] .bubble-row--bot .bubble-meta { text-align: left; }
 .input-hint {
   flex-shrink: 0;
   margin-inline: var(--space-3);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2) var(--space-3);
   font-size: 12.5px;
   color: var(--color-warning);
+  background: rgba(240, 185, 134, 0.12);
+  border: 1px solid rgba(240, 185, 134, 0.22);
+  border-radius: var(--radius-sm);
   text-align: center;
 }
 
@@ -895,6 +903,12 @@ html[dir="ltr"] .bubble-row--bot .bubble-meta { text-align: left; }
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   margin: var(--space-2) var(--space-3);
+  transition: border-color 0.2s var(--ease-tide), box-shadow 0.2s var(--ease-tide);
+}
+
+.composer:focus-within {
+  border-color: var(--color-seafoam);
+  box-shadow: 0 0 0 2px rgba(127, 190, 176, 0.15);
 }
 
 .composer__input {
@@ -930,7 +944,17 @@ html[dir="ltr"] .bubble-row--bot .bubble-meta { text-align: left; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s var(--ease-tide), background 0.15s var(--ease-tide), opacity 0.15s;
+  transition: transform 0.15s var(--ease-tide), background 0.15s var(--ease-tide), opacity 0.15s, box-shadow 0.2s var(--ease-tide);
+}
+
+/* Pulse effect when the send button is enabled and has text */
+.composer__send:not(:disabled) {
+  animation: send-pulse 2.4s var(--ease-tide) infinite;
+}
+
+@keyframes send-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 135, 108, 0.25); }
+  50% { box-shadow: 0 0 0 6px rgba(232, 135, 108, 0); }
 }
 
 /* The send arrow points toward each language's own "forward" (reading-end)
@@ -959,8 +983,178 @@ html[dir="rtl"] .composer__send svg {
   font-size: 11px;
   color: var(--color-foam-dim);
   padding-inline: var(--space-4);
+  padding-block: var(--space-2);
   padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
-  line-height: 1.6;
+  line-height: 1.7;
+}
+
+/* --------------------------------------------------------------------- */
+/* Chat auto-title (shown when conversation deepens)                     */
+/* --------------------------------------------------------------------- */
+
+.chat__title {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-foam-dim);
+  padding: var(--space-2) var(--space-4);
+  line-height: 1.4;
+  animation: reveal 0.4s var(--ease-tide) both;
+  user-select: none;
+}
+
+html[data-theme="beach"] .chat__title {
+  color: var(--color-on-sky-dim);
+}
+
+
+
+/* --------------------------------------------------------------------- */
+/* Anchor / bookmark icon on bubbles                                    */
+/* --------------------------------------------------------------------- */
+
+.bubble-wrap {
+  position: relative;
+}
+
+.anchor-btn {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(234, 243, 239, 0.08);
+  color: var(--color-foam-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-tide), background 0.15s var(--ease-tide), color 0.15s var(--ease-tide);
+  font-size: 12px;
+  line-height: 1;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bubble-wrap:hover .anchor-btn,
+.anchor-btn--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.anchor-btn:hover {
+  background: rgba(234, 243, 239, 0.18);
+  color: var(--color-seafoam);
+}
+
+.anchor-btn--active {
+  color: var(--color-seafoam);
+  background: rgba(127, 190, 176, 0.20);
+}
+
+html[data-theme="beach"] .anchor-btn {
+  color: var(--color-on-sky-dim);
+  background: rgba(255, 255, 255, 0.30);
+}
+
+html[data-theme="beach"] .anchor-btn:hover,
+html[data-theme="beach"] .anchor-btn--active {
+  color: var(--color-on-sky-link);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* --------------------------------------------------------------------- */
+/* Breathing exercise overlay                                           */
+/* --------------------------------------------------------------------- */
+
+.breathe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 15, 20, 0.85);
+  animation: reveal 0.35s var(--ease-tide) both;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+html[data-theme="beach"] .breathe-overlay {
+  background: rgba(15, 46, 58, 0.82);
+}
+
+.breathe-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(127, 190, 176, 0.50), rgba(127, 190, 176, 0.15));
+  box-shadow: 0 0 40px rgba(127, 190, 176, 0.20), inset 0 0 30px rgba(127, 190, 176, 0.08);
+  animation: breathe-rhythm 19s var(--ease-tide) infinite;
+  transition: box-shadow 0.3s var(--ease-tide);
+}
+
+@keyframes breathe-rhythm {
+  0%   { transform: scale(1); }        /* Breathe in (4s) */
+  21%  { transform: scale(1.35); }     /* Hold starts (7s) */
+  58%  { transform: scale(1.35); }     /* Breathe out starts (8s) */
+  100% { transform: scale(1); }        /* Reset */
+}
+
+.breathe-label {
+  margin-top: var(--space-5);
+  font-size: 15px;
+  color: var(--color-foam);
+  font-family: var(--font-body);
+  text-align: center;
+  user-select: none;
+}
+
+html[data-theme="beach"] .breathe-label {
+  color: #eaf3ef;
+}
+
+.breathe-close {
+  margin-top: var(--space-4);
+  padding: 8px 20px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  background: transparent;
+  border: 1px solid rgba(234, 243, 239, 0.25);
+  color: var(--color-foam-dim);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease-tide), color 0.15s var(--ease-tide);
+}
+
+.breathe-close:hover {
+  border-color: var(--color-seafoam);
+  color: var(--color-foam);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe-circle {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------- */
+/* Language-lock note inside the menu dropdown                           */
+/* --------------------------------------------------------------------- */
+
+.menu__note {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--color-foam-dim);
+  line-height: 1.5;
+  text-align: center;
+  border-top: 1px solid var(--color-line);
+  margin-top: var(--space-1);
+  padding-top: var(--space-2);
 }
 
 /* --------------------------------------------------------------------- */
@@ -994,7 +1188,7 @@ html[dir="rtl"] .composer__send svg {
   .backdrop__horizon,
   .wet-patch,
   .bubble-particle,
-  .wind-gust,
+  .bird-shadow,
   .ripple-dot,
   .bubble-row,
   .bubble--bot,
@@ -1013,15 +1207,12 @@ html[dir="rtl"] .composer__send svg {
  * ====================================================================== */
 
 html[data-theme="beach"] {
-  --color-on-sky: #123847;
-  --color-on-sky-dim: #204957;
-  --color-on-sky-accent: #60301f;
-  --color-on-sky-link: #06495c;
-}
-
-html[data-theme="beach"] {
-  --text-on-bright: #123847;
-  --border-focus: #06495c;
+  --color-on-sky: #0f2e3a;
+  --color-on-sky-dim: #1c404e;
+  --color-on-sky-accent: #7a3f2a;
+  --color-on-sky-link: #054554;
+  --text-on-bright: #0f2e3a;
+  --border-focus: #054554;
 }
 
 html[data-theme="beach"] body {
@@ -1244,6 +1435,40 @@ html[data-theme="beach"] .picker__intro-en { color: var(--color-on-sky-link); }
 html[data-theme="beach"] .picker__note,
 html[data-theme="beach"] .picker__intro-sep { color: var(--color-on-sky-dim); }
 
+/* Beach theme-picker segments need dark ink surfaces. */
+html[data-theme="beach"] .theme-picker__option {
+  background: rgba(31, 84, 73, 0.70);
+  border-color: rgba(15, 46, 58, 0.20);
+  color: var(--color-on-sky-dim);
+}
+
+html[data-theme="beach"] .theme-picker__option[aria-pressed="true"] {
+  border-color: var(--color-on-sky-link);
+  color: var(--color-on-sky);
+  background: rgba(40, 100, 90, 0.82);
+}
+
+/* Beach menu popover: dark layered surface against the bright sky. */
+html[data-theme="beach"] .menu__popover {
+  background: rgba(31, 84, 73, 0.92);
+  border-color: rgba(15, 46, 58, 0.22);
+  box-shadow: 0 10px 30px rgba(15, 46, 58, 0.30);
+}
+
+html[data-theme="beach"] .menu__item {
+  color: #eaf3ef;
+}
+
+html[data-theme="beach"] .menu__item:hover {
+  background: rgba(40, 100, 90, 0.55);
+}
+
+/* Beach picker note: use dark ink instead of text-shadow halo. */
+html[data-theme="beach"] .picker__note {
+  text-shadow: none;
+  color: var(--color-on-sky);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .beach-scene__sun,
   .beach-scene__ocean,
@@ -1298,32 +1523,140 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
   }
 }
 
-/* Bright-sky controls need their own ink and surface treatment. The ocean
-   trigger uses subdued foam tones, but those same tones disappear against
-   the beach sky. */
+/* Beach theme: solid, opaque surfaces with dark ink for maximum
+   readability. All panels, bubbles, and controls use solid colors
+   against the bright background scene so text is never lost. */
 html[data-theme="beach"] .menu__trigger {
   color: var(--color-on-sky);
-  border-color: rgba(18, 56, 71, 0.34);
-  background: rgba(255, 255, 255, 0.32);
-  box-shadow: 0 3px 12px rgba(91, 61, 35, 0.12);
+  border-color: rgba(15, 46, 58, 0.35);
+  background: rgba(240, 235, 218, 0.85);
+  box-shadow: 0 2px 10px rgba(91, 61, 35, 0.12);
 }
 
 html[data-theme="beach"] .menu__trigger:hover,
 html[data-theme="beach"] .menu__trigger[aria-expanded="true"] {
   color: var(--color-on-sky-link);
   border-color: var(--color-on-sky-link);
-  background: rgba(255, 255, 255, 0.56);
+  background: rgba(240, 235, 218, 0.95);
+  box-shadow: 0 4px 14px rgba(91, 61, 35, 0.18);
 }
 
 html[data-theme="beach"] .input-hint {
-  color: var(--color-on-sky);
-  background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(18, 56, 71, 0.22);
+  color: var(--color-on-sky-accent);
+  background: rgba(240, 235, 218, 0.90);
+  border: 1px solid rgba(15, 46, 58, 0.20);
   border-radius: var(--radius-sm);
   font-weight: 600;
   text-shadow: none;
 }
 
+html:not([data-theme="beach"]) .input-hint {
+  background: rgba(127, 190, 176, 0.12);
+  border: 1px solid rgba(127, 190, 176, 0.22);
+  border-radius: var(--radius-sm);
+}
+
 html[data-theme="beach"] .disclaimer {
-  color: #f7ead5;
+  color: rgba(255, 255, 255, 0.80);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.40);
+}
+
+html[data-theme="beach"] .picker__option {
+  background: rgba(31, 84, 73, 0.88);
+  border-color: rgba(15, 46, 58, 0.18);
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .picker__option:hover {
+  background: rgba(40, 100, 90, 0.95);
+  border-color: var(--color-on-sky-link);
+  box-shadow: 0 6px 20px rgba(91, 61, 35, 0.15);
+}
+
+html[data-theme="beach"] .bubble--user {
+  background: var(--color-on-sky);
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .bubble--bot {
+  background: rgba(31, 84, 73, 0.88);
+  border-color: rgba(15, 46, 58, 0.15);
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .bubble-row--bot .bubble-meta {
+  color: var(--color-on-sky-dim);
+}
+
+html[data-theme="beach"] .composer {
+  background: rgba(31, 84, 73, 0.82);
+  border-color: rgba(15, 46, 58, 0.18);
+}
+
+html[data-theme="beach"] .composer:focus-within {
+  border-color: var(--color-on-sky-link);
+  box-shadow: 0 0 0 2px rgba(5, 69, 84, 0.18);
+}
+
+html[data-theme="beach"] .composer__input {
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .composer__input::placeholder {
+  color: rgba(240, 247, 244, 0.55);
+}
+
+html[data-theme="beach"] .menu__note {
+  color: rgba(240, 247, 244, 0.70);
+  border-top-color: rgba(15, 46, 58, 0.18);
+}
+
+/* Beach theme-picker segments need solid, opaque surfaces. */
+html[data-theme="beach"] .theme-picker__option {
+  background: rgba(31, 84, 73, 0.82);
+  border-color: rgba(15, 46, 58, 0.18);
+  color: rgba(240, 247, 244, 0.75);
+}
+
+html[data-theme="beach"] .theme-picker__option[aria-pressed="true"] {
+  border-color: var(--color-on-sky-link);
+  color: #f0f7f4;
+  background: rgba(40, 100, 90, 0.92);
+}
+
+/* Beach front page intro text uses dark ink on bright sky. */
+html[data-theme="beach"] .picker__intro {
+  color: var(--color-on-sky);
+}
+
+html[data-theme="beach"] .picker__intro-fa {
+  color: var(--color-on-sky-accent);
+}
+
+html[data-theme="beach"] .picker__intro-en {
+  color: var(--color-on-sky-link);
+}
+
+/* Beach picker note: solid background pill for readability. */
+html[data-theme="beach"] .picker__note {
+  background: rgba(240, 235, 218, 0.85);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-on-sky);
+  text-shadow: none;
+}
+
+/* Beach menu popover: solid dark-lagoon surface. */
+html[data-theme="beach"] .menu__popover {
+  background: rgba(31, 84, 73, 0.96);
+  border-color: rgba(15, 46, 58, 0.18);
+  box-shadow: 0 10px 30px rgba(15, 46, 58, 0.25);
+}
+
+html[data-theme="beach"] .menu__item {
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .menu__item:hover {
+  background: rgba(40, 100, 90, 0.60);
 }

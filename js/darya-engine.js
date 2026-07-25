@@ -60,6 +60,14 @@
   const CONSECUTIVE_QUESTION_LIMIT = 1;
   const QUESTION_BUDGET_WINDOW = 3;
   const QUESTION_BUDGET_LIMIT = 1;
+  const REPEATED_GREETING_THRESHOLD = 2;
+  const SPAM_MIN_LENGTH = 2;
+  const SPAM_MAX_UNIQUE_RATIO = 0.3;
+  const ACKNOWLEDGEMENT_THRESHOLD = 2;
+  const TOPIC_RECOVERY_THRESHOLD = 2;
+  const TEST_INPUT_PATTERNS = /^(?:test|testing|hello bot|can you hear|are you there|ping|pong|123|abc)$/iu;
+  const MIXED_SCRIPT_THRESHOLD = 0.35;
+  const SUBSTANTIVE_ANSWER_MIN_WORDS = 3;
 
   /* Conversation design notes: keep replies relevant and proportionate,
      alternate reflection with a small number of concrete questions, and
@@ -226,6 +234,8 @@
       this.turnFrames = [];
       this.pendingQuestions = [];
       this.answeredQuestions = [];
+      // Enhanced tracking for smarter conversation management
+      this.consecutiveAcknowledgements = 0;
     }
 
     rememberUtterance(utterance) {
@@ -479,6 +489,7 @@
       this.currentTurnDialogueAct = 'statement';
       this.currentTurnIntent = 'unknown';
       this.currentTurnQuestionNeed = 0;
+      this._lastTurnCorrection = false;
       this.conversationState = {
         phase: 'new',
         dialogueAct: null,
@@ -501,6 +512,81 @@
     }
 
     /**
+     * Detects whether the recent messages form a repeated greeting pattern
+     * (e.g. the user types "سلام" multiple times without answering the
+     * previous question). This lets Darya gently reset the conversation
+     * rather than answering the same greeting with a different greeting.
+     * @param {string} normalizedText - The current normalized message.
+     * @returns {boolean}
+     */
+    _isRepeatedGreeting(normalizedText) {
+      const recentUtterances = this.memory.recentUtterances;
+      if (recentUtterances.length < REPEATED_GREETING_THRESHOLD) return false;
+      // Check if the last N-1 messages are all greetings (by checking if they
+      // match the same greeting rule as the current one).
+      const greetingPatterns = this.lang.rules
+        .filter((r) => r.topic === 'greeting')
+        .map((r) => r.pattern);
+      if (!greetingPatterns.length) return false;
+      let greetingCount = 0;
+      // Check if current message is a greeting
+      const currentIsGreeting = greetingPatterns.some((p) => {
+        p.lastIndex = 0;
+        return p.test(normalizedText);
+      });
+      if (!currentIsGreeting) return false;
+      // Count consecutive greetings from recent utterances (working backwards)
+      for (let i = recentUtterances.length - 1; i >= 0; i -= 1) {
+        const isGreeting = greetingPatterns.some((p) => {
+          p.lastIndex = 0;
+          return p.test(recentUtterances[i]);
+        });
+        if (isGreeting) {
+          greetingCount += 1;
+        } else {
+          break;
+        }
+      }
+      return greetingCount >= REPEATED_GREETING_THRESHOLD;
+    }
+
+    /**
+     * Detects spam or keyboard-smash input: very short messages with low
+     * unique character ratio (e.g. "asdasd", "dddd", "۱۲۳۴") or very
+     * repetitive patterns. These deserve a gentle, non-judgmental response
+     * rather than being treated as meaningful input.
+     * @param {string} normalizedText - The current normalized message.
+     * @returns {boolean}
+     */
+    _isSpamOrNoise(normalizedText) {
+      const text = normalizedText.trim();
+      if (text.length < SPAM_MIN_LENGTH) return false;
+      // Pure digits or very short strings with no letters
+      if (/^\d+$/u.test(text) && text.length < 5) return true;
+      // Keyboard smash: low unique character ratio
+      const chars = [...text].filter((ch) => /\p{L}/u.test(ch));
+      if (chars.length < 3) return false;
+      const uniqueChars = new Set(chars.map((c) => c.toLowerCase()));
+      const uniqueRatio = uniqueChars.size / chars.length;
+      if (uniqueRatio < SPAM_MAX_UNIQUE_RATIO && text.length < 12) return true;
+      // Highly repetitive (e.g. "aaaaaaaa", "۱۲۱۲۱۲۱۲")
+      if (uniqueChars.size <= 2 && text.length > 4) return true;
+      return false;
+    }
+
+    /**
+     * Detects very short, ambiguous input that doesn't match any rule
+     * and is too brief to infer intent (e.g. a single word like "خوب"
+     * or "nice").
+     * @param {string} normalizedText
+     * @returns {boolean}
+     */
+    _isAmbiguousInput(normalizedText) {
+      const wordCount = normalizedText.split(/\s+/u).filter(Boolean).length;
+      return wordCount <= 2 && normalizedText.length < 10;
+    }
+
+    /**
      * Produces Darya's reply to a single user utterance.
      * @param {string} rawText
      * @returns {string}
@@ -520,7 +606,6 @@
       this.memory.rememberUtterance(normalized);
       this.memory.rememberSentiment(sentimentScore);
       this.memory.turnCount += 1;
-      this.memory.markLatestQuestionAnswered(normalized, this.memory.turnCount);
       this.memory.decayNamedEntities();
 
       const entities = global.DaryaEntityExtractor
@@ -530,6 +615,7 @@
         : [];
       this._turnEntities = entities;
       const correction = this.detectEntityCorrection(matchingText);
+      this._lastTurnCorrection = !!correction;
       if (correction) {
         const oldEntity = [...this.memory.namedEntities.values()]
           .find((entity) => correction.oldSurface.toLocaleLowerCase().includes(entity.surface.toLocaleLowerCase()));
@@ -541,6 +627,13 @@
           }, { topics: this.currentTurnTopics, seriousness: this.currentTurnSeriousness });
         }
       }
+
+      // Detect repeated greetings, spam/noise, and ambiguous input
+      // BEFORE rule matching so these special patterns always get handled
+      // even if a normal rule would technically match.
+      const isRepeatedGreeting = this._isRepeatedGreeting(matchingText);
+      const isSpamNoise = this._isSpamOrNoise(matchingText);
+      const isAmbiguous = !isRepeatedGreeting && !isSpamNoise && this._isAmbiguousInput(matchingText);
 
       const matches = this._matchRules(matchingText);
       const matchedRule = matches[0]?.rule || null;
@@ -588,11 +681,60 @@
       };
       this.memory.rememberTurnFrame({ ...this.conversationState, turn: this.memory.turnCount });
 
+      // Mark pending question as answered BEFORE reply selection so that
+      // a question the bot asks in this same turn is not immediately marked
+      // as answered. Only substantive answers count (spam, greetings,
+      // pure acknowledgements, and test inputs are ignored). Cache the
+      // result since _isSubstantiveAnswer is also checked in the routing.
+      const _substantiveCache = this._isSubstantiveAnswer(matchingText);
+      const isSubstantive = !isRepeatedGreeting && !isSpamNoise
+        && this.currentTurnDialogueAct !== 'acknowledgement'
+        && this.currentTurnDialogueAct !== 'test_input'
+        && _substantiveCache;
+      if (isSubstantive) {
+        this.memory.markLatestQuestionAnswered(normalized, this.memory.turnCount);
+      }
+
       let reply;
-      if (blendKey && this.lang.blendResponses?.[blendKey]) {
+      // Route to specialized handlers. Repeated greetings and spam
+      // always override rule matching. Ambiguous input only applies
+      // as a last resort when no rule matches, so meaningful short
+      // inputs like "sad" still reach the correct rule.
+
+      // Mixed language detection (gentle, occasional)
+      const mixedLangReply = this._handleMixedLanguage(matchingText);
+      if (mixedLangReply) {
+        reply = mixedLangReply;
+      } else if (isRepeatedGreeting && this.lang.repeatedGreetingResponses) {
+        reply = this._pickVaried(this.lang.repeatedGreetingResponses);
+      } else if (isSpamNoise && this.lang.spamNoiseResponses) {
+        reply = this._pickVaried(this.lang.spamNoiseResponses);
+      } else if (this.currentTurnDialogueAct === 'test_input' && this.lang.testInputResponses) {
+        reply = this._pickVaried(this.lang.testInputResponses);
+      } else if (this.currentTurnDialogueAct === 'acknowledgement' && this.lang.acknowledgementResponses) {
+        // Only use acknowledgement responses if there's a pending question
+        // and the acknowledgement is not a substantive answer.
+        if (!_substantiveCache && this.memory.pendingQuestions.some((q) => !q.answered)) {
+          this.memory.consecutiveAcknowledgements += 1;
+          if (this.memory.consecutiveAcknowledgements >= 2) {
+            reply = this._pickVaried(this.lang.acknowledgementResponses);
+            this.memory.consecutiveAcknowledgements = 0;
+          } else {
+            reply = this._fallbackResponse(null, normalized);
+          }
+        } else {
+          reply = this._fallbackResponse(null, normalized);
+        }
+      } else if (this.currentTurnDialogueAct === 'correction' && this.lang.correctionResponses) {
+        reply = this._pickVaried(this.lang.correctionResponses);
+      } else if (this.currentTurnDialogueAct === 'topic_change' && this.lang.topicChangeResponses) {
+        reply = this._pickVaried(this.lang.topicChangeResponses);
+      } else if (blendKey && this.lang.blendResponses?.[blendKey]) {
         reply = this._pickVaried(this.lang.blendResponses[blendKey]);
       } else if (matchedRule) {
         reply = this._respondWithRule(matchedRule, captured);
+      } else if (isAmbiguous && this.lang.ambiguousInputResponses) {
+        reply = this._pickVaried(this.lang.ambiguousInputResponses);
       } else {
         reply = this._fallbackResponse(null, normalized);
       }
@@ -602,6 +744,28 @@
         if (shift.length && Math.random() < 0.35) {
           reply = `${this._pickVaried(shift)} ${reply}`;
         }
+      }
+
+      // Emotion-aware calibration: adjust tone based on detected emotion
+      // Skip calibration for blend responses (already emotionally tuned),
+      // safety turns, and greetings/meta-topic responses.
+      const primaryEmotion = this._detectPrimaryEmotion(matchingText);
+      if (primaryEmotion !== 'neutral' && this.currentTurnDialogueAct !== 'safety'
+        && !blendKey && !isRepeatedGreeting && !isSpamNoise) {
+        reply = this._calibrateEmotionalTone(reply, primaryEmotion);
+      }
+
+      // Track acknowledgement streaks for smarter handling
+      if (this.currentTurnDialogueAct !== 'acknowledgement') {
+        this.memory.consecutiveAcknowledgements = 0;
+      }
+
+      // Topic recovery: gently return to abandoned threads when no rule matched
+      // (i.e. the engine fell through to a generic fallback)
+      if (this.currentTurnDialogueAct === 'statement' && !matchedRule
+        && !blendKey && this._shouldRecoverTopic() && Math.random() < 0.3) {
+        const recovery = this._topicRecoveryResponse();
+        if (recovery) reply = recovery;
       }
 
       // Remember after choosing the reply. This ordering is the first-
@@ -656,11 +820,23 @@
     }
 
     classifyDialogueAct(text, matchedRule = null) {
+      // Test input detection (user testing the bot)
+      if (TEST_INPUT_PATTERNS.test(text.trim())) return 'test_input';
+      // Correction detection: check if the user is correcting a previous statement
+      if (this._lastTurnCorrection) return 'correction';
+      // Existing classifications take priority over topic_change
       if (matchedRule?.topic === 'greeting') return 'greeting';
       if (matchedRule?.topic === 'gratitude') return 'gratitude';
       if (matchedRule?.topic === 'affirmation') return 'affirmation';
       if (matchedRule?.topic === 'negation') return 'negation';
       if (matchedRule?.topic === 'safety') return 'safety';
+      // Topic change detection (abrupt shift from previous topic, after rule priority)
+      if (this._isTopicChange(matchedRule) && this.memory.currentSubject.topic) return 'topic_change';
+      // Acknowledgement detection (short, non-substantive responses)
+      if (this._isAcknowledgement(text)) return 'acknowledgement';
+      // Emotional statement detection (when no rule matches but emotion is present)
+      if (this._isEmotionalStatement(text) && !matchedRule) return 'emotional_statement';
+      // Question detection
       if (this.lang.questionPattern?.test(text) || /[?؟]/u.test(text)) return 'question';
       return 'statement';
     }
@@ -671,9 +847,156 @@
       if (matchedRule?.topic === 'professional_boundary') return 'professional_boundary';
       if (matchedRule?.topic === 'recap') return 'recap_request';
       if (dialogueAct === 'gratitude') return 'gratitude';
+      if (dialogueAct === 'acknowledgement') return 'acknowledgement';
+      if (dialogueAct === 'topic_change') return 'topic_change';
+      if (dialogueAct === 'correction') return 'correction';
+      if (dialogueAct === 'test_input') return 'test_input';
+      if (dialogueAct === 'emotional_statement') return 'emotional_expression';
       if (dialogueAct === 'question') return 'information_or_reflection';
       if (topics.length) return 'topic_statement';
       return 'open_statement';
+    }
+
+
+
+    /**
+     * Detects if the user is abruptly changing the topic.
+     * Uses the already-matched rule instead of re-matching.
+     * @param {object|null} matchedRule
+     * @returns {boolean}
+     */
+    _isTopicChange(matchedRule) {
+      if (!this.memory.currentSubject.topic) return false;
+      if (!matchedRule) return false;
+      const newTopic = matchedRule.topic;
+      // These meta-topics are conversational utilities, not real topic changes
+      const metaTopics = new Set(['greeting', 'gratitude', 'recap', 'professional_boundary', 'knowledge']);
+      return newTopic !== this.memory.currentSubject.topic && !metaTopics.has(newTopic);
+    }
+
+    /**
+     * Detects short, non-substantive acknowledgements.
+     * @param {string} text
+     * @returns {boolean}
+     */
+    _isAcknowledgement(text) {
+      const words = text.trim().split(/\s+/u).filter(Boolean);
+      if (words.length > ACKNOWLEDGEMENT_THRESHOLD) return false;
+      const enAck = /^(?:ok|okay|k|sure|right|yeah|yep|i see|got it|understood|makes sense|noted|cool|fine|alright)$/iu;
+      const faAck = /^(?:باشه|خب|خوب|متوجه|آره|اره|درست|چشم|بله|شه|اوه|آها|آحم)$/iu;
+      return enAck.test(text.trim()) || faAck.test(text.trim());
+    }
+
+    /**
+     * Detects emotional statements when no rule matches.
+     * @param {string} text
+     * @returns {boolean}
+     */
+    _isEmotionalStatement(text) {
+      const score = scoreSentiment(text, this.lang.sentimentLexicon);
+      return Math.abs(score) >= 2;
+    }
+
+    /**
+     * Detects if the user's input mixes two scripts (bilingual).
+     * @param {string} text
+     * @returns {boolean}
+     */
+    _isMixedLanguage(text) {
+      const ratio = scriptRatio(text, this.lang.scriptRange);
+      if (ratio === null) return false;
+      return ratio > MIXED_SCRIPT_THRESHOLD && ratio < (1 - MIXED_SCRIPT_THRESHOLD);
+    }
+
+    /**
+     * Determines if a user turn substantively answers a pending question.
+     * @param {string} text - normalized user text
+     * @returns {boolean}
+     */
+    _isSubstantiveAnswer(text) {
+      const words = text.trim().split(/\s+/u).filter(Boolean);
+      if (words.length < SUBSTANTIVE_ANSWER_MIN_WORDS) return false;
+      // Pure acknowledgements are not substantive
+      if (this._isAcknowledgement(text)) return false;
+      // Spam/noise is not substantive
+      if (this._isSpamOrNoise(text)) return false;
+      return true;
+    }
+
+    /**
+     * Checks if the engine should gently recover an abandoned topic.
+     * @returns {boolean}
+     */
+    _shouldRecoverTopic() {
+      if (!this.memory.currentSubject.topic) return false;
+      const subject = this.memory.currentSubject;
+      const turnsSince = this.memory.turnCount - subject.since;
+      // 6-turn upper bound: after that the thread is considered stale
+      return turnsSince >= TOPIC_RECOVERY_THRESHOLD && turnsSince <= 6
+        && this.memory.pendingQuestions.some((q) => !q.answered);
+    }
+
+    /**
+     * Produces a gentle topic-recovery response.
+     * @returns {string|null}
+     */
+    _topicRecoveryResponse() {
+      const topic = this.memory.currentSubject.topic;
+      const pool = this.lang.topicRecoveryResponses?.[topic]
+        || this.lang.topicRecoveryResponses?._default;
+      if (!pool || !pool.length) return null;
+      return this._pickVaried(pool);
+    }
+
+    /**
+     * Calibrates the emotional tone of a response based on detected emotion.
+     * @param {string} reply - the draft reply
+     * @param {string} detectedEmotion - primary emotion detected
+     * @returns {string}
+     */
+    _calibrateEmotionalTone(reply, detectedEmotion) {
+      const calibration = this.lang.emotionCalibration;
+      if (!calibration || !calibration[detectedEmotion]) return reply;
+      // Only apply calibration some of the time to avoid being heavy-handed
+      if (Math.random() > 0.4) return reply;
+      const prefix = calibration[detectedEmotion];
+      return `${prefix} ${reply}`.trim();
+    }
+
+    /**
+     * Detects the primary emotion in the user's text.
+     * @param {string} text
+     * @returns {string}
+     */
+    _detectPrimaryEmotion(text) {
+      const emotions = [
+        { name: 'hurt', patterns: /(?:hurt|pain|broken|wounded|شکسته|آسیب|درد)/iu },
+        { name: 'confused', patterns: /(?:confused|lost|don'?t understand|don'?t know|گیج|گم شدم|نمی‌فهمم|نمی‌دونم)/iu },
+        { name: 'excited', patterns: /(?:excited|thrilled|amazing|awesome|great news|هیجان|عالی|فوق‌العاده)/iu },
+        { name: 'angry', patterns: /(?:angry|furious|pissed|hate|عصبانی|خشم|نفرت|کفری)/iu },
+        { name: 'grieving', patterns: /(?:grief|loss|died|passed away|gone|فقدان|فوت|از دست دادن|داغ)/iu },
+        { name: 'anxious', patterns: /(?:anxious|worry|panic|scared|afraid|نگران|اضطراب|ترس)/iu },
+      ];
+      for (const emotion of emotions) {
+        if (emotion.patterns.test(text)) return emotion.name;
+      }
+      const score = scoreSentiment(text, this.lang.sentimentLexicon);
+      if (score <= -2) return 'sad';
+      if (score >= 2) return 'happy';
+      return 'neutral';
+    }
+
+    /**
+     * Handles mixed-language input gracefully.
+     * @param {string} text
+     * @returns {string|null}
+     */
+    _handleMixedLanguage(text) {
+      if (!this._isMixedLanguage(text)) return null;
+      if (Math.random() > 0.6) return null; // Don't mention it every time
+      const pool = Array.isArray(this.lang.mixedLanguageResponses)
+        ? this.lang.mixedLanguageResponses : null;
+      return pool && pool.length ? this._pickVaried(pool) : null;
     }
 
     questionNeedScore(dialogueAct, topics) {

@@ -481,8 +481,8 @@ test('English body font is Be Vietnam Pro with readable weights', () => {
 test('beach controls and validation hints remain visible on the bright sky', () => {
   const css = read('css/style.css');
   assert.match(css, /html\[data-theme="beach"\] \.menu__trigger[\s\S]*color: var\(--color-on-sky\)/u);
-  assert.match(css, /html\[data-theme="beach"\] \.input-hint[\s\S]*background: rgba\(255, 255, 255, 0\.48\)/u);
-  assert.match(css, /html\[data-theme="beach"\] \.disclaimer[\s\S]*color: #f7ead5/u);
+  assert.match(css, /html\[data-theme="beach"\] \.input-hint[\s\S]*color: var\(--color-on-sky-accent\)/u);
+  assert.match(css, /html\[data-theme="beach"\] \.disclaimer[\s\S]*color: var\(--color-on-sky\)/u);
 });
 
 test('beach theme has three masked tiled layers and a full-scene sky', () => {
@@ -535,10 +535,13 @@ test('representative theme foregrounds meet WCAG AA contrast', () => {
     const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
     return (values[0] + 0.05) / (values[1] + 0.05);
   };
-  assert.ok(ratio('#123847', '#b3d6e0') >= 4.5);
-  assert.ok(ratio('#204957', '#b3d6e0') >= 4.5);
-  assert.ok(ratio('#eaf3ef', '#153f49') >= 4.5);
-  assert.ok(ratio('#a9c2bd', '#153f49') >= 4.5);
+  /* Beach theme: on-sky ink colors against the bright sand/sky. */
+  assert.ok(ratio('#0f2e3a', '#b3d6e0') >= 4.5, '--color-on-sky vs beach sky');
+  assert.ok(ratio('#1c404e', '#b3d6e0') >= 4.5, '--color-on-sky-dim vs beach sky');
+  assert.ok(ratio('#7a3f2a', '#b3d6e0') >= 4.5, '--color-on-sky-accent vs beach sky');
+  /* Ocean theme: foam text on deep panels. */
+  assert.ok(ratio('#eaf3ef', '#133b44') >= 4.5, '--color-foam vs --color-tide');
+  assert.ok(ratio('#9bbcb5', '#133b44') >= 4.5, '--color-foam-dim vs --color-tide');
 });
 
 test('service worker uses a non-versioned cache name and precaches the app shell', () => {

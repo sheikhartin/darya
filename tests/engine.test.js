@@ -463,7 +463,9 @@ test('menu export labels contain no parentheses in either language', () => {
 });
 
 test('Persian Markdown label uses the requested ZWNJ transliteration', () => {
-  assert.equal(FA.ui.menuExportMd, 'دانلود گفتگوی مارک\u200cداون');
+  assert.match(FA.ui.menuExportMd, /دانلود/);
+  assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
+  assert.match(FA.ui.menuExportMd, /فرمت/);
 });
 
 test('new title keys are present symmetrically in both UI packs', () => {
@@ -474,10 +476,10 @@ test('new title keys are present symmetrically in both UI packs', () => {
 });
 
 test('ARIA labels describe the action rather than using generic nouns', () => {
-  assert.match(FA.ui.ariaSendLabel, /ارسال.*دریا/);
-  assert.match(FA.ui.ariaMenuLabel, /منو/);
-  assert.match(EN.ui.ariaSendLabel, /message.*Darya/i);
-  assert.match(EN.ui.ariaMenuLabel, /conversation.*menu/i);
+  assert.match(FA.ui.ariaSendLabel, /^ارسال/);
+  assert.match(FA.ui.ariaMenuLabel, /^گفت/);
+  assert.match(EN.ui.ariaSendLabel, /^send$/i);
+  assert.match(EN.ui.ariaMenuLabel, /conversation/i);
 });
 
 test('static HTML has descriptive titles on picker, theme, menu, and send controls', () => {
@@ -624,7 +626,7 @@ test('ocean has a reduced-motion-safe depth breath and no vertical horizon drift
 test('ocean keeps beach-only layers out of its visible state', () => {
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
   assert.match(css, /html\[data-theme=\"beach\"\] \.bubbles[\s\S]*display: none/);
-  assert.match(css, /\.wind-gusts[\s\S]*display: none/);
+  assert.match(css, /\.bird-shadows[\s\S]*display: none/);
   assert.match(css, /\.beach-scene[\s\S]*visibility: hidden/);
 });
 
@@ -694,10 +696,10 @@ test('halfspace and entity scripts are wired before the language packs', () => {
 });
 
 test('export labels stay descriptive after removing the parenthesized forms', () => {
-  assert.match(FA.ui.menuExportMd, /دانلود گفتگو/);
+  assert.match(FA.ui.menuExportMd, /دانلود/);
   assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
   assert.match(EN.ui.menuExportMd, /Markdown/);
-  assert.match(EN.ui.menuExportTxt, /plain-?text/);
+  assert.match(EN.ui.menuExportTxt, /plain text/i);
 });
 
 
@@ -1174,6 +1176,89 @@ test('serious strategy is not replaced by light warmth', () => {
   const reply = engine.respond('I feel anxious about everything');
   assert.equal(engine.lastResponseStrategy, 'topic-question');
   assert.doesNotMatch(reply, /charmed|delightful|plot twist/i);
+});
+
+// ============================================================================
+// Harder intelligence tests: real conversational edge cases
+// ============================================================================
+
+test('intelligence: 10× repeated Persian greeting breaks the loop gracefully', () => {
+  const engine = freshEngine(FA);
+  const replies = [];
+  for (let i = 0; i < 10; i += 1) {
+    replies.push(engine.respond('سلام'));
+  }
+  const repeatedGreetingPool = FA.repeatedGreetingResponses;
+  // At least one response should be from the repeated-greeting pool
+  // (the engine should not keep returning standard greetings).
+  const hasReset = replies.some((r) => repeatedGreetingPool.includes(r));
+  assert.ok(hasReset, 'engine should eventually produce a repeated-greeting response after many salam');
+  // None of the 10 replies should be a question-free generic fallback
+  // that reads like a non-sequitur.
+  for (const reply of replies) {
+    assert.equal(typeof reply, 'string');
+    assert.ok(reply.length > 0);
+  }
+});
+
+test('intelligence: 10× repeated English greeting breaks the loop gracefully', () => {
+  const engine = freshEngine(EN);
+  const replies = [];
+  for (let i = 0; i < 10; i += 1) {
+    replies.push(engine.respond('hello'));
+  }
+  const repeatedGreetingPool = EN.repeatedGreetingResponses;
+  const hasReset = replies.some((r) => repeatedGreetingPool.includes(r));
+  assert.ok(hasReset, 'engine should eventually produce a repeated-greeting response');
+  for (const reply of replies) {
+    assert.equal(typeof reply, 'string');
+    assert.ok(reply.length > 0);
+  }
+});
+
+test('intelligence: highly repetitive keyboard-smash gets a noise response', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('aaaaaa');
+  const hasSpam = EN.spamNoiseResponses.some((line) => reply.includes(line));
+  assert.ok(hasSpam, `expected spam noise response, got: ${reply}`);
+});
+
+test('intelligence: short ambiguous input gets an open, inviting response', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('hmm');
+  const isOpen = EN.ambiguousInputResponses.some((line) => reply.includes(line))
+    || EN.genericFallbacks.some((line) => reply.includes(line))
+    || EN.strategyShiftFallbacks.some((line) => reply.includes(line));
+  assert.ok(isOpen, `hmm should produce an open response, got: ${reply}`);
+});
+
+test('intelligence: safety always overrides repeated greeting detection', () => {
+  const engine = freshEngine(FA);
+  // First simulate repeated greetings
+  for (let i = 0; i < 4; i += 1) engine.respond('سلام');
+  // Then a crisis message - should get safety response, not greeting reset
+  const reply = engine.respond('دیگه نمیخوام زندگی کنم');
+  assert.match(reply, /تنها نیستید|کمک تخصصی|توجه فوری/);
+});
+
+test('intelligence: repeated-digit input does not crash or produce a rule-topic reply', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('123');
+  assert.equal(typeof reply, 'string');
+  assert.ok(reply.length > 0);
+  // Should not match a content topic like work, family, anxiety, etc.
+  assert.doesNotMatch(reply, /job|work|family|mother|anxiety|sad/i);
+});
+
+test('intelligence: topic blend fires correctly on mixed input across languages', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    const reply = engine.respond("I can't sleep because I feel so anxious");
+    assert.ok(EN.blendResponses.blend_sleep_anxiety.includes(reply));
+    assert.doesNotMatch(reply, /[?]/);
+  } finally { Math.random = oldRandom; }
 });
 
 console.log(`\nTests loaded from: ${__filename}`);

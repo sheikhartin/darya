@@ -1,61 +1,53 @@
-# Darya (دریا)
+# Darya (دریا) &mdash; A calm conversation companion
 
-Darya is a bilingual (Persian/English) conversation companion in the
-tradition of **ELIZA**, the 1966 program by Joseph Weizenbaum that first
-showed how a purely keyword-driven, rule-based script could imitate a
-reflective listening well enough to feel genuinely heard, even once people knew exactly how the trick worked. Darya is a richer form of that same idea:
-it recognizes a broad set of topics and common small-talk questions, keeps
-a short working memory it can quote back to you, tracks emotional tone
-across a conversation to occasionally offer a grounding exercise, and
-varies its own phrasing so conversations don't feel mechanical, all
-through pattern matching rather than genuine understanding. It also keeps
-weighted topic continuity, recognizes common topic blends, asks a limited
-number of concrete topic-specific questions, and uses a strict seriousness
-gate before any gentle humor can appear.
+Darya is a thoughtful, bilingual (Persian/English) conversation companion that listens and responds with care. Pick a language, choose your theme, and start a conversation &mdash; no sign-up, no data collection, no server.
 
-Persian and English are built as separate, equally detailed language packs
-sharing one engine, chosen once at the start of a conversation and locked
-for its duration. A few techniques are deliberately language-specific
-rather than force-fit into both: English gets classic ELIZA-style
-pronoun-swap reflection, which Persian skips because its grammar carries
-person and number in the verb itself, where a naive word-swap would often
-break. Two visual themes (ocean and beach) are available and remembered
-between visits.
+Think of Darya as a quiet, attentive friend who remembers what you've said during your conversation, notices how you're feeling, and asks gentle follow-up questions. It's not a substitute for professional support &mdash; just a calm space to think out loud.
 
-This is not therapy and does not diagnose anything. There's no learning
-and no memory beyond a single browser tab's conversation, and the site is
-explicit about that limitation rather than overstating what it can do.
+## Features
 
+- **Bilingual from the start** &mdash; Choose Persian or English. The language stays with you for the whole conversation.
+- **Two visual themes** &mdash; Ocean (deep, calm blues) or Beach (bright sand and surf). Your preference is remembered between visits.
+- **Real conversation flow** &mdash; Darya recognizes a wide range of topics (family, work, sleep, anxiety, joy, grief, and more), asks thoughtful questions, and keeps track of what matters to you.
+- **Emotional awareness** &mdash; When the conversation feels heavy, Darya may offer a gentle breathing exercise or a grounding pause.
+- **Offline & private** &mdash; Everything runs in your browser. Nothing is sent to any server, and nothing is stored after you close the tab.
+- **Conversation export** &mdash; Download your chat as Markdown or plain text whenever you like.
 
-## How the conversation engine is built
+## Quick start
 
-Darya remains a small, deterministic browser engine. Each turn is normalized,
-checked for language, scored for emotional weight, matched against topic rules,
-and added to a short in-memory subject record. Recent topics can form blends
-such as sleep plus anxiety, while named entities decay and cannot be called
-back on their first mention. Question budgeting keeps the conversation from
-becoming an interview: when Darya asks, the question is selected from the
-active topic's concrete question pool.
+1. Open the page.
+2. Choose **Persian** or **English**.
+3. Pick your preferred **theme** (Ocean or Beach).
+4. Darya will greet you. Just start typing &mdash; like any chat app.
 
-Warmth is also gated. Serious topics receive quiet, specific reflections;
-light conversation may receive a brief, situational smile only after the
-conversation has some history. Medical, legal, and financial decisions are
-redirected to qualified human professionals rather than answered as advice.
-The recap command summarizes only topics and details actually present in the
-current tab. Nothing is sent to a server or retained after the tab closes.
+That's it. No accounts, no setup, no configuration.
 
-The design draws structural inspiration from reflective inquiry and
-cooperative dialogue principles, while keeping the implementation local and
-rule-based:
+## What Darya can talk about
 
-- https://arxiv.org/html/2312.06024v4
-- https://web.stanford.edu/~jurafsky/slp3/old_jan25/15.pdf
+Darya recognizes a broad set of everyday topics, including:
 
-## Offline knowledge shelf
+- **Family** &mdash; parents, siblings, relationships
+- **Work & school** &mdash; career, study, exams, stress
+- **Emotions** &mdash; sadness, anxiety, anger, joy, loneliness
+- **Sleep & health** &mdash; rest, well-being, physical concerns
+- **Grief & loss** &mdash; mourning, remembering, healing
+- **Self-esteem & motivation** &mdash; confidence, purpose, growth
+- **Finances** &mdash; money worries, planning
 
-Darya has a small bilingual knowledge shelf for philosophy, focus, learning,
-communication, and creativity. It is deliberately curated and offline. It
-provides useful starting points without pretending to know current events or
-claiming professional authority. Knowledge answers are still passed through
-the same language, seriousness, and response selection rules as ordinary
-conversation.
+It will never diagnose, prescribe, or give professional advice. For medical, legal, or financial decisions, please consult a qualified human professional.
+
+## Privacy
+
+Darya has no accounts, no analytics, no tracking, and no server-side processing. Your conversation exists only in your browser tab. When you close the tab, it's gone.
+
+The only persistent data is your **theme preference** (Ocean or Beach), stored as a simple cookie so it's remembered on your next visit.
+
+## Offline use
+
+After the first visit, Darya works fully offline &mdash; the service worker precaches the entire app. You can install it on your phone or desktop as a Progressive Web App (PWA).
+
+## About the project
+
+Darya is inspired by the tradition of reflective listening &mdash; the idea that sometimes what helps most is a quiet, focused space to put thoughts into words. It's built entirely with HTML, CSS, and JavaScript, with no external dependencies or runtime services.
+
+No learning, no AI models, no data collection &mdash; just thoughtful pattern matching in your browser.

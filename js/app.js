@@ -64,6 +64,8 @@
   const menuThemeToggleEl = document.getElementById('menu-theme-toggle');
   const menuThemeIconEl = document.getElementById('menu-theme-icon');
   const menuThemeLabelEl = document.getElementById('menu-theme-label');
+  const breatheTriggerEl = document.getElementById('breathe-trigger');
+  const menuLangNoteEl = document.getElementById('menu-lang-note');
 
   // --- Cookie helpers (used only for the persisted theme preference) -------
 
@@ -234,15 +236,23 @@
 
   // --- Rendering -------------------------------------------------------------
 
+  let messageCount = 0;
+  let currentTitle = '';
+  let bookmarkIds = new Set();
+  const SESSION_KEY = 'darya_scroll_pos';
+
   function appendMessage(sender, text) {
     const time = formatTimestamp();
-    transcript.push({ sender, text, time });
+    const msgId = `msg-${messageCount}`;
+    transcript.push({ sender, text, time, id: msgId });
+    messageCount += 1;
 
     const row = document.createElement('div');
     row.className = `bubble-row bubble-row--${sender}`;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'bubble-wrap';
+    wrapper.id = msgId;
 
     const bubble = document.createElement('div');
     bubble.className = `bubble bubble--${sender}`;
@@ -254,16 +264,166 @@
 
     wrapper.appendChild(bubble);
     wrapper.appendChild(meta);
+
+    // Add anchor/bookmark button for bot messages
+    if (sender === 'bot') {
+      const anchorBtn = document.createElement('button');
+      anchorBtn.className = 'anchor-btn';
+      anchorBtn.setAttribute('type', 'button');
+      anchorBtn.setAttribute('aria-label', lang.ui.anchorBtnLabel);
+      anchorBtn.setAttribute('data-msg-id', msgId);
+      anchorBtn.textContent = '📌';
+      anchorBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleBookmark(msgId, anchorBtn);
+      });
+      wrapper.appendChild(anchorBtn);
+    }
+
+    // Save scroll position before adding new content
+    saveScrollPosition();
+
     row.appendChild(wrapper);
     chatEl.appendChild(row);
 
     scrollToBottom();
+    updateAutoTitle();
   }
+
+
 
   function scrollToBottom() {
     requestAnimationFrame(() => {
       chatEl.scrollTop = chatEl.scrollHeight;
     });
+  }
+
+  // --- Scroll memory ------------------------------------------------------
+
+  function saveScrollPosition() {
+    try {
+      if (chatActive && chatEl) {
+        sessionStorage.setItem(SESSION_KEY, String(chatEl.scrollTop));
+      }
+    } catch (e) { /* sessionStorage may be unavailable */ }
+  }
+
+  function restoreScrollPosition() {
+    try {
+      const pos = sessionStorage.getItem(SESSION_KEY);
+      if (pos !== null && chatEl) {
+        requestAnimationFrame(() => {
+          chatEl.scrollTop = Number(pos);
+        });
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // --- Bookmarks ----------------------------------------------------------
+
+  function toggleBookmark(msgId, btnEl) {
+    if (bookmarkIds.has(msgId)) {
+      bookmarkIds.delete(msgId);
+      btnEl.classList.remove('anchor-btn--active');
+      btnEl.setAttribute('aria-label', lang.ui.anchorBtnLabel);
+    } else {
+      bookmarkIds.add(msgId);
+      btnEl.classList.add('anchor-btn--active');
+      btnEl.setAttribute('aria-label', lang.ui.anchorRemoveLabel);
+    }
+  }
+
+  // --- Auto-title ---------------------------------------------------------
+
+  function updateAutoTitle() {
+    if (messageCount < 5 || !engine) return;
+    const topics = engine.currentTurnTopics;
+    if (!topics || topics.length === 0 || currentTitle) return;
+    // Generate title from the most prominent topic
+    const topicLabels = {
+      fa: {
+        family: 'خانواده', work: 'کار', sleep: 'خواب', anxiety: 'نگرانی',
+        sadness: 'غم', anger: 'خشم', joy: 'شادی', loneliness: 'تنهایی',
+        self_esteem: 'اعتماد به نفس', grief: 'فقدان', motivation: 'انگیزه',
+        relationship: 'رابطه', health: 'سلامتی', school: 'درس و تحصیل',
+        money: 'مالی',
+      },
+      en: {
+        family: 'Family', work: 'Work', sleep: 'Sleep', anxiety: 'Anxiety',
+        sadness: 'Sadness', anger: 'Anger', joy: 'Joy', loneliness: 'Loneliness',
+        self_esteem: 'Self-esteem', grief: 'Grief', motivation: 'Motivation',
+        relationship: 'Relationship', health: 'Health', school: 'School',
+        money: 'Money',
+      },
+    };
+    const labels = topicLabels[lang.code] || topicLabels.en;
+    const topicName = labels[topics[0]] || topics[0];
+    currentTitle = topicName;
+    const titleEl = document.createElement('div');
+    titleEl.className = 'chat__title';
+    titleEl.textContent = `${lang.ui.chatTitlePrefix}${topicName}`;
+    chatEl.insertBefore(titleEl, chatEl.firstChild);
+  }
+
+  // --- Breathing exercise -------------------------------------------------
+
+  let breatheOverlay = null;
+
+  function showBreatheExercise() {
+    if (breatheOverlay) return;
+    breatheOverlay = document.createElement('div');
+    breatheOverlay.className = 'breathe-overlay';
+    breatheOverlay.setAttribute('role', 'dialog');
+    breatheOverlay.setAttribute('aria-modal', 'true');
+    breatheOverlay.setAttribute('aria-label', lang.ui.breatheTitle);
+
+    const circle = document.createElement('div');
+    circle.className = 'breathe-circle';
+
+    const label = document.createElement('div');
+    label.className = 'breathe-label';
+    label.textContent = lang.ui.breatheIn;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'breathe-close';
+    closeBtn.textContent = lang.ui.breatheDismiss;
+    closeBtn.addEventListener('click', dismissBreathe);
+
+    breatheOverlay.appendChild(circle);
+    breatheOverlay.appendChild(label);
+    breatheOverlay.appendChild(closeBtn);
+
+    // Click anywhere on overlay to dismiss
+    breatheOverlay.addEventListener('click', (e) => {
+      if (e.target === breatheOverlay) dismissBreathe();
+    });
+
+    document.body.appendChild(breatheOverlay);
+
+    // Cycle labels through breathe phases to match the 4-7-8 rhythm in the CSS animation (19s total):
+    // Inhale: 0s-4s | Hold: 4s-11s | Exhale: 11s-19s
+    const phases = [
+      { label: lang.ui.breatheIn,  duration: 4000 },
+      { label: lang.ui.breatheHold, duration: 7000 },
+      { label: lang.ui.breatheOut, duration: 8000 },
+    ];
+    let phaseIndex = 0;
+    function scheduleNextPhase() {
+      if (!breatheOverlay || !document.body.contains(breatheOverlay)) return;
+      phaseIndex = (phaseIndex + 1) % phases.length;
+      label.textContent = phases[phaseIndex].label;
+      breatheOverlay._timeout = setTimeout(scheduleNextPhase, phases[phaseIndex].duration);
+    }
+    label.textContent = phases[0].label;
+    breatheOverlay._timeout = setTimeout(scheduleNextPhase, phases[0].duration);
+  }
+
+  function dismissBreathe() {
+    if (breatheOverlay) {
+      if (breatheOverlay._timeout) clearTimeout(breatheOverlay._timeout);
+      breatheOverlay.remove();
+      breatheOverlay = null;
+    }
   }
 
   function setTypingVisible(visible) {
@@ -305,7 +465,10 @@
 
   async function deliverReply(replyText, generation = conversationGeneration) {
     setTypingVisible(true);
-    await new Promise((resolve) => setTimeout(resolve, randomReplyDelay()));
+    // Variable delay: base random + extra per response character length
+    const baseDelay = randomReplyDelay();
+    const extraDelay = Math.min(replyText.length * 2, 600);
+    await new Promise((resolve) => setTimeout(resolve, baseDelay + extraDelay));
     setTypingVisible(false);
     if (generation !== conversationGeneration) return false;
     appendMessage('bot', replyText);
@@ -331,24 +494,30 @@
 
     headerTitleEl.textContent = lang.botName;
     inputEl.setAttribute('placeholder', lang.ui.placeholderDefault);
+    // Unified labels: aria-label === title === visible action text
     inputEl.setAttribute('aria-label', lang.ui.ariaInputLabel);
     inputEl.setAttribute('dir', lang.dir);
     inputEl.setAttribute('lang', lang.code);
-    sendButtonEl.setAttribute('aria-label', lang.ui.ariaSendLabel);
+    sendButtonEl.setAttribute('aria-label', lang.ui.sendButtonTitle);
     sendButtonEl.setAttribute('title', lang.ui.sendButtonTitle);
-    menuTriggerEl.setAttribute('aria-label', lang.ui.ariaMenuLabel);
+    menuTriggerEl.setAttribute('aria-label', lang.ui.menuTriggerTitle);
     menuTriggerEl.setAttribute('title', lang.ui.menuTriggerTitle);
+    pickerFaEl.setAttribute('aria-label', lang.ui.pickerFaTitle);
     pickerFaEl.setAttribute('title', lang.ui.pickerFaTitle);
+    pickerEnEl.setAttribute('aria-label', lang.ui.pickerEnTitle);
     pickerEnEl.setAttribute('title', lang.ui.pickerEnTitle);
     themeToggleButtons.forEach((button) => {
-      button.setAttribute('title', button.dataset.themeChoice === 'ocean'
+      const title = button.dataset.themeChoice === 'ocean'
         ? lang.ui.themeOceanTitle
-        : lang.ui.themeBeachTitle);
+        : lang.ui.themeBeachTitle;
+      button.setAttribute('aria-label', title);
+      button.setAttribute('title', title);
     });
+    menuNewChatEl.setAttribute('aria-label', lang.ui.newChatTitle);
     menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
-    menuExportMdEl.setAttribute('aria-label', lang.ui.ariaExportMdLabel);
+    menuExportMdEl.setAttribute('aria-label', lang.ui.exportMdTitle);
     menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
-    menuExportTxtEl.setAttribute('aria-label', lang.ui.ariaExportTxtLabel);
+    menuExportTxtEl.setAttribute('aria-label', lang.ui.exportTxtTitle);
     menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
     themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
     typingStatusEl.setAttribute('aria-label', lang.ui.typingLabel);
@@ -357,6 +526,21 @@
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
     disclaimerEl.textContent = lang.ui.disclaimer;
     updateThemeMenuItem();
+    if (breatheTriggerEl) {
+      breatheTriggerEl.setAttribute('aria-label', lang.ui.breatheTitle);
+    }
+    // Update menu language-lock note
+    if (menuLangNoteEl) {
+      const faSpan = menuLangNoteEl.querySelector('span[lang="fa"]');
+      const enSpan = menuLangNoteEl.querySelector('span[lang="en"]');
+      if (lang.code === 'fa') {
+        if (faSpan) faSpan.hidden = false;
+        if (enSpan) enSpan.hidden = true;
+      } else {
+        if (faSpan) faSpan.hidden = true;
+        if (enSpan) enSpan.hidden = false;
+      }
+    }
   }
 
   /**
@@ -375,7 +559,7 @@
   /**
    * Returns to the language picker, hiding the chat UI and clearing all
    * conversation state. This is the *only* path back to choosing a
-   * language: the picker button ("گفتگوی تازه" / "New chat" in the menu)
+   * language: the picker button ("گفت‌وگوی تازه" / "New chat" in the menu)
    * routes here rather than silently reusing whatever language was
    * active before, since starting fresh is deliberately the sole way to
    * switch languages. Scrolls the window back to the top so the picker
@@ -385,6 +569,7 @@
   function showPicker() {
     conversationGeneration += 1;
     setTypingVisible(false);
+    dismissBreathe();
     appEl.hidden = true;
     pickerEl.hidden = false;
     closeMenu();
@@ -394,7 +579,11 @@
     chatActive = false;
     transcript = [];
     chatEl.innerHTML = '';
+    bookmarkIds = new Set();
+    messageCount = 0;
+    currentTitle = '';
     window.scrollTo(0, 0);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
   }
 
   // --- Conversation flow -------------------------------------------------------
@@ -405,15 +594,31 @@
     conversationEnded = false;
     transcript = [];
     chatEl.innerHTML = '';
+    bookmarkIds = new Set();
+    messageCount = 0;
+    currentTitle = '';
     setHint('');
     inputEl.setAttribute('placeholder', lang.ui.placeholderDefault);
     setComposerBusy(true);
+    hideBreatheTrigger();
 
     const delivered = await deliverReply(engine.greeting(), generation);
     if (!delivered || generation !== conversationGeneration) return;
 
     setComposerBusy(false);
+    // Restore scroll position if returning to this session
+    if (chatEl.children.length > 0) {
+      restoreScrollPosition();
+    }
     focusInputUnlessTouch();
+  }
+
+  function showBreatheTrigger() {
+    if (breatheTriggerEl) breatheTriggerEl.hidden = false;
+  }
+
+  function hideBreatheTrigger() {
+    if (breatheTriggerEl) breatheTriggerEl.hidden = true;
   }
 
   async function sendMessage(text) {
@@ -431,11 +636,18 @@
     if (isExit) {
       conversationEnded = true;
       inputEl.setAttribute('placeholder', lang.ui.placeholderEnded);
+      hideBreatheTrigger();
     }
 
     setComposerBusy(false);
 
     if (!conversationEnded) {
+      // Show breathe trigger if the engine detected distress
+      if (engine && engine.lastTurnNeedsCare) {
+        showBreatheTrigger();
+      } else {
+        hideBreatheTrigger();
+      }
       focusInputUnlessTouch();
     }
   }
@@ -450,8 +662,31 @@
     }
   }
 
+  function buildExportHeader() {
+    const lines = [];
+    if (currentTitle) {
+      lines.push(`${lang.ui.chatTitlePrefix}${currentTitle}`);
+      lines.push('');
+    }
+    lines.push(formatLocalizedDateTime(new Date()));
+    lines.push('');
+    // Add themes summary from engine memory
+    if (engine && engine.memory.topicHistory.length > 0) {
+      const topics = [...new Set(engine.memory.topicHistory.slice(-6).map((t) => t.topic))]
+        .filter(Boolean).slice(0, 4);
+      if (topics.length > 0) {
+        lines.push(lang.code === 'fa'
+          ? `موضوع‌های گفت‌وگو: ${topics.join('، ')}`
+          : `Topics discussed: ${topics.join(', ')}`);
+        lines.push('');
+      }
+    }
+    return lines.join('\n');
+  }
+
   function buildMarkdownTranscript() {
-    const lines = [`# ${lang.ui.exportTitle}`, '', `_${formatLocalizedDateTime(new Date())}_`, '', '---', ''];
+    const header = buildExportHeader();
+    const lines = [`# ${lang.ui.exportTitle}`, '', header, '---', ''];
     for (const entry of transcript) {
       const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
       lines.push(`**${label}** _(${entry.time})_`);
@@ -463,7 +698,8 @@
   }
 
   function buildPlainTextTranscript() {
-    const lines = [lang.ui.exportTitle, formatLocalizedDateTime(new Date()), '', lang.ui.exportDivider, ''];
+    const header = buildExportHeader();
+    const lines = [lang.ui.exportTitle, '', header, '', lang.ui.exportDivider, ''];
     for (const entry of transcript) {
       const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
       lines.push(`${label} (${entry.time}):`);
@@ -623,6 +859,18 @@
     closeMenu();
   });
 
+  // Breathing exercise trigger
+  if (breatheTriggerEl) {
+    breatheTriggerEl.addEventListener('click', () => {
+      showBreatheExercise();
+    });
+  }
+
+  // Save scroll position periodically
+  chatEl.addEventListener('scroll', () => {
+    saveScrollPosition();
+  }, { passive: true });
+
   // --- Refresh / close guard -------------------------------------------------
   //
   // Reloading or closing the tab mid-conversation would silently lose the
@@ -692,30 +940,26 @@
     }
   }
 
-  function initWindGusts() {
-    const container = document.querySelector('.wind-gusts');
+  function initBirdShadows() {
+    const container = document.querySelector('.bird-shadows');
     if (!container) return;
-    // Each gust only actually drifts across during roughly the first
-    // third of its own cycle (see the CSS keyframe), then sits invisible
-    // for the rest -- so even with a handful running, gusts still feel
-    // occasional rather than constant, while being frequent enough
-    // together to keep the scene feeling alive.
-    const count = 4;
-    const svgNs = 'http://www.w3.org/2000/svg';
+    // Each shadow drifts across the sand band during roughly the first
+    // third of its cycle, then sits invisible for the rest. With 5
+    // shadows at staggered random durations, there's usually just one
+    // visible at any given time -- reading as an occasional group of
+    // distant birds passing overhead, casting faint moving shadows on
+    // the sand below.
+    const count = 5;
     for (let i = 0; i < count; i += 1) {
-      const gust = document.createElementNS(svgNs, 'svg');
-      gust.setAttribute('class', 'wind-gust');
-      gust.setAttribute('viewBox', '0 0 100 40');
-      gust.innerHTML =
-        '<path d="M5,20 Q30,7 60,14 Q76,17.5 95,15" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
-        '<path d="M0,29 Q24,21 48,25" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
-      const duration = randomBetween(11, 20);
-      gust.style.setProperty('--top', `${randomBetween(4, 46).toFixed(1)}vh`);
-      gust.style.setProperty('--scale', randomBetween(0.5, 0.95).toFixed(2));
-      gust.style.setProperty('--duration', `${duration.toFixed(1)}s`);
-      gust.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      gust.style.setProperty('--peak-opacity', randomBetween(0.2, 0.4).toFixed(2));
-      container.appendChild(gust);
+      const shadow = document.createElement('span');
+      shadow.className = 'bird-shadow';
+      const duration = randomBetween(14, 26);
+      shadow.style.setProperty('--top', `${randomBetween(5, 70).toFixed(1)}%`);
+      shadow.style.setProperty('--scale', randomBetween(0.6, 1.4).toFixed(2));
+      shadow.style.setProperty('--duration', `${duration.toFixed(1)}s`);
+      shadow.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
+      shadow.style.setProperty('--peak-opacity', randomBetween(0.25, 0.50).toFixed(2));
+      container.appendChild(shadow);
     }
   }
 
@@ -768,6 +1012,6 @@
   applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
   initBeachWaveVariation();
   initBubbles();
-  initWindGusts();
+  initBirdShadows();
   initWetPatches();
 })();

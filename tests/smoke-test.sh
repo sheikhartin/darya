@@ -29,10 +29,9 @@ FAIL_COUNT=0
 
 # --- Output helpers ---------------------------------------------------------
 
-color() { printf '\033[%sm%s\033[0m' "$1" "$2"; }
-ok()   { PASS_COUNT=$((PASS_COUNT + 1)); echo "  $(color 32 '✓') $1"; }
-fail() { FAIL_COUNT=$((FAIL_COUNT + 1)); echo "  $(color 31 '✗') $1"; }
-section() { echo; echo "$(color 36 "== $1 ==")"; }
+ok()   { PASS_COUNT=$((PASS_COUNT + 1)); echo "  [PASS] $1"; }
+fail() { FAIL_COUNT=$((FAIL_COUNT + 1)); echo "  [FAIL] $1"; }
+section() { echo; echo "==== $1 ===="; }
 
 cleanup() {
   if [[ -n "$SERVER_PID" ]] && kill -0 "$SERVER_PID" 2>/dev/null; then
@@ -256,7 +255,7 @@ else
 fi
 
 forbidden_pattern='language'\ 'model|L''LM|AI'\ 'assistant|therap''ist|دانلود گفتگو ('\ 'Markdown'\ ')|(^|[^A-Za-z])v[0-9]+\.[0-9]+'
-if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
   ok "forbidden identity and legacy version strings stay out of app sources"
 else
   fail "forbidden source strings found: $(tr '\n' ' ' </tmp/darya-forbidden.log)"
@@ -286,7 +285,7 @@ else
   fail "ocean horizon vertical bob regression detected"
 fi
 
-if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' --exclude-dir='licenses' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
   ok "intelligence identity and generic-phrase guards pass"
 else
   fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"
@@ -419,12 +418,12 @@ section "Summary"
 # ============================================================================
 
 echo
-echo "Passed: $(color 32 "$PASS_COUNT")   Failed: $(color 31 "$FAIL_COUNT")"
+echo "Passed: $PASS_COUNT   Failed: $FAIL_COUNT"
 
 if [[ "$FAIL_COUNT" -gt 0 ]]; then
-  echo "$(color 31 'SMOKE TEST FAILED')"
+  echo "SMOKE TEST FAILED"
   exit 1
 else
-  echo "$(color 32 'ALL CHECKS PASSED')"
+  echo "ALL CHECKS PASSED"
   exit 0
 fi

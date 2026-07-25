@@ -67,7 +67,7 @@
     <div class="backdrop__scrim"></div>
 
     <div class="bubbles"></div>
-    <div class="wind-gusts"></div>
+    <div class="bird-shadows"></div>
   </div>
 
   <!-- Language picker: shown before any conversation starts, and again
@@ -84,9 +84,9 @@
       </div>
 
       <div class="picker__options">
-        <button class="picker__option" id="picker-fa" type="button" lang="fa" dir="rtl" title="شروع گفتگوی تازه به زبان فارسی">
+        <button class="picker__option" id="picker-fa" type="button" lang="fa" dir="rtl" title="شروع گفت‌وگوی تازه به زبان فارسی">
           <span class="picker__option-title">فارسی</span>
-          <span class="picker__option-desc">شروع گفتگو به زبان فارسی</span>
+          <span class="picker__option-desc">شروع گفت‌وگو به زبان فارسی</span>
         </button>
         <button class="picker__option" id="picker-en" type="button" lang="en" dir="ltr" title="Start a new conversation in English">
           <span class="picker__option-title">English</span>
@@ -109,11 +109,6 @@
         </button>
       </div>
 
-      <p class="picker__note">
-        <span lang="fa" dir="rtl">زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است.</span>
-        <span class="picker__note-sep">·</span>
-        <span lang="en" dir="ltr">Language locks once your conversation begins.</span>
-      </p>
     </div>
   </div>
 
@@ -121,6 +116,15 @@
 
     <header class="header">
       <span class="header__title" id="header-title">دریا</span>
+
+      <div class="header__actions">
+        <button id="breathe-trigger" class="menu__trigger menu__trigger--breathe" type="button" aria-label="تمرین تنفس" title="تمرین تنفس آرام‌بخش" hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/>
+            <path d="M8 12 h8 M12 8 v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
 
       <div class="menu">
         <button id="menu-trigger" class="menu__trigger" type="button" aria-haspopup="true" aria-controls="menu-popover" aria-expanded="false" aria-label="باز کردن منوی گزینه‌های گفتگو" title="باز کردن منوی گزینه‌های گفتگو">
@@ -154,6 +158,11 @@
             <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🏖️</span>
             <span id="menu-theme-label">پوسته ساحل</span>
           </button>
+          <div class="menu__divider" role="separator"></div>
+          <p class="menu__note" id="menu-lang-note">
+            <span lang="fa" dir="rtl">زبان فقط تا شروع گفت‌وگوی بعدی تغییر می‌کند.</span>
+            <span lang="en" dir="ltr">Language locks once your conversation begins.</span>
+          </p>
         </div>
       </div>
     </header>
