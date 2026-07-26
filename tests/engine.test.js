@@ -57,7 +57,7 @@ test('fa normalize: converts Arabic-Indic digits to Persian digits', () => {
   assert.equal(FA.normalize('١٢٣'), '۱۲۳');
 });
 
-test('fa normalize: corrects "می" + space to the half-space (ZWNJ) form', () => {
+test('fa normalize: corrects "مي" + space to the half-space (ZWNJ) form', () => {
   assert.equal(FA.normalize('می خواهم بروم'), 'می\u200cخواهم بروم');
 });
 
@@ -66,7 +66,7 @@ test('fa normalize regression: does NOT corrupt words that merely contain می/�
   // is a separate, unrelated word and must be left untouched.
   assert.equal(FA.normalize('کمی خسته‌ام'), 'کمی خسته‌ام');
   // "میز" (table) and "میدان" (square) start with "می" as part of their
-  // own root, not as the verb prefix -- also must be left untouched.
+  // own root, not as the verb prefix; must be left untouched.
   assert.equal(FA.normalize('زیر میز است'), 'زیر میز است');
   assert.equal(FA.normalize('میدان آزادی'), 'میدان آزادی');
 });
@@ -126,7 +126,13 @@ test('regression: inflected forms are still recognized after the word-boundary f
   // selection landing on a variant that phrases it differently.
   const reply = engine.respond('امروز خیلی غمگینم');
   const sadnessResponses = FA.rules.find((r) => r.topic === 'sadness').responses;
-  assert.ok(sadnessResponses.includes(reply) || FA.topicSpecificQuestions.sadness.includes(reply), `expected a sadness response, got: ${reply}`);
+  // Emotion calibration may prefix the response with a calibration string.
+  // Strip it before checking membership in the sadness pools.
+  const calibrationPrefix = FA.emotionCalibration?.sad;
+  const cleanReply = calibrationPrefix && reply.startsWith(calibrationPrefix)
+    ? reply.slice(calibrationPrefix.length).trim()
+    : reply;
+  assert.ok(sadnessResponses.includes(cleanReply) || FA.topicSpecificQuestions.sadness.includes(cleanReply), `expected a sadness response, got: ${reply}`);
 });
 
 test('regression: "چراغ" (lamp) does not falsely trigger question-word detection for "چرا" (why)', () => {
@@ -136,7 +142,7 @@ test('regression: "چراغ" (lamp) does not falsely trigger question-word detec
 
 test('regression: Persian question marks are not mistaken for letters in word-boundary checks', () => {
   // "؟" (U+061F) shares the same Unicode block as Persian letters but is
-  // punctuation, not a letter -- a naive range check treated it as one,
+  // punctuation, not a letter. A naive range check treated it as one,
   // which silently broke matching for anything ending right before it.
   const engine = freshEngine(FA);
   const reply = engine.respond('حالت چطوره؟');
@@ -636,16 +642,17 @@ test('beach scene covers the viewport with a fixed inset layer', () => {
   assert.match(css, /linear-gradient\(to bottom,[\s\S]*#b3d6e0[\s\S]*#d6b06b/);
 });
 
-test('beach waves have three ocean div layers and repeat-x masked tiles', () => {
+test('beach waves have three ocean div layers and repeat-x tiled layers', () => {
   const html = require('node:fs').readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const css = require('node:fs').readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
   assert.equal((html.match(/class="beach-scene__ocean/g) || []).length, 3);
   assert.match(css, /background-repeat:\s*repeat-x/);
   assert.match(css, /background-size:\s*1200px/);
-  assert.match(css, /mask-image:\s*linear-gradient\(to right, transparent 0%/);
+  // Ocean layers no longer use mask-image; they are fully opaque with naturally curved SVG edges.
+  assert.doesNotMatch(css, /\.beach-scene__ocean[^{]*\{[^}]*mask-image:/);
 });
 
-test('beach ocean layers are divs, tiled, masked, level, and full-scene', () => {
+test('beach ocean layers are divs, tiled, opaque, level, and full-scene', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
@@ -654,9 +661,12 @@ test('beach ocean layers are divs, tiled, masked, level, and full-scene', () => 
   assert.doesNotMatch(scene, /<svg/);
   assert.match(css, /beach-scene__sky[\s\S]*height:\s*100%/);
   assert.match(css, /beach-scene__ocean[\s\S]*background-repeat:\s*repeat-x/);
-  assert.match(css, /beach-scene__ocean[\s\S]*mask-image:/);
+  // Ocean layers are opaque (no mask), with parallax drift via background-position-x.
+  assert.doesNotMatch(css, /\.beach-scene__ocean[^{]*\{[^}]*mask-image:/);
+  assert.match(css, /beach-scene__ocean[\s\S]*opacity:\s*1/);
   assert.doesNotMatch(css, /translate3d\([^)]*,\s*-[123]px/);
   assert.match(css, /background-position-x:\s*-1200px/);
+  assert.match(css, /beach-ocean-drift/);
 });
 
 test('sun is CSS-only and has a breathing animation', () => {
@@ -1214,6 +1224,136 @@ test('intelligence: 10× repeated English greeting breaks the loop gracefully', 
     assert.equal(typeof reply, 'string');
     assert.ok(reply.length > 0);
   }
+});
+
+// ============================================================================
+// New intelligence tests: word repetition, frustration, factual QA, punctuation
+// ============================================================================
+
+test('intelligence: English word repetition detection names the exact word', () => {
+  const engine = freshEngine(EN);
+  // Send the same word 4+ times across multiple turns
+  engine.respond('car car car car');
+  const reply = engine.respond('car');
+  const pool = EN.wordRepetitionResponses;
+  // With 5 occurrences of "car", the repetition handler should fire
+  assert.ok(pool.some((tpl) => {
+    const rendered = tpl.replace('{word}', 'car').replace('{count}', '5');
+    return reply === rendered;
+  }) || reply.includes('car'), `expected a response mentioning 'car', got: ${reply}`);
+});
+
+test('intelligence: Persian word repetition detection names the exact word', () => {
+  const engine = freshEngine(FA);
+  engine.respond('قلم قلم قلم قلم قلم');
+  const reply = engine.respond('قلم');
+  const pool = FA.wordRepetitionResponses;
+  assert.ok(pool.some((tpl) => {
+    const rendered = tpl.replace('{word}', 'قلم').replace('{count}', '6');
+    return reply === rendered;
+  }) || reply.includes('قلم'), `expected a response mentioning 'قلم', got: ${reply}`);
+});
+
+test('intelligence: word repetition does NOT fire for non-repeated words', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const engine = freshEngine(EN);
+    // Fresh engine with no repeated words: should get a normal response, not repetition
+    const reply = engine.respond('I feel anxious today');
+    const pool = EN.wordRepetitionResponses;
+    const isRepetition = pool.some((tpl) => {
+      const rendered = tpl.replace('{word}', 'anxious').replace('{count}', '1');
+      return reply === rendered;
+    });
+    assert.equal(isRepetition, false, 'should not trigger repetition for a single occurrence');
+  } finally { Math.random = oldRandom; }
+});
+
+test('intelligence: frustration detection responds to exclamation marks', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0.5; // prevent warmth from prepending text, keep _pickVaried in bounds
+  try {
+    const engine = freshEngine(EN);
+    const reply = engine.respond('I am so frustrated!!!');
+    const pool = EN.frustrationResponses;
+    assert.ok(pool.includes(reply), `expected a frustration response, got: ${reply}`);
+  } finally { Math.random = oldRandom; }
+});
+
+test('intelligence: frustration detection responds to question marks', () => {
+  const oldRandom = Math.random;    Math.random = () => 0.5; // prevent warmth from prepending text, keep _pickVaried in bounds
+  try {
+    const engine = freshEngine(EN);
+    const reply = engine.respond('Why is this happening??');
+    const pool = EN.frustrationResponses;
+    assert.ok(pool.includes(reply), `expected a frustration response for '??', got: ${reply}`);
+  } finally { Math.random = oldRandom; }
+});
+
+test('intelligence: factual math question gets answered and redirected', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('what is 2 + 3');
+  assert.match(reply, /2.*\+.*3.*=|2.*\+.*3.*5/);
+  // Should also include a gentle redirect
+  assert.ok(reply.split(/[.?!]/).length >= 2, 'expected answer + followup, got: ' + reply);
+});
+
+test('intelligence: factual math question in Persian still gets a normal response', () => {
+  // Persian math questions are not handled yet, so should get a normal conversation response
+  const engine = freshEngine(FA);
+  const reply = engine.respond('2 به اضافه 3 چنده');
+  // Should not crash and should be a valid response string
+  assert.equal(typeof reply, 'string');
+  assert.ok(reply.length > 0);
+});
+
+test('intelligence: punctuation-normalized input matches the same rule', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const replyA = freshEngine(EN).respond('hello');
+    const replyB = freshEngine(EN).respond('hello!');
+    const replyC = freshEngine(EN).respond('hello?');
+    // All three should produce the same response (punctuation stripped before matching)
+    assert.equal(replyA, replyB);
+    assert.equal(replyB, replyC);
+  } finally { Math.random = oldRandom; }
+});
+
+test('intelligence: safety always beats word repetition and frustration', () => {
+  const engine = freshEngine(FA);
+  for (let i = 0; i < 4; i += 1) engine.respond('سلام');
+  // Safety keyword after repeated greetings: must get safety response
+  const reply = engine.respond('دیگه نمیخوام زندگی کنم!!!');
+  assert.match(reply, /تنها نیستید|کمک تخصصی|توجه فوری/);
+});
+
+test('intelligence: factorial question does not override safety', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('what is 2 + 2 I want to kill myself');
+  assert.match(reply, /not alone|crisis line|professional help/);
+});
+
+test('intelligence: Persian greeting with punctuation variety is detected', () => {
+  const oldRandom = Math.random;
+  Math.random = () => 0;
+  try {
+    const replyA = freshEngine(FA).respond('درود');
+    const replyB = freshEngine(FA).respond('درود!');
+    const replyC = freshEngine(FA).respond('درود؟');
+    assert.equal(replyA, replyB);
+    assert.equal(replyB, replyC);
+  } finally { Math.random = oldRandom; }
+});
+
+test('intelligence: apostrophe in contractions is preserved in normalized matching', () => {
+  const engine = freshEngine(EN);
+  // "can't" must still match the sleep rule after punctuation normalization
+  const reply = engine.respond("I can't sleep");
+  // The engine may use topicSpecificQuestions.sleep ("Has the tiredness been there...")
+  // or the rule's response pool (mentions "sleep"). Both are valid.
+  assert.match(reply, /sleep|rest|night|tiredness/i);
 });
 
 test('intelligence: highly repetitive keyboard-smash gets a noise response', () => {

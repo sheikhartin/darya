@@ -195,10 +195,10 @@ else
   fail "beach scene structure is incomplete"
 fi
 
-if grep -q 'beach-scene__ocean' css/style.css && grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'mask-image: linear-gradient(to right, transparent 0%' css/style.css && grep -q 'background-position-x' css/style.css && ! grep -Eq 'translate3d\([^,]+, *-[123]px' css/style.css; then
-  ok "wave layers use in-place repeat-x tiles with an edge mask"
+if grep -q 'beach-scene__ocean' css/style.css && grep -q 'background-repeat: repeat-x' css/style.css && grep -q 'animation-name: beach-ocean-drift' css/style.css && grep -q 'background-position-x' css/style.css && ! grep -Eq 'translate3d\([^,]+, *-[123]px' css/style.css; then
+  ok "wave layers use in-place repeat-x tiles with parallax drift"
 else
-  fail "wave tile repeat-x/mask regression marker missing"
+  fail "wave tile repeat-x/drift regression marker missing"
 fi
 
 if grep -q 'animation: sun-breathe' css/style.css && grep -q '@keyframes sun-breathe' css/style.css; then

@@ -485,14 +485,16 @@ test('beach controls and validation hints remain visible on the bright sky', () 
   assert.match(css, /html\[data-theme="beach"\] \.disclaimer[\s\S]*color: var\(--color-on-sky\)/u);
 });
 
-test('beach theme has three masked tiled layers and a full-scene sky', () => {
+test('beach theme has three opaque tiled layers and a full-scene sky', () => {
   const html = read('index.html');
   const css = read('css/style.css');
   assert.equal((html.match(/class="beach-scene__ocean /gu) || []).length, 3);
   assert.match(css, /beach-scene__sky[\s\S]*height: 100%/u);
-  assert.ok((css.match(/background-repeat: repeat-x/gu) || []).length >= 3);
-  assert.ok((css.match(/mask-image:/gu) || []).length >= 3);
+  assert.ok((css.match(/background-repeat: repeat-x/gu) || []).length >= 1, 'repeat-x on base ocean class');
+  // Ocean layers are now fully opaque (no mask), with natural SVG curves.
+  assert.doesNotMatch(css, /\.beach-scene__ocean[^{]*\{[^}]*mask-image:/u);
   assert.doesNotMatch(css, /beach-ocean-drift[\s\S]*translate3d\([^,]+,\s*-[123]px/u);
+  assert.match(css, /opacity:\s*1/u);
 });
 
 test('beach composer scrim is warm and restrained rather than a black shadow', () => {
