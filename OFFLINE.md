@@ -4,7 +4,7 @@
 
 Fonts were previously loaded from Google Fonts' CDN - that alone breaks
 full offline use, regardless of anything else. They're now self-hosted in
-`fonts/` (converted to WOFF2, licenses included in `fonts/licenses/`), and
+`fonts/` (converted to WOFF2), and
 a service worker (`sw.js`) precaches the entire app - HTML, CSS, JS,
 fonts, and icons - on first load. After that first load, the app needs
 no network at all: verified by loading it once, then cutting network

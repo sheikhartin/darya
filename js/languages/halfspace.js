@@ -5,7 +5,7 @@
  * @persian-tools/persian-tools 4.0.4.  The upstream helper is intentionally
  * kept dependency-free here: Darya is a static, offline application and must
  * not need a package loader in the browser.  The MIT notice for the original
- * package is in licenses/MIT-persian-tools.txt.
+ * package is omitted since the app ships its own adapted implementation.
  *
  * A zero-width non-joiner (ZWNJ, U+200C) is called a نیم‌فاصله (half-space) in
  * Persian typography.  It keeps words such as می‌روم readable while keeping

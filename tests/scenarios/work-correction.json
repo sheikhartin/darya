@@ -3,7 +3,7 @@
   "language": "en",
   "turns": [
     {"text": "My job has been stressful", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"},
-    {"text": "I meant my manager, not my boss", "dialogueAct": "statement", "topic": "work"},
+    {"text": "I meant my manager, not my boss", "dialogueAct": "correction", "topic": "work"},
     {"text": "it happened again", "dialogueAct": "statement", "topic": "topic_statement", "topic": "work"}
   ]
 }

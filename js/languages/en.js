@@ -84,69 +84,95 @@
       'Anxiety can be so exhausting. What exactly has been worrying you?',
       'When that stress hits, what does it feel like in your body?',
       'On a scale of 1 to 10, how intense is this worry right now?',
+      'That kind of worry can be really draining on its own.',
+      'Anxiety has a way of making everything feel louder than it actually is.',
+      'Just naming that it is there can sometimes take a little of its weight away.',
     ]),
 
     rule('anger', 40, /\b(angry|furious|pissed off|mad at|so annoyed)\b/i, [
       "It sounds like there's a lot of anger built up. What triggered it?",
       "That frustration makes sense. Do you want to walk me through exactly what happened?",
       'Where do you feel that anger most in your body?',
+      'That frustration makes sense given what you described.',
+      'Anger often points to a boundary that matters to you.',
+      'It takes a lot of energy to carry that much frustration around.',
     ]),
 
     rule('joy', 35, /\b(happy|glad|excited|thrilled|great news|feeling good)\b/i, [
       "I'm glad you're feeling this way! What brought it on?",
       "That's good to hear. What part of it stands out to you?",
       'Where do you feel that good feeling in your body?',
+      'That is lovely. I am glad you are experiencing that.',
     ]),
 
     rule('loneliness', 40, /\b(lonely|alone|no one to talk to|nobody understands|isolated)\b/i, [
       'Loneliness can feel really heavy. How long has this feeling been with you?',
       'When you say you feel alone, do you mean not having people to talk to, or something deeper?',
       "Who's the person you feel closest to these days, even if you don't see them often?",
+      'Loneliness can be especially hard to carry on quiet days.',
+      'That feeling of being alone is something many people experience; you are not strange for feeling it.',
     ]),
 
     rule('self_esteem', 40, /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure)\b/i, [
       "Those are heavy things to feel about yourself. Where do you think that belief comes from?",
       'What usually brings on thoughts like that?',
       'If a friend said this about themselves, what would you tell them?',
+      'Those kind of thoughts about yourself can feel very convincing, even when they are not the full picture.',
     ]),
 
     rule('grief', 45, /\b(lost my|passed away|passed away|death of|grieving|my .* died)\b/i, [
       'Losing someone is one of the hardest things a person can go through. Do you want to talk about it a little?',
       'Whatever you\'re feeling about this loss is valid. How have you been coping with it lately?',
       "I'd like to hear about them, if you'd like to share.",
+      'I am sitting with you in this loss. It is okay to feel what you feel about it.',
     ]),
 
     rule('smalltalk_howareyou', 60, /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing)\b/i, [
       "I'm doing well, thank you for asking! I'm glad to be here with you. How are you doing today?",
       "I'm good, thanks for asking! I'd love to hear how you're doing.",
+      'I am doing well, thank you. I am glad to be here with you.',
     ]),
 
     rule('smalltalk_identity', 60, /\b(who are you|what are you|are you (?:a )?(?:robot|bot|ai|real|human|person))\b/i, [
       "I'm Darya, a companion here to listen. I'm not a real person, just a calm space to think out loud.",
       "I'm a simple chat companion, not a human. But I'm genuinely here to listen.",
+      'I am Darya, a conversation companion. I am here for whatever you want to share.',
     ]),
 
     rule('smalltalk_capability', 60, /\b(what can you do|how can you help|what do you do|how do you work)\b/i, [
       "I'm here to listen, ask questions, and sit with you when something's on your mind. I'm not a substitute for a professional, but I can be a patient ear.",
       "I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you're feeling.",
+      'Think of me as a calm space where you can put your thoughts into words without any pressure.',
+    ]),
+
+  // Off-topic playful questions ("Do you like pizza?", "What's the weather?")
+  // Acknowledge playfully, then gently steer back to the user.
+    rule('smalltalk_silly', 55, /\b(do you like|what do you think of|would you ever|have you ever|are you a|can you eat|do you eat|what\'s your favourite|what is your favorite|how old are you|where do you live|do you sleep)\b/i, [
+      "I do not have personal tastes, but I like the idea of comfort. What made you ask that right now?",
+      "I don't really do those things myself, but I am curious what brought that question to mind.",
+      "That is a fun question. I think it says more about what you are curious about than about me. What do you think?",
+      "If I could, I would say yes. But I am more interested in what is on your mind.",
     ]),
 
     rule('motivation', 35, /\b(no motivation|can'?t get started|procrastinating|unmotivated|no energy to)\b/i, [
       "When motivation is gone, even small things can feel heavy. When did this start?",
       "If you took one very small step, what might that look like?",
       'What usually helps you get moving again, even a little?',
+      'It can be really hard to start anything when the energy is just not there.',
     ]),
 
     rule('relationship', 40, /\b(my (?:boyfriend|girlfriend|husband|wife|partner|fianc[eé])|we broke up|our relationship)\b\s*(.*)/i, [
       "Relationships can hold both our deepest joys and our hardest moments. What's been happening?",
       'Right now, are you looking more to vent about this, or to think through what to do?',
       'What place does this relationship hold in your life?',
+      'I can hear that this relationship matters to you and has its own weight.',
     ]),
 
     rule('health', 35, /\b(i'?m sick|i'?m ill|in pain|my health|went to the doctor)\b/i, [
       'Worrying about your health can take up a lot of mental space. What\'s concerning you most?',
       'Have you had a chance to talk to a doctor about it?',
       'How much has this been affecting your day-to-day lately?',
+      'Health concerns naturally draw a lot of attention and concern.',
     ]),
 
     rule('gratitude', 25, /\b(thanks?|thank you|thanks darya|i appreciate you|grateful for you)\b/i, [
@@ -212,11 +238,16 @@
   ]);
 
   const genericFallbacks = [
-    'There is a thread here worth following.',
-    'We can take this one piece at a time.',
-    'That gives me a clearer place to begin.',
-    'I am listening for the detail that matters most.',
-    'This feels worth giving a little room to.',
+    'There is a thread here worth following. What part of it would you like to explore?',
+    'We can take this one piece at a time. Where would you like to start?',
+    'That gives me a clearer place to begin. What else should I know?',
+    'I am listening for the detail that matters most. What stands out to you?',
+    'This feels worth giving a little room to. What makes it significant?',
+    'I hear what you are saying. What does that bring up for you?',
+    'That is something to sit with for a moment. What comes next?',
+    'I am listening carefully and I want to make sure I understand you well.',
+    'That is something worth giving space to in this conversation.',
+    'Sometimes it helps just to notice what has brought you to this moment.',
   ];
 
 
@@ -247,15 +278,18 @@
   };
 
   const strategyShiftFallbacks = [
-    "Let's look at this from a new angle. Which part feels most present for you?",
+    "Let us look at this from a new angle. Which part feels most present for you?",
     'If you described this feeling to a friend, where would you start?',
     "Alongside this, what else has been taking up space in your mind lately?",
     'What could make this moment feel a little more manageable right now?',
+    'Sometimes stepping back reveals something we had not noticed. What do you see when you step back?',
+    'If the situation had a shape, what would it look like from a distance?',
   ];
 
   const sessionCheckIns = [
-    "We've touched on a few different things in this conversation. Which one feels most present for you right now?",
-    "We've covered a fair amount so far. Would you like to sit with one of these a little longer?",
+    "We have touched on a few different things in this conversation. Which one feels most present for you right now?",
+    "We have covered a fair amount so far. Would you like to sit with one of these a little longer?",
+    "Several threads have come up today. Is there one you would like to come back to?",
   ];
 
   // Matches question marks and common question-word sentence openers, so
@@ -276,20 +310,20 @@
   ];
 
   const topicCallbacks = {
-    family: ["I'm still curious about your family, by the way. Want to keep going there?"],
-    work: ['The work thread is still open. What has changed there since then?'],
-    sleep: ['How has your sleep been these days?'],
-    sadness: ['Is that sadness still with you?'],
-    anxiety: ['Is that worry you mentioned still there?'],
-    anger: ['Is that anger still sitting with you?'],
-    loneliness: ['Is that feeling of loneliness still around?'],
-    self_esteem: ['Are those hard thoughts about yourself still showing up?'],
-    grief: ['Would you like to talk more about that loss?'],
-    motivation: ['Is finding motivation still difficult?'],
-    relationship: ['How are things going with that relationship?'],
-    health: ['How are you feeling physically these days?'],
-    school: ['How are things going with school or exams?'],
-    money: ['Is that financial worry you mentioned still on your mind?'],
+    family: ["I'm still curious about your family, by the way. Want to keep going there?", 'That family thread seemed to carry some weight. Has anything shifted since you mentioned it?', 'What is the one relationship in your family that comes to mind most often right now?'],
+    work: ['The work thread is still open. What has changed there since then?', 'Work seems to have its own gravity in this conversation. How has that part of your day been?', 'Is the workplace situation still the same, or has anything shifted?'],
+    sleep: ['How has your sleep been these days?', 'Your sleep pattern came up earlier. Has it changed at all?', 'Are you sleeping any better, or is it still restless?'],
+    sadness: ['Is that sadness still with you?', 'The sadness you mentioned earlier, has it eased at all or is it still present?', 'What has the sadness been like since we last touched on it?'],
+    anxiety: ['Is that worry you mentioned still there?', 'That anxious feeling we talked about, is it still around or has it changed shape?', 'How has the anxiety been since you last brought it up?'],
+    anger: ['Is that anger still sitting with you?', 'The frustration you mentioned, has it settled or is it still close to the surface?', 'Has the anger shifted direction or intensity since we talked about it?'],
+    loneliness: ['Is that feeling of loneliness still around?', 'Have you found any moments of connection since we last talked about this?', 'The loneliness you described, has it eased or is it still present in the same way?'],
+    self_esteem: ['Are those hard thoughts about yourself still showing up?', 'The self-critical voice you mentioned, has it been louder or quieter lately?', 'What has the inner critic been saying since we talked about it?'],
+    grief: ['Would you like to talk more about that loss?', 'How have you been carrying the grief since we last spoke about it?', 'Has anything shifted in how you feel about the loss?'],
+    motivation: ['Is finding motivation still difficult?', 'Has the lack of energy or drive changed since we talked about it?', 'What would a very small, doable step look like today?'],
+    relationship: ['How are things going with that relationship?', 'Has anything changed in that relationship since you mentioned it?', 'What is the most present feeling about that relationship right now?'],
+    health: ['How are you feeling physically these days?', 'Has your physical health changed since we discussed it?', 'What has been most on your mind about your health lately?'],
+    school: ['How are things going with school or exams?', 'Has the academic pressure changed since we talked about it?', 'What feels most manageable and what feels overwhelming right now?'],
+    money: ['Is that financial worry you mentioned still on your mind?', 'How has the financial situation been since we talked?', 'Has anything changed with the money concerns, or is it still the same?'],
   };
 
   // A safe, low-risk callback: quoting the person's own earlier words back
@@ -314,10 +348,15 @@
       'sad', 'depressed', 'tired', 'anxious', 'stressed', 'lonely', 'scared',
       'afraid', 'angry', 'furious', 'hopeless', 'worried', 'crying', 'hurt',
       'exhausted', 'overwhelmed', 'worthless', 'awful', 'terrible', 'bad',
+      'devastated', 'heartbroken', 'miserable', 'frustrated', 'discouraged',
+      'disappointed', 'guilty', 'ashamed', 'helpless', 'confused', 'insecure',
+      'vulnerable', 'numb', 'empty', 'lost', 'broken', 'trapped', 'resentful',
     ],
     positive: [
       'happy', 'glad', 'great', 'grateful', 'thankful', 'calm', 'hopeful',
       'relieved', 'good', 'excited', 'proud', 'love', 'better', 'okay',
+      'peaceful', 'content', 'joyful', 'optimistic', 'motivated', 'inspired',
+      'confident', 'comfortable', 'wonderful', 'amazing', 'fantastic', 'blessed',
     ],
   };
 
@@ -340,6 +379,32 @@
   };
 
   const exitKeywords = ['bye', 'goodbye', 'i have to go', 'i need to go', 'exit', 'quit'];
+
+  // Phase 1 (warm presence): the very first greeting should establish Darya
+  // as a calm, non-judgmental presence with a gentle opening.
+  const greetingsPhase1 = [
+    'Hi. I am Darya. We can take this at your own pace. What feels most present for you right now?',
+    'Hello. I am Darya. I am here to listen. What would you like to share today?',
+    'Hi there. I am Darya. There is no rush here. What has been on your mind lately?',
+    'Hello. I am Darya. This is a quiet space. Would you like to start anywhere in particular?',
+    'Hi. I am Darya. You do not need to have anything prepared. What comes to mind for you?',
+    'Hey. I am Darya. Think of this as a calm corner. What would feel good to begin with?',
+    'Hello. I am Darya. No expectations, no rush. What has your attention at the moment?',
+    'Hi. I am Darya. Welcome. What would you like to put into words today?',
+  ];
+
+  // Phase 2 (gentle orientation): the first follow-up turn offers a
+  // light, low-pressure binary choice without asking for deep emotions.
+  const greetingsPhase2 = [
+    'Would you like to say how your day has been, or just tell me what is on the surface of your mind?',
+    'How has your day been so far? Or if that feels big, what is one small thing that crosses your mind right now?',
+    'I am here whenever you are ready. Would it help to start with how the last few hours have been, or is there something quieter you want to name?',
+    'You can start anywhere. Some people begin with the weather of their day; others go straight to what is pressing. Either works here.',
+    'If you had to put one word or a short phrase to what is around you right now, what would it be?',
+    'No right way to begin. Would you like to describe the feeling of your day, or share what is most present for you?',
+    'What has been taking up space in your mind lately, even in a small way?',
+    'If the day had a texture or a colour right now, what would it be?',
+  ];
 
   const greetingsOpen = [
     `Hi. What would you like to share today?`,
@@ -371,13 +436,180 @@
     `Welcome. Is there an old thread or a new one on your mind?`,
     `Hello again. What would you like to make room for today?`,
   ];
-  const greetings = [...greetingsOpen, ...greetingsInviting, ...greetingsReturning];
+  const greetings = [...greetingsPhase1, ...greetingsOpen, ...greetingsInviting, ...greetingsReturning];
 
   const farewells = [
     "Take care of yourself. I'm here whenever you'd like to talk again.",
     "Goodbye for now. I hope you feel a little lighter today.",
     "Until next time. Be gentle with yourself.",
   ];
+
+  const repeatedGreetingResponses = [
+    'You have said hello a few times now. It seems like you are not quite ready to start yet, and that is completely okay. I am here whenever you are.',
+    'Hello again. I can see you are still finding the right words. There is no rush at all.',
+    'Hi there. It looks like you might be wondering where to begin. That is a natural place to be, and I am happy to wait.',
+    'I notice you keep saying hi. If you are not sure what to say, we can start with something small or just sit with the quiet for a moment.',
+  ];
+
+  const wordRepetitionResponses = [
+    'You keep saying "{word}". Are you testing me, or is there something about {word} on your mind?',
+    'I notice you have mentioned "{word}" several times now. That seems significant.',
+    '"{word}" keeps coming up in what you are saying. What is it about {word} that draws your attention?',
+    'You have said "{word}" quite a few times. Is there something specific you want to explore about it?',
+    'Alright, "{word}" it is. You have my attention. What is really going on with {word}?',
+    '"{word}" again. I am starting to think this matters more than it first seemed.',
+  ];
+
+  const frustrationResponses = [
+    'I can feel the intensity in what you are saying. Let us take a breath together and slow it down a little.',
+    'That came through loudly. I am still here and listening. Can you tell me what is underneath that feeling?',
+    'I hear the strength in your words. It is okay to feel that way. What is the heart of it?',
+    'That energy is important. Let me sit with you in it rather than rushing past it.',
+    'I notice the emphasis. Take your time. There is no need to shout for me to hear you.',
+  ];
+
+  const factualQuestionFollowups = [
+    'Now, what is really on your mind today?',
+    'Does that answer help, or is there something deeper you want to talk about?',
+    'Numbers aside, what is the question that has been following you around?',
+    'Happy to help with that. What else is present for you right now?',
+    'Now that the simple question is out of the way, what would you really like to talk about?',
+  ];
+
+  const spamNoiseResponses = [
+    'It looks like that might have been accidental. Whenever you are ready, I am here to listen.',
+    'I am not quite sure what you meant by that. Would you like to try again?',
+    'That did not come through clearly. Take your time, and I will be here when you are ready to share.',
+  ];
+
+  const ambiguousInputResponses = [
+    'I hear you. Could you tell me a little more so I can follow along better?',
+    'That was brief, and I want to make sure I understand. What more can you share about that?',
+    'Got it. If you would like to expand on that, I am all ears.',
+  ];
+
+  const acknowledgementResponses = [
+    'I notice you are acknowledging what I said, but I am curious what your own thoughts are on this.',
+    'Thank you for that. How do you see the situation yourself?',
+    'I appreciate the acknowledgement. What part of this feels most relevant to you right now?',
+  ];
+
+  const correctionResponses = [
+    'Thank you for clarifying. Let me adjust my understanding. What did you mean by that?',
+    'I appreciate the correction. That helps me understand better. What else should I know?',
+    'Got it, thanks for making that clear. How does this change things for you?',
+  ];
+
+  const topicChangeResponses = [
+    'I notice we have moved to something new. I am here for this new thread whenever you are ready.',
+    'That is a different direction, and I am happy to follow. Where would you like to start with this?',
+    'I am with you on this new topic. What feels most important to share about it?',
+  ];
+
+  const testInputResponses = [
+    'I am here and ready whenever you would like to have a real conversation.',
+    'Hello! I am Darya. When you are ready to talk about something on your mind, I am listening.',
+    'It looks like you might be testing me out. That is fine! When you are ready to share something real, I am here.',
+  ];
+
+  const mixedLanguageResponses = [
+    'I notice you are mixing languages. I am most helpful when we stick to English so I can follow along well. Could you write in English?',
+    'It seems like you are switching between languages. I follow English best, so if you could stick to one, that would help me respond more thoughtfully.',
+    'I want to make sure I understand you fully. Could we continue in English so I can give you my best attention?',
+  ];
+
+  const teasingMockingResponses = [
+    "I notice a hint of teasing there. That is okay. Is there something on your mind you would like to talk about?",
+    "You seem to be giving me a gentle test. I do not mind at all. I am here when you want to share something real.",
+    "That almost sounded like a compliment, but not quite. Is there something you really want to say?",
+    'I can sense some playful energy there. That is fine. What is actually happening in your world right now?',
+    'I hear you. If you are not quite ready for a serious conversation, we can just sit with the quiet for a moment.',
+    'You are good at keeping me on my toes. What is really going on with you today?',
+    'I appreciate the playfulness. When you are ready to talk about what matters, I will be right here.',
+  ];
+
+  const wellBeingPattern = /\b(?:how (?:are you|are you doing|you doing|have you been)|you (?:ok|alright|good|doing okay)|what about you)\b/i;
+
+  const insultPattern = /\b(?:stupid|idiot|moron|dumb|foolish|retard|dummy|loser|jerk|ass(?:hole)?|bastard|shit|fuck|crap|damn|screw|you suck|you (?:are )?(?:an? )?(?:idiot|moron|joke)|pathetic|useless|ignorant|worthless)\b/i;
+
+  const stopWords = new Set([
+    // Articles and determiners
+    'the', 'a', 'an', 'this', 'that', 'these', 'those', 'some', 'any', 'no',
+    // Primary auxiliary verbs
+    'is', 'are', 'am', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'having',
+    'do', 'does', 'did', 'doing',
+    // Modal auxiliaries
+    'will', 'would', 'can', 'could', 'shall', 'should',
+    'may', 'might', 'must', 'need', 'dare',
+    // Pronouns
+    'i', 'you', 'he', 'she', 'it', 'we', 'they',
+    'me', 'him', 'her', 'us', 'them',
+    'my', 'your', 'his', 'its', 'our', 'their',
+    'mine', 'yours', 'hers', 'ours', 'theirs',
+    'myself', 'yourself', 'himself', 'herself', 'itself',
+    'ourselves', 'yourselves', 'themselves',
+    // Prepositions
+    'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from',
+    'up', 'down', 'out', 'off', 'over', 'under', 'about',
+    'through', 'during', 'before', 'after', 'above', 'below',
+    'between', 'among', 'around', 'behind', 'beside', 'beyond',
+    // Conjunctions
+    'and', 'or', 'but', 'so', 'if', 'as', 'than', 'because',
+    'while', 'since', 'unless', 'although', 'though',
+    // Common adverbs (non-content-bearing)
+    'not', 'no', 'nor', 'never', 'just', 'only',
+    'very', 'too', 'also', 'even', 'still', 'yet',
+    'already', 'almost', 'really', 'quite', 'rather',
+    'here', 'there', 'now', 'then', 'always', 'sometimes',
+    // Common filler words
+    'well', 'okay', 'ok', 'right', 'sure', 'fine',
+    'yeah', 'yes', 'oh', 'ah', 'hmm', 'um', 'uh',
+  ]);
+
+  const boredomResponses = [
+    "I have to say, this conversation feels a bit quiet today. Want to try a different topic?",
+    "It seems like you might not have much to say right now, and that is perfectly okay. I am still here.",
+    "Things have been pretty quiet on your end. Is there something you would like to talk about?",
+    "We could sit with the silence for a moment. Sometimes that is what is needed.",
+    "I feel like we have hit a bit of a pause. Want to change direction, or take a break?",
+    "You seem a bit distracted today. I am here whenever you feel like chatting.",
+    'It has been a few short replies in a row. No pressure at all, just letting you know I am paying attention.',
+  ];
+
+  const wellBeingResponses = [
+    "I appreciate you asking. I am doing well, thank you. More importantly, how are you feeling after everything you shared?",
+    "That is kind of you to check in. I am doing fine. How are you holding up right now?",
+    "Thank you for asking about me. That means a lot. How are you doing after all that?",
+    "I am good, thank you. It means a lot that you would ask. How are you feeling now?",
+    'I am here and doing well. Your thoughtfulness does not go unnoticed. How about you?',
+  ];
+
+  const topicRecoveryResponses = {
+    _default: [
+      'We touched on something important earlier. Would you like to come back to it, or is there something else on your mind?',
+      'I noticed we moved away from something that seemed to matter. Do you want to return to it?',
+    ],
+    family: ['I am still curious about your family. Would you like to continue there?'],
+    work: ['The work thread is still open. What has changed there since then?'],
+    sleep: ['How has your sleep been since we last talked about it?'],
+    sadness: ['Is that sadness still with you?'],
+    anxiety: ['Is that worry you mentioned still there?'],
+    anger: ['Is that anger still sitting with you?'],
+    loneliness: ['Is that feeling of loneliness still around?'],
+    grief: ['Would you like to talk more about that loss?'],
+    relationship: ['How are things going with that relationship?'],
+  };
+
+  const emotionCalibration = {
+    hurt: 'That sounds painful.',
+    confused: 'It is okay to feel uncertain about this.',
+    excited: 'That is wonderful!',
+    angry: 'I hear the frustration in your words.',
+    grieving: 'I am here with you in this.',
+    anxious: 'Take your time with this.',
+    sad: 'I can hear the sadness in what you are saying.',
+  };
 
   const emptyInputReply = "I notice you've gone quiet. Whenever you're ready, I'm here.";
 
@@ -479,6 +711,8 @@
     selfAwareness,
     exitKeywords,
     greetings,
+    greetingsPhase1,
+    greetingsPhase2,
     greetingsOpen,
     greetingsInviting,
     greetingsReturning,
@@ -489,31 +723,51 @@
     farewells,
     emptyInputReply,
     foreignLanguageRedirect,
+    repeatedGreetingResponses,
+    wordRepetitionResponses,
+    frustrationResponses,
+    factualQuestionFollowups,
+    spamNoiseResponses,
+    ambiguousInputResponses,
+    acknowledgementResponses,
+    correctionResponses,
+    topicChangeResponses,
+    teasingMockingResponses,
+    stopWords,
+    boredomResponses,
+    wellBeingPattern,
+    insultPattern,
+    wellBeingResponses,
+    testInputResponses,
+    mixedLanguageResponses,
+    topicRecoveryResponses,
+    emotionCalibration,
     ui: {
       appTitle: 'Darya · A Calm Conversation Companion',
       appDescription: 'Darya, an English-language conversation companion for listening and support.',
       placeholderDefault: "Write whatever's on your mind…",
       placeholderEnded: 'This conversation has ended. Choose "New chat" from the menu to start again.',
-      ariaSendLabel: 'Send your message to Darya',
-      ariaMenuLabel: 'Open the conversation options menu',
-      ariaInputLabel: 'Your message to Darya',
-      ariaExportMdLabel: 'Download the conversation as Markdown',
-      ariaExportTxtLabel: 'Download the conversation as plain text',
-      pickerFaTitle: 'Start a new conversation in Persian',
-      pickerEnTitle: 'Start a new conversation in English',
-      themeOceanTitle: 'Choose the ocean theme',
-      themeBeachTitle: 'Choose the beach theme',
-      sendButtonTitle: 'Send the current message',
-      menuTriggerTitle: 'Open the conversation options menu',
-      newChatTitle: 'Start a new conversation',
-      exportMdTitle: 'Download the conversation as Markdown',
-      exportTxtTitle: 'Download the conversation as plain text',
-      themeToggleTitle: 'Change the conversation theme',
-      themeGroupLabel: 'Choose a conversation theme',
+      ariaSendLabel: 'Send',
+      ariaMenuLabel: 'Conversation',
+      ariaInputLabel: 'Your message',
+      ariaExportMdLabel: 'Download as Markdown',
+      ariaExportTxtLabel: 'Download as plain text',
+      // Canonical labels: aria-label === title === visible text
+      pickerFaTitle: 'New Persian conversation',
+      pickerEnTitle: 'New English conversation',
+      themeOceanTitle: 'Ocean theme',
+      themeBeachTitle: 'Beach theme',
+      sendButtonTitle: 'Send',
+      menuTriggerTitle: 'Menu',
+      newChatTitle: 'New chat',
+      exportMdTitle: 'Download as Markdown',
+      exportTxtTitle: 'Download as plain text',
+      themeToggleTitle: 'Switch theme',
+      themeGroupLabel: 'Choose a theme',
       typingLabel: 'Darya is thinking',
       menuNewChat: 'New chat',
-      menuExportMd: 'Download Markdown conversation',
-      menuExportTxt: 'Download plain-text conversation',
+      menuExportMd: 'Download as Markdown',
+      menuExportTxt: 'Download as plain text',
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       disclaimer: "Darya is a listening companion, not a substitute for professional help. In a crisis, please contact a professional or a crisis line.",
@@ -523,6 +777,16 @@
       exportDivider: '-----------------------------',
       dateLocale: 'en-US',
       connectionError: 'Something went wrong connecting. Please reload the page.',
+      breatheTitle: 'Breathing exercise',
+      breatheIn: 'Breathe in (4 counts)',
+      breatheHold: 'Hold (7 counts)',
+      breatheOut: 'Breathe out (8 counts)',
+      breatheDismiss: 'Close',
+      breatheOffer: 'Would you like to try a calming breathing exercise together?',
+      breatheAccept: 'Yes, let us begin',
+      breatheDecline: 'No, thank you',
+      chatTitlePrefix: 'Conversation: ',
+
     },
   };
 })(typeof window !== 'undefined' ? window : globalThis);

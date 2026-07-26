@@ -64,6 +64,8 @@
   const menuThemeToggleEl = document.getElementById('menu-theme-toggle');
   const menuThemeIconEl = document.getElementById('menu-theme-icon');
   const menuThemeLabelEl = document.getElementById('menu-theme-label');
+  const breatheTriggerEl = document.getElementById('breathe-trigger');
+  const pickerLangLockEl = document.getElementById('picker-lang-lock');
 
   // --- Cookie helpers (used only for the persisted theme preference) -------
 
@@ -128,18 +130,53 @@
    * Applies a visual theme ("ocean" or "beach") by setting it as a
    * `data-theme` attribute on the root element; every theme-dependent
    * color and animation is defined in CSS against that attribute. Also
-   * persists the choice in a cookie so it's remembered on the next visit
-   * (unlike language, which intentionally resets every time).
+   * persists the choice in a cookie (and localStorage as fallback) so it
+   * is remembered on the next visit (unlike language, which intentionally
+   * resets every time).
+   *
+   * The theme switches instantly with no overlay or fade. The body's CSS
+   * transition on `background` provides a subtle, graceful color morph
+   * between the old and new gradient, while content elements (bubbles,
+   * beach scene) snap cleanly with no intermediate overlap.
    * @param {'ocean'|'beach'} theme
    */
   function applyTheme(theme) {
     const safeTheme = theme === 'beach' ? 'beach' : 'ocean';
-    htmlRootEl.setAttribute('data-theme', safeTheme);
+    const current = htmlRootEl.getAttribute('data-theme') || DEFAULT_THEME;
+    const isInitialLoad = !current || current === safeTheme;
+    if (safeTheme === current) {
+      // Even if the theme is already set, sync the picker aria-pressed
+      // states so they reflect the correct saved theme on initial load.
+      themeToggleButtons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
+      });
+      updateThemeMenuItem();
+      return;
+    }
+
+    // Use View Transitions API for a smooth crossfade when available.
+    // Falls back to a simple attribute swap with CSS transitions.
+    const applySwitch = () => {
+      htmlRootEl.setAttribute('data-theme', safeTheme);
+      themeToggleButtons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
+      });
+      updateThemeMenuItem();
+    };
+
+    if (!isInitialLoad && typeof document.startViewTransition === 'function') {
+      try {
+        document.startViewTransition(applySwitch);
+      } catch (e) {
+        applySwitch();
+      }
+    } else {
+      applySwitch();
+    }
+
+    // Persist the choice in both cookie and localStorage for robustness.
     setCookie(THEME_COOKIE_NAME, safeTheme, THEME_COOKIE_MAX_AGE_DAYS);
-    themeToggleButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
-    });
-    updateThemeMenuItem();
+    try { localStorage.setItem(THEME_COOKIE_NAME, safeTheme); } catch (e) { /* ignore */ }
   }
 
   /**
@@ -234,15 +271,22 @@
 
   // --- Rendering -------------------------------------------------------------
 
+  let messageCount = 0;
+  let currentTitle = '';
+  const SESSION_KEY = 'darya_scroll_pos';
+
   function appendMessage(sender, text) {
     const time = formatTimestamp();
+    const msgId = `msg-${messageCount}`;
     transcript.push({ sender, text, time });
+    messageCount += 1;
 
     const row = document.createElement('div');
     row.className = `bubble-row bubble-row--${sender}`;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'bubble-wrap';
+    wrapper.id = msgId;
 
     const bubble = document.createElement('div');
     bubble.className = `bubble bubble--${sender}`;
@@ -254,6 +298,10 @@
 
     wrapper.appendChild(bubble);
     wrapper.appendChild(meta);
+
+    // Save scroll position before adding new content
+    saveScrollPosition();
+
     row.appendChild(wrapper);
     chatEl.appendChild(row);
 
@@ -264,6 +312,150 @@
     requestAnimationFrame(() => {
       chatEl.scrollTop = chatEl.scrollHeight;
     });
+  }
+
+  // --- Scroll memory ------------------------------------------------------
+
+  function saveScrollPosition() {
+    try {
+      if (chatActive && chatEl) {
+        sessionStorage.setItem(SESSION_KEY, String(chatEl.scrollTop));
+      }
+    } catch (e) { /* sessionStorage may be unavailable */ }
+  }
+
+  function restoreScrollPosition() {
+    try {
+      const pos = sessionStorage.getItem(SESSION_KEY);
+      if (pos !== null && chatEl) {
+        requestAnimationFrame(() => {
+          chatEl.scrollTop = Number(pos);
+        });
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // --- Breathing exercise -------------------------------------------------
+  // Uses box breathing (square breathing): 4 seconds in, 4 hold, 4 out, 4 hold.
+  // This is a widely recognized pattern used by military, first responders,
+  // and meditation practices. The countdown timer shows remaining seconds
+  // so the user knows exactly how long each phase lasts.
+
+  let breatheOverlay = null;
+  let breatheCountdownTimer = null;
+
+  function dismissBreathe() {
+    if (breatheOverlay) {
+      if (breatheCountdownTimer) {
+        clearInterval(breatheCountdownTimer);
+        breatheCountdownTimer = null;
+      }
+      breatheOverlay.remove();
+      breatheOverlay = null;
+    }
+  }
+
+  function showBreatheExercise() {
+    if (breatheOverlay) return;
+
+    breatheOverlay = document.createElement('div');
+    breatheOverlay.className = 'breathe-overlay';
+    breatheOverlay.setAttribute('role', 'dialog');
+    breatheOverlay.setAttribute('aria-modal', 'true');
+    breatheOverlay.setAttribute('aria-label', lang.ui.breatheTitle);
+
+    const container = document.createElement('div');
+    container.className = 'breathe-container';
+
+    const circle = document.createElement('div');
+    circle.className = 'breathe-circle';
+
+    const label = document.createElement('div');
+    label.className = 'breathe-label';
+
+    const countdown = document.createElement('div');
+    countdown.className = 'breathe-countdown';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'breathe-close';
+    closeBtn.textContent = lang.ui.breatheDismiss;
+    closeBtn.addEventListener('click', dismissBreathe);
+
+    container.appendChild(circle);
+    container.appendChild(label);
+    container.appendChild(countdown);
+    container.appendChild(closeBtn);
+    breatheOverlay.appendChild(container);
+
+    // Click anywhere on overlay background to dismiss
+    breatheOverlay.addEventListener('click', (e) => {
+      if (e.target === breatheOverlay) dismissBreathe();
+    });
+
+    document.body.appendChild(breatheOverlay);
+
+    // Box breathing: In -> Hold -> Out -> Hold (4 seconds each)
+    const phases = [
+      { action: 'breatheIn', circle: 'grow' },
+      { action: 'breatheHoldIn', circle: 'grow' },
+      { action: 'breatheOut', circle: 'shrink' },
+      { action: 'breatheHoldOut', circle: 'shrink' },
+    ];
+
+    let phaseIndex = 0;
+    let countdownValue = 4;
+
+    function getPhaseLabel(action) {
+      switch (action) {
+        case 'breatheIn': return lang.ui.breatheIn;
+        case 'breatheHoldIn': return lang.ui.breatheHold;
+        case 'breatheOut': return lang.ui.breatheOut;
+        case 'breatheHoldOut': return lang.ui.breatheHold;
+        default: return '';
+      }
+    }
+
+    function updateDisplay() {
+      const phase = phases[phaseIndex];
+      label.textContent = getPhaseLabel(phase.action);
+      countdown.textContent = String(countdownValue);
+
+      // Apply circle animation class
+      circle.classList.remove('breathe-circle--grow', 'breathe-circle--shrink');
+      // Force reflow
+      void circle.offsetWidth;
+      if (phase.circle === 'grow') {
+        circle.classList.add('breathe-circle--grow');
+      } else {
+        circle.classList.add('breathe-circle--shrink');
+      }
+    }
+
+    function startCountdown() {
+      countdownValue = 4;
+      updateDisplay();
+
+      if (breatheCountdownTimer) clearInterval(breatheCountdownTimer);
+      breatheCountdownTimer = setInterval(() => {
+        countdownValue -= 1;
+        if (countdownValue < 1) {
+          clearInterval(breatheCountdownTimer);
+          breatheCountdownTimer = null;
+          advancePhase();
+          return;
+        }
+        countdown.textContent = String(countdownValue);
+      }, 1000);
+    }
+
+    function advancePhase() {
+      if (!breatheOverlay || !document.body.contains(breatheOverlay)) return;
+      phaseIndex = (phaseIndex + 1) % phases.length;
+      startCountdown();
+    }
+
+    // Start the exercise
+    startCountdown();
   }
 
   function setTypingVisible(visible) {
@@ -305,7 +497,10 @@
 
   async function deliverReply(replyText, generation = conversationGeneration) {
     setTypingVisible(true);
-    await new Promise((resolve) => setTimeout(resolve, randomReplyDelay()));
+    // Variable delay: base random + extra per response character length
+    const baseDelay = randomReplyDelay();
+    const extraDelay = Math.min(replyText.length * 2, 600);
+    await new Promise((resolve) => setTimeout(resolve, baseDelay + extraDelay));
     setTypingVisible(false);
     if (generation !== conversationGeneration) return false;
     appendMessage('bot', replyText);
@@ -317,7 +512,8 @@
   /**
    * Applies every piece of static UI copy for the given language pack:
    * document direction/lang, fonts (via the lang attribute in CSS),
-   * title/description, placeholders, aria labels, menu text, disclaimer.
+   * title/description, placeholders, aria labels, menu text, disclaimer,
+   * and all tooltip/title attributes.
    * @param {object} chosenLang
    */
   function applyLanguage(chosenLang) {
@@ -334,21 +530,26 @@
     inputEl.setAttribute('aria-label', lang.ui.ariaInputLabel);
     inputEl.setAttribute('dir', lang.dir);
     inputEl.setAttribute('lang', lang.code);
-    sendButtonEl.setAttribute('aria-label', lang.ui.ariaSendLabel);
+    sendButtonEl.setAttribute('aria-label', lang.ui.sendButtonTitle);
     sendButtonEl.setAttribute('title', lang.ui.sendButtonTitle);
-    menuTriggerEl.setAttribute('aria-label', lang.ui.ariaMenuLabel);
+    menuTriggerEl.setAttribute('aria-label', lang.ui.menuTriggerTitle);
     menuTriggerEl.setAttribute('title', lang.ui.menuTriggerTitle);
+    pickerFaEl.setAttribute('aria-label', lang.ui.pickerFaTitle);
     pickerFaEl.setAttribute('title', lang.ui.pickerFaTitle);
+    pickerEnEl.setAttribute('aria-label', lang.ui.pickerEnTitle);
     pickerEnEl.setAttribute('title', lang.ui.pickerEnTitle);
     themeToggleButtons.forEach((button) => {
-      button.setAttribute('title', button.dataset.themeChoice === 'ocean'
+      const title = button.dataset.themeChoice === 'ocean'
         ? lang.ui.themeOceanTitle
-        : lang.ui.themeBeachTitle);
+        : lang.ui.themeBeachTitle;
+      button.setAttribute('aria-label', title);
+      button.setAttribute('title', title);
     });
+    menuNewChatEl.setAttribute('aria-label', lang.ui.newChatTitle);
     menuNewChatEl.setAttribute('title', lang.ui.newChatTitle);
-    menuExportMdEl.setAttribute('aria-label', lang.ui.ariaExportMdLabel);
+    menuExportMdEl.setAttribute('aria-label', lang.ui.exportMdTitle);
     menuExportMdEl.setAttribute('title', lang.ui.exportMdTitle);
-    menuExportTxtEl.setAttribute('aria-label', lang.ui.ariaExportTxtLabel);
+    menuExportTxtEl.setAttribute('aria-label', lang.ui.exportTxtTitle);
     menuExportTxtEl.setAttribute('title', lang.ui.exportTxtTitle);
     themePickerEl.setAttribute('aria-label', lang.ui.themeGroupLabel);
     typingStatusEl.setAttribute('aria-label', lang.ui.typingLabel);
@@ -357,6 +558,27 @@
     menuExportTxtLabelEl.textContent = lang.ui.menuExportTxt;
     disclaimerEl.textContent = lang.ui.disclaimer;
     updateThemeMenuItem();
+
+    // Set the breathing trigger icon and tooltip per the active language.
+    // The icon changes to a more breath-specific symbol (lungs) that is
+    // universally recognized regardless of language.
+    if (breatheTriggerEl) {
+      breatheTriggerEl.setAttribute('aria-label', lang.ui.breatheTitle);
+      breatheTriggerEl.setAttribute('title', lang.ui.breatheTitle);
+      breatheTriggerEl.querySelector('svg').setAttribute('aria-label', lang.ui.breatheTitle);
+    }
+    // Update picker language-lock note
+    if (pickerLangLockEl) {
+      const faSpan = pickerLangLockEl.querySelector('.picker__lang-lock-fa');
+      const enSpan = pickerLangLockEl.querySelector('.picker__lang-lock-en');
+      if (lang.code === 'fa') {
+        if (faSpan) faSpan.hidden = false;
+        if (enSpan) enSpan.hidden = true;
+      } else {
+        if (faSpan) faSpan.hidden = true;
+        if (enSpan) enSpan.hidden = false;
+      }
+    }
   }
 
   /**
@@ -375,7 +597,7 @@
   /**
    * Returns to the language picker, hiding the chat UI and clearing all
    * conversation state. This is the *only* path back to choosing a
-   * language: the picker button ("گفتگوی تازه" / "New chat" in the menu)
+   * language: the picker button ("گفت‌وگوی تازه" / "New chat" in the menu)
    * routes here rather than silently reusing whatever language was
    * active before, since starting fresh is deliberately the sole way to
    * switch languages. Scrolls the window back to the top so the picker
@@ -385,6 +607,7 @@
   function showPicker() {
     conversationGeneration += 1;
     setTypingVisible(false);
+    dismissBreathe();
     appEl.hidden = true;
     pickerEl.hidden = false;
     closeMenu();
@@ -394,27 +617,57 @@
     chatActive = false;
     transcript = [];
     chatEl.innerHTML = '';
+    messageCount = 0;
+    currentTitle = '';
+    // Reset picker language-lock spans so both languages show again
+    if (pickerLangLockEl) {
+      const faSpan = pickerLangLockEl.querySelector('.picker__lang-lock-fa');
+      const enSpan = pickerLangLockEl.querySelector('.picker__lang-lock-en');
+      if (faSpan) faSpan.hidden = false;
+      if (enSpan) enSpan.hidden = false;
+    }
     window.scrollTo(0, 0);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
   }
 
   // --- Conversation flow -------------------------------------------------------
 
   async function startConversation() {
     const generation = ++conversationGeneration;
+    // Re-randomize ocean wave drift speeds so each fresh conversation
+    // gets a unique, organic water motion.
+    initBeachWaveVariation();
     engine = new DaryaResponseEngine(lang);
     conversationEnded = false;
     transcript = [];
     chatEl.innerHTML = '';
+    messageCount = 0;
+    currentTitle = '';
     setHint('');
     inputEl.setAttribute('placeholder', lang.ui.placeholderDefault);
     setComposerBusy(true);
+    hideBreatheTrigger();
 
     const delivered = await deliverReply(engine.greeting(), generation);
     if (!delivered || generation !== conversationGeneration) return;
 
     setComposerBusy(false);
+    // Restore scroll position if returning to this session
+    if (chatEl.children.length > 0) {
+      restoreScrollPosition();
+    }
     focusInputUnlessTouch();
   }
+
+  function showBreatheTrigger() {
+    if (breatheTriggerEl) breatheTriggerEl.hidden = false;
+  }
+
+  function hideBreatheTrigger() {
+    if (breatheTriggerEl) breatheTriggerEl.hidden = true;
+  }
+
+  const EXTRA_REPLIES = 0; // 0 = single reply (default), 1 = two replies, 2 = three replies
 
   async function sendMessage(text) {
     const generation = conversationGeneration;
@@ -428,14 +681,28 @@
     const delivered = await deliverReply(replyText, generation);
     if (!delivered || generation !== conversationGeneration) return;
 
+    if (!isExit && EXTRA_REPLIES > 0) {
+      for (let i = 0; i < EXTRA_REPLIES; i += 1) {
+        const extra = engine.respond(text);
+        const extraDelivered = await deliverReply(extra, generation);
+        if (!extraDelivered || generation !== conversationGeneration) return;
+      }
+    }
+
     if (isExit) {
       conversationEnded = true;
       inputEl.setAttribute('placeholder', lang.ui.placeholderEnded);
+      hideBreatheTrigger();
     }
 
     setComposerBusy(false);
 
     if (!conversationEnded) {
+      if (engine && engine.lastTurnNeedsCare) {
+        showBreatheTrigger();
+      } else {
+        hideBreatheTrigger();
+      }
       focusInputUnlessTouch();
     }
   }
@@ -450,8 +717,15 @@
     }
   }
 
+  function buildExportHeader() {
+    const lines = [];
+    lines.push(formatLocalizedDateTime(new Date()));
+    return lines.join('\n');
+  }
+
   function buildMarkdownTranscript() {
-    const lines = [`# ${lang.ui.exportTitle}`, '', `_${formatLocalizedDateTime(new Date())}_`, '', '---', ''];
+    const header = buildExportHeader();
+    const lines = [`# ${lang.ui.exportTitle}`, '', header, '', '---', ''];
     for (const entry of transcript) {
       const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
       lines.push(`**${label}** _(${entry.time})_`);
@@ -463,7 +737,8 @@
   }
 
   function buildPlainTextTranscript() {
-    const lines = [lang.ui.exportTitle, formatLocalizedDateTime(new Date()), '', lang.ui.exportDivider, ''];
+    const header = buildExportHeader();
+    const lines = [lang.ui.exportTitle, '', header, '', lang.ui.exportDivider, ''];
     for (const entry of transcript) {
       const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
       lines.push(`${label} (${entry.time}):`);
@@ -550,14 +825,6 @@
 
   inputEl.addEventListener('input', refreshComposerState);
 
-  // On mobile, opening the virtual keyboard shrinks the visible viewport
-  // and can push the most recent message out of view right as someone
-  // taps in to reply, which is jarring early in a conversation when
-  // there's little else on screen to anchor to. Standard practice in
-  // chat apps is to keep the latest message visible above the keyboard;
-  // `visualViewport`'s resize event fires once the keyboard animation
-  // settles and is the reliable signal for this (a plain focus listener
-  // fires too early, before the keyboard has actually opened).
   inputEl.addEventListener('focus', () => scrollToBottom());
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => scrollToBottom());
@@ -601,8 +868,6 @@
     }
   });
 
-  // "New chat" returns to the language picker: starting a new chat is
-  // explicitly the only point at which the language may change.
   menuNewChatEl.addEventListener('click', () => {
     closeMenu();
     showPicker();
@@ -623,15 +888,17 @@
     closeMenu();
   });
 
+  if (breatheTriggerEl) {
+    breatheTriggerEl.addEventListener('click', () => {
+      showBreatheExercise();
+    });
+  }
+
+  chatEl.addEventListener('scroll', () => {
+    saveScrollPosition();
+  }, { passive: true });
+
   // --- Refresh / close guard -------------------------------------------------
-  //
-  // Reloading or closing the tab mid-conversation would silently lose the
-  // whole chat (nothing is persisted, by design). Browsers no longer allow
-  // a custom message in this dialog (all of them show their own generic
-  // "leave site?" wording regardless of what string is set here), but
-  // triggering the native confirmation at all is still the useful part:
-  // if the person confirms, the page reloads and naturally lands back on
-  // the language picker, since no state survives a real reload anyway.
 
   window.addEventListener('beforeunload', (event) => {
     if (!chatActive) return undefined;
@@ -641,21 +908,7 @@
   });
 
   // --- Ambient scene particles ------------------------------------------------
-  //
-  // Bubbles (ocean) and wind gusts (beach) are generated here, each with
-  // independently randomized position/size/timing, rather than living as
-  // static markup driven by a repeating CSS formula -- a fixed formula is
-  // exactly what made the earlier layout read as a sequential row of
-  // identical bubbles instead of something organic. Both sets are built
-  // once at load and simply left in the DOM; CSS shows only the active
-  // theme's set via `display`, so no regeneration is needed on toggle.
 
-  /**
-   * Returns a random float in [min, max).
-   * @param {number} min
-   * @param {number} max
-   * @returns {number}
-   */
   function randomBetween(min, max) {
     return min + Math.random() * (max - min);
   }
@@ -663,12 +916,17 @@
   function initBeachWaveVariation() {
     const layers = document.querySelectorAll('.beach-scene__ocean');
     const ranges = [[56, 72], [42, 58], [30, 46]];
+    const durations = [];
     layers.forEach((layer, index) => {
       const [min, max] = ranges[index] || ranges[ranges.length - 1];
       const duration = randomBetween(min, max);
+      durations.push(duration);
       layer.style.setProperty('--wave-duration', `${duration.toFixed(2)}s`);
       layer.style.setProperty('--wave-delay', `-${randomBetween(0, duration).toFixed(2)}s`);
     });
+    // Store average wave duration for bird shadow speed calculation
+    const avgWave = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 48;
+    document.documentElement.style.setProperty('--avg-wave-duration', String(avgWave));
   }
 
   function initBubbles() {
@@ -683,8 +941,6 @@
       bubble.style.setProperty('--left', `${randomBetween(2, 96).toFixed(1)}%`);
       bubble.style.setProperty('--size', `${size.toFixed(1)}px`);
       bubble.style.setProperty('--duration', `${duration.toFixed(1)}s`);
-      // A negative delay starts the animation already partway through its
-      // cycle, so bubbles don't all begin rising from the bottom at once.
       bubble.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
       bubble.style.setProperty('--drift', `${randomBetween(-12, 12).toFixed(0)}px`);
       bubble.style.setProperty('--peak-opacity', randomBetween(0.15, 0.45).toFixed(2));
@@ -692,82 +948,63 @@
     }
   }
 
-  function initWindGusts() {
-    const container = document.querySelector('.wind-gusts');
+  function initBirdShadows() {
+    const container = document.querySelector('.bird-shadows');
     if (!container) return;
-    // Each gust only actually drifts across during roughly the first
-    // third of its own cycle (see the CSS keyframe), then sits invisible
-    // for the rest -- so even with a handful running, gusts still feel
-    // occasional rather than constant, while being frequent enough
-    // together to keep the scene feeling alive.
-    const count = 4;
-    const svgNs = 'http://www.w3.org/2000/svg';
-    for (let i = 0; i < count; i += 1) {
-      const gust = document.createElementNS(svgNs, 'svg');
-      gust.setAttribute('class', 'wind-gust');
-      gust.setAttribute('viewBox', '0 0 100 40');
-      gust.innerHTML =
-        '<path d="M5,20 Q30,7 60,14 Q76,17.5 95,15" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
-        '<path d="M0,29 Q24,21 48,25" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
-      const duration = randomBetween(11, 20);
-      gust.style.setProperty('--top', `${randomBetween(4, 46).toFixed(1)}vh`);
-      gust.style.setProperty('--scale', randomBetween(0.5, 0.95).toFixed(2));
-      gust.style.setProperty('--duration', `${duration.toFixed(1)}s`);
-      gust.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      gust.style.setProperty('--peak-opacity', randomBetween(0.2, 0.4).toFixed(2));
-      container.appendChild(gust);
-    }
-  }
-
-  function initWetPatches() {
-    const container = document.querySelector('.beach-scene__wet-patches');
-    if (!container) return;
-    const count = 6;
-    for (let i = 0; i < count; i += 1) {
-      const patch = document.createElement('span');
-      patch.className = 'wet-patch';
-      const size = randomBetween(46, 130);
-      const duration = randomBetween(7, 16);
-      patch.style.setProperty('--left', `${randomBetween(0, 92).toFixed(1)}%`);
-      // Weighted toward the top of the sand band, closer to the waterline,
-      // so patches thin out (and dry sand becomes more likely) further
-      // from the water -- like a real shoreline.
-      patch.style.setProperty('--top', `${randomBetween(2, 55).toFixed(1)}%`);
-      patch.style.setProperty('--size', `${size.toFixed(0)}px`);
-      patch.style.setProperty('--duration', `${duration.toFixed(1)}s`);
-      patch.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      patch.style.setProperty('--peak-opacity', randomBetween(0.3, 0.6).toFixed(2));
-      container.appendChild(patch);
+    // Link bird speed to average wave duration for a natural balance.
+    // Birds fly faster (shorter duration) than waves drift, but the
+    // ratio between them stays consistent so the scene feels harmonious.
+    // A slight random variance prevents perfect syncing.
+    const avgWaveDuration = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--avg-wave-duration').trim()
+    ) || 48;
+    const flockCount = 2 + Math.floor(Math.random() * 3);
+    for (let f = 0; f < flockCount; f += 1) {
+      const birdsInFlock = 3 + Math.floor(Math.random() * 3);
+      // Bird speed is wave speed * a factor (0.35 to 0.60) with added
+      // variance so it never exactly matches the wave timing.
+      const waveFactor = randomBetween(0.35, 0.60);
+      const flockDuration = avgWaveDuration * waveFactor + randomBetween(-3, 3);
+      const clampedDuration = Math.max(14, Math.min(40, flockDuration));
+      const flockDelay = -randomBetween(0, clampedDuration);
+      const baseTop = randomBetween(8, 65);
+      const baseScale = randomBetween(0.7, 1.2);
+      for (let b = 0; b < birdsInFlock; b += 1) {
+        const shadow = document.createElement('span');
+        shadow.className = 'bird-shadow';
+        shadow.style.setProperty('--top', `${(baseTop + randomBetween(-6, 8)).toFixed(1)}%`);
+        shadow.style.setProperty('--scale', (baseScale * randomBetween(0.85, 1.15)).toFixed(2));
+        shadow.style.setProperty('--duration', `${clampedDuration.toFixed(1)}s`);
+        shadow.style.setProperty('--delay', `${flockDelay.toFixed(1)}s`);
+        shadow.style.setProperty('--peak-opacity', randomBetween(0.25, 0.50).toFixed(2));
+        shadow.style.setProperty('--flock-offset', `${randomBetween(-25, 25).toFixed(0)}px`);
+        container.appendChild(shadow);
+      }
     }
   }
 
   // --- Offline support ---------------------------------------------------
-  //
-  // Registers the service worker that precaches the whole app shell (see
-  // sw.js) so the app keeps working with no network at all after the
-  // first successful load. Registration only runs where the browser
-  // actually supports it, and a failure here (e.g. running over plain
-  // HTTP somewhere that isn't localhost, where service workers are
-  // blocked for security reasons) is caught rather than left as an
-  // unhandled rejection -- the app works fine online either way, it
-  // simply won't have offline caching in that case.
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch((error) => {
-        // eslint-disable-next-line no-console
         console.warn('Service worker registration failed (app still works online):', error);
       });
     });
   }
 
   // --- Boot -----------------------------------------------------------------
-  // Nothing about the conversation starts automatically: the picker is
-  // shown and we simply wait for a language choice. The saved theme,
-  // however, is restored immediately so returning visitors see their
-  // chosen look right away.
-  applyTheme(getCookie(THEME_COOKIE_NAME) || DEFAULT_THEME);
+  // Try localStorage as fallback if cookies are blocked (private browsing,
+  // embedded contexts, strict privacy settings).
+  let storedTheme = getCookie(THEME_COOKIE_NAME);
+  if (!storedTheme && typeof window.localStorage === 'object') {
+    try { storedTheme = localStorage.getItem(THEME_COOKIE_NAME); } catch (e) { /* ignore */ }
+  }
+  // Apply the saved theme (or default) and sync the picker buttons.
+  // The inline <head> script already set data-theme for FOUC prevention,
+  // but we still call applyTheme to sync aria-pressed on the picker.
+  applyTheme(storedTheme || DEFAULT_THEME);
   initBeachWaveVariation();
   initBubbles();
-  initWindGusts();
-  initWetPatches();
+  initBirdShadows();
 })();

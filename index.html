@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- iOS doesn't support the web app manifest for "add to home screen"
+  <!-- iOS does not support the web app manifest for "add to home screen"
        behavior, so these Apple-specific tags cover the same ground:
        standalone (no browser chrome) and a matching status bar style. -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,11 +24,41 @@
   <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
        English: Be Vietnam Pro (body, warm and rounded) + Quicksand (display wordmark only). -->
   <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
-       rules) for full offline capability -- no CDN dependency. -->
+       rules) for full offline capability (no CDN dependency). -->
   <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Prevent FOUC: apply saved theme before first paint so the user
+       never sees the wrong theme flash. This tiny blocking script reads
+       localStorage (with cookie fallback) and sets the data-theme
+       attribute synchronously, before any rendering occurs. -->
+  <script>
+    (function() {
+      var stored = null;
+      try {
+        stored = localStorage.getItem('darya_theme');
+      } catch (e) {}
+      if (!stored) {
+        try {
+          var match = document.cookie.match(/(?:^|; )darya_theme=([^;]*)/);
+          stored = match ? decodeURIComponent(match[1]) : null;
+        } catch (e) {}
+      }
+      if (stored === 'beach' || stored === 'ocean') {
+        document.documentElement.setAttribute('data-theme', stored);
+      }
+      // Disable transitions during initial load to prevent flash of
+      // animated theme change. The class is removed after a tick.
+      document.documentElement.classList.add('no-theme-transition');
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          document.documentElement.classList.remove('no-theme-transition');
+        });
+      });
+    })();
+  </script>
 </head>
 <body>
 
@@ -61,13 +91,12 @@
       <div class="beach-scene__ocean beach-scene__ocean--near"></div>
       <div class="beach-scene__foam"></div>
       <div class="beach-scene__sand"></div>
-      <div class="beach-scene__wet-patches"></div>
     </div>
 
     <div class="backdrop__scrim"></div>
 
     <div class="bubbles"></div>
-    <div class="wind-gusts"></div>
+    <div class="bird-shadows"></div>
   </div>
 
   <!-- Language picker: shown before any conversation starts, and again
@@ -84,15 +113,30 @@
       </div>
 
       <div class="picker__options">
-        <button class="picker__option" id="picker-fa" type="button" lang="fa" dir="rtl" title="شروع گفتگوی تازه به زبان فارسی">
+        <button class="picker__option" id="picker-fa" type="button" lang="fa" dir="rtl" title="شروع گفت‌وگوی تازه به زبان فارسی">
           <span class="picker__option-title">فارسی</span>
-          <span class="picker__option-desc">شروع گفتگو به زبان فارسی</span>
+          <span class="picker__option-desc">شروع گفت‌وگو به زبان فارسی</span>
         </button>
         <button class="picker__option" id="picker-en" type="button" lang="en" dir="ltr" title="Start a new conversation in English">
           <span class="picker__option-title">English</span>
           <span class="picker__option-desc">Start the conversation in English</span>
         </button>
       </div>
+
+      <!-- Language-lock note: relocated from the menu dropdown to here.
+           Subtle and muted. Each language variant sits on its own line
+           so both read independently. -->
+      <div class="picker__lang-lock" id="picker-lang-lock" aria-live="polite">
+        <span lang="fa" dir="rtl" class="picker__lang-lock-fa">زبان فقط تا شروع گفت‌وگوی بعدی تغییرپذیر است.</span>
+        <span lang="en" dir="ltr" class="picker__lang-lock-en">Language locks once your conversation begins.</span>
+      </div>
+
+      <!-- Theme selection heading -->
+      <p class="picker__theme-heading" id="picker-theme-heading">
+        <span lang="fa" dir="rtl">انتخاب پوسته</span>
+        <span class="picker__note-sep">·</span>
+        <span lang="en" dir="ltr">Choose your theme</span>
+      </p>
 
       <div class="theme-picker" id="theme-picker" role="group" aria-label="Theme / پوسته">
         <button class="theme-picker__option" type="button" data-theme-choice="ocean" aria-pressed="true" title="انتخاب پوسته اقیانوس / Choose the ocean theme">
@@ -109,11 +153,6 @@
         </button>
       </div>
 
-      <p class="picker__note">
-        <span lang="fa" dir="rtl">زبان فقط تا شروع گفتگوی بعدی تغییرپذیر است.</span>
-        <span class="picker__note-sep">·</span>
-        <span lang="en" dir="ltr">Language locks once your conversation begins.</span>
-      </p>
     </div>
   </div>
 
@@ -121,6 +160,16 @@
 
     <header class="header">
       <span class="header__title" id="header-title">دریا</span>
+
+      <!-- Breathe trigger as a separate button right before the menu dropdown -->
+        <button id="breathe-trigger" class="breathe-trigger" type="button" aria-label="تمرین تنفس" title="تمرین تنفس آرام‌بخش" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Wind / breeze icon: three horizontal wavy lines suggesting a gentle breeze -->
+            <path d="M4 7h10c1.5 0 3-.8 3-2.5S15.5 2 14 2s-2.5 1.2-2.5 2"/>
+            <path d="M4 12h13c1.5 0 3 .8 3 2.5s-1.5 2.5-3 2.5-2.5-1.2-2.5-2.5"/>
+            <path d="M4 17h7"/>
+          </svg>
+        </button>
 
       <div class="menu">
         <button id="menu-trigger" class="menu__trigger" type="button" aria-haspopup="true" aria-controls="menu-popover" aria-expanded="false" aria-label="باز کردن منوی گزینه‌های گفتگو" title="باز کردن منوی گزینه‌های گفتگو">
