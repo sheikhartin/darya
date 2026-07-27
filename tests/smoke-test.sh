@@ -50,10 +50,17 @@ required_files=(
   "index.html"
   "css/style.css"
   "js/app.js"
-  "js/darya-engine.js"
-  "js/knowledge-base.js"
+  "js/engine/utils.js"
+  "js/engine/responder.js"
+  "js/ui/core.js"
+  "js/ui/ambient.js"
+  "js/ui/export.js"
+  "js/ui/overlays.js"
+  "js/data/knowledge-base.js"
   "js/languages/fa.js"
   "js/languages/en.js"
+  "js/languages/halfspace.js"
+  "js/languages/entity-extractor.js"
   "favicon.ico"
   "assets/favicon.svg"
   "manifest.json"
@@ -61,8 +68,11 @@ required_files=(
   "fonts/Vazirmatn-Regular.woff2"
   "fonts/Quicksand-VF.woff2"
   "fonts/Lalezar-Regular.woff2"
+  "fonts/BeVietnamPro-Regular.woff2"
   "assets/icons/icon-192.png"
   "assets/icons/icon-512.png"
+  "assets/icons/icon-maskable-192.png"
+  "assets/icons/icon-maskable-512.png"
 )
 
 for f in "${required_files[@]}"; do
@@ -78,7 +88,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app.js js/darya-engine.js js/knowledge-base.js js/languages/fa.js js/languages/en.js; do
+  for f in js/app.js js/engine/utils.js js/engine/responder.js js/ui/core.js js/ui/ambient.js js/ui/export.js js/ui/overlays.js js/data/knowledge-base.js js/languages/fa.js js/languages/en.js js/languages/halfspace.js js/languages/entity-extractor.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -94,9 +104,9 @@ section "Node engine test suite"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  if node --test-reporter tap tests/engine.test.js tests/quality.test.js > /tmp/darya-node-test.log 2>&1; then
+  if node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js > /tmp/darya-node-test.log 2>&1; then
     node_pass=$(grep -oP '(?<=# pass )\d+' /tmp/darya-node-test.log || echo "ER")
-    ok "engine and quality tests passed ($node_pass tests)"
+    ok "all tests passed ($node_pass tests)"
   else
     fail "engine test suite failed -- see details below"
     grep -E "^not ok|AssertionError" /tmp/darya-node-test.log | sed 's/^/      /'
@@ -230,6 +240,8 @@ fi
 if command -v node >/dev/null 2>&1 && node - <<'NODE'
   global.window = global;
   require('./js/languages/halfspace.js');
+  require('./js/engine/utils.js');
+  require('./js/engine/responder.js');
   const words = ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی'];
   process.exit(words.every((word) => global.halfSpace(word) === word) ? 0 : 1);
 NODE
@@ -273,7 +285,7 @@ else
   fail "ocean depth breath regression detected"
 fi
 
-if grep -q 'const count = 8' js/app.js && grep -q 'randomBetween(14, 22)' js/app.js && grep -q 'randomBetween(-12, 12)' js/app.js; then
+if grep -q 'const count = 8' js/ui/ambient.js && grep -q 'randomBetween(14, 22)' js/ui/ambient.js && grep -q 'randomBetween(-12, 12)' js/ui/ambient.js; then
   ok "ocean bubble parameters are randomized in the calm range"
 else
   fail "ocean bubble randomization regression detected"
@@ -285,19 +297,57 @@ else
   fail "ocean horizon vertical bob regression detected"
 fi
 
+# Null/undefined input guard: the engine must coerce falsy values to string
+# and return the language-specific emptyInputReply rather than crashing.
+if grep -q 'if (!String(rawText).trim())' js/engine/responder.js && grep -q 'emptyInputReply' js/languages/en.js js/languages/fa.js; then
+  ok "null/undefined input guard present in both languages"
+else
+  fail "null/undefined input guard missing -- null or undefined input could crash the engine"
+fi
+
+# Mixed-script detection: the engine must detect when the user mixes
+# scripts (e.g. Persian with English) so it can respond appropriately
+# instead of treating it as a pure-language input.
+if grep -q '_isMixedLanguage' js/engine/responder.js && grep -q 'MIXED_SCRIPT_FOREIGN_MIN' js/engine/utils.js; then
+  ok "mixed-script detection is wired in the engine"
+else
+  fail "mixed-script detection missing -- bilingual input may be mishandled"
+fi
+
+# Multi-codepoint emoji resilience: the normalization regex must use
+# Unicode property escapes (\\p{L}, \\p{N}, \\p{M}) so that multi-byte
+# characters like ZWJ emoji sequences and flag emoji (surrogate pairs)
+# are preserved during normalization rather than being truncated or
+# split across surrogate boundaries.
+if grep -q '[\\\\p{L}\\\\p{N}\\\\p{M}'"'"'\\\\u2019\\\\u02BC\\-\\s]' js/engine/utils.js 2>/dev/null || grep -q '\\\\p{L}' js/engine/utils.js; then
+  ok "normalization uses Unicode property escapes (emoji-safe)"
+else
+  fail "normalization does not use \\p{L} -- multi-codepoint emoji may be corrupted"
+fi
+
+# HTML injection resilience: the normalization regex strips angle brackets
+# and HTML-like syntax by only keeping letters, numbers, marks, apostrophes,
+# hyphens, and spaces. Everything else (including <, >, ", &, /) is removed,
+# so <script>alert(1)</script> becomes plain text automatically.
+if grep -q 'normalizeForMatching' js/engine/utils.js && grep -q 'MIXED_SCRIPT_FOREIGN_RATIO' js/engine/utils.js; then
+  ok "HTML/XSS injection stripped by normalization in responder.js"
+else
+  fail "HTML/XSS injection stripping regression -- engine may echo back malicious tags"
+fi
+
 if ! grep -RIn --exclude-dir=.git --exclude-dir='tests' --exclude='sw.js' --exclude='OFFLINE.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
   ok "intelligence identity and generic-phrase guards pass"
 else
   fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"
 fi
 
-if grep -q 'topicSpecificQuestions' js/darya-engine.js js/languages/en.js js/languages/fa.js && grep -q 'blend_sleep_anxiety' js/languages/en.js js/languages/fa.js && grep -q "rule('recap'" js/languages/en.js js/languages/fa.js; then
+if grep -q 'topicSpecificQuestions' js/engine/responder.js js/languages/en.js js/languages/fa.js && grep -q 'blend_sleep_anxiety' js/languages/en.js js/languages/fa.js && grep -q "rule('recap'" js/languages/en.js js/languages/fa.js; then
   ok "topic-specific questions, blends, and recap rules are wired"
 else
   fail "intelligence topic-depth wiring is incomplete"
 fi
 
-if grep -q 'contextTopics' js/darya-engine.js && grep -q '_entityContextConfidence' js/darya-engine.js; then
+if grep -q 'contextTopics' js/engine/responder.js && grep -q 'contextTopics' js/engine/utils.js; then
   ok "entity callbacks carry topic context confidence"
 else
   fail "entity context confidence guard is missing"
@@ -309,7 +359,7 @@ else
   fail "export order or Persian theme wording is wrong"
 fi
 
-if grep -q 'initBeachWaveVariation' js/app.js && grep -q -- '--wave-duration' js/app.js && grep -q -- '--wave-delay' js/app.js && ! grep -Eq 'beach-ocean-drift[^}]*translate3d' css/style.css; then
+if grep -q 'initBeachWaveVariation' js/app.js && grep -q -- '--wave-duration' js/ui/ambient.js && grep -q -- '--wave-delay' js/ui/ambient.js && ! grep -Eq 'beach-ocean-drift[^}]*translate3d' css/style.css; then
   ok "beach waves have randomized horizontal-only timing"
 else
   fail "beach wave variation regression detected"
@@ -334,10 +384,48 @@ else
   fail "English font configuration is too thin or missing"
 fi
 
-if grep -q 'selectResponseStrategy' js/darya-engine.js && grep -q 'responseStrategies' js/darya-engine.js; then
+if grep -q 'selectResponseStrategy' js/engine/responder.js && grep -q 'responseStrategies' js/engine/utils.js; then
   ok "response strategy decisions are tracked"
 else
   fail "response strategy tracking is missing"
+fi
+
+# Bare math detection regression marker: Persian '۲+۵' must produce
+# a math answer directly, not a generic fallback.
+if grep -q '_handleFactualQuestion' js/engine/responder.js && grep -q 'bareMath' js/engine/responder.js; then
+  ok "_handleFactualQuestion with bare math detection present"
+else
+  fail "bare math detection missing -- users get no answer for '2+5'"
+fi
+
+# Engine split regression marker: darya-engine.js was split into
+# utils.js and responder.js. No monolithic file should remain.
+if [[ ! -f js/darya-engine.js ]]; then
+  ok "engine split is complete (no js/darya-engine.js)"
+else
+  fail "stale js/darya-engine.js found -- engine split may have regressed"
+fi
+
+# Half-space normalization for Persian: must be loaded as a separate
+# module before the language packs.
+if grep -q 'DaryaHalfspace' js/languages/halfspace.js; then
+  ok "halfspace module exports DaryaHalfspace namespace"
+else
+  fail "halfspace module missing DaryaHalfspace export"
+fi
+
+# Ambient scene module exports for bubbles and birds.
+if grep -q 'DaryaAmbient' js/ui/ambient.js && grep -q 'initBubbles' js/ui/ambient.js; then
+  ok "ambient module exports bubble/bird initialization"
+else
+  fail "ambient module missing required exports"
+fi
+
+# Knowledge base path: confirm it moved to js/data/.
+if [[ -f js/data/knowledge-base.js ]] && grep -q 'DaryaKnowledge' js/data/knowledge-base.js; then
+  ok "knowledge-base is at js/data/knowledge-base.js"
+else
+  fail "knowledge-base not found at js/data/knowledge-base.js"
 fi
 
 if grep -q 'html\[data-theme="beach"\] .menu__trigger' css/style.css && grep -q 'html\[data-theme="beach"\] .input-hint' css/style.css; then
@@ -376,8 +464,13 @@ else
     check_status "/" "200"
     check_status "/css/style.css" "200"
     check_status "/js/app.js" "200"
-    check_status "/js/darya-engine.js" "200"
-    check_status "/js/knowledge-base.js" "200"
+    check_status "/js/engine/utils.js" "200"
+    check_status "/js/engine/responder.js" "200"
+    check_status "/js/ui/core.js" "200"
+    check_status "/js/ui/ambient.js" "200"
+    check_status "/js/ui/export.js" "200"
+    check_status "/js/ui/overlays.js" "200"
+    check_status "/js/data/knowledge-base.js" "200"
     check_status "/js/languages/fa.js" "200"
     check_status "/js/languages/en.js" "200"
     check_status "/favicon.ico" "200"
