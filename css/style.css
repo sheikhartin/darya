@@ -1053,9 +1053,11 @@ html[dir="rtl"] .composer__send svg {
 
 /* --------------------------------------------------------------------- */
 /* Breathing exercise overlay                                           */
-/* Box breathing (square breathing): 4 seconds in, 4 hold, 4 out, 4     */
-/* hold. The circle animates with CSS transitions triggered by JS-added */
-/* classes, while a countdown timer shows remaining seconds per phase.  */
+/* 4-7-8 pattern (Relaxing Breath, Dr. Andrew Weil): inhale 4s, hold   */
+/* 7s, exhale 8s. The circle animates with CSS transitions triggered    */
+/* by JS-added classes, while a countdown timer shows remaining seconds */
+/* per phase. The 4s value below is a pre-JS fallback; JS dynamically   */
+/* overrides it with the correct per-phase duration via inline style.   */
 /* --------------------------------------------------------------------- */
 
 .breathe-overlay {
@@ -1092,6 +1094,8 @@ html[data-theme="beach"] .breathe-overlay {
   transition: transform 4s var(--ease-tide);
 }
 
+
+
 .breathe-circle--grow {
   transform: scale(1.2);
 }
@@ -1121,16 +1125,11 @@ html[data-theme="beach"] .breathe-label {
   text-align: center;
   user-select: none;
   line-height: 1;
-  animation: breathe-count-pulse 4s ease-in-out;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.37, 0, 0.24, 1);
 }
 
 html[data-theme="beach"] .breathe-countdown {
   color: #7ac4a8;
-}
-
-@keyframes breathe-count-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.08); }
 }
 
 .breathe-close {
@@ -1152,14 +1151,119 @@ html[data-theme="beach"] .breathe-countdown {
 
 @media (prefers-reduced-motion: reduce) {
   .breathe-circle {
-    transition: none;
+    transition: none !important;
   }
   .breathe-countdown {
-    animation: none;
+    transition: none !important;
   }
 }
 
 
+
+/* --------------------------------------------------------------------- */
+/* Exit confirmation bar: appears above the composer when the user       */
+/* first says goodbye. Two buttons (Yes/No) let them confirm or cancel   */
+/* the farewell without having to type.                                  */
+/* --------------------------------------------------------------------- */
+
+.exit-confirm-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-inline: var(--space-3);
+  margin-bottom: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  animation: reveal 0.25s var(--ease-tide) both;
+}
+
+.exit-confirm-bar__label {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.exit-confirm-bar__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.exit-confirm-bar__btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  min-height: 32px;
+  min-width: 64px;
+  line-height: 1;
+  transition: border-color 0.15s var(--ease-tide), background 0.15s var(--ease-tide), color 0.15s var(--ease-tide);
+}
+
+.exit-confirm-bar__btn--yes {
+  background: var(--color-coral);
+  color: var(--color-abyss-deep);
+  border-color: var(--color-coral);
+}
+
+.exit-confirm-bar__btn--yes:hover {
+  background: var(--color-coral-soft);
+  border-color: var(--color-coral-soft);
+}
+
+.exit-confirm-bar__btn--no {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+}
+
+.exit-confirm-bar__btn--no:hover {
+  color: var(--text-primary);
+  border-color: var(--color-seafoam);
+}
+
+html[data-theme="beach"] .exit-confirm-bar {
+  background: rgba(31, 84, 73, 0.88);
+  border-color: rgba(15, 46, 58, 0.15);
+}
+
+html[data-theme="beach"] .exit-confirm-bar__label {
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .exit-confirm-bar__btn--yes {
+  background: #28645a;
+  border-color: #28645a;
+  color: #f0f7f4;
+}
+
+html[data-theme="beach"] .exit-confirm-bar__btn--yes:hover {
+  background: #347a6d;
+  border-color: #347a6d;
+}
+
+html[data-theme="beach"] .exit-confirm-bar__btn--no {
+  color: rgba(240, 247, 244, 0.65);
+  border-color: rgba(15, 46, 58, 0.20);
+}
+
+html[data-theme="beach"] .exit-confirm-bar__btn--no:hover {
+  color: #f0f7f4;
+  border-color: #6cc4a8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exit-confirm-bar {
+    animation: none;
+  }
+}
 
 /* --------------------------------------------------------------------- */
 /* Breakpoints: add breathing room as the viewport grows (mobile-first)  */
@@ -1531,17 +1635,7 @@ html[data-theme="beach"] .backdrop__depth-breath { display: none; }
 
 .breathe-trigger:hover,
 .breathe-trigger:focus-visible {
-  color: var(--color-foam);
-  border-color: var(--color-seafoam);
-  background: rgba(127, 190, 176, 0.08);
-}
-
-.breathe-trigger svg {
-  transition: transform 0.3s var(--ease-tide);
-}
-
-.breathe-trigger:hover svg {
-  transform: scale(1.12);
+  cursor: pointer;
 }
 
 /* Wind icon subtle animation: gentle sway */
