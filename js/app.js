@@ -66,6 +66,10 @@
   const menuThemeLabelEl = document.getElementById('menu-theme-label');
   const breatheTriggerEl = document.getElementById('breathe-trigger');
   const pickerLangLockEl = document.getElementById('picker-lang-lock');
+  const exitConfirmBarEl = document.getElementById('exit-confirm-bar');
+  const exitConfirmLabelEl = document.getElementById('exit-confirm-label');
+  const exitConfirmYesEl = document.getElementById('exit-confirm-yes');
+  const exitConfirmNoEl = document.getElementById('exit-confirm-no');
 
   // --- Cookie helpers (used only for the persisted theme preference) -------
 
@@ -211,6 +215,17 @@
   let waitingForReply = false;
 
   /**
+   * True when the engine has detected an exit command and sent a
+   * confirmation message on the previous turn, but the user has not yet
+   * confirmed the farewell. On the first exit detection, Darya asks
+   * "Are you sure?" instead of closing immediately. Only when the user
+   * sends another exit-like message while this is true does the
+   * conversation actually end.
+   * @type {boolean}
+   */
+  let pendingExit = false;
+
+  /**
    * True whenever a conversation is actually in progress (a language has
    * been chosen and the picker isn't showing). Used to gate the
    * refresh/close confirmation prompt below, so it never appears on the
@@ -231,6 +246,12 @@
 
   // --- Timing / formatting helpers -----------------------------------------
 
+  /**
+   * Returns a random delay within the configured reply timing range.
+   * Each response uses a fresh random value so the conversation never feels
+   * mechanically timed.
+   * @returns {number}
+   */
   function randomReplyDelay() {
     return MIN_REPLY_DELAY_MS + Math.random() * (MAX_REPLY_DELAY_MS - MIN_REPLY_DELAY_MS);
   }
@@ -275,6 +296,12 @@
   let currentTitle = '';
   const SESSION_KEY = 'darya_scroll_pos';
 
+  /**
+   * Appends a message bubble to the chat. Saves scroll position before
+   * adding the new content so returning to the session can restore it.
+   * @param {'user'|'bot'} sender
+   * @param {string} text
+   */
   function appendMessage(sender, text) {
     const time = formatTimestamp();
     const msgId = `msg-${messageCount}`;
@@ -308,6 +335,10 @@
     scrollToBottom();
   }
 
+  /**
+   * Scrolls the chat container to the bottom using requestAnimationFrame
+   * so the layout has settled before the scroll happens.
+   */
   function scrollToBottom() {
     requestAnimationFrame(() => {
       chatEl.scrollTop = chatEl.scrollHeight;
@@ -316,6 +347,11 @@
 
   // --- Scroll memory ------------------------------------------------------
 
+  /**
+   * Saves the current chat scroll position to sessionStorage so it can be
+   * restored when returning to an existing conversation (e.g. after a page
+   * refresh). Silently ignores errors if sessionStorage is unavailable.
+   */
   function saveScrollPosition() {
     try {
       if (chatActive && chatEl) {
@@ -324,6 +360,11 @@
     } catch (e) { /* sessionStorage may be unavailable */ }
   }
 
+  /**
+   * Restores a previously saved scroll position after a page refresh.
+   * Uses requestAnimationFrame so the restored position is applied after
+   * layout has settled.
+   */
   function restoreScrollPosition() {
     try {
       const pos = sessionStorage.getItem(SESSION_KEY);
@@ -336,14 +377,21 @@
   }
 
   // --- Breathing exercise -------------------------------------------------
-  // Uses box breathing (square breathing): 4 seconds in, 4 hold, 4 out, 4 hold.
-  // This is a widely recognized pattern used by military, first responders,
-  // and meditation practices. The countdown timer shows remaining seconds
-  // so the user knows exactly how long each phase lasts.
+  // Uses the 4-7-8 pattern (Relaxing Breath, Dr. Andrew Weil).
+  // Inhale 4 seconds, Hold 7 seconds, Exhale 8 seconds. The long
+  // exhale activates the vagus nerve for maximum relaxation. Each
+  // count equals 1 second. After 3 complete rounds, the overlay
+  // auto-dismisses and a calm message is shown in the chat.
 
   let breatheOverlay = null;
   let breatheCountdownTimer = null;
+  const BREATHE_MAX_ROUNDS = 3;
 
+  /**
+   * Removes the breathing-exercise overlay if it is visible. Clears the
+   * countdown timer to prevent memory leaks and stale intervals from
+   * continuing after the overlay is gone.
+   */
   function dismissBreathe() {
     if (breatheOverlay) {
       if (breatheCountdownTimer) {
@@ -355,6 +403,13 @@
     }
   }
 
+  /**
+   * Shows the breathing exercise overlay with a 4-7-8 pattern (Relaxing
+   * Breath, Dr. Andrew Weil). Inhale 4 seconds, Hold 7 seconds, Exhale 8
+   * seconds. Each count equals 1 second. After 3 complete rounds (9 phases),
+   * the overlay auto-dismisses with a calm chat message. The countdown
+   * display uses localized digits matching the active language.
+   */
   function showBreatheExercise() {
     if (breatheOverlay) return;
 
@@ -394,36 +449,71 @@
 
     document.body.appendChild(breatheOverlay);
 
-    // Box breathing: In -> Hold -> Out -> Hold (4 seconds each)
+    // 4-7-8 breathing: Inhale -> Hold -> Exhale (3 phases = 1 round)
+    // Phase durations vary: inhale 4s, hold 7s, exhale 8s
     const phases = [
-      { action: 'breatheIn', circle: 'grow' },
-      { action: 'breatheHoldIn', circle: 'grow' },
-      { action: 'breatheOut', circle: 'shrink' },
-      { action: 'breatheHoldOut', circle: 'shrink' },
+      { action: 'breatheIn', duration: 4, circle: 'grow' },
+      { action: 'breatheHold', duration: 7, circle: 'grow' },
+      { action: 'breatheOut', duration: 8, circle: 'shrink' },
     ];
 
     let phaseIndex = 0;
-    let countdownValue = 4;
+    let totalPhasesCompleted = 0;
+    let countdownValue = 0;
 
     function getPhaseLabel(action) {
       switch (action) {
         case 'breatheIn': return lang.ui.breatheIn;
-        case 'breatheHoldIn': return lang.ui.breatheHold;
+        case 'breatheHold': return lang.ui.breatheHold;
         case 'breatheOut': return lang.ui.breatheOut;
-        case 'breatheHoldOut': return lang.ui.breatheHold;
         default: return '';
       }
+    }
+
+    /**
+     * Converts a number to localized digits. Uses Persian digits
+     * when the active language is Persian, Latin digits for English.
+     * @param {number} value
+     * @returns {string}
+     */
+    function toLocalizedNum(value) {
+      const str = String(value);
+      if (lang.code !== 'fa') return str;
+      return str.replace(/[0-9]/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
+    }
+
+    /**
+     * Updates the countdown display with a smooth fade transition.
+     * Fades the old number out, swaps the text, then fades it back in.
+     * @param {number} value
+     */
+    function updateCountdownDisplay(value) {
+      const text = toLocalizedNum(value);
+      if (countdown.textContent === text) return;
+      countdown.style.opacity = '0';
+      countdown.style.transform = 'scale(0.85)';
+      requestAnimationFrame(() => {
+        countdown.textContent = text;
+        requestAnimationFrame(() => {
+          countdown.style.opacity = '1';
+          countdown.style.transform = 'scale(1)';
+        });
+      });
     }
 
     function updateDisplay() {
       const phase = phases[phaseIndex];
       label.textContent = getPhaseLabel(phase.action);
-      countdown.textContent = String(countdownValue);
+      countdown.textContent = toLocalizedNum(countdownValue);
+      countdown.style.opacity = '1';
+      countdown.style.transform = 'scale(1)';
 
-      // Apply circle animation class
+      // Set the circle transition duration to match this phase
+      circle.style.transition = `transform ${phase.duration}s cubic-bezier(0.37, 0, 0.24, 1)`;
+
+      // Apply circle animation class to grow or shrink
       circle.classList.remove('breathe-circle--grow', 'breathe-circle--shrink');
-      // Force reflow
-      void circle.offsetWidth;
+      void circle.offsetWidth; // force reflow
       if (phase.circle === 'grow') {
         circle.classList.add('breathe-circle--grow');
       } else {
@@ -431,8 +521,18 @@
       }
     }
 
+    function completeExercise() {
+      dismissBreathe();
+      const calmMessage = lang.code === 'fa'
+        ? 'آفرین. تمرین تنفس تمام شد. هر وقت آماده باشی، می‌توانیم گفتگو را ادامه دهیم.'
+        : 'Good job. The breathing exercise is complete. Take your time, and whenever you are ready, we can continue our conversation.';
+      appendMessage('bot', calmMessage);
+      scrollToBottom();
+    }
+
     function startCountdown() {
-      countdownValue = 4;
+      const phase = phases[phaseIndex];
+      countdownValue = phase.duration;
       updateDisplay();
 
       if (breatheCountdownTimer) clearInterval(breatheCountdownTimer);
@@ -444,12 +544,21 @@
           advancePhase();
           return;
         }
-        countdown.textContent = String(countdownValue);
+        updateCountdownDisplay(countdownValue);
       }, 1000);
     }
 
     function advancePhase() {
       if (!breatheOverlay || !document.body.contains(breatheOverlay)) return;
+
+      totalPhasesCompleted += 1;
+
+      // After 3 full rounds (9 phases: 3 phases x 3 rounds)
+      if (totalPhasesCompleted >= phases.length * BREATHE_MAX_ROUNDS) {
+        completeExercise();
+        return;
+      }
+
       phaseIndex = (phaseIndex + 1) % phases.length;
       startCountdown();
     }
@@ -458,11 +567,21 @@
     startCountdown();
   }
 
+  /**
+   * Shows or hides the typing indicator row. When showing it, also scrolls
+   * the chat to the bottom so the indicator is visible.
+   * @param {boolean} visible
+   */
   function setTypingVisible(visible) {
     typingRowEl.hidden = !visible;
     if (visible) scrollToBottom();
   }
 
+  /**
+   * Sets or clears the hint message shown above the input (e.g. foreign
+   * script warning). An empty or falsy message hides the hint element.
+   * @param {string} message
+   */
   function setHint(message) {
     if (!message) {
       hintEl.hidden = true;
@@ -473,6 +592,11 @@
     hintEl.hidden = false;
   }
 
+  /**
+   * Updates the composer state: adjusts the input height for auto-resize,
+   * checks for foreign script characters, and enables/disables the send
+   * button based on whether there is valid text to send.
+   */
   function refreshComposerState() {
     inputEl.style.height = 'auto';
     inputEl.style.height = `${inputEl.scrollHeight}px`;
@@ -489,12 +613,26 @@
     sendButtonEl.disabled = conversationEnded || waitingForReply || text.length === 0;
   }
 
+  /**
+   * Locks or unlocks the composer (input + send button). While busy,
+   * the user cannot send messages until Darya finishes replying.
+   * @param {boolean} busy
+   */
   function setComposerBusy(busy) {
     waitingForReply = busy;
     inputEl.disabled = busy || conversationEnded;
     refreshComposerState();
   }
 
+  /**
+   * Delivers Darya's reply after a randomized typing delay. The delay
+   * scales slightly with message length so longer responses feel more
+   * natural. Checks the conversation generation to avoid delivering stale
+   * replies after a new chat has been started.
+   * @param {string} replyText
+   * @param {number} [generation] - Conversation generation for staleness check.
+   * @returns {Promise<boolean>} True if the reply was actually delivered.
+   */
   async function deliverReply(replyText, generation = conversationGeneration) {
     setTypingVisible(true);
     // Variable delay: base random + extra per response character length
@@ -608,6 +746,9 @@
     conversationGeneration += 1;
     setTypingVisible(false);
     dismissBreathe();
+    hideExitConfirmBar();
+    pendingExit = false;
+    exitConfirmBusy = false;
     appEl.hidden = true;
     pickerEl.hidden = false;
     closeMenu();
@@ -632,6 +773,12 @@
 
   // --- Conversation flow -------------------------------------------------------
 
+  /**
+   * Starts a new conversation: creates a fresh engine, clears the chat,
+   * re-randomizes wave animation speeds, and delivers Darya's greeting
+   * after a typing delay. Uses the conversation generation counter to
+   * prevent stale responses from appearing after a new chat is started.
+   */
   async function startConversation() {
     const generation = ++conversationGeneration;
     // Re-randomize ocean wave drift speeds so each fresh conversation
@@ -659,16 +806,100 @@
     focusInputUnlessTouch();
   }
 
+  /**
+   * Shows the breathing exercise trigger button (appears when the
+   * conversation has become emotionally heavy).
+   */
   function showBreatheTrigger() {
     if (breatheTriggerEl) breatheTriggerEl.hidden = false;
   }
 
+  /**
+   * Hides the breathing exercise trigger button.
+   */
   function hideBreatheTrigger() {
     if (breatheTriggerEl) breatheTriggerEl.hidden = true;
   }
 
+  // --- Exit confirmation bar ---------------------------------------------
+
+  /**
+   * Shows the exit confirmation bar above the composer with Yes/No buttons.
+   * Disables the input while the bar is visible so the user must explicitly
+   * confirm or cancel before continuing.
+   */
+  function showExitConfirmBar() {
+    if (!exitConfirmBarEl || !exitConfirmLabelEl || !exitConfirmYesEl || !exitConfirmNoEl) return;
+    exitConfirmLabelEl.textContent = lang.ui.exitConfirmBarLabel;
+    exitConfirmYesEl.textContent = lang.ui.exitConfirmBarYes;
+    exitConfirmYesEl.setAttribute('title', lang.ui.exitConfirmBarYes);
+    exitConfirmNoEl.textContent = lang.ui.exitConfirmBarNo;
+    exitConfirmNoEl.setAttribute('title', lang.ui.exitConfirmBarNo);
+    exitConfirmBarEl.hidden = false;
+    inputEl.disabled = true;
+    sendButtonEl.disabled = true;
+    exitConfirmBarEl.setAttribute('aria-label', lang.ui.exitConfirmBarLabel);
+  }
+
+  /**
+   * Hides the exit confirmation bar. Re-enables the input unless the
+   * conversation has already ended.
+   */
+  function hideExitConfirmBar() {
+    if (!exitConfirmBarEl) return;
+    exitConfirmBarEl.hidden = true;
+    if (!conversationEnded) {
+      inputEl.disabled = false;
+      refreshComposerState();
+    }
+  }
+
+  let exitConfirmBusy = false;
+
+  /**
+   * Handles the user confirming the farewell via the exit confirmation bar.
+   * Sends Darya's farewell message and marks the conversation as ended.
+   * Guards against double-confirmation with the exitConfirmBusy flag.
+   */
+  function confirmExitYes() {
+    if (exitConfirmBusy || !engine) return;
+    exitConfirmBusy = true;
+    hideExitConfirmBar();
+    // The user confirmed. Send farewell immediately.
+    const generation = conversationGeneration;
+    const replyText = engine.farewell();
+    setComposerBusy(true);
+    deliverReply(replyText, generation).then((delivered) => {
+      if (!delivered || generation !== conversationGeneration) return;
+      conversationEnded = true;
+      pendingExit = false;
+      inputEl.setAttribute('placeholder', lang.ui.placeholderEnded);
+      hideBreatheTrigger();
+      setComposerBusy(false);
+      exitConfirmBusy = false;
+    });
+  }
+
+  /**
+   * Handles the user cancelling the farewell via the exit confirmation bar.
+   * Resets the pendingExit state, hides the bar, and refocuses the input.
+   */
+  function confirmExitNo() {
+    pendingExit = false;
+    hideExitConfirmBar();
+    focusInputUnlessTouch();
+  }
+
   const EXTRA_REPLIES = 0; // 0 = single reply (default), 1 = two replies, 2 = three replies
 
+  /**
+   * Processes a user message: appends it to the chat, checks for exit
+   * commands (with two-step confirmation), and sends it through the engine
+   * for a response. Handles the full lifecycle of exit confirmation,
+   * pending exit state, and post-reply UI updates (breathe trigger,
+   * scroll, focus).
+   * @param {string} text
+   */
   async function sendMessage(text) {
     const generation = conversationGeneration;
     appendMessage('user', text);
@@ -676,12 +907,41 @@
     setComposerBusy(true);
 
     const isExit = engine.isExitCommand(text);
-    const replyText = isExit ? engine.farewell() : engine.respond(text);
+
+    // Two-step exit: first detection asks for confirmation, second
+    // detection (while pendingExit is already true) actually ends.
+    // This prevents a passing goodbye word from closing the session.
+    if (isExit && pendingExit) {
+      const replyText = engine.farewell();
+      const delivered = await deliverReply(replyText, generation);
+      if (!delivered || generation !== conversationGeneration) return;
+      conversationEnded = true;
+      pendingExit = false;
+      inputEl.setAttribute('placeholder', lang.ui.placeholderEnded);
+      hideBreatheTrigger();
+      setComposerBusy(false);
+      return;
+    }
+
+    if (isExit && !pendingExit) {
+      const replyText = engine.exitConfirmation();
+      const delivered = await deliverReply(replyText, generation);
+      if (!delivered || generation !== conversationGeneration) return;
+      pendingExit = true;
+      setComposerBusy(false);
+      showExitConfirmBar();
+      return;
+    }
+
+    // Not an exit command: resume normally, resetting pending exit state
+    pendingExit = false;
+    hideExitConfirmBar();
+    const replyText = engine.respond(text);
 
     const delivered = await deliverReply(replyText, generation);
     if (!delivered || generation !== conversationGeneration) return;
 
-    if (!isExit && EXTRA_REPLIES > 0) {
+    if (EXTRA_REPLIES > 0) {
       for (let i = 0; i < EXTRA_REPLIES; i += 1) {
         const extra = engine.respond(text);
         const extraDelivered = await deliverReply(extra, generation);
@@ -689,26 +949,24 @@
       }
     }
 
-    if (isExit) {
-      conversationEnded = true;
-      inputEl.setAttribute('placeholder', lang.ui.placeholderEnded);
-      hideBreatheTrigger();
-    }
-
     setComposerBusy(false);
 
-    if (!conversationEnded) {
-      if (engine && engine.lastTurnNeedsCare) {
-        showBreatheTrigger();
-      } else {
-        hideBreatheTrigger();
-      }
-      focusInputUnlessTouch();
+    if (engine && engine.lastTurnNeedsCare) {
+      showBreatheTrigger();
+    } else {
+      hideBreatheTrigger();
     }
+    focusInputUnlessTouch();
   }
 
   // --- Export --------------------------------------------------------------
 
+  /**
+   * Formats a date using the active language's locale for human-readable
+   * export headers.
+   * @param {Date} date
+   * @returns {string}
+   */
   function formatLocalizedDateTime(date) {
     try {
       return new Intl.DateTimeFormat(lang.ui.dateLocale, { dateStyle: 'full', timeStyle: 'short' }).format(date);
@@ -717,12 +975,20 @@
     }
   }
 
+  /**
+   * Builds the header section used in both Markdown and plain-text exports.
+   * @returns {string}
+   */
   function buildExportHeader() {
     const lines = [];
     lines.push(formatLocalizedDateTime(new Date()));
     return lines.join('\n');
   }
 
+  /**
+   * Builds a Markdown-formatted transcript of the entire conversation.
+   * @returns {string}
+   */
   function buildMarkdownTranscript() {
     const header = buildExportHeader();
     const lines = [`# ${lang.ui.exportTitle}`, '', header, '', '---', ''];
@@ -736,6 +1002,10 @@
     return lines.join('\n');
   }
 
+  /**
+   * Builds a plain-text transcript of the entire conversation.
+   * @returns {string}
+   */
   function buildPlainTextTranscript() {
     const header = buildExportHeader();
     const lines = [lang.ui.exportTitle, '', header, '', lang.ui.exportDivider, ''];
@@ -748,6 +1018,13 @@
     return lines.join('\n');
   }
 
+  /**
+   * Triggers a file download in the browser by creating a temporary anchor
+   * element with a Blob URL. The URL is revoked immediately after download.
+   * @param {string} filename
+   * @param {string} content
+   * @param {string} mimeType
+   */
   function downloadTextFile(filename, content, mimeType) {
     const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
     const url = URL.createObjectURL(blob);
@@ -760,15 +1037,27 @@
     URL.revokeObjectURL(url);
   }
 
+  /**
+   * Returns a compact ISO-8601 timestamp string safe for use in filenames.
+   * @returns {string}
+   */
   function exportTimestamp() {
     return new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
   }
 
+  /**
+   * Exports the conversation transcript as a Markdown file.
+   * No-op if there is no active language or no transcript content.
+   */
   function exportMarkdown() {
     if (!lang || transcript.length === 0) return;
     downloadTextFile(`darya-chat-${lang.code}-${exportTimestamp()}.md`, buildMarkdownTranscript(), 'text/markdown');
   }
 
+  /**
+   * Exports the conversation transcript as a plain text file.
+   * No-op if there is no active language or no transcript content.
+   */
   function exportPlainText() {
     if (!lang || transcript.length === 0) return;
     downloadTextFile(`darya-chat-${lang.code}-${exportTimestamp()}.txt`, buildPlainTextTranscript(), 'text/plain');
@@ -776,6 +1065,9 @@
 
   // --- Menu ------------------------------------------------------------------
 
+  /**
+   * Opens the in-chat menu popover and focuses the first menu item.
+   */
   function openMenu() {
     menuPopoverEl.hidden = false;
     menuTriggerEl.setAttribute('aria-expanded', 'true');
@@ -783,18 +1075,30 @@
     requestAnimationFrame(() => menuItemElements[menuFocusIndex]?.focus());
   }
 
+  /**
+   * Closes the in-chat menu popover. Optionally restores focus to the
+   * menu trigger button.
+   * @param {boolean} [restoreFocus]
+   */
   function closeMenu(restoreFocus = false) {
     menuPopoverEl.hidden = true;
     menuTriggerEl.setAttribute('aria-expanded', 'false');
     if (restoreFocus) menuTriggerEl.focus();
   }
 
+  /**
+   * Moves keyboard focus within the menu by the given step (wrapping).
+   * @param {number} step - Direction and distance to move focus.
+   */
   function moveMenuFocus(step) {
     if (menuItemElements.length === 0) return;
     menuFocusIndex = (menuFocusIndex + step + menuItemElements.length) % menuItemElements.length;
     menuItemElements[menuFocusIndex].focus();
   }
 
+  /**
+   * Toggles the in-chat menu open/closed state.
+   */
   function toggleMenu() {
     if (menuPopoverEl.hidden) openMenu();
     else closeMenu();
@@ -894,6 +1198,41 @@
     });
   }
 
+  // Exit confirmation bar event wiring
+  if (exitConfirmYesEl) {
+    exitConfirmYesEl.addEventListener('click', confirmExitYes);
+  }
+  if (exitConfirmNoEl) {
+    exitConfirmNoEl.addEventListener('click', confirmExitNo);
+  }
+
+  // Keyboard handler: Enter on Yes/No buttons triggers the action.
+  // Escape on the bar itself cancels the exit.
+  if (exitConfirmYesEl) {
+    exitConfirmYesEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        confirmExitYes();
+      }
+    });
+  }
+  if (exitConfirmNoEl) {
+    exitConfirmNoEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        confirmExitNo();
+      }
+    });
+  }
+  if (exitConfirmBarEl) {
+    exitConfirmBarEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        confirmExitNo();
+      }
+    });
+  }
+
   chatEl.addEventListener('scroll', () => {
     saveScrollPosition();
   }, { passive: true });
@@ -909,10 +1248,22 @@
 
   // --- Ambient scene particles ------------------------------------------------
 
+  /**
+   * Returns a random number within [min, max).
+   * @param {number} min
+   * @param {number} max
+   * @returns {number}
+   */
   function randomBetween(min, max) {
     return min + Math.random() * (max - min);
   }
 
+  /**
+   * Initializes randomized wave animation durations and delays for each
+   * ocean layer in the beach scene. Each fresh conversation gets a unique
+   * set of wave timings so the water motion never repeats exactly.
+   * Also stores the average wave duration for bird shadow speed calculation.
+   */
   function initBeachWaveVariation() {
     const layers = document.querySelectorAll('.beach-scene__ocean');
     const ranges = [[56, 72], [42, 58], [30, 46]];
@@ -929,6 +1280,11 @@
     document.documentElement.style.setProperty('--avg-wave-duration', String(avgWave));
   }
 
+  /**
+   * Creates floating bubble particles for the ocean theme. Each bubble
+   * gets randomized size, duration, drift, and opacity for a natural,
+   * organic feel. Only visible when the ocean theme is active.
+   */
   function initBubbles() {
     const container = document.querySelector('.bubbles');
     if (!container) return;
@@ -948,6 +1304,12 @@
     }
   }
 
+  /**
+   * Creates bird shadow silhouettes that drift across the beach scene.
+   * Bird speed is linked to the average wave duration for a natural
+   * visual balance, with random variance to prevent perfect syncing.
+   * Only visible when the beach theme is active.
+   */
   function initBirdShadows() {
     const container = document.querySelector('.bird-shadows');
     if (!container) return;

@@ -248,6 +248,9 @@
     'I am listening carefully and I want to make sure I understand you well.',
     'That is something worth giving space to in this conversation.',
     'Sometimes it helps just to notice what has brought you to this moment.',
+    'What would it look like if you gave yourself permission to set this down for a moment?',
+    'How does it feel to say that out loud, now that you have?',
+    'I am not offering advice, but I can help you turn this over in your hands and look at it from different sides.',
   ];
 
 
@@ -284,8 +287,13 @@
     'What could make this moment feel a little more manageable right now?',
     'Sometimes stepping back reveals something we had not noticed. What do you see when you step back?',
     'If the situation had a shape, what would it look like from a distance?',
+    'What would you want someone to understand most about this situation?',
+    'If a close friend were in your place, what would you hope they would do or feel?',
   ];
 
+  // Periodic conversational check-ins: after a few turns without a clear
+  // topic match, Darya offers a light process check-in to take stock of
+  // the conversation so far.
   const sessionCheckIns = [
     "We have touched on a few different things in this conversation. Which one feels most present for you right now?",
     "We have covered a fair amount so far. Would you like to sit with one of these a little longer?",
@@ -444,6 +452,15 @@
     "Until next time. Be gentle with yourself.",
   ];
 
+  const exitConfirmMessages = [
+    "Are you sure you would like to end our conversation? If so, just say goodbye again and I will be on my way. Otherwise, I am still here.",
+    "I hear you saying goodbye. If you really want to leave, just confirm and I will wish you well. If not, we can keep talking.",
+    "Would you like to end this conversation? If you are sure, say so and I will say goodbye. If not, I am happy to continue.",
+  ];
+
+  // Repeated greeting reset: when the user types the same greeting multiple
+  // times without answering the previous question, Darya gently breaks the
+  // loop by acknowledging the pattern and inviting a fresh start.
   const repeatedGreetingResponses = [
     'You have said hello a few times now. It seems like you are not quite ready to start yet, and that is completely okay. I am here whenever you are.',
     'Hello again. I can see you are still finding the right words. There is no rush at all.',
@@ -451,6 +468,10 @@
     'I notice you keep saying hi. If you are not sure what to say, we can start with something small or just sit with the quiet for a moment.',
   ];
 
+  // Named-word repetition: when the user repeats a specific word 4+ times
+  // across recent utterances, Darya explicitly names the repeated word
+  // rather than using a generic synonym. {word} and {count} are replaced
+  // by the engine at runtime.
   const wordRepetitionResponses = [
     'You keep saying "{word}". Are you testing me, or is there something about {word} on your mind?',
     'I notice you have mentioned "{word}" several times now. That seems significant.',
@@ -460,6 +481,9 @@
     '"{word}" again. I am starting to think this matters more than it first seemed.',
   ];
 
+  // Frustration signal responses: used when the user types multiple
+  // consecutive exclamation marks ("!!!"), question marks ("???"),
+  // or uses insulting language. Darya responds with extra calmness.
   const frustrationResponses = [
     'I can feel the intensity in what you are saying. Let us take a breath together and slow it down a little.',
     'That came through loudly. I am still here and listening. Can you tell me what is underneath that feeling?',
@@ -476,18 +500,28 @@
     'Now that the simple question is out of the way, what would you really like to talk about?',
   ];
 
+  // Spam / keyboard-smash responses: for very short, repetitive, or random
+  // input (e.g. "asdasd", "dddd", pure digits), Darya replies with a gentle
+  // non-judgmental response rather than treating it as meaningful input.
   const spamNoiseResponses = [
     'It looks like that might have been accidental. Whenever you are ready, I am here to listen.',
     'I am not quite sure what you meant by that. Would you like to try again?',
     'That did not come through clearly. Take your time, and I will be here when you are ready to share.',
   ];
 
+  // Ambiguous input responses: for very short inputs (1-2 words, <10 chars)
+  // that don't match any rule and are too brief to infer intent (e.g. just
+  // "خوب" or "nice"). These responses gently invite elaboration.
   const ambiguousInputResponses = [
     'I hear you. Could you tell me a little more so I can follow along better?',
     'That was brief, and I want to make sure I understand. What more can you share about that?',
     'Got it. If you would like to expand on that, I am all ears.',
   ];
 
+  // Short acknowledgement responses: when the user gives a brief
+  // non-substantive reply (1-2 words like "ok", "yeah", "باشه") after being
+  // asked a question, Darya gently repeats or rephrases instead of
+  // treating it as a complete answer.
   const acknowledgementResponses = [
     'I notice you are acknowledging what I said, but I am curious what your own thoughts are on this.',
     'Thank you for that. How do you see the situation yourself?',
@@ -518,6 +552,10 @@
     'I want to make sure I understand you fully. Could we continue in English so I can give you my best attention?',
   ];
 
+  // Teasing or mocking detection: when the user sends sarcastic praise
+  // ("you're so smart!!!"), mock agreement ("sure, bot"), or dismissive
+  // signals, Darya responds with gentle understanding instead of treating
+  // sarcasm as genuine engagement.
   const teasingMockingResponses = [
     "I notice a hint of teasing there. That is okay. Is there something on your mind you would like to talk about?",
     "You seem to be giving me a gentle test. I do not mind at all. I am here when you want to share something real.",
@@ -567,6 +605,9 @@
     'yeah', 'yes', 'oh', 'ah', 'hmm', 'um', 'uh',
   ]);
 
+  // Low-engagement / boredom meta-signals: when the conversation has been
+  // idle or shallow for several turns (e.g. brief acknowledgements with no
+  // emotional depth), Darya gently invites a more substantive direction.
   const boredomResponses = [
     "I have to say, this conversation feels a bit quiet today. Want to try a different topic?",
     "It seems like you might not have much to say right now, and that is perfectly okay. I am still here.",
@@ -577,6 +618,10 @@
     'It has been a few short replies in a row. No pressure at all, just letting you know I am paying attention.',
   ];
 
+  // Wellbeing check responses: when the user asks how Darya is doing
+  // after a serious or emotionally heavy conversation, these responses
+  // acknowledge the care behind the question before returning focus
+  // to the user.
   const wellBeingResponses = [
     "I appreciate you asking. I am doing well, thank you. More importantly, how are you feeling after everything you shared?",
     "That is kind of you to check in. I am doing fine. How are you holding up right now?",
@@ -607,8 +652,10 @@
     excited: 'That is wonderful!',
     angry: 'I hear the frustration in your words.',
     grieving: 'I am here with you in this.',
+    fear: 'That sounds frightening. I am here with you.',
     anxious: 'Take your time with this.',
     sad: 'I can hear the sadness in what you are saying.',
+    relief: 'That must feel like a weight has lifted.',
   };
 
   const emptyInputReply = "I notice you've gone quiet. Whenever you're ready, I'm here.";
@@ -652,6 +699,9 @@
     blend_family_sadness: ['The sadness has a relationship-shaped edge to it, which may be why it keeps returning.', 'Family can make an ordinary disappointment feel unusually close to the heart.', 'There is both the event itself and what it says about belonging; those are different things to hold.', 'This sounds like a tender family thread rather than a passing bad mood.'],
     blend_loneliness_sleep: ['Quiet nights can make loneliness louder, and loneliness can make the night feel longer.', 'Your sleep and your sense of company seem to be touching the same quiet hours.', 'When the day goes still, both tiredness and wanting someone nearby may arrive together.', 'There may be a small evening ritual that gives those hours a little more warmth.'],
     blend_joy_gratitude: ['There is a lovely little loop here: something went well, and you noticed its value.', 'The good feeling seems to have made room for appreciation too.', 'It is nice when a bright moment is not rushed past before it can land.', 'This sounds like a moment worth letting stay bright for another minute.'],
+    blend_anxiety_loneliness: ['Worry and loneliness often visit together, each one making the other feel more at home.', 'When your mind is busy with worry and the quiet feels empty at the same time, that is a hard place to be.', 'The worried thoughts and the feeling of being alone may be strengthening each other right now.', 'Both the anxiety and the sense of isolation seem present at the same time, and either one might be a place to start.'],
+    blend_health_anxiety: ['Worrying about your health and carrying general anxiety often walk the same road; noticing which one leads may help you find a starting point.', 'The concern about your body and the sense of worry are probably talking to each other in ways that can feel hard to untangle.', 'It makes sense that health concerns would stir up more general worry, or the other way around.', 'These two threads -- what your body is doing and what your mind is fearing -- may be woven together more tightly than they first appear.'],
+    blend_grief_anger: ['Grief and anger often share the same space, especially when a loss leaves things unresolved between you.', 'The loss and the anger may be connected: sometimes the pain has nowhere else to go.', 'Beneath the anger about this loss there may be something that still needs to be said or grieved.', 'Grief and anger are both present here, and that combination carries its own, particular kind of weight.'],
   };
 
   const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25 };
@@ -710,6 +760,7 @@
     professionalBoundary,
     selfAwareness,
     exitKeywords,
+    exitConfirmMessages,
     greetings,
     greetingsPhase1,
     greetingsPhase2,
@@ -778,10 +829,13 @@
       dateLocale: 'en-US',
       connectionError: 'Something went wrong connecting. Please reload the page.',
       breatheTitle: 'Breathing exercise',
-      breatheIn: 'Breathe in (4 counts)',
-      breatheHold: 'Hold (7 counts)',
-      breatheOut: 'Breathe out (8 counts)',
+      breatheIn: 'Breathe in',
+      breatheHold: 'Hold',
+      breatheOut: 'Breathe out',
       breatheDismiss: 'Close',
+      exitConfirmBarLabel: 'Do you want to end this conversation?',
+      exitConfirmBarYes: 'Yes, end it',
+      exitConfirmBarNo: 'No, continue',
       breatheOffer: 'Would you like to try a calming breathing exercise together?',
       breatheAccept: 'Yes, let us begin',
       breatheDecline: 'No, thank you',

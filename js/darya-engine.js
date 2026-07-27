@@ -526,12 +526,30 @@
 
     /**
      * Checks whether the (normalized) input signals the user wants to leave.
+     * Short messages (<= 5 words) are treated as exit commands if they
+     * contain any exit keyword. For longer messages, the exit keyword must
+     * appear within the first or last 3 words of the message, preventing
+     * a goodbye word in the middle of a story (e.g. "I told them goodbye
+     * and then we left") from prematurely ending the conversation while
+     * still catching long but genuine farewells (e.g. "خیلی ممنون بدرود").
      * @param {string} rawText
      * @returns {boolean}
      */
     isExitCommand(rawText) {
       const normalized = normalizeForMatching(rawText, this.lang).toLowerCase();
-      return this.lang.exitKeywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
+      const words = normalized.split(/\s+/u).filter(Boolean);
+      // Short messages: any exit keyword match counts
+      if (words.length <= 5) {
+        return this.lang.exitKeywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
+      }
+      // Longer messages: only match if the exit keyword appears in the
+      // first 3 or last 3 words (catches genuine farewells while
+      // ignoring goodbye words embedded in a story).
+      const prefix = words.slice(0, 3).join(' ');
+      const suffix = words.slice(-3).join(' ');
+      return this.lang.exitKeywords.some((keyword) =>
+        prefix.includes(keyword.toLowerCase()) || suffix.includes(keyword.toLowerCase())
+      );
     }
 
     /**
@@ -762,15 +780,39 @@
      * @returns {string|null}
      */
     _handleFactualQuestion(text) {
-      // Simple arithmetic: "what is X + Y?", "what's 5 * 3?", etc.
-      const mathMatch = text.match(/(?:what\s+is|what'?s)\s*(\d+)\s*([+\-*xX\/])\s*(\d+)/i);
+      // Simple arithmetic in English: "what is X + Y?", "what's 5 * 3?", etc.
+      const enMatch = text.match(/(?:what\s+is|what'?s)\s*(\d+)\s*([+\-*xX\/])\s*(\d+)/i);
+      // Simple arithmetic in Persian: "۲+۳ چند می‌شود؟" or "۵ ضربدر ۳" or "۱۰ تقسیم بر ۲" etc.
+      const faMatch = this.lang.code === 'fa'
+        ? text.match(/([۰-۹0-9]+)\s*([+\-*xX\/\u00D7]|تقسیم\s+بر|ضربدر|بعلاوه|منهای)\s*([۰-۹0-9]+).*(?:چند|چقدر|چیست|چیه)/u)
+        : null;
+      const mathMatch = enMatch || faMatch;
       if (mathMatch) {
-        const a = parseInt(mathMatch[1], 10);
-        const b = parseInt(mathMatch[3], 10);
+        // For English: groups are 1=num, 2=op, 3=num.
+        // For Persian: groups are 1=num, 2=opWord, 3=num.
+        const a = parseInt(
+          String(mathMatch[1]).replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))),
+          10
+        );
+        const b = parseInt(
+          String(mathMatch[3]).replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))),
+          10
+        );
         const opRaw = mathMatch[2];
         let result;
-        // Normalize multiplication variants
-        const op = opRaw === 'x' || opRaw === 'X' ? '*' : opRaw;
+        // Normalize operators: both English (+, -, *, x, /) and Persian (بعلاوه, منهای, ضربدر, تقسیم بر, ×)
+        let op;
+        if (opRaw === 'x' || opRaw === 'X' || opRaw === '×' || opRaw === 'ضربدر') {
+          op = '*';
+        } else if (opRaw === 'تقسیم' || opRaw === 'تقسیم بر' || opRaw.toLowerCase() === '/') {
+          op = '/';
+        } else if (opRaw === 'بعلاوه' || opRaw === '+') {
+          op = '+';
+        } else if (opRaw === 'منهای' || opRaw === '-') {
+          op = '-';
+        } else {
+          op = opRaw;
+        }
         switch (op) {
           case '+': result = a + b; break;
           case '-': result = a - b; break;
@@ -779,17 +821,28 @@
           default: result = null;
         }
         if (result !== null && Number.isFinite(result)) {
-          const answer = `${a} ${opRaw} ${b} = ${result}.`;
+          const isPersian = this.lang.code === 'fa';
+          const answerOp = isPersian
+            ? opRaw.replace(/[+\-*\/xX]/g, (m) => ({ '+': ' به‌علاوه', '-': ' منهای', '*': ' ضربدر', '/': ' تقسیم بر', 'x': ' ضربدر', 'X': ' ضربدر' })[m] || m)
+            : opRaw;
+          const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+          const toPersian = (n) => String(n).replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)]);
+          const answer = isPersian
+            ? `${toPersian(a)} ${answerOp} ${toPersian(b)} مساوی است با ${toPersian(result)}.`
+            : `${a} ${answerOp} ${b} = ${result}.`;
           const followup = this.lang.factualQuestionFollowups && this.lang.factualQuestionFollowups.length
             ? ` ${this._pickVaried(this.lang.factualQuestionFollowups)}`
             : '';
           return answer + followup;
         }
         if (op === '/' && b === 0) {
+          const answer = this.lang.code === 'fa'
+            ? 'تقسیم بر صفر تعریف‌نشده است.'
+            : 'Dividing by zero is undefined.';
           const followup = this.lang.factualQuestionFollowups && this.lang.factualQuestionFollowups.length
             ? ` ${this._pickVaried(this.lang.factualQuestionFollowups)}`
             : '';
-          return `Dividing by zero is undefined.${followup}`;
+          return answer + followup;
         }
       }
       return null;
@@ -869,8 +922,8 @@
       this.currentTurnQuestionNeed = this.questionNeedScore(this.currentTurnDialogueAct, this.currentTurnTopics);
       this.currentTurnSeriousness = this._seriousnessForTurn(this.currentTurnTopics);
       this.lastTurnNeedsCare = this.currentTurnSeriousness >= 0.5
-        || /\b(?:help|advice|problem|crisis|difficult|hard|worried)\b/iu.test(normalized)
-        || /(?<!\p{L})(?:کمک|مشورت|مشکل|سخت|نگران|بحران)(?!\p{L})/u.test(normalized);
+        || /\b(?:help|advice|problem|crisis|difficult|hard|worried|angry|mad|frustrated|annoyed|pissed)\b/iu.test(normalized)
+        || /(?<!\p{L})(?:کمک|مشورت|مشکل|سخت|نگران|بحران|عصبانی|خشمگین|کفری|عصبی|ناراحت|ناراحتم)(?!\p{L})/u.test(normalized);
       this.memory.rememberSeriousness(this.currentTurnSeriousness);
       this.memory.rememberTopics(this.currentTurnTopics);
       this.memory.updateSubject(this.currentTurnTopics, entities);
@@ -948,6 +1001,7 @@
 
       // --- Smart overrides that run after normal routing ---------------
       const _safetyTurn = matchedRule && matchedRule.topic === 'safety';
+      let _overrideFired = false; // Set when an override replaces reply, so emotion calibration skips redundant prepending.
 
       // Factual question: answer simple math first (weakest override).
       // Never overrides safety responses.
@@ -957,6 +1011,7 @@
         const factualReply = this._handleFactualQuestion(normalized);
         if (factualReply) {
           reply = factualReply;
+          _overrideFired = true;
         }
       }
 
@@ -970,6 +1025,7 @@
           const template = this._pickVaried(pool);
           reply = template.replace(/\{word\}/gu, repetition.word)
             .replace(/\{count\}/gu, String(repetition.count));
+          _overrideFired = true;
         }
       }
 
@@ -983,6 +1039,7 @@
           : false;
         if (frustrationType || hasInsult) {
           reply = this._pickVaried(this.lang.frustrationResponses);
+          _overrideFired = true;
         }
       }
 
@@ -993,6 +1050,7 @@
         && this.memory.turnCount >= 3 && this.lang.teasingMockingResponses) {
         if (this._detectTeasingOrMocking(rawText, matchingText)) {
           reply = this._pickVaried(this.lang.teasingMockingResponses);
+          _overrideFired = true;
         }
       }
 
@@ -1005,14 +1063,19 @@
         && this.lang.wellBeingResponses) {
         if (this._detectWellBeingCheck(matchingText)) {
           reply = this._pickVaried(this.lang.wellBeingResponses);
+          _overrideFired = true;
         }
       }
 
-      // Emotion-aware calibration: adjust tone based on detected emotion
-      // Skip calibration for blend responses (already emotionally tuned),
+      // Emotion-aware calibration: adjust tone based on detected emotion.
+      // Skip when an override already set the reply (frustration, teasing,
+      // wellbeing, boredom, word-repetition -- they already carry their own
+      // emotional framing, and prepending a calibration prefix would be
+      // redundant). Also skip blend responses (already emotionally tuned),
       // safety turns, and greetings/meta-topic responses.
       const primaryEmotion = this._detectPrimaryEmotion(matchingText);
-      if (primaryEmotion !== 'neutral' && this.currentTurnDialogueAct !== 'safety'
+      if (!_overrideFired && primaryEmotion !== 'neutral'
+        && this.currentTurnDialogueAct !== 'safety'
         && !blendKey && !isRepeatedGreeting && !isSpamNoise) {
         reply = this._calibrateEmotionalTone(reply, primaryEmotion);
       }
@@ -1030,6 +1093,7 @@
         const allBrief = recentUtterances.every((u) => u.split(/\s+/u).filter(Boolean).length <= 3);
         if (allBrief && Math.random() < 0.4) {
           reply = this._pickVaried(this.lang.boredomResponses);
+          _overrideFired = true;
         }
       }
 
@@ -1223,7 +1287,8 @@
         { name: 'excited', patterns: /(?:excited|thrilled|amazing|awesome|great news|هیجان|عالی|فوق‌العاده|خارق‌العاده)/iu },
         { name: 'angry', patterns: /(?:angry|furious|pissed|hate|mad|annoyed|عصبانی|خشم|نفرت|کفری|عصبی)/iu },
         { name: 'grieving', patterns: /(?:grief|loss|died|passed away|gone|miss|mourn|فقدان|فوت|از دست دادن|داغ|سوگ)/iu },
-        { name: 'anxious', patterns: /(?:anxious|worry|panic|scared|afraid|terrified|nervous|نگران|اضطراب|ترس|دلشوره|وحشت|هراس)/iu },
+        { name: 'fear', patterns: /(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|shook|لرزیدن|هراس|فوبیا|ترس\s+مرگ|شوکه|دلهره)/iu },
+        { name: 'anxious', patterns: /(?:anxious|worry|panic|scared|afraid|nervous|نگران|اضطراب|ترس|دلشوره|وحشت)/iu },
         // Body sensation patterns that suggest stress or anxiety
         { name: 'anxious', patterns: /(?:heart\s+(?:racing|pounding|beating)|sweating|shaking|trembling|chest\s+(?:tight|heavy)|short\s+of\s+(?:breath|breathe)|palpitations|dizzy|nausea)/iu },
         { name: 'sad', patterns: /(?:sad|depressed|down|unhappy|miserable|empty|numb|غمگین|ناراحت|افسرده|بی‌حال)/iu },
@@ -1306,6 +1371,7 @@
       const pairs = [
         ['sleep', 'anxiety'], ['work', 'anger'], ['family', 'sadness'],
         ['loneliness', 'sleep'], ['joy', 'gratitude'],
+        ['anxiety', 'loneliness'], ['health', 'anxiety'], ['grief', 'anger'],
       ];
       const found = pairs.find((pair) => pair.every((topic) => topics.includes(topic)));
       return found ? `blend_${found.join('_')}` : null;
@@ -1436,16 +1502,42 @@
       return this._openingForNewConversation();
     }
 
-    /** Returns a varied opening greeting and records it in memory. */
+    /**
+     * Returns a varied opening greeting and records it in memory.
+     * Uses phase-aware greeting pools (Phase 1 for very first message,
+     * Phase 2 for first follow-up, returning pool if entities are
+     * remembered, or open/inviting pools otherwise) so the conversation
+     * starts with a contextually appropriate invitation.
+     *
+     * @returns {string}
+     */
     greeting() {
       const text = this._phaseGreeting();
       this.memory.rememberBotMessage(text);
       return text;
     }
 
-    /** Returns a varied farewell and records it in memory. */
+    /**
+     * Returns a varied farewell and records it in memory.
+     *
+     * @returns {string}
+     */
     farewell() {
       const text = this._pickVaried(this.lang.farewells);
+      this.memory.rememberBotMessage(text);
+      return text;
+    }
+
+    /**
+     * Returns a neutral, open-ended confirmation message asking the user
+     * if they really want to end the conversation. Called on the first
+     * detection of an exit command, before the actual farewell. If the
+     * user sends another exit-like message, the engine calls farewell()
+     * instead.
+     * @returns {string}
+     */
+    exitConfirmation() {
+      const text = this._pickVaried(this.lang.exitConfirmMessages);
       this.memory.rememberBotMessage(text);
       return text;
     }

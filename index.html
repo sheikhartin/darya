@@ -48,6 +48,8 @@
       }
       if (stored === 'beach' || stored === 'ocean') {
         document.documentElement.setAttribute('data-theme', stored);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'ocean');
       }
       // Disable transitions during initial load to prevent flash of
       // animated theme change. The class is removed after a tick.
@@ -220,6 +222,14 @@
     </div>
 
     <p class="input-hint" id="input-hint" role="alert" hidden></p>
+
+    <div class="exit-confirm-bar" id="exit-confirm-bar" role="alertdialog" aria-label="Confirm exit" hidden>
+      <span class="exit-confirm-bar__label" id="exit-confirm-label"></span>
+      <div class="exit-confirm-bar__actions">
+        <button class="exit-confirm-bar__btn exit-confirm-bar__btn--yes" id="exit-confirm-yes" type="button" title="Confirm exit"></button>
+        <button class="exit-confirm-bar__btn exit-confirm-bar__btn--no" id="exit-confirm-no" type="button" title="Cancel exit"></button>
+      </div>
+    </div>
 
     <form class="composer" id="composer" autocomplete="off">
       <textarea

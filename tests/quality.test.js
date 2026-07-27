@@ -403,9 +403,11 @@ test('topic question pools are present for every declared topic', () => {
   }
 });
 
-test('topic blend pools cover the five common combinations', () => {
+test('topic blend pools cover every declared combination in both languages', () => {
   for (const lang of [FA, EN]) {
-    for (const key of ['blend_sleep_anxiety', 'blend_work_anger', 'blend_family_sadness', 'blend_loneliness_sleep', 'blend_joy_gratitude']) {
+    const keys = Object.keys(lang.blendResponses);
+    assert.ok(keys.length >= 5, `${lang.code}: expected at least 5 blend pools, got ${keys.length}`);
+    for (const key of keys) {
       assert.ok(Array.isArray(lang.blendResponses[key]), `${lang.code}:${key}`);
       assert.ok(lang.blendResponses[key].length >= 4);
     }
