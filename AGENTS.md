@@ -1,4 +1,4 @@
-# AGENTS.md -- Software Development Standards & Practices
+# AGENTS.md: Software Development Standards and Practices
 
 > **Purpose**: This file defines the conventions, standards, and preferences that guide all software development work. It is project-agnostic, applicable to any application built with JavaScript, TypeScript, or Python.
 >
@@ -238,9 +238,146 @@ This structure keeps related code close together, makes it easy to reason about 
 - **Rate limiting**: On all public API endpoints. Use a sliding window or token bucket algorithm.
 - **SQL injection**: Use parameterized queries or an ORM. Never concatenate user input into SQL strings.
 
+### Dependency Evaluation Criteria
+
+Before adding any dependency (including devDependencies), evaluate against these criteria:
+1. **Is it necessary?** Can we use a built-in API or write a simple helper instead?
+2. **Is it maintained?** Commits within 6 months, clear changelog, semver adherence.
+3. **Is it stable?** 2+ years old OR strong community adoption.
+4. **Is it secure?** No known vulnerabilities (`npm audit`).
+5. **Is it lightweight?** Check bundle size. Prefer small focused libs over monolithic ones.
+6. **Is it license-compatible?** MIT, Apache 2.0, BSD, or similar permissive. No GPL/AGPL without legal review.
+
+**Process**: Propose with justification -> get user approval -> install -> audit -> pin to the exact release number (no `^`/`~`). Never add dependencies for trivial functionality (one-liners, simple utilities).
+
 ---
 
-## 7. Commit & Documentation Conventions
+## 7. AI Ethics & Responsible Development
+
+### Transparency
+- Clearly communicate when the user is interacting with an AI, not a human.
+- Do not imply capabilities the system does not have (emotions, genuine understanding, professional qualifications).
+- Use language that sets appropriate expectations.
+
+### Bias Prevention
+- Use inclusive language: avoid gendered pronouns when gender is unknown; default to singular "they".
+- Be aware of cultural, gender, age, and socioeconomic assumptions in language and design.
+- Ensure responses do not reinforce harmful stereotypes.
+
+### Dark Pattern Avoidance
+- Never use manipulative UI patterns: hidden opt-outs, confusing cancellation flows, forced onboarding, guilt-inducing language.
+- Make it easy to undo actions, delete data, and leave the service.
+- Never use urgency or scarcity tactics (fake countdowns, false limited-time claims).
+
+### Privacy by Default
+- No data collection without explicit user consent.
+- Store minimal data. What is not stored cannot be leaked.
+- Local-first when possible. Keep user data on their device rather than on servers.
+- User data deletion must be straightforward and complete.
+
+### Content Safety
+- Do not generate harmful, abusive, or dangerous content.
+- When the user expresses distress, respond with empathy and appropriate resources, and encourage professional help when needed. Never be dismissive.
+- Flag requests that ask the system to generate hate speech, deception, or malicious code.
+
+---
+
+## 8. Performance Guidelines
+
+General principles for writing performant code, not numeric budgets:
+
+- Avoid N+1 queries in database/API access patterns.
+- Lazy load heavy assets (images, libraries, fonts).
+- Use `will-change` sparingly and only on composited properties (`opacity`, `transform`).
+- Prefer passive event listeners for scroll/touch events.
+- Avoid synchronous layout thrashing (batch DOM reads before writes).
+- Use `requestAnimationFrame` for visual updates, `setTimeout` for non-visual delays.
+- Monitor memory in long-running client-side apps (chat, realtime).
+- Test on low-end devices and slow network conditions (throttling).
+
+---
+
+## 9. Autonomy Boundaries
+
+Defines what the agent can do autonomously vs. what requires explicit user approval:
+
+**Requires user approval:**
+- Modifying config files (`package.json`, `tsconfig.json`, etc.).
+- Adding new dependencies (any `npm install` / `pip install`).
+- Deleting files or directories.
+- Infrastructure or production-related changes.
+- Modifying lock files.
+
+**Autonomous (within scope of the current task):**
+- Editing source files related to the task.
+- Running tests, linters, and formatters.
+- Reading documentation and exploring the codebase.
+- Making minor refactors that do not change external behavior.
+
+---
+
+## 10. Debugging & Troubleshooting
+
+A structured workflow for diagnosing issues:
+
+### Step-by-step Guide
+
+1. **Reproduce first** -- Always try to reproduce the issue before investigating.
+2. **Check the console/logs** -- Look for error messages, warnings, stack traces.
+3. **Isolate the problem** -- Binary search: disable half the code, see if issue persists, repeat.
+4. **Write a minimal reproduction** -- Strip away unrelated code until only the failing part remains.
+5. **Check recent changes** -- `git diff`, `git log` to see what changed recently.
+6. **Write a regression test** -- Confirm the fix works by adding a test that would have caught the bug.
+7. **Document the root cause** -- In comments or a postmortem, explain why the bug happened.
+
+### Common Debugging Tools
+
+- `console.log` / `console.error` with labeled output.
+- Debugger statement / breakpoints.
+- Network tab for API issues.
+- Performance tab for rendering/speed issues.
+- `node --inspect` for server-side debugging.
+
+### When to Ask for Help
+
+- After 15 minutes of unsuccessful investigation.
+- When the bug involves an unfamiliar system or library.
+- When the fix is unclear and experimenting could cause harm.
+
+---
+
+## 11. Team Communication Standards
+
+### How to Present Findings
+
+- Start with the conclusion, then provide supporting evidence.
+- Use this structure: Summary -> Details -> Options -> Recommendation.
+- For bug reports: Expected behavior / Actual behavior / Steps to reproduce / Environment / Proposed fix.
+- For feature proposals: Problem statement / Proposed solution / Alternatives considered / Trade-offs.
+
+### How to Ask Clarifying Questions
+
+- Be specific about what you know and what you need.
+- Format: "I understand [X], but I need clarification on [Y] because [Z]".
+- Provide options when possible: "Should I do A, B, or C? Here is what each option entails...".
+- If you need the user to make a decision, make the decision easy: limit options to 2-3, describe trade-offs concisely.
+
+### Status Updates
+
+- After completing a task: provide a 3-5 line summary of what was done, why, and what the next steps are.
+- If blocked: state what is blocking, what you have tried, and what you need.
+- Before starting a complex change: outline the approach and get feedback first.
+
+### Communication Principles
+
+- Be direct but respectful. Avoid excessive flattery, apologies, or hedging language.
+- No em dashes or double-hyphen dashes in written communication. Use single hyphens or restructure sentences.
+- Use code snippets and examples to clarify technical points.
+- When disagreeing, focus on the technical trade-offs, not the person.
+
+---
+
+## 12. Commit & Documentation Conventions
 
 ### Commit Messages
 
@@ -273,7 +410,29 @@ docs(readme): update installation instructions for v2
 
 ---
 
-## 8. The Decision Process
+## 13. Internationalization & Localization
+
+### Layout & Direction
+- Use CSS **logical properties** (`inset-inline`, `padding-inline`, `margin-block`, `border-inline`, `text-align: start/end`) over physical ones (`left`, `right`, `top`, `bottom`) for automatic RTL/LTR support.
+- Use the `dir` attribute on `<html>` to control document direction.
+- For mixed RTL/LTR content within a page, set `dir` on the specific element.
+- Icons and symbols should mirror in RTL contexts (e.g., arrow icons should flip).
+
+### Formatting
+- Use `Intl.DateTimeFormat` for all date/time display. Never format dates manually.
+- Use `Intl.NumberFormat` for numbers, currencies, and percentages.
+- Use `Intl.RelativeTimeFormat` for relative timestamps ("2 hours ago").
+- Use `Intl.PluralRules` for pluralization, never simple string concatenation.
+
+### Language Pack Structure
+- Each locale is a separate module/object with all translatable strings in one place.
+- Strings are organized by component/feature, not by page.
+- Include `dir` and `code` fields in each locale object.
+- Mark non-translatable strings (brand names, code snippets) with a clear convention.
+
+---
+
+## 14. The Decision Process
 
 Every change, from a single line fix to a multi-file feature, follows the same deliberative process:
 
@@ -315,7 +474,7 @@ Each perspective is considered before a decision is made. No change is shipped w
 
 ---
 
-## 9. Professional Values
+## 15. Professional Values
 
 - **Think before acting.** The fastest way to write bad code is to start typing without understanding.
 - **Ask when uncertain.** A clarifying question is always better than a wrong assumption.
@@ -324,6 +483,22 @@ Each perspective is considered before a decision is made. No change is shipped w
 - **Respect the maintenance burden.** Every line of code is a line that must be read, understood, and maintained. Write less, but write it well.
 - **Test your assumptions.** If you're not sure how something works, test it. A quick experiment is cheaper than a production incident.
 - **Learn from incidents.** Every bug is an opportunity to improve the process. Write a regression test. Update the checklists. Improve the automation.
+
+---
+
+## 16. Definition of Done
+
+A task is complete only when ALL of the following are true:
+
+1. **All tests pass.** Run the full test suite. The entire suite must be green.
+2. **No regressions.** Verify existing functionality still works as expected.
+3. **No debug artifacts.** No `console.log`, `debugger`, `TODO`, `FIXME`, commented-out code, or temporary test code left in the codebase.
+4. **Self-review completed.** Re-read your own diff as a reviewer. Look for dead code, unnecessary complexity, unclear naming, missing edge cases, inconsistent patterns.
+5. **Edge cases handled.** For every change, consider: empty state, error state, boundary values, unexpected input.
+6. **Documentation updated.** If the change affects public API, configuration, or user-facing behavior, update the relevant docs.
+7. **No new vulnerabilities.** Review for injection risks, XSS, CSRF, and other OWASP Top 10 issues.
+8. **Regression test written.** For bug fixes, add a test that reproduces the original bug and passes with the fix.
+9. **Summary provided.** Brief summary of what changed, why, what alternatives were considered, and any decisions future maintainers should understand.
 
 ---
 

@@ -133,9 +133,11 @@
         <span lang="en" dir="ltr" class="picker__lang-lock-en">Language locks once your conversation begins.</span>
       </div>
 
-      <!-- Theme selection heading -->
-      <p class="picker__theme-heading" id="picker-theme-heading">
-        <span lang="fa" dir="rtl">انتخاب پوسته</span>
+      <!-- Theme selection heading: RTL direction ensures the Farsi
+           text stays on the right side and English on the left, with
+           consistent alignment regardless of the overall page dir. -->
+      <p class="picker__theme-heading" id="picker-theme-heading" dir="rtl">
+        <span lang="fa">انتخاب پوسته</span>
         <span class="picker__note-sep">·</span>
         <span lang="en" dir="ltr">Choose your theme</span>
       </p>
@@ -250,12 +252,17 @@
     </p>
   </div>
 
-  <script src="js/knowledge-base.js"></script>
+  <script src="js/data/knowledge-base.js"></script>
   <script src="js/languages/halfspace.js"></script>
   <script src="js/languages/entity-extractor.js"></script>
   <script src="js/languages/fa.js"></script>
   <script src="js/languages/en.js"></script>
-  <script src="js/darya-engine.js"></script>
+  <script src="js/engine/utils.js"></script>
+  <script src="js/engine/responder.js"></script>
+  <script src="js/ui/core.js"></script>
+  <script src="js/ui/ambient.js"></script>
+  <script src="js/ui/export.js"></script>
+  <script src="js/ui/overlays.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

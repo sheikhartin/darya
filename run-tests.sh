@@ -104,12 +104,12 @@ run_smoke() {
 # -------------------------------------------------------------------
 run_engine() {
   if $VERBOSE; then
-    node --test-reporter tap tests/engine.test.js 2>&1
+    node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1
     return $?
   fi
 
   local output
-  output="$(node --test-reporter tap tests/engine.test.js 2>&1)"
+  output="$(node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1)"
   local rc=$?
   local parsed
   parsed="$(parse_engine_result "$output")"
@@ -162,7 +162,7 @@ run_multi_round() {
 
   for i in $(seq 1 "$total"); do
     local output
-    output="$(node --test-reporter tap tests/engine.test.js 2>&1)"
+    output="$(node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1)"
     local rc=$?
 
     local fail_count

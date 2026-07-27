@@ -14,12 +14,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 global.window = global;
-require(path.join(__dirname, '..', 'js', 'knowledge-base.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'halfspace.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'entity-extractor.js'));
+require(path.join(__dirname, '..', 'js', 'data', 'knowledge-base.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'fa.js'));
 require(path.join(__dirname, '..', 'js', 'languages', 'en.js'));
-require(path.join(__dirname, '..', 'js', 'darya-engine.js'));
+require(path.join(__dirname, '..', 'js', 'engine', 'utils.js'));
+require(path.join(__dirname, '..', 'js', 'engine', 'responder.js'));
 
 const ROOT = path.join(__dirname, '..');
 const { DaryaResponseEngine, normalizeForMatching } = global.DaryaEngine;
@@ -289,8 +290,8 @@ test('all entity callback templates are context-specific and nonempty', () => {
 });
 
 test('knowledge module is precached for offline use', () => {
-  assert.match(read('sw.js'), /js\/knowledge-base\.js/u);
-  assert.match(read('index.html'), /js\/knowledge-base\.js/u);
+  assert.match(read('sw.js'), /knowledge-base\.js/u);
+  assert.match(read('index.html'), /knowledge-base\.js/u);
 });
 
 test('knowledge replies do not claim personal experience or authority', () => {
@@ -312,7 +313,7 @@ test('full scenario fixture files contain multiple turns and expectations', () =
 });
 
 test('all code remains browser-loadable without module syntax', () => {
-  for (const file of ['js/knowledge-base.js', 'js/darya-engine.js', 'js/languages/fa.js', 'js/languages/en.js']) {
+  for (const file of ['js/data/knowledge-base.js', 'js/engine/utils.js', 'js/engine/responder.js', 'js/languages/fa.js', 'js/languages/en.js']) {
     assert.doesNotMatch(read(file), /^export\s|^import\s/mu, file);
   }
 });
@@ -329,7 +330,7 @@ test('theme token system has both on-bright and surface roles', () => {
 });
 
 test('quality fixture: all application shell files exist', () => {
-  for (const file of ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'sw.js', 'manifest.json']) {
+  for (const file of ['index.html', 'css/style.css', 'js/app.js', 'js/engine/utils.js', 'js/engine/responder.js', 'sw.js', 'manifest.json']) {
     assert.ok(fs.existsSync(path.join(ROOT, file)), file);
   }
 });
@@ -437,7 +438,7 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
   const html = read('index.html');
   const app = read('js/app.js');
   assert.match(html, /menu-trigger[^>]*aria-controls="menu-popover"/u);
-  assert.match(app, /menuItemElements/);
+  assert.match(app, /menuFocusIndex/);
   assert.match(app, /ArrowDown/);
   assert.match(app, /ArrowUp/);
   assert.match(app, /closeMenu\(true\)/);
@@ -508,11 +509,11 @@ test('beach composer scrim is warm and restrained rather than a black shadow', (
 });
 
 test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', () => {
-  const app = read('js/app.js');
+  const ambient = read('js/ui/ambient.js');
   const css = read('css/style.css');
-  assert.match(app, /const count = 8/u);
-  assert.match(app, /randomBetween\(4, 14\)/u);
-  assert.match(app, /randomBetween\(14, 22\)/u);
+  assert.match(ambient, /const count = 8/u);
+  assert.match(ambient, /randomBetween\(4, 14\)/u);
+  assert.match(ambient, /randomBetween\(14, 22\)/u);
   assert.match(css, /backdrop__depth-breath/u);
   assert.match(css, /@keyframes depth-breathe/u);
   assert.match(css, /@keyframes horizon-drift[\s\S]*translateX/u);
@@ -552,13 +553,13 @@ test('service worker uses a non-versioned cache name and precaches the app shell
   const sw = read('sw.js');
   assert.match(sw, /const CACHE_NAME = 'darya-cache-current'/u);
   assert.doesNotMatch(sw, /CACHE_VERSION|darya-v\d/u);
-  for (const entry of ['./index.html', './css/style.css', './js/app.js', './js/darya-engine.js', './js/languages/fa.js', './js/languages/en.js', './js/languages/entity-extractor.js', './js/languages/halfspace.js']) {
+  for (const entry of ['./index.html', './css/style.css', './js/app.js', './js/engine/utils.js', './js/engine/responder.js', './js/ui/core.js', './js/ui/ambient.js', './js/ui/export.js', './js/ui/overlays.js', './js/data/knowledge-base.js', './js/languages/halfspace.js', './js/languages/entity-extractor.js', './js/languages/fa.js', './js/languages/en.js']) {
     assert.match(sw, new RegExp(entry.replaceAll('.', '\\.'), 'u'), entry);
   }
 });
 
 test('application text contains no em dash or identity claims', () => {
-  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'package.json'];
+  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/engine/utils.js', 'js/engine/responder.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'package.json'];
   const forbidden = ['language model', 'LLM', 'AI assistant', 'therapist', 'counselor'];
   for (const file of files) {
     const text = read(file);
@@ -568,7 +569,7 @@ test('application text contains no em dash or identity claims', () => {
 });
 
 test('application has no numeric release or cache identifier', () => {
-  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/darya-engine.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'sw.js', 'package.json'];
+  const files = ['index.html', 'css/style.css', 'js/app.js', 'js/engine/utils.js', 'js/engine/responder.js', 'js/languages/en.js', 'js/languages/fa.js', 'README.md', 'sw.js', 'package.json'];
   for (const file of files) {
     const text = read(file);
     assert.doesNotMatch(text, /darya-v\d|CACHE_VERSION|"version"\s*:/u, file);
