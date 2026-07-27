@@ -1,4 +1,6 @@
-# Darya (دریا) - A Calm Conversation Companion
+# Darya (دریا)
+
+*A calm conversation companion.*
 
 Darya is a thoughtful, bilingual (Persian/English) conversation companion that listens and responds with care. Pick a language, choose your theme, and start a conversation. No sign-up, no data collection, no server.
 
@@ -44,14 +46,8 @@ The only persistent data is your theme preference (Ocean or Beach), stored as a 
 
 ## Offline Use
 
-After the first visit, Darya works fully offline. The service worker precaches the entire app. You can install it on your phone or desktop as a Progressive Web App (PWA). See OFFLINE.md for details.
-
-## About the Project
-
-Darya is a bilingual (Persian/English), fully offline conversation companion rooted in the tradition of reflective listening. Built entirely with vanilla HTML, CSS, and JavaScript, Darya requires no external dependencies, no runtime services, and no network connection after the first visit. The app uses a carefully engineered rule-based expert system (in the lineage of ELIZA and Rogerian-style companions) rather than AI models or server-side processing, ensuring complete privacy: every conversation exists only in the browser tab and vanishes when the tab is closed.
-
-The project is distributed under the PolyForm Noncommercial License 1.0.0 -- see [LICENSE.md](LICENSE.md) for details.
+After the first visit, Darya works fully offline. You can install it on your phone or desktop as a Progressive Web App. See the OFFLINE.md file for details.
 
 ## License
 
-Copyright (c) 2026 Artin Mohammadi. Licensed under the PolyForm Noncommercial License 1.0.0 -- see the [LICENSE.md](LICENSE.md) file for the full terms. This license allows personal and noncommercial use only. Commercial use requires a separate agreement.
+Copyright (c) 2026 Artin Mohammadi. Licensed under the PolyForm Noncommercial License 1.0.0. See [LICENSE.md](LICENSE.md) for the full terms. This license allows personal and noncommercial use only. Commercial use requires a separate agreement.
