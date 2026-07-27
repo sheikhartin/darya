@@ -6,11 +6,17 @@
 # markers) then the Node.js engine test suite. With -n N, runs the engine
 # tests N times and prints a pass/fail summary.
 #
+# Output modes:
+#   Default:     Minimal result line (e.g. "Passed: 10/10 (100%)")
+#   Verbose (-v): Per-round progress, failure details, full context
+#
 # Usage:
-#   ./run-tests.sh                   # single run (smoke + engine)
-#   ./run-tests.sh -n 10             # 10 rounds of engine tests with report
-#   ./run-tests.sh -n 5 --smoke-only # smoke test only, 5 rounds
-#   ./run-tests.sh --engine-only     # engine tests only, single run
+#   ./run-tests.sh                        # single run (smoke + engine)
+#   ./run-tests.sh -n 10                  # 10 rounds of engine tests
+#   ./run-tests.sh -n 5 -v                # 5 rounds with verbose output
+#   ./run-tests.sh -n 5 --smoke-only      # smoke test only, 5 rounds
+#   ./run-tests.sh --engine-only          # engine tests only, single run
+#   ./run-tests.sh -v                     # single run, verbose
 
 set -uo pipefail
 
@@ -46,7 +52,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if ! [[ "$ROUNDS" =~ ^[0-9]+$ ]] || [ "$ROUNDS" -lt 1 ]; then
+if ! [[ "$ROUNDS" =~ ^[0-9]+$ ]] || [ "$ROUNDS" -lt 1 ]]; then
   echo "Error: rounds must be a positive integer, got '$ROUNDS'"
   exit 1
 fi
@@ -60,30 +66,33 @@ run_smoke() {
 }
 
 # -------------------------------------------------------------------
-# Single engine test run
+# Single engine test run (captures output, returns exit code)
 # -------------------------------------------------------------------
 run_engine() {
-  node --test-reporter tap tests/engine.test.js 2>&1 | grep -E '^(ok |not ok |# (pass|fail|tests|suites))'
-  return "${PIPESTATUS[0]}"
+  node --test-reporter tap tests/engine.test.js 2>&1
+  return $?
 }
 
 # -------------------------------------------------------------------
-# Single-run: smoke + engine
+# Single-run: smoke + engine (verbose-aware)
 # -------------------------------------------------------------------
 run_all_once() {
   local smoke_ok=0 engine_ok=0
 
   if [ "$MODE" = "engine" ]; then
+    if $VERBOSE; then echo "[ENGINE]"; fi
     run_engine
     return $?
   fi
 
   if [ "$MODE" = "smoke" ] || [ "$MODE" = "all" ]; then
+    if $VERBOSE; then echo "[SMOKE]"; fi
     run_smoke
     smoke_ok=$?
   fi
 
   if [ "$MODE" = "all" ]; then
+    if $VERBOSE; then echo "[ENGINE]"; fi
     run_engine
     engine_ok=$?
   fi
@@ -97,16 +106,17 @@ run_all_once() {
 }
 
 # -------------------------------------------------------------------
-# Multi-round engine-only runner with concise report
+# Multi-round engine-only runner
 # -------------------------------------------------------------------
 run_multi_round() {
   local total=$ROUNDS
   local passed=0 failed=0
   local fail_details=""
 
-  $VERBOSE && echo ""
-  echo "[TEST-RUNNER] Running $total round(s)..."
-  $VERBOSE && echo ""
+  if $VERBOSE; then
+    echo "Running $total rounds..."
+    echo ""
+  fi
 
   for i in $(seq 1 "$total"); do
     local output
@@ -118,36 +128,38 @@ run_multi_round() {
 
     if [ "$fail_count" -eq 0 ]; then
       passed=$((passed + 1))
-      $VERBOSE && echo "  Round $i: PASS"
+      $VERBOSE && printf "  Round %2d: PASS\\n" "$i"
     else
       failed=$((failed + 1))
       local failed_names
       failed_names="$(echo "$output" | grep '^not ok' | sed 's/^not ok [0-9]* - //')"
-      local assert_errors
-      assert_errors="$(echo "$output" | grep 'AssertionError' | head -3)"
-      fail_details="${fail_details}  Round $i: ${failed_names}"$'\n'
-      $VERBOSE && echo "  Round $i: FAIL - ${failed_names}" || true
+      fail_details="${fail_details}  Round $i: ${failed_names}"$'\\n'
+      $VERBOSE && printf "  Round %2d: FAIL - %s\\n" "$i" "$failed_names"
     fi
   done
 
-  local total_ok=$((passed + failed))
   local pass_pct=0
-  if [ "$total_ok" -gt 0 ]; then
-    pass_pct=$(( (passed * 100) / total_ok ))
+  if [ "$total" -gt 0 ]; then
+    pass_pct=$(( (passed * 100) / total ))
   fi
 
-  echo ""
-  echo "[RESULT] Passed: $passed / $total ($pass_pct%)"
-  echo ""
-
-  if [ "$failed" -gt 0 ]; then
-    echo "[FAILURES]"
-    echo "$fail_details"
-    return 1
+  if $VERBOSE; then
+    echo ""
+    echo "Result: $passed / $total ($pass_pct%)"
+    echo ""
+    if [ "$failed" -gt 0 ]; then
+      echo "[FAILURES]"
+      echo "$fail_details"
+    else
+      echo "[ALL PASS]"
+    fi
+  else
+    # Minimal output: just the essential result
+    echo "Passed: $passed/$total ($pass_pct%)"
   fi
 
-  echo "[ALL PASS]"
-  return 0
+  [ "$failed" -eq 0 ]
+  return $?
 }
 
 # -------------------------------------------------------------------
