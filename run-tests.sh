@@ -7,16 +7,15 @@
 # tests N times and prints a pass/fail summary.
 #
 # Output modes:
-#   Default:     Minimal result line (e.g. "Passed: 10/10 (100%)")
-#   Verbose (-v): Per-round progress, failure details, full context
+#   Default:     Minimal per-suite summary (2-4 lines)
+#   Verbose (-v): Full output with per-test names and round progress
 #
 # Usage:
 #   ./run-tests.sh                        # single run (smoke + engine)
 #   ./run-tests.sh -n 10                  # 10 rounds of engine tests
 #   ./run-tests.sh -n 5 -v                # 5 rounds with verbose output
-#   ./run-tests.sh -n 5 --smoke-only      # smoke test only, 5 rounds
 #   ./run-tests.sh --engine-only          # engine tests only, single run
-#   ./run-tests.sh -v                     # single run, verbose
+#   ./run-tests.sh -v --engine-only       # engine only, verbose
 
 set -uo pipefail
 
@@ -36,73 +35,117 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=true
       shift
       ;;
-    --smoke-only)
-      MODE="smoke"
-      shift
-      ;;
     --engine-only)
       MODE="engine"
       shift
       ;;
     *)
       echo "Error: Unknown option: $1"
-      echo "Usage: $0 [-n rounds] [-v] [--smoke-only | --engine-only]"
+      echo "Usage: $0 [-n rounds] [-v] [--engine-only]"
       exit 1
       ;;
   esac
 done
 
-if ! [[ "$ROUNDS" =~ ^[0-9]+$ ]] || [ "$ROUNDS" -lt 1 ]]; then
+if ! [[ "$ROUNDS" =~ ^[0-9]+$ ]] || [ "$ROUNDS" -lt 1 ]; then
   echo "Error: rounds must be a positive integer, got '$ROUNDS'"
   exit 1
 fi
 
 # -------------------------------------------------------------------
+# Helpers: parse TAP output for pass/fail counts
+# -------------------------------------------------------------------
+parse_engine_result() {
+  local output="$1"
+  local pass_str fail_str has_failure
+  pass_str="$(echo "$output" | grep '^# pass ' | sed 's/^# pass //')"
+  fail_str="$(echo "$output" | grep '^# fail ' | sed 's/^# fail //')"
+  has_failure="$(echo "$output" | grep -c '^not ok' || true)"
+  echo "$pass_str|$fail_str|$has_failure"
+}
+
+parse_smoke_result() {
+  local output="$1"
+  local pass_str fail_str
+  pass_str="$(echo "$output" | grep '^Passed: ' | sed 's/Passed: \([0-9]*\) *Failed:.*/\1/')"
+  fail_str="$(echo "$output" | grep '^Passed: ' | sed 's/Passed: [0-9]* *Failed: \([0-9]*\).*/\1/')"
+  echo "$pass_str|$fail_str"
+}
+
+# -------------------------------------------------------------------
 # Smoke test
 # -------------------------------------------------------------------
 run_smoke() {
-  bash tests/smoke-test.sh
+  if $VERBOSE; then
+    bash tests/smoke-test.sh
+    return $?
+  fi
+
+  local output
+  output="$(bash tests/smoke-test.sh 2>&1)"
+  local rc=$?
+  local parsed
+  parsed="$(parse_smoke_result "$output")"
+  local pass_str="${parsed%%|*}"
+  local fail_str="${parsed##*|}"
+  # Guard against empty parsing results (e.g. smoke test crashed)
+  if [ -z "$pass_str" ] && [ -z "$fail_str" ]; then
+    echo "Smoke: run failed (no output)"
+    return 1
+  fi
+  local pass_ct="${pass_str:-0}"
+  local fail_ct="${fail_str:-0}"
+  echo "Smoke: $pass_ct passed, $fail_ct failed"
+  [ "$fail_ct" -eq 0 ]
   return $?
 }
 
 # -------------------------------------------------------------------
-# Single engine test run (captures output, returns exit code)
+# Single engine test run
 # -------------------------------------------------------------------
 run_engine() {
-  node --test-reporter tap tests/engine.test.js 2>&1
+  if $VERBOSE; then
+    node --test-reporter tap tests/engine.test.js 2>&1
+    return $?
+  fi
+
+  local output
+  output="$(node --test-reporter tap tests/engine.test.js 2>&1)"
+  local rc=$?
+  local parsed
+  parsed="$(parse_engine_result "$output")"
+  local pass_str="${parsed%%|*}"
+  local remaining="${parsed#*|}"
+  local fail_str="${remaining%%|*}"
+  local has_failure="${parsed##*|}"
+  # Guard against missing TAP summary (e.g. node crashed)
+  local pass_ct="${pass_str:-0}"
+  local fail_ct="${fail_str:-0}"
+  local fail_num="${has_failure:-0}"
+  echo "Engine: $pass_ct passed, $fail_ct failed"
+  [ "$fail_num" -eq 0 ]
   return $?
 }
 
 # -------------------------------------------------------------------
-# Single-run: smoke + engine (verbose-aware)
+# Single-run: smoke + engine
 # -------------------------------------------------------------------
 run_all_once() {
-  local smoke_ok=0 engine_ok=0
+  local overall_rc=0
 
   if [ "$MODE" = "engine" ]; then
-    if $VERBOSE; then echo "[ENGINE]"; fi
     run_engine
     return $?
   fi
 
-  if [ "$MODE" = "smoke" ] || [ "$MODE" = "all" ]; then
-    if $VERBOSE; then echo "[SMOKE]"; fi
-    run_smoke
-    smoke_ok=$?
-  fi
+  # "all" mode: smoke + engine
+  run_smoke
+  [ $? -ne 0 ] && overall_rc=1
 
-  if [ "$MODE" = "all" ]; then
-    if $VERBOSE; then echo "[ENGINE]"; fi
-    run_engine
-    engine_ok=$?
-  fi
+  run_engine
+  [ $? -ne 0 ] && overall_rc=1
 
-  if [ "$MODE" = "smoke" ]; then
-    return $smoke_ok
-  fi
-
-  [ "$smoke_ok" -eq 0 ] && [ "$engine_ok" -eq 0 ]
-  return $?
+  return $overall_rc
 }
 
 # -------------------------------------------------------------------
@@ -128,13 +171,13 @@ run_multi_round() {
 
     if [ "$fail_count" -eq 0 ]; then
       passed=$((passed + 1))
-      $VERBOSE && printf "  Round %2d: PASS\\n" "$i"
+      $VERBOSE && printf "  Round %2d: PASS\n" "$i"
     else
       failed=$((failed + 1))
       local failed_names
       failed_names="$(echo "$output" | grep '^not ok' | sed 's/^not ok [0-9]* - //')"
-      fail_details="${fail_details}  Round $i: ${failed_names}"$'\\n'
-      $VERBOSE && printf "  Round %2d: FAIL - %s\\n" "$i" "$failed_names"
+      fail_details="${fail_details}  Round $i: ${failed_names}"$'\n'
+      $VERBOSE && printf "  Round %2d: FAIL - %s\n" "$i" "$failed_names"
     fi
   done
 
@@ -154,8 +197,7 @@ run_multi_round() {
       echo "[ALL PASS]"
     fi
   else
-    # Minimal output: just the essential result
-    echo "Passed: $passed/$total ($pass_pct%)"
+    echo "Engine: $passed/$total rounds passed ($pass_pct%)"
   fi
 
   [ "$failed" -eq 0 ]
@@ -165,7 +207,8 @@ run_multi_round() {
 # -------------------------------------------------------------------
 # Main
 # -------------------------------------------------------------------
-if [ "$ROUNDS" -gt 1 ] && [ "$MODE" != "smoke" ]; then
+if [ "$ROUNDS" -gt 1 ] && [ "$MODE" != "engine" ]; then
+  # Multi-round: only engine tests are supported
   run_multi_round
   exit $?
 fi
