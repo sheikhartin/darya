@@ -83,7 +83,6 @@ run_smoke() {
 
   local output
   output="$(bash tests/smoke-test.sh 2>&1)"
-  local rc=$?
   local parsed
   parsed="$(parse_smoke_result "$output")"
   local pass_str="${parsed%%|*}"
