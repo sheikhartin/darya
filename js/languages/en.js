@@ -372,7 +372,7 @@
   // morphology is simple enough (unlike Persian's verb-carried person
   // marking) that a careful word-swap stays grammatical for short,
   // straightforward sentences -- see the guard conditions in
-  // darya-engine.js (word-count cap, "only if a swap actually happened").
+  // responder.js (word-count cap, "only if a swap actually happened").
   const pronounMap = {
     i: 'you',
     me: 'you',
@@ -497,7 +497,7 @@
     'Does that answer help, or is there something deeper you want to talk about?',
     'Numbers aside, what is the question that has been following you around?',
     'Happy to help with that. What else is present for you right now?',
-    'Now that the simple question is out of the way, what would you really like to talk about?',
+    'Happy to help. What is next on your mind?',
   ];
 
   // Spam / keyboard-smash responses: for very short, repetitive, or random
@@ -655,7 +655,13 @@
     fear: 'That sounds frightening. I am here with you.',
     anxious: 'Take your time with this.',
     sad: 'I can hear the sadness in what you are saying.',
-    relief: 'That must feel like a weight has lifted.',
+    hopeless: 'That sounds like a heavy weight to carry.',
+    overwhelmed: 'That is a lot to hold.',
+    ashamed: 'That sounds painful to sit with.',
+    jealous: 'That is a tough feeling to hold.',
+    hopeful: 'I can hear the hope in your voice.',
+    grateful: 'That is a beautiful perspective.',
+    happy: 'I am glad to hear that.',
   };
 
   const emptyInputReply = "I notice you've gone quiet. Whenever you're ready, I'm here.";
@@ -836,6 +842,10 @@
       exitConfirmBarLabel: 'Do you want to end this conversation?',
       exitConfirmBarYes: 'Yes, end it',
       exitConfirmBarNo: 'No, continue',
+      newChatConfirmTitle: 'Are you sure?',
+      newChatConfirmDesc: 'Starting a new conversation will permanently delete the current one. It cannot be recovered.',
+      newChatConfirmYes: 'Yes, start new',
+      newChatConfirmNo: 'Cancel',
       breatheOffer: 'Would you like to try a calming breathing exercise together?',
       breatheAccept: 'Yes, let us begin',
       breatheDecline: 'No, thank you',
