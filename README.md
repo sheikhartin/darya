@@ -48,6 +48,10 @@ After the first visit, Darya works fully offline. The service worker precaches t
 
 ## About the Project
 
-Darya is inspired by the tradition of reflective listening. Sometimes what helps most is a quiet, focused space to put thoughts into words. The app is built entirely with HTML, CSS, and JavaScript, with no external dependencies or runtime services.
+Darya is a bilingual (Persian/English), fully offline conversation companion rooted in the tradition of reflective listening. Built entirely with vanilla HTML, CSS, and JavaScript, Darya requires no external dependencies, no runtime services, and no network connection after the first visit. The app uses a carefully engineered rule-based expert system (in the lineage of ELIZA and Rogerian-style companions) rather than AI models or server-side processing, ensuring complete privacy: every conversation exists only in the browser tab and vanishes when the tab is closed.
 
-No learning, no AI models, no data collection. Just thoughtful pattern matching in your browser.
+The project is distributed under the PolyForm Noncommercial License 1.0.0 -- see [LICENSE.md](LICENSE.md) for details.
+
+## License
+
+Copyright (c) 2026 Artin Mohammadi. Licensed under the PolyForm Noncommercial License 1.0.0 -- see the [LICENSE.md](LICENSE.md) file for the full terms. This license allows personal and noncommercial use only. Commercial use requires a separate agreement.
