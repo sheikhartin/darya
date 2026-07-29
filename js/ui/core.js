@@ -130,7 +130,7 @@
     if (!state.lang) return;
     const current = elements.htmlRoot.getAttribute('data-theme') || DEFAULT_THEME;
     const target = current === 'ocean' ? 'beach' : 'ocean';
-    elements.menuThemeIcon.textContent = target === 'ocean' ? '\u{1F30A}' : '\u{1F3D6}\uFE0F';
+    elements.menuThemeIcon.textContent = target === 'ocean' ? '🌊' : '🏖️';
     elements.menuThemeLabel.textContent = target === 'ocean'
       ? state.lang.ui.themeOceanLabel : state.lang.ui.themeBeachLabel;
     elements.menuThemeToggle.dataset.themeChoice = target;
