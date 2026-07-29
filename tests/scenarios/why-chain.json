@@ -1,0 +1,15 @@
+{
+  "name": "repetitive why chain without substantive content",
+  "description": "Tests the engine's ability to handle a user who responds to every reply with a simple 'why' question, creating a repetitive loop. Verifies that the engine eventually breaks out of the question-answer cycle with a non-question alternative or a gentle boundary.",
+  "language": "en",
+  "turns": [
+    {"text": "I feel sad today", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "why", "dialogueAct": "question", "intent": "question"},
+    {"text": "why", "dialogueAct": "question", "intent": "question"},
+    {"text": "why", "dialogueAct": "question", "intent": "question"}
+  ],
+  "expected": {
+    "finalTurn": "After 3 consecutive 'why' questions, the engine's consecutive question limit (CONSECUTIVE_QUESTION_LIMIT=1) and question budget (QUESTION_BUDGET_LIMIT=1 in window of 3) should force non-question alternatives. By turns 3-4, the engine should NOT ask a question and instead use an alternative response.",
+    "behavior": "The question budget mechanism prevents more than 1 question in a 3-turn window. After the first 'why', follow-up 'why' turns should trigger non-question fallbacks (genericFallbacks or strategyShiftFallbacks). The engine should not get stuck in an infinite question-response loop."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "communication knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf communication domain. The user asks about communication advice, then about communicating better, then transitions to a personal relationship topic. Verifies knowledge responses from the communication domain and smooth conversational handoff.",
+  "language": "en",
+  "turns": [
+    {"text": "I need some communication advice", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "How can I communicate better with my team?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "My relationship with my partner feels strained", "dialogueAct": "statement", "intent": "topic_statement", "topic": "relationship"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'communication advice' keyword triggers knowledge rule pattern, domainHints maps to 'communication' domain, reply length > 40 chars. Turn 2: 'communicate better' maps to communication domain, question dialogueAct. Turn 3: 'my partner' triggers relationship conversational rule (priority 40), engine returns relationship-specific response.",
+    "behavior": "Knowledge rule pattern matches on 'communication advice' and 'communicate better', both mapped to 'communication' domain. After knowledge, relationship rule takes over naturally."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "decision-making knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf decision-making domain. The user asks about decision-making, then about how to choose between options, then transitions to a personal work topic. Verifies knowledge responses from the decision_making domain and smooth conversational handoff.",
+  "language": "en",
+  "turns": [
+    {"text": "How do I make an important decision?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "I need to choose between two job offers", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "My boss has been really difficult lately", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'important decision' keyword triggers knowledge rule pattern, 'important decision' maps to 'decision_making' domain via domainHints, reply length > 40 chars. Turn 2: 'choose between' maps to decision_making domain, knowledge rule fires. Turn 3: 'my boss' triggers work conversational rule (priority 50), engine returns work-related reflection.",
+    "behavior": "Knowledge rule pattern matches on 'important decision' and 'choose between', both mapped to 'decision_making' domain. Question turns maintain dialogueAct 'question'. The engine returns independent knowledge copies. After knowledge, work rule takes over naturally."
+  }
+}

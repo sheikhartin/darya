@@ -1,0 +1,15 @@
+{
+  "name": "contradictory statements testing memory and context",
+  "description": "Tests the engine's ability to handle a user who makes contradictory statements across consecutive turns. The user first claims happiness, then contradicts with sadness, then claims both. Verifies the engine does not crash, references appropriate topics, and maintains coherent conversation flow through contradictions.",
+  "language": "en",
+  "turns": [
+    {"text": "I'm so happy today!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "joy"},
+    {"text": "Actually I lied, I'm really depressed", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "No wait, I am happy but also sad at the same time", "dialogueAct": "statement", "intent": "statement"},
+    {"text": "I don't even know what I feel anymore", "dialogueAct": "statement", "intent": "statement"}
+  ],
+  "expected": {
+    "finalTurn": "The engine should track topic shifts from joy to sadness without crashing. The contradiction in turns 3-4 should not cause errors. The engine should respond with generic fallbacks or strategyShiftFallbacks when topics are ambiguous. The distress nudge should NOT fire because joy breaks the negative streak.",
+    "behavior": "Topic tracking updates from joy to sadness on turn 2. Turn 3 has mixed sentiment and no clear single topic - engine uses generic strategies. Turn 4 is emotional confusion handled by genericFallbacks. No crash or infinite loop occurs."
+  }
+}

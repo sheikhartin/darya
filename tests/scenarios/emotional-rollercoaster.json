@@ -1,0 +1,15 @@
+{
+  "name": "rapid emotional rollercoaster across multiple topics",
+  "description": "Tests the engine's ability to handle extreme emotional volatility across a short conversation. The user rapidly swings between anger, sadness, joy, fear, and gratitude topics. Verifies that the engine correctly resets emotional state between turns, that sentiment history accurately tracks each swing, that the distress streak does NOT fire because no three consecutive turns are negative, and that each topic is correctly classified with appropriate dialogue acts and response pools.",
+  "language": "en",
+  "turns": [
+    {"text": "I'm so angry about the situation right now!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anger"},
+    {"text": "Actually, I'm just really sad about it all", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "But I got a surprise gift from my friend and I'm thrilled!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "joy"},
+    {"text": "I'm scared the good news won't last", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+  ],
+  "expected": {
+    "finalTurn": "Each turn should correctly classify its dialogue act as 'statement' and detect the correct topic (anger, sadness, joy, anxiety). The sentiment history should reflect each swing: negative, negative, positive (joy), negative (anxiety/fear). The distress streak (isInDistressStreak) should NOT fire because the positive turn (joy) breaks the streak. CurrentSubject should update to the latest topic on each turn.",
+    "behavior": "SentimentLexicon scores each turn independently. Turn 3 (joy) produces positive sentiment. isInDistressStreak requires 3 consecutive negative scores. Topic tracking records each distinct topic in topicHistory with weights."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "repeated greeting loop without engagement",
+  "description": "Tests the engine's ability to detect and gracefully handle a user who repeatedly says hello without providing substantive content. Verifies that repeated greetings beyond the threshold (2) are classified as statements and trigger the language-specific repeatedGreetingResponses pool rather than being treated as fresh conversation starts.",
+  "language": "en",
+  "turns": [
+    {"text": "hello", "dialogueAct": "greeting", "intent": "greeting", "topic": "greeting"},
+    {"text": "hi", "dialogueAct": "greeting", "intent": "greeting", "topic": "greeting"},
+    {"text": "hello again", "dialogueAct": "statement", "intent": "statement"},
+    {"text": "hi there", "dialogueAct": "statement", "intent": "statement"}
+  ],
+  "expected": {
+    "finalTurn": "After REPEATED_GREETING_THRESHOLD (2) consecutive greeting utterances, subsequent greetings are classified as 'statement' rather than 'greeting', and trigger repeatedGreetingResponses which acknowledge the repetition and invite a fresh start.",
+    "behavior": "The engine's repeated-greeting detection reclassifies excessive consecutive greetings as statements (no greeting topic assigned). The response uses the repeatedGreetingResponses pool (acknowledging the loop and inviting fresh engagement) instead of a standard greeting or generic fallback."
+  }
+}

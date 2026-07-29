@@ -1,0 +1,15 @@
+{
+  "name": "poetic and metaphorical language without literal meaning",
+  "description": "Tests the engine's ability to handle highly metaphorical, poetic, or abstract language that does not carry literal meaning. Verifies the engine does not crash on figurative speech, returns empathetic non-literal responses, and maintains conversational flow without demanding concrete clarification.",
+  "language": "en",
+  "turns": [
+    {"text": "The sky is crying today", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "I feel like a leaf in the wind", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "My heart is a heavy stone", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "Do you think the rain understands?", "dialogueAct": "question", "intent": "question"}
+  ],
+  "expected": {
+    "finalTurn": "The engine should handle metaphorical language without requiring literal interpretation. It should respond to the emotional undertone rather than the literal meaning. No crash or confusion response. Turn 4 is a question about the engine's capability - should use questionAcknowledgements or factualQuestionFollowups to redirect gently.",
+    "behavior": "Metaphorical language does not match specific emotional rules (sadness, anxiety) since the exact keywords are absent. Inputs fall through to genericFallbacks or strategyShiftFallbacks. The question in turn 4 receives question handling without claiming to understand weather or having opinions about rain."
+  }
+}
