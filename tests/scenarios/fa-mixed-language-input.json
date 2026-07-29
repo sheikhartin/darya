@@ -1,0 +1,14 @@
+{
+  "name": "mixed language input in Persian with English fragments",
+  "description": "Tests the engine's mixed-language detection when a Persian speaker inserts English words into their Persian messages. Verifies that mixed-script input triggers the Persian mixedLanguageResponses pool, that very short English fragments below the threshold are ignored (false negative prevention), and that pure Persian resumes normal processing.",
+  "language": "fa",
+  "turns": [
+    {"text": "امروز خیلی ناراحتم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "My manager خیلی باهاش مشکل دارم", "dialogueAct": "statement", "intent": "topic_statement"},
+    {"text": "واقعاً از این وضعیت خسته شدم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 2 contains English 'My manager' mixed with Persian. _isMixedLanguage should detect foreign letters (Latin) above threshold. Response should use Persian mixedLanguageResponses pool. No topic is assigned during redirect. Turn 3 is pure Persian and routes normally to sadness topic.",
+    "behavior": "Mixed-language detection works symmetrically in both directions: when active language is Persian, Latin letters are 'foreign'. Short foreign fragments below MIXED_SCRIPT_FOREIGN_MIN (3 chars minimum) do not trigger false positives. No topic assigned during mixed-language redirect."
+  }
+}

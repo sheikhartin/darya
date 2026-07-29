@@ -1,0 +1,15 @@
+{
+  "name": "Persian spam detection and recovery to natural conversation",
+  "description": "Tests the Persian engine's spam/noise detection for Persian-specific keyboard-mash with repeated characters, repeated single Persian characters, and short numeric input. Verifies that spam responses use the Persian spamNoiseResponses pool, and that subsequent natural Persian conversation resumes without residual spam state.",
+  "language": "fa",
+  "turns": [
+    {"text": "لالالالا", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "هههههه", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "۱۲۳۴۵", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "امروز واقعاً استرس دارم چون فردا امتحان دارم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "school"}
+  ],
+  "expected": {
+    "finalTurn": "Turns 1-3 should trigger spamNoiseResponses in Persian. Turn 1: repeated two-character pattern ('لا' repeated, uniqueChars.size = 2, caught by <= 2 check). Turn 2: repeated single character ('ه' repeated, uniqueChars.size = 1). Turn 3: Persian digits only. Turn 4: pure Persian natural input routes normally to school/anxiety topics.",
+    "behavior": "Spam detection works symmetrically for Persian script. Repeated character patterns are caught by uniqueChars.size checks. Persian spamNoiseResponses pool is used. After spam resets, natural input is processed without residual spam state."
+  }
+}

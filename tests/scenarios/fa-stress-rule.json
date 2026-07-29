@@ -1,0 +1,14 @@
+{
+  "name": "گفتگوی استرس و فشار با قانون جدید",
+  "description": "آزمایش قانون جدید استرس (اولویت ۴۰) برای مطابقت با کلمات کلیدی فشار، فرسودگی و overwhelmed.",
+  "language": "fa",
+  "turns": [
+    {"text": "کاملاً تحت فشار و غرق کارهام", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"},
+    {"text": "دیگه ظرفیت ندارم و خالی شدم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"},
+    {"text": "احساس می‌کنم دارم به فرسودگی می‌رسم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"}
+  ],
+  "expected": {
+    "finalTurn": "هر نوبت باید با کلمات کلیدی (تحت فشار، ظرفیت ندارم، فرسودگی) با قانون استرس مطابقت داشته باشد.",
+    "behavior": "قانون استرس (اولویت ۴۰) با کلمات کلیدی فارسی مطابقت دارد و موضوع 'stress' را ثبت می‌کند."
+  }
+}

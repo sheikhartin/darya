@@ -1,0 +1,14 @@
+{
+  "name": "Persian mindfulness knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf mindfulness domain. The user asks about mindfulness in Persian, then about meditation, then transitions to a personal sadness topic. Verifies Persian knowledge responses from the mindfulness domain.",
+  "language": "fa",
+  "turns": [
+    {"text": "درباره مدیتیشن و ذهن‌آگاهی برام بگو", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "تمرینات مراقبه رو چطور شروع کنم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "این روزها خیلی غمگین هستم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'ذهن‌آگاهی' keyword triggers knowledge rule, domainHints maps to 'mindfulness' domain. Persian response. Turn 2: 'مراقبه' maps to mindfulness domain, question dialogueAct. Turn 3: 'غمگین' triggers sadness conversational rule (priority 40), engine returns sadness-specific response.",
+    "behavior": "Knowledge rule matches on Persian mindfulness keywords. Persian knowledge responses are returned. After knowledge, sadness conversational rule takes over."
+  }
+}

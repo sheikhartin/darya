@@ -1,0 +1,14 @@
+{
+  "name": "Persian conflict resolution knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf conflict resolution domain. The user asks about conflict resolution in Persian, then about NVC, then transitions to a personal relationship topic. Verifies Persian knowledge responses from the conflict domain.",
+  "language": "fa",
+  "turns": [
+    {"text": "چطور می‌تونم حل تعارض رو یاد بگیرم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "درباره ارتباط بدون خشونت برام بگو", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "با نامزدم زیاد بحث می‌کنیم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "relationship"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'حل تعارض' keyword triggers knowledge rule, domainHints maps to 'conflict' domain. Persian response. Turn 2: 'ارتباط بدون خشونت' maps to conflict domain. Turn 3: 'نامزدم' triggers relationship conversational rule (priority 40), engine returns relationship response.",
+    "behavior": "Knowledge rule matches on Persian 'حل تعارض' and 'ارتباط بدون خشونت' keywords. Persian knowledge responses are returned. After knowledge, the relationship rule takes over."
+  }
+}
