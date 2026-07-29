@@ -1,0 +1,14 @@
+{
+  "name": "grief knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf grief domain. The user asks about coping with grief, then about bereavement, then transitions to a personal grief topic matched by the conversational grief rule. Verifies knowledge responses from the grief domain and the handoff between the knowledge shelf and the conversational grief rule.",
+  "language": "en",
+  "turns": [
+    {"text": "How can I cope with grief?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "I'm struggling with bereavement", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "I lost my grandmother last month", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'grief' keyword triggers knowledge rule, domainHints maps to 'grief' domain, reply length > 40 chars. Turn 2: 'bereavement' maps to grief domain, knowledge rule fires again. Turn 3: 'lost my' triggers the conversational grief rule (priority 45) via 'lost my grandmother' pattern, engine returns grief-specific conversational response from the 6-entry response pool.",
+    "behavior": "Knowledge rule matches on 'grief' and 'bereavement', both mapped to 'grief' domain via domainHints. The knowledge shelf returns 4 entries for grief. On turn 3, the conversational grief rule (priority 45) matches instead of the knowledge rule because 'lost my' is part of the grief rule pattern, not the knowledge rule pattern, demonstrating proper separation between the knowledge shelf and conversational rules."
+  }
+}
