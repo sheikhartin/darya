@@ -101,7 +101,30 @@ test('reference resolution refuses an absent or stale subject', () => {
 });
 
 test('dialogue scenarios maintain state across multiple turns', () => {
-  const scenarios = ['work-correction.json', 'question-budget.json'];
+  const scenarios = [
+    'work-correction.json', 'question-budget.json',
+    'greeting-loop.json', 'serious-conversation.json',
+    'topic-cycling.json', 'mixed-emotional-tone.json',
+    'safety-cascade.json', 'entity-accumulation.json',
+    'mixed-language-input.json', 'spam-and-recovery.json',
+    'knowledge-and-factual.json', 'emotional-rollercoaster.json',
+    'fa-safety-cascade.json', 'fa-emotional-rollercoaster.json',
+    'fa-entity-accumulation.json', 'fa-mixed-language-input.json',
+    'fa-spam-and-recovery.json', 'fa-knowledge-and-factual.json',
+    'non-sequitur-stream.json', 'why-chain.json',
+    'contradictory-statements.json', 'poetic-metaphor.json',
+    'fa-contradictory-statements.json', 'fa-non-sequitur-stream.json',
+    'fa-why-chain.json', 'fa-poetic-metaphor.json',
+    'mindfulness-rule.json', 'stress-rule.json',
+    'grief-enhanced.json',
+    'fa-mindfulness-rule.json', 'fa-stress-rule.json',
+    'knowledge-stress.json', 'knowledge-self-compassion.json',
+    'knowledge-conflict.json', 'knowledge-decision-making.json',
+    'knowledge-creativity.json', 'knowledge-communication.json',
+    'fa-knowledge-stress.json', 'fa-knowledge-self-compassion.json',
+    'fa-knowledge-conflict.json', 'fa-knowledge-decision-making.json',
+    'fa-knowledge-creativity.json', 'fa-knowledge-communication.json',
+  ];
   for (const file of scenarios) {
     const scenario = JSON.parse(read(`tests/scenarios/${file}`));
     const lang = scenario.language === 'fa' ? FA : EN;
@@ -124,8 +147,9 @@ test('bot question tracking records answers without creating duplicate questions
   assert.equal(engine.memory.answeredQuestions.at(-1).answered, true);
 });
 
-test('offline knowledge shelf exposes named domains', () => {
-  assert.deepEqual(global.DaryaKnowledge.domains, ['philosophy', 'thinkers', 'focus', 'learning', 'communication', 'creativity']);
+test('offline knowledge shelf exposes all named domains', () => {
+  const expected = ['philosophy', 'thinkers', 'focus', 'learning', 'communication', 'creativity', 'mindfulness', 'stress', 'self_compassion', 'conflict', 'decision_making', 'grief'];
+  assert.deepEqual(global.DaryaKnowledge.domains.sort(), expected.sort());
 });
 
 test('knowledge shelf returns useful English philosophy guidance', () => {
@@ -151,10 +175,17 @@ test('knowledge shelf returns independent copies', () => {
   assert.equal(global.DaryaKnowledge.answer('en', 'focus').length, 4);
 });
 
-test('knowledge domains cover learning, communication, and creativity', () => {
-  for (const domain of ['learning', 'communication', 'creativity']) {
-    assert.equal(global.DaryaKnowledge.answer('en', domain).length, 4);
-    assert.equal(global.DaryaKnowledge.answer('fa', domain).length, 4);
+test('all knowledge domains have exactly 4 entries in both languages', () => {
+  for (const domain of global.DaryaKnowledge.domains) {
+    if (domain === 'thinkers') continue; // thinkers has 10 curated entries (1 per figure)
+    assert.equal(global.DaryaKnowledge.answer('en', domain).length, 4, `en:${domain}`);
+    assert.equal(global.DaryaKnowledge.answer('fa', domain).length, 4, `fa:${domain}`);
+    for (const answer of global.DaryaKnowledge.answer('en', domain)) {
+      assert.ok(answer.length > 40, `en:${domain} entry too short`);
+    }
+    for (const answer of global.DaryaKnowledge.answer('fa', domain)) {
+      assert.ok(answer.length > 30, `fa:${domain} entry too short`);
+    }
   }
 });
 
@@ -304,11 +335,60 @@ test('knowledge replies do not claim personal experience or authority', () => {
   }
 });
 
-test('full scenario fixture files contain multiple turns and expectations', () => {
-  for (const file of ['tests/scenarios/work-correction.json', 'tests/scenarios/question-budget.json']) {
+test('all scenario fixture files contain multiple turns and metadata', () => {
+  const fixtures = [
+    'tests/scenarios/work-correction.json',
+    'tests/scenarios/question-budget.json',
+    'tests/scenarios/greeting-loop.json',
+    'tests/scenarios/serious-conversation.json',
+    'tests/scenarios/topic-cycling.json',
+    'tests/scenarios/mixed-emotional-tone.json',
+    'tests/scenarios/safety-cascade.json',
+    'tests/scenarios/entity-accumulation.json',
+    'tests/scenarios/mixed-language-input.json',
+    'tests/scenarios/spam-and-recovery.json',
+    'tests/scenarios/knowledge-and-factual.json',
+    'tests/scenarios/emotional-rollercoaster.json',
+    'tests/scenarios/fa-safety-cascade.json',
+    'tests/scenarios/fa-emotional-rollercoaster.json',
+    'tests/scenarios/fa-entity-accumulation.json',
+    'tests/scenarios/fa-mixed-language-input.json',
+    'tests/scenarios/fa-spam-and-recovery.json',
+    'tests/scenarios/fa-knowledge-and-factual.json',
+    'tests/scenarios/non-sequitur-stream.json',
+    'tests/scenarios/why-chain.json',
+    'tests/scenarios/contradictory-statements.json',
+    'tests/scenarios/poetic-metaphor.json',
+    'tests/scenarios/fa-contradictory-statements.json',
+    'tests/scenarios/fa-non-sequitur-stream.json',
+    'tests/scenarios/fa-why-chain.json',
+    'tests/scenarios/fa-poetic-metaphor.json',
+    'tests/scenarios/mindfulness-rule.json',
+    'tests/scenarios/stress-rule.json',
+    'tests/scenarios/grief-enhanced.json',
+    'tests/scenarios/fa-mindfulness-rule.json',
+    'tests/scenarios/fa-stress-rule.json',
+    'tests/scenarios/knowledge-stress.json',
+    'tests/scenarios/knowledge-self-compassion.json',
+    'tests/scenarios/knowledge-conflict.json',
+    'tests/scenarios/knowledge-decision-making.json',
+    'tests/scenarios/knowledge-creativity.json',
+    'tests/scenarios/knowledge-communication.json',
+    'tests/scenarios/fa-knowledge-stress.json',
+    'tests/scenarios/fa-knowledge-self-compassion.json',
+    'tests/scenarios/fa-knowledge-conflict.json',
+    'tests/scenarios/fa-knowledge-decision-making.json',
+    'tests/scenarios/fa-knowledge-creativity.json',
+    'tests/scenarios/fa-knowledge-communication.json',
+  ];
+  for (const file of fixtures) {
     const scenario = JSON.parse(read(file));
-    assert.ok(scenario.turns.length >= 3);
-    assert.ok(scenario.turns.every((turn) => turn.dialogueAct && turn.text));
+    assert.ok(scenario.name, `${file}: missing "name" field`);
+    assert.ok(scenario.turns.length >= 3, `${file}: has fewer than 3 turns`);
+    assert.ok(scenario.turns.every((turn) => turn.dialogueAct && turn.text && turn.intent), `${file}: every turn must have dialogueAct, text, and intent`);
+    assert.ok(scenario.expected, `${file}: missing "expected" field`);
+    assert.ok(scenario.expected.finalTurn, `${file}: expected.finalTurn is required`);
+    assert.ok(scenario.expected.behavior, `${file}: expected.behavior is required`);
   }
 });
 
