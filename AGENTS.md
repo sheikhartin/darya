@@ -371,7 +371,7 @@ A structured workflow for diagnosing issues:
 ### Communication Principles
 
 - Be direct but respectful. Avoid excessive flattery, apologies, or hedging language.
-- No em dashes or double-hyphen dashes in written communication. Use single hyphens or restructure sentences.
+- No em dashes (U+2014), double-hyphen dashes, emojis, or decorative Unicode characters in written communication, documentation, code comments, engine responses, or any project files. Use single hyphens, plain ASCII characters, or restructure sentences. Decorative UX icons should use inline SVG markup instead of emoji characters.
 - Use code snippets and examples to clarify technical points.
 - When disagreeing, focus on the technical trade-offs, not the person.
 
@@ -407,6 +407,13 @@ docs(readme): update installation instructions for v2
 - **CONTRIBUTING.md**: For contributors. How to set up, how to test, how to submit a PR, coding standards.
 - **CHANGELOG.md**: Track notable changes per release. Keep it human-readable. Use Keep a Changelog format.
 - **API documentation**: OpenAPI/Swagger for REST APIs. Inline JSDoc for internal APIs.
+
+### Code Formatting & Readability
+
+- Use blank lines to separate code sections and logical groups. Do not nest code snippets too closely without line breaks.
+- Group related logic, constants, and functions together in clearly marked sections.
+- Avoid long chains of inline operations; break complex expressions into named intermediate variables.
+- When a function exceeds approximately 50 lines, add section-level comments (e.g., `// ==== Input validation ====`) to help readers navigate.
 
 ---
 
