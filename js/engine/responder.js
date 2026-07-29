@@ -59,6 +59,20 @@
    * check-ins, quoted-memory callbacks, repetition-aware response
    * selection, and graceful fallbacks into a single `respond` entry
    * point, plus `greeting`/`farewell` helpers for the UI layer.
+   *
+   * The engine follows a deterministic pipeline per turn:
+   *   1. Validate input (empty, wrong script, mixed language)
+   *   2. Normalize and match rules (sorted by priority descending)
+   *   3. Classify dialogue act and intent
+   *   4. Detect signal patterns (repeated greetings, spam, frustration, etc.)
+   *   5. Select response strategy and pick a varied response
+   *   6. Apply smart overrides (math, word repetition, distress nudge)
+   *   7. Calibrate emotional tone and add human-touch coloring
+   *   8. Record the turn in conversation memory and return the reply
+   *
+   * All language-specific content (rules, pools, patterns) comes from
+   * the language pack passed at construction, keeping the engine itself
+   * entirely language-agnostic.
    */
   class DaryaResponseEngine {
     /** @param {object} lang - A language pack, e.g. window.DaryaLang.fa */
@@ -89,13 +103,29 @@
     }
 
     // ======================================================================
-    // Public methods called from app.js
+    // Public API - called from app.js and the test suite
+    //
+    // These methods form the stable interface between the engine and the
+    // UI layer. They handle the full conversation lifecycle: greeting,
+    // responding to user input, detecting exit intent, confirming exit,
+    // and producing farewell messages.
     // ======================================================================
 
     /**
      * Produces Darya's reply to a single user utterance.
-     * @param {string} rawText
-     * @returns {string}
+     *
+     * The reply pipeline (in order):
+     * 1. Early exits: blank input, wrong script, mixed language
+     * 2. Core routing: repeated greetings, spam, acknowledgements, corrections,
+     *    topic blends, matched rules, ambiguous input, generic fallback
+     * 3. Smart overrides: factual math questions, word repetition detection,
+     *    frustration/insult detection, teasing/mocking, wellbeing checks
+     * 4. Emotional calibration: tone prefix based on detected primary emotion
+     * 5. Conversation management: boredom check, distress nudge, human touch
+     * 6. Final recording: strategy tracking, entity memory, phase advancement
+     *
+     * @param {string} rawText - The user's raw input, before normalization
+     * @returns {string} Darya's reply text, ready for display
      */
     respond(rawText) {
       if (!String(rawText).trim()) {
@@ -395,6 +425,13 @@
 
     // ======================================================================
     // Response strategy selection
+    //
+    // Determines the conversational strategy for the current turn based on
+    // the matched rule, topic blend, reference context, and signal detections.
+    // The strategy influences which response pool is used and how the reply
+    // is framed. Strategies include: safety, professional-boundary, recap,
+    // topic-blend, context-reference, topic-question, topic-reflection,
+    // greeting, question-acknowledgement, light-warmth, and contextual-fallback.
     // ======================================================================
 
     selectResponseStrategy({ matchedRule, blendKey, matchingText }) {
@@ -421,6 +458,15 @@
 
     // ======================================================================
     // Dialogue act classification
+    //
+    // The classify* methods convert the raw user input and matched rules into
+    // structured metadata about what the user is doing (dialogue act) and what
+    // they want (intent). This metadata drives strategy selection, question
+    // budget enforcement, and conversational phase tracking.
+    //
+    // Dialogue acts include: greeting, question, statement, emotional_statement,
+    // acknowledgement, correction, gratitude, affirmation, negation, safety,
+    // test_input.
     // ======================================================================
 
     classifyDialogueAct(text, matchedRule = null) {
@@ -461,6 +507,17 @@
 
     // ======================================================================
     // Reference resolution
+    //
+    // When the user says "it happened again" or "I need to find a better
+    // way to engage with that", Darya must determine what "it" and "that"
+    // refer to. Reference resolution checks the current subject (topic +
+    // entity references) from recent turns and returns a resolved context
+    // if the subject is recent enough and the reference indicators match.
+    //
+    // This is a heuristic approach: it works reliably for the most common
+    // conversational patterns (referring back to the immediately preceding
+    // topic) and gracefully degrades (returns null) when the reference is
+    // ambiguous or the subject has aged out of the short-term memory window.
     // ======================================================================
 
     resolveReferenceContext(normalizedText) {
@@ -478,6 +535,19 @@
 
     // ======================================================================
     // Signal detection methods
+    //
+    // These private methods analyze the user's input for specific patterns
+    // that require special handling: repeated greetings (user keeps saying
+    // "hello" without substance), spam/keyboard-mash input, ambiguous short
+    // inputs, word repetition (same word used 4+ times), frustration signals
+    // (multiple exclamation marks), teasing or sarcasm, wellbeing checks
+    // ("how are you?"), acknowledgements ("ok", "k", "باشه"), emotional
+    // statements (strong sentiment), substantive content checks, and
+    // mixed-language indicators.
+    //
+    // Each method returns a boolean or structured detection result that
+    // the main `respond` pipeline uses to select the appropriate response
+    // strategy and pool.
     // ======================================================================
 
     _isRepeatedGreeting(normalizedText) {
@@ -571,7 +641,7 @@
     _detectTeasingOrMocking(rawText, matchingText) {
       const sarcasticPraise = /(?:you'?re\s+(?:so|very|really)\s+(?:smart|clever|funny|helpful|wise|useful|intelligent|brilliant|genius)|what a genius|wow\s+(?:you'?re|so)|such a genius|great advice|very helpful|thanks a lot)\b/i;
       const mockAgree = /\b(?:yeah right|sure (?:you are|you do|bot)|whatever you say|if you say so|right ok|ok sure|as if|oh please)\b/i;
-      const dismissSignal = /[😒🙄😏🤨]/;
+      const dismissSignal = /(?:pfft|meh|tch|pshaw|bah|hmph)/i;
       const faSarcasm = /(?:چه (?:باهوش|خوب|عاقل|دانا|مهربان|صبور|باحال|بامزه|باحوصله|باهوشی|باهوشید)،|آفرین به (?:خودت|شما|خودتون)|به به|احسنت|مرسی که اینقدر (?:باهوشی|کمک کردی|به دردم خوردی)|به درک|هر چی تو بگی|چشم منتظر|خوب خوب تو راست میگی|باشه باشه تو بردی)/iu;
       const hasExcessivePunct = /!{3,}|\?{3,}|!\?|\?!|([.!?]){3,}/.test(rawText);
       const hasSarcasticPraise = sarcasticPraise.test(rawText) && hasExcessivePunct;
@@ -635,6 +705,19 @@
 
     // ======================================================================
     // Factual question handling
+    //
+    // Detects and answers simple arithmetic expressions in both Latin and
+    // Persian numeral systems: addition (+ / بعلاوه), subtraction (- / منهای),
+    // multiplication (* / x / ضربدر), and division (/ / تقسیم بر).
+    //
+    // Three input forms are handled:
+    //   1. Full English question: "What is 5 + 3?"
+    //   2. Full Persian question: "۲+۳ چند می‌شه؟"
+    //   3. Bare expression: "5+3" or "۲+۵" (no question framing)
+    //
+    // Division by zero returns an explicit "undefined" message. Non-math
+    // text passes through without triggering. After answering, a follow-up
+    // question gently steers back to the user's emotional context.
     // ======================================================================
 
     _handleFactualQuestion(text) {
@@ -715,6 +798,17 @@
 
     // ======================================================================
     // Emotion detection and calibration
+    //
+    // Uses keyword pattern matching to identify the user's primary emotion
+    // from their input. The emotion vocabulary covers 14 categories: hurt,
+    // confused, excited, angry, grieving, fear, anxious (with physical
+    // symptom sub-patterns), sad, hopeless, overwhelmed, ashamed, jealous,
+    // hopeful, and grateful.
+    //
+    // When a clear emotion is detected and the reply is not overridden by
+    // a safety or factual path, the engine prepends a calibrated prefix
+    // (e.g., "That sounds painful." for hurt) at a 40% probability to
+    // acknowledge the emotional tone before delivering the main response.
     // ======================================================================
 
     _computePrimaryEmotion(text) {
@@ -758,7 +852,21 @@
     }
 
     // ======================================================================
-    // Mixed language and phase helpers
+    // Mixed language detection and conversation phase management
+    //
+    // Mixed-language detection: checks whether the user's input contains
+    // a meaningful proportion of characters outside the active language
+    // pack's script range, which suggests bilingual input. When detected,
+    // with 60% probability the engine returns a language-pool redirect
+    // asking the user to stick to one language.
+    //
+    // Phase management: advances the conversation through four stages:
+    //   - new: No interaction yet
+    //   - orienting: First few turns, establishing presence
+    //   - engaging: User has shared substantive content
+    //   - deepening: Extended conversation with established topics
+    // The phase determines which greeting pool is used for openings and
+    // which response strategies are available.
     // ======================================================================
 
     _handleMixedLanguage(text) {
@@ -851,7 +959,20 @@
     }
 
     // ======================================================================
-    // Greeting / phase management
+    // Greeting selection and phase advancement
+    //
+    // Opening greetings are selected from four distinct pools based on
+    // the current conversation phase and whether the user has returned
+    // (has remembered entities):
+    //   - greetingsPhase1: Warm, establishing presence ("I am Darya...")
+    //   - greetingsPhase2: Gentle orientation, low-pressure binary choice
+    //   - greetingsOpen: Neutral invitation to share (returning or new)
+    //   - greetingsInviting: Warm invitation (higher engagement tone)
+    //   - greetingsReturning: Acknowledging a return visit
+    //
+    // Phase advancement (_advanceConversationPhase) is called after every
+    // turn. It transitions through new -> orienting -> engaging -> deepening
+    // based on turn count and input substance.
     // ======================================================================
 
     _openingForNewConversation() {
@@ -903,6 +1024,23 @@
 
     // ======================================================================
     // Rule matching and response selection
+    //
+    // _matchRules: Iterates the priority-sorted rule list and returns all
+    // matches with their capture groups. Rules are tried in descending
+    // priority order; the first match has the highest priority, but all
+    // matches are returned for topic blend detection.
+    //
+    // _respondWithRule: Given a matched rule and its capture string,
+    // selects the appropriate response. Special-cases gratitude,
+    // professional_boundary, recap, and knowledge rules. Falls back
+    // gracefully when a capture is expected but missing.
+    //
+    // _fallbackResponse: The last-resort response generator when no rule
+    // matches. Tries entity callback, session check-in, question fallback,
+    // quoted callback (echoing user's own words), and pronoun reflection
+    // before falling through to generic/strategy-shift fallback pools.
+    // Alternates between genericFallbacks and strategyShiftFallbacks to
+    // provide natural variety.
     // ======================================================================
 
     _matchRules(normalizedText) {
@@ -944,8 +1082,34 @@
       if (matchedRule.topic === 'knowledge' && global.DaryaKnowledge) {
         const knowledgeText = this._currentNormalizedInput || captured || '';
         const domainHints = this.lang.code === 'fa'
-          ? { thinkers: ['سقراط', 'رواقی', 'ارسطو', 'یونگ', 'نیچه', 'گاندی', 'ماندلا', 'چرچیل', 'زرتشت'], philosophy: ['فلسفه', 'فلسفی'], focus: ['تمرکز'], learning: ['یاد'], communication: ['ارتباط'], creativity: ['خلاق'] }
-          : { thinkers: ['socrates', 'stoic', 'aristotle', 'jung', 'nietzsche', 'gandhi', 'mandela', 'churchill', 'zarathustra'], philosophy: ['philosophy'], focus: ['focus', 'concentrate'], learning: ['study', 'learn'], communication: ['communicate'], creativity: ['creative'] };
+          ? {
+            thinkers: ['سقراط', 'رواقی', 'ارسطو', 'یونگ', 'نیچه', 'گاندی', 'ماندلا', 'چرچیل', 'زرتشت'],
+            philosophy: ['فلسفه', 'فلسفی'],
+            focus: ['تمرکز'],
+            learning: ['یاد'],
+            communication: ['ارتباط'],
+            creativity: ['خلاق'],
+            mindfulness: ['ذهن‌آگاهی', 'مدیتیشن', 'مراقبه', 'حضور', 'نفس', 'آرامش'],
+            stress: ['استرس', 'فشار', 'فرسودگی', 'آرام‌شدن', 'مدیریت استرس'],
+            self_compassion: ['خودشفقتی', 'مهربانی با خود', 'خودانتقادی', 'منتقد درونی'],
+            conflict: ['تعارض', 'حل اختلاف', 'بحث', 'ارتباط بدون خشونت', 'صلح'],
+            decision_making: ['تصمیم', 'تصمیم‌گیری', 'انتخاب', 'بین دو گزینه'],
+            grief: ['سوگ', 'فقدان', 'از دست دادن', 'داغ', 'مرگ', 'غم از دست'],
+          }
+          : {
+            thinkers: ['socrates', 'stoic', 'aristotle', 'jung', 'nietzsche', 'gandhi', 'mandela', 'churchill', 'zarathustra'],
+            philosophy: ['philosophy'],
+            focus: ['focus', 'concentrate'],
+            learning: ['study', 'learn'],
+            communication: ['communicate'],
+            creativity: ['creative'],
+            mindfulness: ['mindfulness', 'meditation', 'mindful', 'present moment', 'breathing exercise', 'calm mind'],
+            stress: ['stress', 'burnout', 'overwhelmed', 'calm down', 'stress management', 'anxiety management'],
+            self_compassion: ['self compassion', 'self-compassion', 'self kindness', 'inner critic', 'be kind to myself', 'self care'],
+            conflict: ['conflict resolution', 'argument', 'disagreement', 'resolve conflict', 'nonviolent communication', 'nvc'],
+            decision_making: ['decision', 'make a choice', 'deciding', 'choose between', 'important decision', 'decision making'],
+            grief: ['grief', 'grieving', 'loss', 'cope with loss', 'mourning', 'grief support', 'bereavement'],
+          };
         const domain = Object.entries(domainHints)
           .find(([, hints]) => hints.some((hint) => knowledgeText.toLocaleLowerCase().includes(hint)))?.[0] || 'philosophy';
         return this._pickVaried(global.DaryaKnowledge.answer(this.lang.code, domain));
@@ -1026,6 +1190,18 @@
 
     // ======================================================================
     // Entity callback logic
+    //
+    // When the user has previously mentioned a person, place, object, or
+    // activity on an emotionally-weighted turn, and that entity is still
+    // active (activation above threshold) and contextually relevant
+    // (current topics overlap with the entity's contextTopics), the
+    // engine can produce a callback referencing the entity by name.
+    //
+    // Callbacks fire at ENTITY_CALLBACK_PROBABILITY (55%) per eligible
+    // turn. The first-mention guard prevents a callback on the same turn
+    // the entity was introduced. Context confidence is computed from the
+    // overlap between the entity's stored contextTopics and the current
+    // turn's detected topics, with a minimum threshold of 0.6.
     // ======================================================================
 
     _entityContextConfidence(entity) {
@@ -1066,6 +1242,22 @@
 
     // ======================================================================
     // Question budget management
+    //
+    // Prevents the engine from asking too many questions in succession,
+    // which would make the conversation feel interrogative rather than
+    // supportive. Two complementary mechanisms:
+    //
+    // 1. Consecutive question limit (CONSECUTIVE_QUESTION_LIMIT = 1):
+    //    After the engine asks one question, the next response cannot
+    //    also be a question.
+    //
+    // 2. Rolling window budget (QUESTION_BUDGET_WINDOW = 3 turns,
+    //    QUESTION_BUDGET_LIMIT = 1): Only one question response is
+    //    allowed within any 3-turn window.
+    //
+    // When the budget is exhausted, _filterForQuestionBudget removes
+    // question-type responses from the pool. _alternativeFor provides
+    // a non-question fallback (topic-specific or generic).
     // ======================================================================
 
     _isQuestionResponse(text) {
@@ -1121,6 +1313,19 @@
 
     // ======================================================================
     // Response scoring and selection
+    //
+    // _pickVaried: The central response selection method. Filters the
+    // pool through the question budget, removes recently-used responses
+    // from consideration, scores remaining candidates with
+    // scoreResponseCandidate, and randomly selects from among the
+    // top-scoring options to provide natural variety.
+    //
+    // scoreResponseCandidate: Ranks a response candidate on a 0-1 scale,
+    // penalizing:
+    //   - Recently used responses (-0.9, strong avoidance of repetition)
+    //   - Question-type responses when consecutiveQuestions is high (-0.25 * n)
+    //   - Very long responses (-0.08 over 220 chars)
+    //   - Generic filler like "I see" or "Okay" (-0.12)
     // ======================================================================
 
     scoreResponseCandidate(candidate) {

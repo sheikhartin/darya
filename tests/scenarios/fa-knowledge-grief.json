@@ -1,0 +1,14 @@
+{
+  "name": "Persian grief knowledge domain query with follow-up",
+  "description": "Tests the Persian offline knowledge shelf grief domain. The user asks about grief in Persian, then about loss coping, then transitions to a personal grief topic matched by the conversational grief rule. Verifies Persian knowledge responses from the grief domain and the handoff to the conversational grief rule.",
+  "language": "fa",
+  "turns": [
+    {"text": "چطور با سوگ کنار بیایم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "با فقدان عزیزان چطور کنار بیایم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "پدرم را از دست دادم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'سوگ' keyword triggers knowledge rule, domainHints maps to 'grief' domain. Persian response contains Persian script. Turn 2: 'فقدان' maps to grief domain, knowledge rule fires again. Turn 3: 'از دست دادم' triggers conversational grief rule (priority 55 in fa.js), engine returns grief-specific conversational response.",
+    "behavior": "Knowledge rule matches on Persian 'سوگ' and 'فقدان' keywords, both mapped to 'grief' domain. Persian knowledge responses are returned as independent copies. On turn 3, the conversational grief rule (priority 55) matches via 'از دست دادم', demonstrating proper separation between knowledge shelf and conversational rules."
+  }
+}

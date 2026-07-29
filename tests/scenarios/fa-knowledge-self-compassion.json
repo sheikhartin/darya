@@ -1,0 +1,14 @@
+{
+  "name": "Persian self-compassion knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf self-compassion domain. The user asks about self-compassion in Persian, then about their inner critic, then transitions to a personal self-esteem topic. Verifies Persian knowledge responses from the self_compassion domain.",
+  "language": "fa",
+  "turns": [
+    {"text": "آیا درباره خودشفقتی توضیح می‌دی؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "منتقد درونی من خیلی قوی شده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "احساس می‌کنم به اندازه کافی خوب نیستم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "self_esteem"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'خودشفقتی' keyword triggers knowledge rule, domainHints maps to 'self_compassion' domain. Persian response. Turn 2: 'منتقد درونی' maps to self_compassion domain. Turn 3: 'به اندازه کافی خوب نیستم' triggers self_esteem conversational rule (priority 40), engine returns self-esteem response.",
+    "behavior": "Knowledge rule matches on Persian self-compassion keywords. Persian knowledge responses are returned. After knowledge, the self_esteem rule takes over."
+  }
+}

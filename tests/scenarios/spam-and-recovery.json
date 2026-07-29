@@ -1,0 +1,15 @@
+{
+  "name": "spam input detection and recovery to meaningful conversation",
+  "description": "Tests the engine's spam/noise detection (_isSpamOrNoise) across multiple degenerate inputs followed by a recovery to natural conversation. Verifies that repeated single characters, character sets with low unique ratios, and all-digit input are handled gracefully with spamNoiseResponses, and that a subsequent natural utterance is processed normally without residual spam state.",
+  "language": "en",
+  "turns": [
+    {"text": "aaaaaa", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "bbbb", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "12345", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "I feel anxious about my job interview tomorrow", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+  ],
+  "expected": {
+    "finalTurn": "Turns 1-3 should each trigger spamNoiseResponses. Turn 1: single repeated char (uniqueChars.size = 1, caught by <= 2 check with length > 4). Turn 2: single repeated char (uniqueChars.size = 1, caught by <= 2 check with length > 4). Turn 3: all digits caught by regex. Turn 4: fully natural input routes normally to anxiety/work topics. No spam state persists into turn 4.",
+    "behavior": "Engine's _isSpamOrNoise detects: repeated chars via uniqueChars.size <= 2 and length > 4 check (turns 1-2), pure digits via regex (turn 3). When spam is detected, reply uses spamNoiseResponses and skips entity extraction and topic tracking. Next natural turn resets state for normal processing."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "creativity knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf creativity domain. The user asks about overcoming creative block, then about being more creative, then transitions to a personal motivation topic. Verifies knowledge responses from the creativity domain and smooth conversational handoff.",
+  "language": "en",
+  "turns": [
+    {"text": "I have a creative block at work", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "How can I be more creative?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "I've been feeling unmotivated lately", "dialogueAct": "statement", "intent": "topic_statement", "topic": "motivation"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'creative block' keyword triggers knowledge rule pattern, domainHints maps to 'creativity' domain, reply length > 40 chars. Turn 2: 'be more creative' maps to creativity domain, question dialogueAct. Turn 3: 'unmotivated' triggers motivation conversational rule (priority 35), engine returns motivation-specific response.",
+    "behavior": "Knowledge rule pattern matches on 'creative block' and 'be more creative', both mapped to 'creativity' domain. Question turns maintain dialogueAct 'question'. After knowledge, motivation rule takes over."
+  }
+}

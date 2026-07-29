@@ -1,0 +1,15 @@
+{
+  "name": "rapid non-sequitur stream of consciousness",
+  "description": "Tests the engine's resilience when the user rapidly shifts between completely unrelated topics with no transition or coherence. Verifies that the engine does not crash, that topic tracking handles the rapid shifts without error, and that the engine maintains composure.",
+  "language": "en",
+  "turns": [
+    {"text": "I like pizza", "dialogueAct": "statement", "intent": "open_statement"},
+    {"text": "My dog died last week", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"},
+    {"text": "What's the meaning of life?", "dialogueAct": "question", "intent": "question"},
+    {"text": "I think I'll go for a walk now", "dialogueAct": "statement", "intent": "statement"}
+  ],
+  "expected": {
+    "finalTurn": "The engine should handle abrupt topic shifts without crashing. Topic tracking records grief from turn 2. Turn 3 is a philosophical question handled by questionAcknowledgements. The engine maintains a calm, non-judgmental tone throughout. No error or broken response.",
+    "behavior": "Turn 1 has no specific rule match (pizza) - uses genericFallbacks. Turn 2 grief triggers grief conversational rule (priority 45) via 'died'. Turn 3 question triggers questionAcknowledgements. Turn 4 statement uses genericFallbacks. The engine does not reference earlier abandoned topics inappropriately."
+  }
+}

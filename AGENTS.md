@@ -15,7 +15,7 @@
 Use **TypeScript (strict mode)** for all new projects by default. JavaScript is acceptable only for small static pages, legacy codebases, or prototyping where the overhead of a type system is not justified.
 
 - **Frontend**: Modern framework (React / Vue / Svelte) with **TypeScript strict mode** (`strict: true`, `noUncheckedIndexedAccess`).
-- **Backend (JS/TS)**: Node.js with Express, Fastify, or Hono -- lightweight, well-tested, and performant. Use `node:test` or Vitest for testing (zero or minimal dependencies).
+- **Backend (JS/TS)**: Node.js with Express, Fastify, or Hono: lightweight, well-tested, and performant. Use `node:test` or Vitest for testing (zero or minimal dependencies).
 - **Build tooling**: Vite (for frontend), tsup or esbuild (for backend libraries). No Webpack in new projects.
 - **Linting**: ESLint with `@typescript-eslint/strict` rules. Prettier for formatting. Husky for pre-commit hooks.
 
@@ -30,7 +30,7 @@ For pure CRUD APIs, TypeScript is preferred.
 
 **FastAPI conventions**:
 - **Pydantic v2** for all data validation and settings management (`BaseSettings` per domain).
-- **`Depends`** for dependency injection -- routes stay thin and testable.
+- **`Depends`** for dependency injection; routes stay thin and testable.
 - **Async routes** for I/O-bound endpoints. Offload CPU-bound work to Celery or Arq.
 - **Modular domain structure**: group by feature (`src/auth/`, `src/billing/`), not by layer.
 - **`pytest`** with `httpx.ASGITransport` for in-process testing.
@@ -93,7 +93,7 @@ Examples:
 
 - **No shared mutable state** between tests. Each test must be independently runnable.
 - **Database**: Use in-memory databases (SQLite, `pg-mem`) or test containers. Never share a database across test suites.
-- **Mocks only for external boundaries**. Mock HTTP calls, file systems, and time. Do not mock internal functions -- test them through their public API.
+- **Mocks only for external boundaries**. Mock HTTP calls, file systems, and time. Do not mock internal functions; test them through their public API.
 - **Prefer stubs over mocks.** Use mocks only when you need to verify that a specific interaction occurred.
 
 ### Coverage
@@ -105,7 +105,7 @@ Examples:
 ### E2E Testing
 
 - Use **Playwright** for browser E2E tests. It is faster, more reliable, and better maintained than Cypress.
-- Keep E2E tests focused on **critical user journeys** (signup, purchase, core feature flow). Do not use E2E to test edge cases -- that is what unit and integration tests are for.
+- Keep E2E tests focused on **critical user journeys** (signup, purchase, core feature flow). Do not use E2E to test edge cases; that is what unit and integration tests are for.
 
 ---
 
@@ -210,7 +210,7 @@ This structure keeps related code close together, makes it easy to reason about 
 
 - **Transition over animation.** Use CSS `transition` for state changes (hover, focus, visibility). Reserve `@keyframes` for continuous effects (loading spinners, ambient motion).
 - **Duration**: Keep transitions between 200ms and 400ms. Faster feels abrupt. Slower feels sluggish.
-- **Easing**: Use natural easing curves (`cubic-bezier`). Avoid `ease-in` or `ease-out` alone -- combine them for a natural feel.
+- **Easing**: Use natural easing curves (`cubic-bezier`). Avoid `ease-in` or `ease-out` alone; combine them for a natural feel.
 - **Minimal**: Animations should serve a purpose: guide attention, provide feedback, or create atmosphere. If an animation has no functional or emotional purpose, remove it.
 - **Reduced motion**: Every animation must have a `@media (prefers-reduced-motion: reduce)` fallback that disables it. This is not optional.
 - **Performance**: Animate only `opacity` and `transform`. These are composited by the GPU and do not trigger layout or paint. Never animate `width`, `height`, `top`, `left`, `margin`, or `padding`.
@@ -322,13 +322,13 @@ A structured workflow for diagnosing issues:
 
 ### Step-by-step Guide
 
-1. **Reproduce first** -- Always try to reproduce the issue before investigating.
-2. **Check the console/logs** -- Look for error messages, warnings, stack traces.
-3. **Isolate the problem** -- Binary search: disable half the code, see if issue persists, repeat.
-4. **Write a minimal reproduction** -- Strip away unrelated code until only the failing part remains.
-5. **Check recent changes** -- `git diff`, `git log` to see what changed recently.
-6. **Write a regression test** -- Confirm the fix works by adding a test that would have caught the bug.
-7. **Document the root cause** -- In comments or a postmortem, explain why the bug happened.
+1. **Reproduce first**: Always try to reproduce the issue before investigating.
+2. **Check the console/logs**: Look for error messages, warnings, stack traces.
+3. **Isolate the problem**: Binary search: disable half the code, see if issue persists, repeat.
+4. **Write a minimal reproduction**: Strip away unrelated code until only the failing part remains.
+5. **Check recent changes**: `git diff`, `git log` to see what changed recently.
+6. **Write a regression test**: Confirm the fix works by adding a test that would have caught the bug.
+7. **Document the root cause**: In comments or a postmortem, explain why the bug happened.
 
 ### Common Debugging Tools
 
@@ -371,7 +371,7 @@ A structured workflow for diagnosing issues:
 ### Communication Principles
 
 - Be direct but respectful. Avoid excessive flattery, apologies, or hedging language.
-- No em dashes or double-hyphen dashes in written communication. Use single hyphens or restructure sentences.
+- No em dashes (U+2014), double-hyphen dashes, emojis, or decorative Unicode characters in written communication, documentation, code comments, engine responses, or any project files. Use single hyphens, plain ASCII characters, or restructure sentences. Decorative UX icons should use inline SVG markup instead of emoji characters.
 - Use code snippets and examples to clarify technical points.
 - When disagreeing, focus on the technical trade-offs, not the person.
 
@@ -407,6 +407,13 @@ docs(readme): update installation instructions for v2
 - **CONTRIBUTING.md**: For contributors. How to set up, how to test, how to submit a PR, coding standards.
 - **CHANGELOG.md**: Track notable changes per release. Keep it human-readable. Use Keep a Changelog format.
 - **API documentation**: OpenAPI/Swagger for REST APIs. Inline JSDoc for internal APIs.
+
+### Code Formatting & Readability
+
+- Use blank lines to separate code sections and logical groups. Do not nest code snippets too closely without line breaks.
+- Group related logic, constants, and functions together in clearly marked sections.
+- Avoid long chains of inline operations; break complex expressions into named intermediate variables.
+- When a function exceeds approximately 50 lines, add section-level comments (e.g., `// ==== Input validation ====`) to help readers navigate.
 
 ---
 

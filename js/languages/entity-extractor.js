@@ -45,13 +45,15 @@
   const EN_ACTIVITY = [
     'work', 'working', 'study', 'studying', 'school', 'exercise', 'exercising',
     'walking', 'running', 'reading', 'writing', 'travel', 'traveling', 'travelling',
-    'cooking', 'painting', 'therapy', 'meditation', 'sleep', 'sleeping',
+    'cooking', 'painting', 'therapy', 'meditation', 'meditating', 'yoga',
+    'journaling', 'breathing', 'journal', 'sleep', 'sleeping',
     'job', 'career', 'exam', 'exams', 'meeting', 'meetings', 'project',
   ];
   const FA_ACTIVITY = [
     'کار', 'کار کردن', 'کارم', 'درس', 'درس خواندن', 'امتحان', 'دانشگاه',
     'ورزش', 'پیاده‌روی', 'دویدن', 'مطالعه', 'کتاب خواندن', 'سفر', 'آشپزی',
-    'نقاشی', 'مدیتیشن', 'خواب', 'خوابیدن', 'شغل', 'پروژه', 'جلسه',
+    'نقاشی', 'مدیتیشن', 'مراقبه', 'یوگا', 'تنفس', 'تمرین تنفس',
+    'خواب', 'خوابیدن', 'شغل', 'پروژه', 'جلسه',
   ];
 
   const EN_OBJECT_HINTS = new Set([
@@ -70,11 +72,14 @@
       'stressed', 'scared', 'afraid', 'worried', 'angry', 'furious', 'lonely',
       'alone', 'worthless', 'hopeless', 'hurt', 'tired', 'overwhelmed', 'happy',
       'glad', 'excited', 'grateful', 'love', 'proud', 'relieved', 'better',
+      'overwhelmed', 'burnout', 'drained', 'grief', 'grieving', 'mindfulness',
+      'mindful', 'calm', 'peaceful', 'content', 'grateful', 'hopeful', 'inspired',
     ]),
     fa: new Set([
       'غمگین', 'ناراحت', 'افسرده', 'دلتنگ', 'نگران', 'اضطراب', 'استرس', 'ترس',
       'عصبانی', 'خشمگین', 'تنها', 'بی‌ارزش', 'ناامید', 'خسته', 'داغون', 'درد',
       'خوشحال', 'شاد', 'هیجان', 'ممنون', 'قدردان', 'عاشق', 'امیدوار', 'آرام',
+      'سوگ', 'آرامش', 'ذهن‌آگاهی', 'فرسودگی', 'قدردان', 'امید', 'الهام',
     ]),
   };
 

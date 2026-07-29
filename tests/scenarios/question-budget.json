@@ -1,9 +1,14 @@
 {
-  "name": "question budget",
+  "name": "question budget enforcement",
+  "description": "Tests the engine's question-budget mechanism: after the user asks a question, the engine should avoid asking another question in response. The budget window (QUESTION_BUDGET_WINDOW=3, QUESTION_BUDGET_LIMIT=1) prevents consecutive question responses.",
   "language": "en",
   "turns": [
-    {"text": "I can't sleep", "dialogueAct": "statement", "topic": "sleep"},
-    {"text": "What do you think?", "dialogueAct": "question", "topic": "sleep"},
-    {"text": "I keep waking up at night", "dialogueAct": "statement", "topic": "sleep"}
-  ]
+    {"text": "I can't sleep", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sleep"},
+    {"text": "What do you think?", "dialogueAct": "question", "intent": "information_or_reflection", "topic": "sleep"},
+    {"text": "I keep waking up at night", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sleep"}
+  ],
+  "expected": {
+    "finalTurn": "After the user asks a direct question (turn 2), the engine's response should NOT end with a question mark - the question budget prevents a question reply when the user just asked one.",
+    "behavior": "Engine tracks consecutiveQuestions and the rolling askedQuestionTurns window. On turn 2, the reply should use a non-question response (questionAcknowledgements or genericFallbacks). On turn 3, the topic returns to sleep and the engine may ask a follow-up question since the user's statement is substantive."
+  }
 }

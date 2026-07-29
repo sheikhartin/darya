@@ -1,0 +1,14 @@
+{
+  "name": "knowledge domain queries with conversational follow-up",
+  "description": "Tests the engine's knowledge rule integration with the offline DaryaKnowledge shelf across multiple domains. The user asks about Stoic philosophy, then follows up with focus/learning advice, and finally transitions back to a personal topic. Verifies that knowledge responses are returned without network access, that the knowledge reply is substantive (> 40 chars), that the engine tracks 'knowledge' as a currentTurnTopic, and that after knowledge queries, normal conversational routing resumes seamlessly.",
+  "language": "en",
+  "turns": [
+    {"text": "Tell me about Stoic philosophy", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "How can I focus better on my studies?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
+    {"text": "I've been feeling unmotivated lately", "dialogueAct": "statement", "intent": "topic_statement", "topic": "motivation"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: knowledge rule matched, DaryaKnowledge.answer('en', 'philosophy') returns 4 options, reply length > 40 chars. Turn 2: knowledge rule matched again (focus/concentrate hints) but dialogueAct is 'question' because the input is a question. DaryaKnowledge.answer('en', 'focus') returns 4 options. Turn 3: transitions to motivation topic via 'unmotivated' - should use engine's regular motivational responses, not knowledge shelf.",
+    "behavior": "Knowledge rule (priority 55) matches on domain-specific keywords. Domain detection uses domainHints mapping for English (stoic -> thinkers, philosophy -> philosophy, focus/concentrate -> focus). Question turns maintain dialogueAct 'question' even when matched to the knowledge rule. Knowledge responses are returned as independent copies (DaryaKnowledge.answer uses .slice()). After knowledge, topic tracking continues normally via the motivation rule."
+  }
+}

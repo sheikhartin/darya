@@ -1,0 +1,14 @@
+{
+  "name": "mindfulness conversation with rule matching",
+  "description": "Tests the new mindfulness rule (priority 40) for matching meditation, breathing, and present-moment language. Verifies that the engine returns empathetic, non-prescriptive responses from the mindfulness response pool and tracks the 'mindfulness' topic correctly.",
+  "language": "en",
+  "turns": [
+    {"text": "I've been trying meditation recently", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"},
+    {"text": "Just breathing and noticing my thoughts", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"},
+    {"text": "It's hard to stay present some days", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"}
+  ],
+  "expected": {
+    "finalTurn": "Each turn should match the mindfulness rule via keywords (meditation, breathing, present). The engine responds with warm, non-prescriptive mindfulness responses and tracks topic 'mindfulness'. No crash or irrelevant response.",
+    "behavior": "Mindfulness rule (priority 40) matches on 'meditation', 'breathing', 'present'. Responses are from the mindfulness response pool. Topic tracking records 'mindfulness' as currentTurnTopics."
+  }
+}

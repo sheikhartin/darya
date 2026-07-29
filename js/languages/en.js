@@ -120,11 +120,13 @@
       'Those kind of thoughts about yourself can feel very convincing, even when they are not the full picture.',
     ]),
 
-    rule('grief', 45, /\b(lost my|passed away|passed away|death of|grieving|my .* died)\b/i, [
+    rule('grief', 45, /\b(lost my|passed away|passed away|death of|grieving|my .* died|bereavement|cope with\s+(?:\w+\s+)?loss)\b/i, [
       'Losing someone is one of the hardest things a person can go through. Do you want to talk about it a little?',
       'Whatever you\'re feeling about this loss is valid. How have you been coping with it lately?',
       "I'd like to hear about them, if you'd like to share.",
       'I am sitting with you in this loss. It is okay to feel what you feel about it.',
+      'There is no right or wrong way to grieve. What has the last little while been like for you?',
+      'Grief can show up in unexpected moments, even when you think you are doing okay. How have the days been treating you?',
     ]),
 
     rule('smalltalk_howareyou', 60, /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing)\b/i, [
@@ -175,6 +177,25 @@
       'Health concerns naturally draw a lot of attention and concern.',
     ]),
 
+    rule('mindfulness', 40, /\b(mindfulness|meditation|meditate|mindful|breathing (?:exercise|technique)|present moment|be present|grounding|ground myself|in the moment|calm my mind|quiet my mind|clear my head|body scan|just breathe|focus on my breath|watching my thoughts|notice my thoughts|noticing my thoughts|being aware)\b/i, [
+      'That awareness of the present moment is a helpful starting point. What do you notice when you pause like this?',
+      'Bringing attention to the breath is one of the simplest things we can do, and it can also be one of the hardest. What comes up for you when you try it?',
+      'There is no wrong way to practice presence. Sometimes just noticing that your mind has wandered and gently guiding it back is the practice itself.',
+      'The fact that you are even considering mindfulness tells me something about your willingness to be with yourself as you are, which is quietly powerful.',
+      'It can be helpful to start with something very small, like noticing one full breath from start to finish, without changing anything about it.',
+      'What you are describing is a kind of attention that is not trying to fix anything, just to be present. That openness has its own value.',
+    ]),
+
+    rule('stress', 40, /\b(overwhelmed|burnout|burned out|can'?t cope|too much to handle|stressed out|under (?:so much|a lot of) pressure|at my limit|stretched (?:too )?thin|breaking point|mentally exhausted|drained|can'?t keep up|maxed out|running on empty|about to snap|can'?t take (?:it|this) anymore)\b/i, [
+      'That sounds like a lot of pressure has been building up. When did it start to feel this intense?',
+      'It is hard to carry that much weight and still show up each day. What would one small release look like, even if it is just for a few minutes?',
+      'You are describing a state that often comes from giving more than you have had a chance to replenish. Is there one area that is demanding more than the others?',
+      'The fact that you are still going despite feeling this way says something about your resilience. But resilience does not mean you should have to keep going without relief.',
+      'When everything feels like too much, the smallest thing can feel like the biggest task. Is there one thing you could set down, even temporarily, that would lighten the load?',
+      'That sense of overwhelm often comes from carrying things alone or trying to hold too many threads at once. Which thread, if you let it go for now, would create the most relief?',
+      'Your mind and body are telling you that something needs to shift. What would rest look like for you right now, even in a small way?',
+    ]),
+
     rule('gratitude', 25, /\b(thanks?|thank you|thanks darya|i appreciate you|grateful for you)\b/i, [
       'That means a lot to hear, thank you for saying so.',
       "I'm glad this conversation has been helpful.",
@@ -212,7 +233,7 @@
       'What might a small first step toward {captured} look like?',
     ]),
 
-    rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative)\b/i, []),
+    rule('knowledge', 55, /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision)\b/i, []),
 
     rule('professional_boundary', 90, /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i, []),
 
@@ -332,6 +353,8 @@
     health: ['How are you feeling physically these days?', 'Has your physical health changed since we discussed it?', 'What has been most on your mind about your health lately?'],
     school: ['How are things going with school or exams?', 'Has the academic pressure changed since we talked about it?', 'What feels most manageable and what feels overwhelming right now?'],
     money: ['Is that financial worry you mentioned still on your mind?', 'How has the financial situation been since we talked?', 'Has anything changed with the money concerns, or is it still the same?'],
+    mindfulness: ['Has the mindfulness practice shifted anything for you since we talked about it?', 'Have you had a chance to try being present in any small way since then?', 'What has your awareness been like since we last touched on this?', 'Has the practice of noticing the present moment brought anything new to your attention?'],
+    stress: ['Has the pressure eased at all since we spoke about it?', 'How has the stress been affecting you since you mentioned it?', 'Has the feeling of being overwhelmed shifted at all?', 'Have you found any small moments of relief since we talked about the stress?'],
   };
 
   // A safe, low-risk callback: quoting the person's own earlier words back
@@ -687,6 +710,8 @@
     health: ['What symptom or change is worrying you most?', 'Have you already spoken with a qualified clinician about it?', 'How is this affecting ordinary parts of your day?', 'What question would you want answered first by a professional?'],
     school: ['Which part of the course or exam feels most demanding?', 'How much time do you have before the next deadline?', 'What study approach has worked even once before?', 'Would breaking the material into one short session help?'],
     money: ['Which financial pressure needs attention first?', 'What deadline or bill is making this feel urgent?', 'Who could offer practical advice you trust?', 'What information would make the next decision clearer?'],
+    mindfulness: ['What drew you to mindfulness or meditation?', 'When you try to be present, what pulls your attention away most often?', 'Is there a particular time of day when being present feels more natural?', 'What do you notice first when you pause and pay attention to your inner world?'],
+    stress: ['Which part of your life is contributing the most to the overwhelm right now?', 'When did the pressure start to feel like it was more than you could hold?', 'What would relief look like, even if it is something very small?', 'Is the pressure coming from one area or from several at once?'],
     gratitude: ['What part of this conversation has felt useful to you?', 'What would you like to carry with you from this moment?', 'What made you decide to say thanks just now?', 'What would feel good to talk about next?'],
     feeling: ['When did that feeling first become noticeable?', 'What seems to strengthen it during the day?', 'What part of the feeling is easiest to name?', 'What would you like to be different about it?'],
     reasoning: ['What other explanation feels possible beside that one?', 'What evidence makes this reason stand out to you?', 'Has this pattern appeared in another situation?', 'What would change your mind, even slightly?'],
@@ -698,7 +723,7 @@
     recap: ['Which of those threads feels most worth returning to?', 'Has one of those topics become more important since you mentioned it?', 'Which detail from the conversation feels clearest to you now?', 'Where would you like the recap to lead next?'],
   };
 
-  const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need']);
+  const questionTopics = new Set(['family', 'work', 'sleep', 'anxiety', 'stress', 'sadness', 'anger', 'joy', 'loneliness', 'self_esteem', 'grief', 'motivation', 'mindfulness', 'relationship', 'health', 'school', 'money', 'feeling', 'reasoning', 'need']);
   const blendResponses = {
     blend_sleep_anxiety: ['Your restless nights and the worry seem to be feeding each other a little; noticing which one arrives first may give you a useful opening.', 'When sleep and worry travel together, the evening can feel much longer than it is. A gentler wind-down might be worth protecting.', 'The tiredness may be making the worry louder, while the worry keeps sleep out of reach. That is a tiring loop, not a personal failure.', 'There are two threads here - a body asking for rest and a mind staying on watch. We can look at either one first.'],
     blend_work_anger: ['The anger seems tied to what work is asking of you, not floating free of the situation.', 'When a work pressure keeps crossing a line, frustration can become its own daily workload.', 'It sounds as if the workplace problem is also taking a piece of your patience home with you.', 'There is a work problem and a boundary problem sitting close together here.'],
@@ -708,9 +733,13 @@
     blend_anxiety_loneliness: ['Worry and loneliness often visit together, each one making the other feel more at home.', 'When your mind is busy with worry and the quiet feels empty at the same time, that is a hard place to be.', 'The worried thoughts and the feeling of being alone may be strengthening each other right now.', 'Both the anxiety and the sense of isolation seem present at the same time, and either one might be a place to start.'],
     blend_health_anxiety: ['Worrying about your health and carrying general anxiety often walk the same road; noticing which one leads may help you find a starting point.', 'The concern about your body and the sense of worry are probably talking to each other in ways that can feel hard to untangle.', 'It makes sense that health concerns would stir up more general worry, or the other way around.', 'These two threads -- what your body is doing and what your mind is fearing -- may be woven together more tightly than they first appear.'],
     blend_grief_anger: ['Grief and anger often share the same space, especially when a loss leaves things unresolved between you.', 'The loss and the anger may be connected: sometimes the pain has nowhere else to go.', 'Beneath the anger about this loss there may be something that still needs to be said or grieved.', 'Grief and anger are both present here, and that combination carries its own, particular kind of weight.'],
+    blend_anxiety_stress: ['Anxiety and stress often travel together, each one making the other feel more urgent. Untangling which one started first may offer a useful starting point.', 'The worry and the pressure seem to be feeding each other. Noticing which one is more present at different moments can help you see the pattern.', 'When the mind is both worried and under pressure, it can be hard to find a still point. A short pause to breathe might create a little space between them.', 'Both the sense of threat and the feeling of overload are present here. Reducing either one even a little can make the other more manageable.'],
+    blend_stress_work: ['The pressure you are describing seems closely tied to what work is demanding of you, and that connection is worth paying attention to.', 'Work stress has a way of following you home and settling into the quiet hours. Finding a transition ritual between work and rest might help.', 'When the workload and the overwhelm are this closely linked, the boundary between them may be the first thing worth protecting.', 'The work demands and the stress they create seem to be reinforcing each other. A small shift in either one could begin to loosen the loop.'],
+    blend_sleep_stress: ['When stress is high, sleep is often the first thing to suffer, and poor sleep makes the stress harder to carry. That is a weary cycle.', 'The pressure you are under during the day may be spilling into your nights. A brief wind-down practice could help draw a line between them.', 'Rest and stress do not share space well. If the mind is still running through demands at night, it may need more than a few minutes to settle.', 'Your body is telling you it needs rest, but your mind is still holding the day. A small buffer between activity and sleep can make a real difference.'],
+    blend_grief_stress: ['Grief itself is a kind of weight that can make ordinary demands feel overwhelming. The loss may have reduced your capacity for handling additional pressure.', 'Mourning takes emotional energy, and when the daily demands do not pause for grief, the exhaustion can compound in ways that are hard to name.', 'It is hard to hold both loss and the ordinary pressure of life at the same time. One of them may need to be set down briefly so you can breathe.', 'The grief may be making the stress heavier and the stress may be leaving less room for the grief. Neither one can be fully felt when both are competing for the same attention.'],
   };
 
-  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25 };
+  const topicSeriousness = { safety: 1, professional_boundary: 0.9, grief: 0.9, health: 0.85, anxiety: 0.8, stress: 0.8, sadness: 0.8, anger: 0.75, loneliness: 0.75, family: 0.7, relationship: 0.7, sleep: 0.65, work: 0.65, money: 0.7, school: 0.6, self_esteem: 0.8, motivation: 0.6, mindfulness: 0.4, feeling: 0.65, reasoning: 0.55, need: 0.55, joy: 0.25, gratitude: 0.2, greeting: 0.15, smalltalk_howareyou: 0.2, smalltalk_identity: 0.25, smalltalk_capability: 0.25, recap: 0.35, knowledge: 0.25 };
   const humor = ['Ha. Okay, I am officially charmed.', 'That made me smile.', 'Fair enough - I have no comeback for that.', 'I have to admit, that is a good one.', 'You are fun. I will not pretend otherwise.', 'Well, that was a delightful little plot twist.'];
   const warmth = ['That sounds like a lot to carry.', 'I can hear that this matters to you.', 'You do not have to have it all figured out at once.', 'It is okay to take your time with this.'];
   const smalltalk = ['Nice. That has a good bit of character to it.', 'That is a detail worth keeping.', 'I like the way you put that.', 'That gives the day a little color.'];

@@ -1,7 +1,21 @@
 /**
  * Darya ambient scene particles: bubbles, bird shadows, and wave
- * animation variation. Fully standalone -- no dependency on app state
- * or other UI modules.
+ * animation variation.
+ *
+ * This module creates and manages dynamic visual elements for the two
+ * available themes:
+ *
+ * Ocean theme:
+ *   - Floating bubbles with randomized size, drift, and opacity
+ *   - Gentle depth-breathe animation for atmospheric effect
+ *
+ * Beach theme:
+ *   - Wave layers with randomized durations and delays per conversation
+ *   - Bird shadow silhouettes linked to wave speed for natural pacing
+ *
+ * Fully standalone -- no dependency on app state or other UI modules.
+ * Functions are exported to window.DaryaAmbient and called from app.js
+ * during boot and conversation start.
  */
 (function (global) {
   'use strict';

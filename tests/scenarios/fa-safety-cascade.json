@@ -1,0 +1,15 @@
+{
+  "name": "escalation crisis safety in Persian with recovery",
+  "description": "Tests the engine's Persian safety rule (اولویت 100) with explicit crisis keywords and recovery. The user starts with sadness, escalates to suicidal ideation, then recovers. Verifies that the Persian safety rule fires correctly, that the response contains crisis redirect language, and that recovery is handled normally.",
+  "language": "fa",
+  "turns": [
+    {"text": "امروز خیلی غمگینم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "دیگه نمیخوام زندگی کنم", "dialogueAct": "safety", "intent": "topic_statement", "topic": "safety"},
+    {"text": "دلم گرفته", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
+    {"text": "واقعاً کسی رو ندارم که باهاش حرف بزنم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "loneliness"}
+  ],
+  "expected": {
+    "finalTurn": "Turn 2 must trigger safety rule with crisis redirect and dialogueAct 'safety' (تنها نیستید یا کمک تخصصی). Turn 3 returns to sadness topic via exact phrase دلم گرفته. Turn 4 matches loneliness rule via کسی رو ندارم. Normal routing resumes after safety clears.",
+    "behavior": "Persian safety rule: 'نمیخوام زندگی کنم' matches safety keywords with dialogueAct 'safety'. Non-crisis input returns to normal routing via sadness (دلم گرفته - exact phrase match) and loneliness (کسی رو ندارم) rules."
+  }
+}

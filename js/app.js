@@ -178,7 +178,7 @@
     st.conversationEnded = false;
     st.chatActive = false;
     st.transcript = [];
-    el.chat.innerHTML = '';
+    el.chat.replaceChildren();
     st.messageCount = 0;
     st.currentTitle = '';
     if (el.pickerLangLock) {
@@ -201,7 +201,7 @@
     st.engine = new DaryaResponseEngine(st.lang);
     st.conversationEnded = false;
     st.transcript = [];
-    el.chat.innerHTML = '';
+    el.chat.replaceChildren();
     st.messageCount = 0;
     st.currentTitle = '';
     setHint('');

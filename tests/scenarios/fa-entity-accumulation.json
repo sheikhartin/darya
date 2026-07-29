@@ -1,0 +1,15 @@
+{
+  "name": "entity accumulation in Persian with cross-topic memory",
+  "description": "Tests the Persian entity extraction system across multiple emotional turns. The user introduces family members, places, and activities with emotional weight. Verifies that Persian family terms (مادر, پدر), places (خانه, اتاق), and activities (نقاشی) are correctly extracted, stored with contextTopics, and can be referenced in callbacks when topic context matches.",
+  "language": "fa",
+  "turns": [
+    {"text": "درباره مادرم خیلی ناراحتم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
+    {"text": "مادر من توی اتاقش همیشه تنهاست", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
+    {"text": "نقاشی کشیدن بهم آرامش میده", "dialogueAct": "statement", "intent": "topic_statement"},
+    {"text": "کار من هم خیلی سخت شده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+  ],
+  "expected": {
+    "finalTurn": "Entities 'مادر' (person) and 'اتاق' (place) extracted on turns 1-2. 'نقاشی' (activity) on turn 3. All stored with contextTopics matching their turn topics (family for turns 1-2, no specific topic for turn 3, work for turn 4). Entity activation decays each turn. Turn 3 has no dialogueAct emotional_statement due to entity-extractor changes. By turn 4, earlier entities may be below callback threshold.",
+    "behavior": "Persian entity extractor recognizes familyTerms (مادر), placeWords (اتاق), and activities (نقاشی). Entities gated by emotionalWeight. Turn 2 uses 'مادر من' as separate words for word-boundary matching. Turn 4 uses 'کار من' as separate word for work rule word-boundary matching."
+  }
+}
