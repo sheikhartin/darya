@@ -36,13 +36,13 @@
        attribute synchronously, before any rendering occurs. -->
   <script>
     (function() {
-      var stored = null;
+      let stored = null;
       try {
         stored = localStorage.getItem('darya_theme');
       } catch (e) {}
       if (!stored) {
         try {
-          var match = document.cookie.match(/(?:^|; )darya_theme=([^;]*)/);
+          const match = document.cookie.match(/(?:^|; )darya_theme=([^;]*)/);
           stored = match ? decodeURIComponent(match[1]) : null;
         } catch (e) {}
       }
@@ -204,7 +204,7 @@
           </button>
           <div class="menu__divider" role="separator"></div>
           <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem" title="تغییر پوسته گفتگو">
-            <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🏖️</span>
+            <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🌊</span>
             <span id="menu-theme-label">پوسته ساحل</span>
           </button>
         </div>
