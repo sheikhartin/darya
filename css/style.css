@@ -261,9 +261,7 @@ body {
 /* --------------------------------------------------------------------- */
 
 html:not(.no-theme-transition) body {
-  transition:
-    color 0.45s var(--ease-tide),
-    background 0.45s var(--ease-tide);
+  transition: color 0.45s var(--ease-tide);
 }
 
 html:not(.no-theme-transition) .beach-scene,
@@ -850,8 +848,7 @@ html[data-theme='beach'] .picker__note {
 html[data-theme='beach'] .picker__lang-lock,
 html[data-theme='beach'] .picker__theme-heading {
   color: var(--color-on-sky);
-  opacity: 0.95;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+  opacity: 0.85;
 }
 
 /* --------------------------------------------------------------------- */

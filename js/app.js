@@ -239,9 +239,21 @@
     st.chatActive = true;
     startConversation();
 
-    // Auto-play ambient sound if enabled in settings
+    // Auto-play ambient sound if enabled in settings, updating UI if blocked
     if (typeof DaryaAmbientSound !== 'undefined') {
-      DaryaAmbientSound.autoplayIfEnabled();
+      DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
+        if (el.menuSoundToggle) {
+          el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+          var label =
+            chosenLang && enabled
+              ? chosenLang.ui.soundOnTitle
+              : chosenLang.ui.soundOffTitle;
+          el.menuSoundToggle.setAttribute('title', label);
+          if (el.menuSoundLabel) {
+            el.menuSoundLabel.textContent = label;
+          }
+        }
+      });
     }
   }
 
@@ -755,7 +767,19 @@
   function initAutoplayGesture() {
     var startSound = function () {
       if (typeof DaryaAmbientSound !== 'undefined' && DaryaAmbientSound.getSavedState() === true) {
-        DaryaAmbientSound.autoplayIfEnabled();
+        DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
+          if (el.menuSoundToggle) {
+            el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+            var label =
+              st.lang && enabled
+                ? st.lang.ui.soundOnTitle
+                : (st.lang ? st.lang.ui.soundOffTitle : (enabled ? "پخش صدای محیطی: روشن" : "پخش صدای محیطی: خاموش"));
+            el.menuSoundToggle.setAttribute('title', label);
+            if (el.menuSoundLabel) {
+              el.menuSoundLabel.textContent = label;
+            }
+          }
+        });
       }
       document.removeEventListener('click', startSound);
       document.removeEventListener('keydown', startSound);
