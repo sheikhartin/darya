@@ -58,7 +58,7 @@
   var currentTheme = null;
 
   /** @type {boolean} Whether ambient sound is currently enabled by the user. */
-  var isEnabled = false;
+  var isEnabled = getSavedState() === true;
 
   /** @type {number} The target volume (0-1) for new audio playback. */
   var targetVolume = DEFAULT_VOLUME;
@@ -952,12 +952,30 @@
     );
   }
 
+  /**
+   * Automatically starts playback of the current theme sound if ambient
+   * sound is enabled in the user's settings, utilizing a user-gesture context.
+   * Safe to call multiple times; if already playing, does nothing.
+   * @returns {Promise<void>}
+   */
+  function autoplayIfEnabled() {
+    if (isEnabled && !isPlaying()) {
+      var theme =
+        document.documentElement.getAttribute('data-theme') || 'ocean';
+      return playThemeSound(theme).catch(function () {
+        /* fail-safe */
+      });
+    }
+    return Promise.resolve();
+  }
+
   const DaryaAmbientSound = {
     toggle,
     onThemeChange,
     setVolume,
     isPlaying,
     getSavedState,
+    autoplayIfEnabled,
     get enabled() {
       return isEnabled;
     },

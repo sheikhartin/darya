@@ -238,6 +238,23 @@
     el.app.hidden = false;
     st.chatActive = true;
     startConversation();
+
+    // Auto-play ambient sound if enabled in settings, updating UI if blocked
+    if (typeof DaryaAmbientSound !== 'undefined') {
+      DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
+        if (el.menuSoundToggle) {
+          el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+          var label =
+            chosenLang && enabled
+              ? chosenLang.ui.soundOnTitle
+              : chosenLang.ui.soundOffTitle;
+          el.menuSoundToggle.setAttribute('title', label);
+          if (el.menuSoundLabel) {
+            el.menuSoundLabel.textContent = label;
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -742,6 +759,37 @@
   }
 
   // ========================================================================
+  /**
+   * Initializes a one-time global user gesture listener. The very first
+   * interaction anywhere on the screen (click, tap, or key) will trigger
+   * ambient sound playback if the user has it enabled in their settings.
+   */
+  function initAutoplayGesture() {
+    var startSound = function () {
+      if (typeof DaryaAmbientSound !== 'undefined' && DaryaAmbientSound.getSavedState() === true) {
+        DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
+          if (el.menuSoundToggle) {
+            el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+            var label =
+              st.lang && enabled
+                ? st.lang.ui.soundOnTitle
+                : (st.lang ? st.lang.ui.soundOffTitle : (enabled ? "پخش صدای محیطی: روشن" : "پخش صدای محیطی: خاموش"));
+            el.menuSoundToggle.setAttribute('title', label);
+            if (el.menuSoundLabel) {
+              el.menuSoundLabel.textContent = label;
+            }
+          }
+        });
+      }
+      document.removeEventListener('click', startSound);
+      document.removeEventListener('keydown', startSound);
+      document.removeEventListener('touchstart', startSound);
+    };
+    document.addEventListener('click', startSound, { passive: true });
+    document.addEventListener('keydown', startSound, { passive: true });
+    document.addEventListener('touchstart', startSound, { passive: true });
+  }
+
   // Boot
   // ========================================================================
 
@@ -758,6 +806,7 @@
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();
   DaryaAmbient.initBirdShadows();
+  initAutoplayGesture();
 
   // Restore the saved sound toggle state from cookie so the menu item
   // reflects the user's last preference. Audio does NOT start playing
