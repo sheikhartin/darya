@@ -1,15 +1,5 @@
 /**
- * Darya engine utilities: constants, language-agnostic text helpers, and
- * the ConversationMemory class.
- *
- * This is the first engine module loaded. It exports everything that the
- * DaryaResponseEngine class (in responder.js) depends on, keeping the
- * pure data structures and pure functions separate from conversation
- * routing logic.
- *
- * All three engine modules (utils.js, responder.js) share the same IIFE
- * pattern and the same global-namespace strategy so they work identically
- * as plain <script> tags in the browser and under Node's test runner.
+ * Darya classic script.
  */
 
 (function (global) {
@@ -39,11 +29,12 @@
   const SPAM_MIN_LENGTH = 2;
   const SPAM_MAX_UNIQUE_RATIO = 0.3;
   const ACKNOWLEDGEMENT_THRESHOLD = 2;
-  const TEST_INPUT_PATTERNS = /^(?:test|testing|hello bot|can you hear|are you there|ping|pong|123|abc)$/iu;
+  const TEST_INPUT_PATTERNS =
+    /^(?:test|testing|hello bot|can you hear|are you there|ping|pong|123|abc)$/iu;
   const MIXED_SCRIPT_THRESHOLD = 0.35;
   const SUBSTANTIVE_ANSWER_MIN_WORDS = 3;
   const TEASING_MOCK_THRESHOLD = 2;
-  const WELLBEING_CHECK_TURNS = 4;
+  const WELLBEING_CHECK_TURNS = 2;
   const BOREDOM_CHECK_INTERVAL = 5;
   const BOREDOM_MIN_TURNS = 6;
   const MIXED_SCRIPT_FOREIGN_MIN = 3;
@@ -63,7 +54,9 @@
    */
   function scriptRatio(text, scriptRange) {
     const letters = [...String(text)].filter((ch) => /\p{L}/u.test(ch));
-    if (letters.length === 0) return null;
+    if (letters.length === 0) {
+      return null;
+    }
     const inScript = letters.filter((ch) => scriptRange.test(ch));
     return inScript.length / letters.length;
   }
@@ -78,7 +71,9 @@
    */
   function isValidScript(text, lang) {
     const ratio = scriptRatio(text, lang.scriptRange);
-    if (ratio === null) return true;
+    if (ratio === null) {
+      return true;
+    }
     return ratio >= lang.minScriptRatio;
   }
 
@@ -90,7 +85,9 @@
    * @returns {string}
    */
   function truncateExcerpt(text, maxLength) {
-    if (text.length <= maxLength) return text;
+    if (text.length <= maxLength) {
+      return text;
+    }
     return `${text.slice(0, maxLength).trim()}...`;
   }
 
@@ -101,34 +98,92 @@
    * excessive whitespace so that orthographic variants of the same word
    * reach the same rule path. "خوشبین", "خوش‌بین", and "خوش بین" all
    * become the same token.
+   *
+   * Common Gen-Z and casual English abbreviations are also expanded here
+   * (not in the language pack's normalize) so that the expanded form is
+   * used only for rule/pattern matching and is never stored in the
+   * conversation memory; Darya will never quote the expanded form
+   * back to the user via the quoted-callback feature.
    */
   function normalizeForMatching(rawText, lang) {
     const normalized = lang.normalize(rawText);
-    return normalized
-      .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
-      .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
-      .replace(/[ \t\r\n]+/gu, ' ')
-      .trim();
+    return (
+      normalized
+        .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
+        .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
+        .replace(/[ \t\r\n]+/gu, ' ')
+        .trim()
+        // Expand abbreviations for matching only (not stored in memory):
+        .replace(/\bafaik\b/gi, 'as far as i know')
+        .replace(/\bafk\b/gi, 'away from keyboard')
+        .replace(/\bbrb\b/gi, 'be right back')
+        .replace(/\bbtw\b/gi, 'by the way')
+        .replace(/\bidk\b/gi, 'i do not know')
+        .replace(/\bikr\b/gi, 'i know right')
+        .replace(/\bimo\b/gi, 'in my opinion')
+        .replace(/\bimho\b/gi, 'in my humble opinion')
+        .replace(/\birl\b/gi, 'in real life')
+        .replace(/\bjk\b/gi, 'just kidding')
+        .replace(/\blmao\b/gi, 'laughing my ass off')
+        .replace(/\blol\b/gi, 'laughing out loud')
+        .replace(/\bngl\b/gi, 'not gonna lie')
+        .replace(/\bnp\b/gi, 'no problem')
+        .replace(/\bnvm\b/gi, 'never mind')
+        .replace(/\bofc\b/gi, 'of course')
+        .replace(/\bomg\b/gi, 'oh my god')
+        .replace(/\bsmh\b/gi, 'shaking my head')
+        .replace(/\btbf\b/gi, 'to be fair')
+        .replace(/\btbh\b/gi, 'to be honest')
+        .replace(/\bty\b/gi, 'thank you')
+        .replace(/\btyvm\b/gi, 'thank you very much')
+        .replace(/\bwth\b/gi, 'what the hell')
+        .replace(/\bwtf\b/gi, 'what the fuck')
+    );
   }
 
   /**
    * Scores a normalized message using a simple keyword lexicon: +1 for
-   * each positive-lexicon word found (as a substring, to tolerate
-   * attached Persian suffixes and simple English inflection alike), -1
-   * for each negative-lexicon word found. This is a lightweight heuristic
-   * consistent with the rest of the engine's keyword-driven design, not a
-   * real sentiment model.
+   * each positive-lexicon word found, -1 for each negative-lexicon word
+   * found. Words are matched per token as the LONGEST prefix of the
+   * token, which tolerates attached Persian person suffixes ("ناراحتم"
+   * matches "ناراحت") while avoiding substring false positives ("راحت"
+   * inside "ناراحت", or "غم" inside "غمگین"). Negation words listed in
+   * the lexicon's optional `negations` array flip the polarity of an
+   * adjacent sentiment word ("خوب نیست" and "not happy" score
+   * negative). This is a lightweight heuristic consistent with the rest
+   * of the engine's keyword-driven design, not a real sentiment model.
    * @param {string} normalizedText
-   * @param {{positive: string[], negative: string[]}} lexicon
+   * @param {{positive: string[], negative: string[], negations?: string[]}} lexicon
    * @returns {number}
    */
   function scoreSentiment(normalizedText, lexicon) {
+    const tokens = normalizedText.split(/\s+/u).filter(Boolean);
+    const negations = new Set(lexicon.negations || []);
     let score = 0;
-    for (const word of lexicon.negative) {
-      if (normalizedText.includes(word)) score -= 1;
-    }
-    for (const word of lexicon.positive) {
-      if (normalizedText.includes(word)) score += 1;
+    for (let i = 0; i < tokens.length; i += 1) {
+      const token = tokens[i];
+      let contribution = 0;
+      let bestLength = 0;
+      for (const word of lexicon.negative) {
+        if (token.startsWith(word) && word.length > bestLength) {
+          bestLength = word.length;
+          contribution = -1;
+        }
+      }
+      for (const word of lexicon.positive) {
+        if (token.startsWith(word) && word.length > bestLength) {
+          bestLength = word.length;
+          contribution = 1;
+        }
+      }
+      if (contribution === 0) {
+        continue;
+      }
+      const negated =
+        (i > 0 && negations.has(tokens[i - 1])) ||
+        (i > 1 && negations.has(tokens[i - 2])) ||
+        (i < tokens.length - 1 && negations.has(tokens[i + 1]));
+      score += negated ? -contribution : contribution;
     }
     return score;
   }
@@ -146,27 +201,37 @@
    */
   function reflectPronouns(text, pronounMap) {
     const words = text.trim().split(/\s+/);
-    if (words.length < PRONOUN_REFLECTION_MIN_WORDS || words.length > PRONOUN_REFLECTION_MAX_WORDS) {
+    if (
+      words.length < PRONOUN_REFLECTION_MIN_WORDS ||
+      words.length > PRONOUN_REFLECTION_MAX_WORDS
+    ) {
       return null;
     }
 
     let swapped = false;
     const result = words.map((token) => {
       const match = token.match(/^([A-Za-z']+)([.,!?]*)$/);
-      if (!match) return token;
+      if (!match) {
+        return token;
+      }
       const [, word, punct] = match;
       const lower = word.toLowerCase();
-      if (!Object.prototype.hasOwnProperty.call(pronounMap, lower)) return token;
+      if (!Object.prototype.hasOwnProperty.call(pronounMap, lower)) {
+        return token;
+      }
 
       swapped = true;
       let replacement = pronounMap[lower];
       if (word[0] === word[0].toUpperCase() && lower !== 'i') {
-        replacement = replacement.charAt(0).toUpperCase() + replacement.slice(1);
+        replacement =
+          replacement.charAt(0).toUpperCase() + replacement.slice(1);
       }
       return replacement + punct;
     });
 
-    if (!swapped) return null;
+    if (!swapped) {
+      return null;
+    }
     return result.join(' ');
   }
 
@@ -210,16 +275,27 @@
 
     rememberUtterance(utterance) {
       this.recentUtterances.push(utterance);
-      if (this.recentUtterances.length > this.capacity) this.recentUtterances.shift();
+      if (this.recentUtterances.length > this.capacity) {
+        this.recentUtterances.shift();
+      }
     }
 
     rememberTopic(topic, weight = 1) {
-      if (!topic) return;
+      if (!topic) {
+        return;
+      }
       this.recentTopics.push(topic);
-      if (this.recentTopics.length > this.capacity) this.recentTopics.shift();
+      if (this.recentTopics.length > this.capacity) {
+        this.recentTopics.shift();
+      }
       this.topicHistory.push({ topic, weight, turn: this.turnCount });
-      if (this.topicHistory.length > 7) this.topicHistory.shift();
-      this.topicWeights.set(topic, (this.topicWeights.get(topic) || 0) + weight);
+      if (this.topicHistory.length > 7) {
+        this.topicHistory.shift();
+      }
+      this.topicWeights.set(
+        topic,
+        (this.topicWeights.get(topic) || 0) + weight
+      );
 
       if (topic === this.lastRuleTopic) {
         this.sameRuleStreak += 1;
@@ -236,7 +312,9 @@
 
     rememberSeriousness(value) {
       this.seriousnessHistory.push(value);
-      if (this.seriousnessHistory.length > 6) this.seriousnessHistory.shift();
+      if (this.seriousnessHistory.length > 6) {
+        this.seriousnessHistory.shift();
+      }
       this.lightStreak = value < 0.5 ? this.lightStreak + 1 : 0;
     }
 
@@ -245,33 +323,54 @@
       if (topic !== this.currentSubject.topic) {
         this.currentSubject = { topic, entityRefs: [], since: this.turnCount };
       }
-      const refs = (entities || []).map((entity) => `${entity.type}:${entity.surface}`);
-      this.currentSubject.entityRefs = [...new Set([...this.currentSubject.entityRefs, ...refs])].slice(-8);
+      const refs = (entities || []).map(
+        (entity) => `${entity.type}:${entity.surface}`
+      );
+      this.currentSubject.entityRefs = [
+        ...new Set([...this.currentSubject.entityRefs, ...refs])
+      ].slice(-8);
     }
 
     rememberStrategy(strategy) {
       this.responseStrategies.push({ strategy, turn: this.turnCount });
-      if (this.responseStrategies.length > 8) this.responseStrategies.shift();
+      if (this.responseStrategies.length > 8) {
+        this.responseStrategies.shift();
+      }
     }
 
     rememberTurnFrame(frame) {
       this.turnFrames.push(frame);
-      if (this.turnFrames.length > 8) this.turnFrames.shift();
+      if (this.turnFrames.length > 8) {
+        this.turnFrames.shift();
+      }
     }
 
     noteBotQuestion(question, topic) {
-      this.pendingQuestions.push({ question, topic, askedAtTurn: this.turnCount, answered: false });
-      if (this.pendingQuestions.length > 4) this.pendingQuestions.shift();
+      this.pendingQuestions.push({
+        question,
+        topic,
+        askedAtTurn: this.turnCount,
+        answered: false
+      });
+      if (this.pendingQuestions.length > 4) {
+        this.pendingQuestions.shift();
+      }
     }
 
     markLatestQuestionAnswered(answer, turn) {
-      const pending = [...this.pendingQuestions].reverse().find((item) => !item.answered);
-      if (!pending) return null;
+      const pending = [...this.pendingQuestions]
+        .reverse()
+        .find((item) => !item.answered);
+      if (!pending) {
+        return null;
+      }
       pending.answered = true;
       pending.answer = answer;
       pending.answeredAtTurn = turn;
       this.answeredQuestions.push(pending);
-      if (this.answeredQuestions.length > 6) this.answeredQuestions.shift();
+      if (this.answeredQuestions.length > 6) {
+        this.answeredQuestions.shift();
+      }
       return pending;
     }
 
@@ -291,9 +390,14 @@
 
     decayNamedEntities() {
       for (const [key, entity] of this.namedEntities) {
-        const current = Number.isFinite(entity.activation) ? entity.activation : 0;
+        const current = Number.isFinite(entity.activation)
+          ? entity.activation
+          : 0;
         entity.activation = Math.max(0, current * (1 - ENTITY_DECAY_PER_TURN));
-        entity.age = Math.max(0, Number.isFinite(entity.age) ? entity.age + 1 : 1);
+        entity.age = Math.max(
+          0,
+          Number.isFinite(entity.age) ? entity.age + 1 : 1
+        );
         if (entity.activation < 0.05) {
           entity.activation = 0;
           this.namedEntities.delete(key);
@@ -304,8 +408,11 @@
     rememberEntities(entities, turn = this.turnCount, context = {}) {
       const contextTopics = [...new Set(context.topics || [])];
       for (const item of entities || []) {
-        if (!item || !item.type || !item.surface) continue;
-        const key = item.key || `${item.type}:${item.surface.toLocaleLowerCase()}`;
+        if (!item || !item.type || !item.surface) {
+          continue;
+        }
+        const key =
+          item.key || `${item.type}:${item.surface.toLocaleLowerCase()}`;
         const old = this.namedEntities.get(key);
         if (old) {
           old.surface = item.surface;
@@ -314,9 +421,15 @@
           old.mentions += 1;
           old.lastMentionTurn = turn;
           old.age = 0;
-          old.contextTopics = [...new Set([...(old.contextTopics || []), ...contextTopics])].slice(-5);
-          old.contextConfidence = Math.max(old.contextConfidence || 0, item.confidence);
-          old.contextSeriousness = context.seriousness ?? old.contextSeriousness ?? 0;
+          old.contextTopics = [
+            ...new Set([...(old.contextTopics || []), ...contextTopics])
+          ].slice(-5);
+          old.contextConfidence = Math.max(
+            old.contextConfidence || 0,
+            item.confidence
+          );
+          old.contextSeriousness =
+            context.seriousness ?? old.contextSeriousness ?? 0;
         } else {
           this.namedEntities.set(key, {
             type: item.type,
@@ -329,7 +442,7 @@
             age: 0,
             contextTopics,
             contextConfidence: item.confidence,
-            contextSeriousness: context.seriousness ?? 0,
+            contextSeriousness: context.seriousness ?? 0
           });
         }
       }
@@ -338,20 +451,28 @@
     correctEntity(oldSurface, replacement, context = {}) {
       const oldKey = String(oldSurface).trim().toLocaleLowerCase();
       for (const [key, entity] of this.namedEntities) {
-        if (entity.surface.toLocaleLowerCase() === oldKey
-          || oldKey.endsWith(entity.surface.toLocaleLowerCase())
-          || key.endsWith(`:${oldKey}`)) {
+        if (
+          entity.surface.toLocaleLowerCase() === oldKey ||
+          oldKey.endsWith(entity.surface.toLocaleLowerCase()) ||
+          key.endsWith(`:${oldKey}`)
+        ) {
           entity.corrected = true;
           entity.correctionTurn = this.turnCount;
           this.namedEntities.delete(key);
         }
       }
       if (replacement?.surface && replacement?.type) {
-        this.rememberEntities([{
-          type: replacement.type,
-          surface: replacement.surface,
-          confidence: Math.max(0.9, replacement.confidence || 0.9),
-        }], this.turnCount, context);
+        this.rememberEntities(
+          [
+            {
+              type: replacement.type,
+              surface: replacement.surface,
+              confidence: Math.max(0.9, replacement.confidence || 0.9)
+            }
+          ],
+          this.turnCount,
+          context
+        );
       }
     }
 
@@ -364,7 +485,9 @@
     mostCommonTopic(exclude = []) {
       const counts = new Map();
       for (const topic of this.recentTopics) {
-        if (exclude.includes(topic)) continue;
+        if (exclude.includes(topic)) {
+          continue;
+        }
         counts.set(topic, (counts.get(topic) || 0) + 1);
       }
       let best = null;
@@ -382,23 +505,22 @@
       const candidates = this.recentUtterances.filter(
         (u) => u !== exclude && u.split(/\s+/).filter(Boolean).length >= 3
       );
-      if (candidates.length === 0) return null;
+      if (candidates.length === 0) {
+        return null;
+      }
       return candidates[Math.floor(Math.random() * candidates.length)];
     }
 
     isInDistressStreak() {
-      if (this.sentimentHistory.length < DISTRESS_STREAK_LENGTH) return false;
+      if (this.sentimentHistory.length < DISTRESS_STREAK_LENGTH) {
+        return false;
+      }
       const recent = this.sentimentHistory.slice(-DISTRESS_STREAK_LENGTH);
       return recent.every((score) => score < 0);
     }
   }
 
-  // ========================================================================
-  // Public API
-  // ========================================================================
-
-  global.DaryaEngineUtils = {
-    // Constants
+  global.DaryaUtils = {
     MEMORY_SIZE,
     MAX_CONSECUTIVE_SAME_RULE,
     RECENT_BOT_MESSAGES_SIZE,
@@ -428,14 +550,12 @@
     BOREDOM_MIN_TURNS,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,
-    // Text helpers
     scriptRatio,
     isValidScript,
     truncateExcerpt,
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
-    // Classes
-    ConversationMemory,
+    ConversationMemory
   };
 })(typeof window !== 'undefined' ? window : globalThis);
