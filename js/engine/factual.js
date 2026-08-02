@@ -271,20 +271,47 @@
         }
       } else if (dateMatch) {
         if (isPersian) {
-          // Show both Jalali and Gregorian dates for Persian users.
+          // Show both Jalali and Gregorian dates for Persian users. The
+          // pieces are assembled manually with formatToParts so the order
+          // follows the Iranian convention (day month year), the weekday
+          // appears exactly once (in the Jalali part), and no English
+          // comma or repeating weekday creeps in from Intl's default
+          // full-date rendering.
           const jalaliFormat = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-            dateStyle: 'full',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
             timeZone: tz
           });
           const gregorianFormat = new Intl.DateTimeFormat(
             'fa-IR-u-ca-gregory',
             {
-              dateStyle: 'full',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
               timeZone: tz
             }
           );
-          const jalali = jalaliFormat.format(now);
-          const gregorian = gregorianFormat.format(now);
+          const jalaliParts = jalaliFormat.formatToParts(now);
+          const gregorianParts = gregorianFormat.formatToParts(now);
+          const partValue = (parts, type) =>
+            (parts.find((part) => part.type === type) || {}).value || '';
+          const jalali = [
+            partValue(jalaliParts, 'weekday'),
+            partValue(jalaliParts, 'day'),
+            partValue(jalaliParts, 'month'),
+            partValue(jalaliParts, 'year')
+          ]
+            .filter(Boolean)
+            .join(' ');
+          const gregorian = [
+            partValue(gregorianParts, 'day'),
+            partValue(gregorianParts, 'month'),
+            partValue(gregorianParts, 'year')
+          ]
+            .filter(Boolean)
+            .join(' ');
           answer = jalali + ' \u06CC\u0639\u0646\u06CC ' + gregorian;
 
           // If discrepancy, append a note about device vs real time.
