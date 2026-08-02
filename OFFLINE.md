@@ -14,7 +14,7 @@ python3 -m http.server 8080
 
 Open in Chrome or Edge on desktop or Android and use "Install app" or "Add to Home screen." On iOS Safari, use the Share button then "Add to Home Screen."
 
-To ship an update later, bump `CACHE_NAME` in `sw.js`. This tells returning visitors' browsers to fetch the new files instead of serving the old cached ones.
+To ship an update later, bump the `version` field in `package.json` (the service worker reads it at install time and derives its cache name from it). If that read ever fails, the worker falls back to `darya-cache-fallback`. Bumping the version tells returning visitors' browsers to fetch the new files instead of serving the old cached ones.
 
 ## Android APK
 
