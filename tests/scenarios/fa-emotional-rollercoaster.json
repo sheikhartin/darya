@@ -3,10 +3,30 @@
   "description": "Tests the Persian engine's handling of rapid emotional swings between anger, sadness, joy, and anxiety. Verifies that Persian sentimentLexicon correctly scores each turn, that the distress streak does NOT fire (positive turn breaks the streak), and that each Persian topic is correctly classified with appropriate response pools.",
   "language": "fa",
   "turns": [
-    {"text": "از دست رئیسم واقعاً عصبانی هستم!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anger"},
-    {"text": "راستش از ته دل غمگینم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
-    {"text": "اما امروز یه خبر عالی شنیدم و خیلی خوشحالم!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "joy"},
-    {"text": "نگرانم که این خوشحالی دوام نیاره", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+    {
+      "text": "از دست رئیسم واقعاً عصبانی هستم!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anger"
+    },
+    {
+      "text": "راستش از ته دل غمگینم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    },
+    {
+      "text": "اما امروز یه خبر عالی شنیدم و خیلی خوشحالم!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "joy"
+    },
+    {
+      "text": "نگرانم که این خوشحالی دوام نیاره",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
   ],
   "expected": {
     "finalTurn": "Each turn correctly classifies as 'statement' with Persian topics (anger, sadness, joy, anxiety). Sentiment: negative, negative, positive, negative. Distress streak does NOT fire because positive joy turn breaks consecutive negative sequence. CurrentSubject updates to latest topic.",

@@ -3,9 +3,24 @@
   "description": "Tests the new stress rule (priority 40) for matching overwhelm, burnout, and pressure language. Verifies that the engine returns validating, empathetic responses that invite exploration of the pressure, and tracks the 'stress' topic.",
   "language": "en",
   "turns": [
-    {"text": "I feel completely overwhelmed with everything", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"},
-    {"text": "I'm running on empty and can't keep up", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"},
-    {"text": "I think I'm heading for burnout", "dialogueAct": "statement", "intent": "topic_statement", "topic": "stress"}
+    {
+      "text": "I feel completely overwhelmed with everything",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    },
+    {
+      "text": "I'm running on empty and can't keep up",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    },
+    {
+      "text": "I think I'm heading for burnout",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    }
   ],
   "expected": {
     "finalTurn": "Each turn should match the stress rule via keywords (overwhelmed, running on empty, burnout). The engine responds with validating responses that explore the pressure and tracks topic 'stress'. No over-identification with anxiety (stress rule is distinct from anxiety at same priority 40).",

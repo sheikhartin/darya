@@ -7,16 +7,17 @@
  * correct greeting pools, proper entity vocabulary, etc.).
  *
  * These tests are purely about language pack content, not engine behavior.
- * Run with: node --test tests/language.test.js
+ * Run with: node --test tests/language.test.mjs
  */
 
 'use strict';
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const path = require('node:path');
-const fs = require('node:fs');
-const { freshEngine, seededRandom, FA, EN, DaryaEngine } = require('./helpers');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import { freshEngine, FA, EN, halfSpace, ZWNJ } from './helpers.mjs';
 
 // ============================================================================
 // Bilingual parity: structural shape
@@ -24,12 +25,31 @@ const { freshEngine, seededRandom, FA, EN, DaryaEngine } = require('./helpers');
 
 test('bilingual parity: fa and en packs expose the same structural fields', () => {
   const requiredFields = [
-    'code', 'dir', 'botName', 'scriptRange', 'minScriptRatio', 'normalize',
-    'rules', 'trivialCaptures', 'genericFallbacks', 'strategyShiftFallbacks',
-    'sessionCheckIns', 'checkInEvery', 'questionPattern', 'questionFallbacks',
-    'topicCallbacks', 'quotedCallbackTemplates', 'distressNudges',
-    'sentimentLexicon', 'exitKeywords', 'exitConfirmMessages', 'greetings', 'farewells',
-    'emptyInputReply', 'foreignLanguageRedirect', 'ui',
+    'code',
+    'dir',
+    'botName',
+    'scriptRange',
+    'minScriptRatio',
+    'normalize',
+    'rules',
+    'trivialCaptures',
+    'genericFallbacks',
+    'strategyShiftFallbacks',
+    'sessionCheckIns',
+    'checkInEvery',
+    'questionPattern',
+    'questionFallbacks',
+    'topicCallbacks',
+    'quotedCallbackTemplates',
+    'distressNudges',
+    'sentimentLexicon',
+    'exitKeywords',
+    'exitConfirmMessages',
+    'greetings',
+    'farewells',
+    'emptyInputReply',
+    'foreignLanguageRedirect',
+    'ui'
   ];
   for (const field of requiredFields) {
     assert.ok(field in FA, `fa pack is missing "${field}"`);
@@ -40,7 +60,11 @@ test('bilingual parity: fa and en packs expose the same structural fields', () =
 test('bilingual parity: both packs cover the same set of topics', () => {
   const faTopics = new Set(FA.rules.map((r) => r.topic));
   const enTopics = new Set(EN.rules.map((r) => r.topic));
-  assert.deepEqual(faTopics, enTopics, 'fa and en should recognize the same topics, just phrased natively');
+  assert.deepEqual(
+    faTopics,
+    enTopics,
+    'fa and en should recognize the same topics, just phrased natively'
+  );
 });
 
 test('bilingual parity: both packs expose the same UI string keys', () => {
@@ -62,7 +86,10 @@ test('pronoun reflection produces a grammatical, safely-bounded result', () => {
     seen.add(e.respond('I keep thinking about my old apartment'));
   }
   const reflected = [...seen].find((r) => r.toLowerCase().startsWith('so '));
-  assert.ok(reflected, 'expected at least one pronoun-reflected reply across 60 trials');
+  assert.ok(
+    reflected,
+    'expected at least one pronoun-reflected reply across 60 trials'
+  );
   assert.match(reflected, /you keep thinking about your old apartment/i);
 });
 
@@ -70,10 +97,9 @@ test('pronoun reflection produces a grammatical, safely-bounded result', () => {
 // Halfspace / ZWNJ
 // ============================================================================
 
-test('halfspace module exposes the vendored API and the shared ZWNJ constant', () => {
-  assert.equal(typeof global.halfSpace, 'function');
-  assert.equal(typeof global.DaryaHalfspace.normalize, 'function');
-  assert.equal(global.DaryaHalfspace.ZWNJ, '\u200c');
+test('halfspace module exposes the normalizer function and the shared ZWNJ constant', () => {
+  assert.equal(typeof halfSpace, 'function');
+  assert.equal(ZWNJ, '\u200c');
 });
 
 test('halfspace normalizes the requested joined verb stems', () => {
@@ -86,8 +112,10 @@ test('halfspace normalizes the requested joined verb stems', () => {
     ['ناامید', 'نا\u200cامید'],
     ['کتابهایشان', 'کتاب\u200cهایشان'],
     ['بزرگتر', 'بزرگ\u200cتر'],
-    ['نمیخواهم', 'نمی\u200cخواهم'],
-  ]) assert.equal(FA.normalize(raw), expected);
+    ['نمیخواهم', 'نمی\u200cخواهم']
+  ]) {
+    assert.equal(FA.normalize(raw), expected);
+  }
 });
 
 test('halfspace normalizes spaced progressive prefixes without touching unrelated text', () => {
@@ -100,7 +128,10 @@ test('halfspace joins the Persian privative and negative prefixes', () => {
 });
 
 test('halfspace joins comparative and superlative suffixes', () => {
-  assert.equal(FA.normalize('بزرگ تر و بزرگ ترین'), 'بزرگ\u200cتر و بزرگ\u200cترین');
+  assert.equal(
+    FA.normalize('بزرگ تر و بزرگ ترین'),
+    'بزرگ\u200cتر و بزرگ\u200cترین'
+  );
 });
 
 test('halfspace joins plural suffixes and their possessive forms', () => {
@@ -114,15 +145,27 @@ test('halfspace is idempotent and preserves punctuation', () => {
 });
 
 test('halfspace handles nullish and numeric input without throwing', () => {
-  assert.equal(global.halfSpace(null), '');
-  assert.equal(global.halfSpace(123), '123');
+  assert.equal(halfSpace(null), '');
+  assert.equal(halfSpace(123), '123');
 });
 
 test('halfspace allow-list preserves lookalike roots and safe compounds', () => {
-  for (const word of ['میز', 'میدان', 'میهن', 'خوشبخت', 'متر', 'بیمه', 'بیبی']) {
+  for (const word of [
+    'میز',
+    'میدان',
+    'میهن',
+    'خوشبخت',
+    'متر',
+    'بیمه',
+    'بیبی'
+  ]) {
     const normalized = FA.normalize(word);
     assert.equal(normalized, word, `${word} should remain unchanged`);
-    assert.equal(normalized.includes('\u200c'), false, `${word} must not gain a ZWNJ`);
+    assert.equal(
+      normalized.includes('\u200c'),
+      false,
+      `${word} must not gain a ZWNJ`
+    );
   }
 });
 
@@ -131,7 +174,18 @@ test('halfspace allow-list preserves lookalike roots and safe compounds', () => 
 // ============================================================================
 
 test('new title keys are present symmetrically in both UI packs', () => {
-  for (const key of ['pickerFaTitle', 'pickerEnTitle', 'themeOceanTitle', 'themeBeachTitle', 'sendButtonTitle', 'menuTriggerTitle', 'newChatTitle', 'exportMdTitle', 'exportTxtTitle', 'themeToggleTitle']) {
+  for (const key of [
+    'pickerFaTitle',
+    'pickerEnTitle',
+    'themeOceanTitle',
+    'themeBeachTitle',
+    'sendButtonTitle',
+    'menuTriggerTitle',
+    'newChatTitle',
+    'exportMdTitle',
+    'exportTxtTitle',
+    'themeToggleTitle'
+  ]) {
     assert.equal(typeof FA.ui[key], 'string');
     assert.equal(typeof EN.ui[key], 'string');
   }
@@ -165,7 +219,14 @@ test('export labels stay descriptive after removing the parenthesized forms', ()
 });
 
 test('Persian theme terminology uses پوسته consistently', () => {
-  for (const value of [FA.ui.themeOceanLabel, FA.ui.themeBeachLabel, FA.ui.themeOceanTitle, FA.ui.themeBeachTitle, FA.ui.themeGroupLabel, FA.ui.themeToggleTitle]) {
+  for (const value of [
+    FA.ui.themeOceanLabel,
+    FA.ui.themeBeachLabel,
+    FA.ui.themeOceanTitle,
+    FA.ui.themeBeachTitle,
+    FA.ui.themeGroupLabel,
+    FA.ui.themeToggleTitle
+  ]) {
     assert.match(value, /پوسته/u);
     assert.doesNotMatch(value, /تم/u);
   }
@@ -184,16 +245,24 @@ test('each language exposes three explicit greeting pools', () => {
 });
 
 test('default greetings do not ask how are you', () => {
-  for (const line of [...FA.greetings, ...EN.greetings]) assert.doesNotMatch(line, /how are you|حال شما چطور/i);
+  for (const line of [...FA.greetings, ...EN.greetings]) {
+    assert.doesNotMatch(line, /how are you|حال شما چطور/i);
+  }
 });
 
 test('every default opening invites the person to share something', () => {
-  for (const line of [...FA.greetings, ...EN.greetings]) assert.match(line, /\?|؟|tell|share|بگویید|گفتن|شروع|ذهن|احساس/iu);
+  for (const line of [...FA.greetings, ...EN.greetings]) {
+    assert.match(line, /\?|؟|tell|share|بگویید|گفتن|شروع|ذهن|احساس/iu);
+  }
 });
 
 test('initial greeting pools always invite a response with a question', () => {
   for (const lang of [EN, FA]) {
-    for (const line of [...lang.greetingsOpen, ...lang.greetingsInviting, ...lang.greetingsReturning]) {
+    for (const line of [
+      ...lang.greetingsOpen,
+      ...lang.greetingsInviting,
+      ...lang.greetingsReturning
+    ]) {
       assert.match(line, /[?؟]/u, line);
     }
   }
@@ -201,7 +270,11 @@ test('initial greeting pools always invite a response with a question', () => {
 
 test('every opening pool contains invitations rather than passive closers', () => {
   for (const lang of [FA, EN]) {
-    for (const pool of [lang.greetingsOpen, lang.greetingsInviting, lang.greetingsReturning]) {
+    for (const pool of [
+      lang.greetingsOpen,
+      lang.greetingsInviting,
+      lang.greetingsReturning
+    ]) {
       assert.ok(pool.length >= 8);
       assert.ok(pool.every((line) => /[?؟]/u.test(line)));
     }
@@ -213,15 +286,36 @@ test('every opening pool contains invitations rather than passive closers', () =
 // ============================================================================
 
 test('strategy-shift fallback lines keep the conversation open', () => {
-  const closers = /glad i could help|happy to help|خوشحالم که کمک کردم|گفتگو پایان|خداحافظ|goodbye/i;
-  for (const line of [...FA.strategyShiftFallbacks, ...EN.strategyShiftFallbacks]) assert.doesNotMatch(line, closers);
+  const closers =
+    /glad i could help|happy to help|خوشحالم که کمک کردم|گفتگو پایان|خداحافظ|goodbye/i;
+  for (const line of [
+    ...FA.strategyShiftFallbacks,
+    ...EN.strategyShiftFallbacks
+  ]) {
+    assert.doesNotMatch(line, closers);
+  }
 });
 
 test('strategy-shift fallback pools contain no closing-vibe language', () => {
-  const closing = ['glad', 'happy to help', 'خوشحالم', 'موفق باشی', 'امیدوارم', 'خداحافظ', 'bye', 'see you', 'take care'];
-  for (const line of [...FA.strategyShiftFallbacks, ...EN.strategyShiftFallbacks]) {
+  const closing = [
+    'glad',
+    'happy to help',
+    'خوشحالم',
+    'موفق باشی',
+    'امیدوارم',
+    'خداحافظ',
+    'bye',
+    'see you',
+    'take care'
+  ];
+  for (const line of [
+    ...FA.strategyShiftFallbacks,
+    ...EN.strategyShiftFallbacks
+  ]) {
     const lower = line.toLocaleLowerCase();
-    for (const phrase of closing) assert.equal(lower.includes(phrase.toLocaleLowerCase()), false, line);
+    for (const phrase of closing) {
+      assert.equal(lower.includes(phrase.toLocaleLowerCase()), false, line);
+    }
   }
 });
 
@@ -230,7 +324,12 @@ test('strategy-shift fallback pools contain no closing-vibe language', () => {
 // ============================================================================
 
 test('both language packs provide matching entity vocabulary layers', () => {
-  for (const field of ['familyTerms', 'professionTerms', 'placeWords', 'entityCallbackTemplates']) {
+  for (const field of [
+    'familyTerms',
+    'professionTerms',
+    'placeWords',
+    'entityCallbackTemplates'
+  ]) {
     assert.ok(Array.isArray(FA[field]) || typeof FA[field] === 'object');
     assert.ok(Array.isArray(EN[field]) || typeof EN[field] === 'object');
   }
@@ -263,7 +362,10 @@ test('every declared blend pool has four distinct non-question lines in both lan
     for (const [name, pool] of Object.entries(lang.blendResponses)) {
       assert.ok(pool.length >= 4, `${lang.code}:${name}`);
       assert.equal(new Set(pool).size, pool.length);
-      assert.ok(pool.every((line) => !/[?؟]/u.test(line)), `${lang.code}:${name} contains a question`);
+      assert.ok(
+        pool.every((line) => !/[?؟]/u.test(line)),
+        `${lang.code}:${name} contains a question`
+      );
     }
   }
 });
@@ -271,7 +373,10 @@ test('every declared blend pool has four distinct non-question lines in both lan
 test('topic blend pools cover every declared combination in both languages', () => {
   for (const lang of [FA, EN]) {
     const keys = Object.keys(lang.blendResponses);
-    assert.ok(keys.length >= 5, `${lang.code}: expected at least 5 blend pools, got ${keys.length}`);
+    assert.ok(
+      keys.length >= 5,
+      `${lang.code}: expected at least 5 blend pools, got ${keys.length}`
+    );
     for (const key of keys) {
       assert.ok(Array.isArray(lang.blendResponses[key]), `${lang.code}:${key}`);
       assert.ok(lang.blendResponses[key].length >= 4);
@@ -293,54 +398,101 @@ test('topic question pools are present for every declared topic', () => {
 // ============================================================================
 
 test('reply pools contain no forbidden generic follow-up phrases', () => {
-  const forbidden = ['tell me more', 'how does that make you feel', 'what else can you tell me', 'بیشتر بگو', 'چه احساسی داری', 'چه چیز دیگری'];
+  const forbidden = [
+    'tell me more',
+    'how does that make you feel',
+    'what else can you tell me',
+    'بیشتر بگو',
+    'چه احساسی داری',
+    'چه چیز دیگری'
+  ];
   for (const lang of [EN, FA]) {
     const values = [
-      ...lang.genericFallbacks, ...lang.strategyShiftFallbacks,
+      ...lang.genericFallbacks,
+      ...lang.strategyShiftFallbacks,
       ...lang.rules.flatMap((rule) => rule.responses),
       ...Object.values(lang.topicCallbacks).flat(),
-      ...Object.values(lang.entityCallbackTemplates).flat(),
+      ...Object.values(lang.entityCallbackTemplates).flat()
     ];
-    for (const line of values) for (const phrase of forbidden) assert.equal(line.toLocaleLowerCase().includes(phrase), false, line);
+    for (const line of values) {
+      for (const phrase of forbidden) {
+        assert.equal(line.toLocaleLowerCase().includes(phrase), false, line);
+      }
+    }
   }
 });
 
 test('no generated reply uses should more than once', () => {
   for (const lang of [EN, FA]) {
-    const values = [...lang.genericFallbacks, ...lang.strategyShiftFallbacks, ...lang.rules.flatMap((rule) => rule.responses)];
-    for (const line of values) assert.ok((line.match(/\bshould\b/giu) || []).length <= 1, line);
+    const values = [
+      ...lang.genericFallbacks,
+      ...lang.strategyShiftFallbacks,
+      ...lang.rules.flatMap((rule) => rule.responses)
+    ];
+    for (const line of values) {
+      assert.ok((line.match(/\bshould\b/giu) || []).length <= 1, line);
+    }
   }
 });
 
 test('topic callbacks are specific and reject generic backward-reference openings', () => {
-  const generic = /^(?:earlier you|you mentioned|you brought up|قبلاً گفتی|همون‌طور که گفتی|یادته گفتی)/iu;
+  const generic =
+    /^(?:earlier you|you mentioned|you brought up|قبلاً گفتی|همون‌طور که گفتی|یادته گفتی)/iu;
   for (const lang of [EN, FA]) {
     for (const pool of Object.values(lang.topicCallbacks)) {
-      for (const line of pool) assert.doesNotMatch(line, generic, line);
+      for (const line of pool) {
+        assert.doesNotMatch(line, generic, line);
+      }
     }
     for (const pool of Object.values(lang.entityCallbackTemplates)) {
-      for (const line of pool) assert.doesNotMatch(line, generic, line);
+      for (const line of pool) {
+        assert.doesNotMatch(line, generic, line);
+      }
     }
   }
 });
 
 test('all language rules expose response arrays', () => {
   for (const lang of [EN, FA]) {
-    for (const rule of lang.rules) assert.ok(Array.isArray(rule.responses), `${lang.code}:${rule.topic}`);
+    for (const rule of lang.rules) {
+      assert.ok(Array.isArray(rule.responses), `${lang.code}:${rule.topic}`);
+    }
   }
 });
 
 test('identity replies avoid unsupported professional or model claims', () => {
-  const source = require('node:fs').readFileSync(path.join(__dirname, '..', 'js', 'languages', 'en.js'), 'utf8').toLowerCase();
+  const source = fs
+    .readFileSync(
+      path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '..',
+        'js',
+        'languages',
+        'en.js'
+      ),
+      'utf8'
+    )
+    .toLowerCase();
   const professional = ['therap', 'ist'].join('');
   const model = ['language', ' model'].join('');
-  assert.doesNotMatch(source, new RegExp(`i['\u2019]?m darya[^\\n]*(${professional}|${model})`, 'i'));
+  assert.doesNotMatch(
+    source,
+    new RegExp(`i['\u2019]?m darya[^\\n]*(${professional}|${model})`, 'i')
+  );
 });
 
 test('new UI copy contains no em dash characters in files', () => {
-  const fs = require('node:fs');
-  for (const file of ['index.html', 'js/app.js', 'js/languages/fa.js', 'js/languages/en.js', 'README.md']) {
-    const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  for (const file of [
+    'index.html',
+    'js/app.js',
+    'js/languages/fa.js',
+    'js/languages/en.js',
+    'README.md'
+  ]) {
+    const source = fs.readFileSync(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), '..', file),
+      'utf8'
+    );
     assert.equal(source.includes(String.fromCodePoint(0x2014)), false, file);
   }
 });

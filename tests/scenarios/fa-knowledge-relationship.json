@@ -1,0 +1,29 @@
+{
+  "name": "Persian relationship knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf relationship domain. The user asks about relationships in Persian, then about emotional connection, then transitions to a personal loneliness topic. Verifies Persian knowledge responses from the relationship domain and smooth transition to conversational rules.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "درباره روابط عاطفی راهنمایی می‌خواهم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور ارتباط عاطفی عمیق‌تری با دیگران داشته باشم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "این روزها خیلی احساس تنهایی می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'روابط' keyword triggers knowledge rule, domainHints maps to 'relationship' domain. Persian response. Turn 2: 'ارتباط' maps to relationship domain, knowledge rule fires again. Turn 3: 'تنهایی' triggers loneliness conversational rule, engine returns loneliness-specific response.",
+    "behavior": "Knowledge rule matches on Persian 'روابط' and 'ارتباط' keywords, both mapped to 'relationship' domain. Persian knowledge responses are returned. After knowledge turns, the loneliness rule takes over."
+  }
+}

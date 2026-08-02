@@ -3,9 +3,24 @@
   "description": "Tests the Persian offline knowledge shelf creativity domain. The user asks about creativity in Persian, then about creative block, then transitions to a personal feeling topic. Verifies Persian knowledge responses from the creativity domain.",
   "language": "fa",
   "turns": [
-    {"text": "راجع به خلاقیت توضیح بده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "چطور می‌تونم قفل خلاقیت رو باز کنم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "این روزها خیلی غمگین هستم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"}
+    {
+      "text": "راجع به خلاقیت توضیح بده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور می‌تونم قفل خلاقیت رو باز کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "این روزها خیلی غمگین هستم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'خلاقیت' keyword triggers knowledge rule, domainHints maps to 'creativity' domain. Persian response. Turn 2: 'قفل خلاقیت' maps to creativity domain, question dialogueAct. Turn 3: 'پوچی' triggers no specific rule, falls back to generic fallback, sentiment sadness may affect tone.",

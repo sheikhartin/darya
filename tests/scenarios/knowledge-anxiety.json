@@ -1,0 +1,29 @@
+{
+  "name": "anxiety knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf anxiety domain. The user asks about anxiety management, then about worry, then transitions to a personal sleep concern. Verifies knowledge responses from the anxiety domain, substantive reply length, and seamless transition back to conversational rules.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "How can I manage my anxiety?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I keep overthinking everything",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I can't sleep because my mind won't shut up",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'anxiety' keyword triggers knowledge rule, domainHints maps to 'anxiety' domain, reply length > 40 chars. Turn 2: 'overthinking' keyword also maps to anxiety domain, knowledge rule fires again. Turn 3: 'sleep' triggers sleep conversational rule (priority 50), engine returns sleep-specific reflection.",
+    "behavior": "Knowledge rule matches on 'anxiety' and 'overthinking', both mapped to 'anxiety' domain via domainHints. The engine returns independent knowledge copies. After knowledge turns, the sleep rule resumes normal conversational routing."
+  }
+}

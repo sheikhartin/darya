@@ -1,0 +1,29 @@
+{
+  "name": "career knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf career domain. The user asks about career guidance, then about job satisfaction, then transitions to a personal stress concern. Verifies knowledge responses from the career domain, substantive reply length, and seamless transition back to conversational rules.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I'm thinking about a career change",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I'm struggling with job satisfaction",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I'm so stressed out about my workload",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'career change' keyword triggers knowledge rule, domainHints maps to 'career' domain, reply length > 40 chars. Turn 2: 'job satisfaction' also maps to career domain, knowledge rule fires again. Turn 3: 'stressed' triggers stress conversational rule (priority 40), engine returns stress-specific reflection.",
+    "behavior": "Knowledge rule matches on 'career change' and 'job satisfaction', both mapped to 'career' domain via domainHints. The engine returns independent knowledge copies. After knowledge turns, the stress rule resumes normal conversational routing."
+  }
+}

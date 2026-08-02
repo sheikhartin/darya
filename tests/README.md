@@ -12,7 +12,7 @@ right status code and the homepage renders sane content. Requires `bash`,
 `curl`, and `python3` (used only to serve the static files); `node` is
 used opportunistically if present.
 
-**`node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js`** - pure Node.js, using only the
+**`node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs`** - pure Node.js, using only the
 built-in `node:test` and `node:assert` modules (Node 18+, nothing to
 `npm install`). Exercises the conversation engine and both language packs
 directly, no browser involved: normalization, script validation, rule

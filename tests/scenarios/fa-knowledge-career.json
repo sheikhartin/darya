@@ -1,0 +1,29 @@
+{
+  "name": "Persian career knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf career domain. The user asks about career guidance in Persian, then about job satisfaction, then transitions to a personal stress topic. Verifies Persian knowledge responses from the career domain and smooth transition to conversational rules.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "درباره تغییر شغل نظرت چیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور رضایت شغلی بیشتری داشته باشم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "فشار کار خیلی زیاده و تحت فشار زیادی هستم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'شغل' keyword triggers knowledge rule, domainHints maps to 'career' domain. Persian response. Turn 2: 'رضایت شغلی' maps to career domain, knowledge rule fires again. Turn 3: 'استرس' triggers stress conversational rule, engine returns stress-specific response.",
+    "behavior": "Knowledge rule matches on Persian 'شغل' and 'رضایت شغلی' keywords, both mapped to 'career' domain. Persian knowledge responses are returned. After knowledge turns, the stress rule takes over."
+  }
+}

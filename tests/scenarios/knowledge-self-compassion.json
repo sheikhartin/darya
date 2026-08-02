@@ -3,9 +3,24 @@
   "description": "Tests the offline knowledge shelf self-compassion domain. The user asks about self-compassion, then about their inner critic, then transitions to a personal self-esteem topic. Verifies knowledge responses from the self_compassion domain and resumption of conversational routing.",
   "language": "en",
   "turns": [
-    {"text": "How can I practice self compassion?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "My inner critic is really loud today", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "I feel like I'm not good enough", "dialogueAct": "statement", "intent": "topic_statement", "topic": "self_esteem"}
+    {
+      "text": "How can I practice self compassion?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "My inner critic is really loud today",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I feel like I'm not good enough",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "self_esteem"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'self compassion' keyword triggers knowledge rule pattern, domainHints maps to 'self_compassion' domain, reply length > 40 chars. Turn 2: 'inner critic' keyword also maps to self_compassion, knowledge rule fires. Turn 3: 'not good enough' triggers self_esteem conversational rule (priority 40), engine returns empathetic self-esteem response.",

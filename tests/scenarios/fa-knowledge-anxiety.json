@@ -1,0 +1,29 @@
+{
+  "name": "Persian anxiety knowledge domain query",
+  "description": "Tests the Persian offline knowledge shelf anxiety domain. The user asks about anxiety management in Persian, then about worry, then transitions to a personal sleep topic. Verifies Persian knowledge responses from the anxiety domain and smooth transition to conversational rules.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چطور اضطراب را کنترل کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "همش نگرانی دارم و فکر می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "بی‌خوابی شدید دارم و شب‌ها ذهنم آرام نمی‌گیرد",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'اضطراب' keyword triggers knowledge rule, domainHints maps to 'anxiety' domain. Persian response. Turn 2: 'نگرانی' maps to anxiety domain, knowledge rule fires again. Turn 3: 'خوابم' triggers sleep conversational rule, engine returns sleep-specific response.",
+    "behavior": "Knowledge rule matches on Persian 'اضطراب' and 'نگرانی' keywords, both mapped to 'anxiety' domain. Persian knowledge responses are returned. After knowledge turns, the sleep rule takes over."
+  }
+}

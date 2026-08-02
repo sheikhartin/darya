@@ -3,10 +3,27 @@
   "description": "آزمایش توانایی موتور در مدیریت تغییرات ناگهانی و نامرتب موضوعات در فارسی. تأیید می‌کند که موتور کرش نمی‌کند، ردیابی موضوعات تغییرات سریع را مدیریت می‌کند و آرامش خود را حفظ می‌کند.",
   "language": "fa",
   "turns": [
-    {"text": "بستنی دوست دارم", "dialogueAct": "statement", "intent": "open_statement"},
-    {"text": "پدر بزرگ من هفته پیش فوت کرد", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"},
-    {"text": "معنی زندگی چیه؟", "dialogueAct": "question", "intent": "question"},
-    {"text": "فکر کنم برم یه پیاده‌روی برم", "dialogueAct": "statement", "intent": "statement"}
+    {
+      "text": "بستنی دوست دارم",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "پدر بزرگ من هفته پیش فوت کرد",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    },
+    {
+      "text": "معنی زندگی چیه؟",
+      "dialogueAct": "question",
+      "intent": "question"
+    },
+    {
+      "text": "فکر کنم برم یه پیاده‌روی برم",
+      "dialogueAct": "statement",
+      "intent": "statement"
+    }
   ],
   "expected": {
     "finalTurn": "موتور باید تغییرات ناگهانی موضوع را بدون کرش مدیریت کند. ردیابی موضوعات، سوگ را از نوبت دوم ثبت می‌کند. نوبت سوم یک سؤال فلسفی است.",

@@ -3,10 +3,15 @@
   "description": "آزمایش توانایی موتور در مدیریت کاربری که به هر پاسخ با یک «چرا» ساده پاسخ می‌دهد و یک حلقه تکراری ایجاد می‌کند.",
   "language": "fa",
   "turns": [
-    {"text": "امروز غمگینم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
-    {"text": "چرا", "dialogueAct": "question", "intent": "question"},
-    {"text": "چرا", "dialogueAct": "question", "intent": "question"},
-    {"text": "چرا", "dialogueAct": "question", "intent": "question"}
+    {
+      "text": "امروز غمگینم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    },
+    { "text": "چرا", "dialogueAct": "question", "intent": "question" },
+    { "text": "چرا", "dialogueAct": "question", "intent": "question" },
+    { "text": "چرا", "dialogueAct": "question", "intent": "question" }
   ],
   "expected": {
     "finalTurn": "بعد از ۳ سؤال متوالی «چرا»، محدودیت سؤال‌های متوالی موتور باید پاسخ‌های غیرسؤالی جایگزین را فعال کند.",

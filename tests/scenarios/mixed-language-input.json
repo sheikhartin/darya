@@ -3,9 +3,23 @@
   "description": "Tests the engine's mixed-language detection (_isMixedLanguage) when the user switches between English and Persian within the same message. Verifies that mixed-language input triggers the language-specific mixedLanguageResponses pool, that the redirect is polite and specific to the active language, and that after the redirect, a pure-language message is processed normally. Also tests that short foreign fragments below the MIXED_SCRIPT_FOREIGN_MIN threshold do not trigger false positives.",
   "language": "en",
   "turns": [
-    {"text": "I feel sad about my mother", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
-    {"text": "But you know مادرم is really important to me", "dialogueAct": "statement", "intent": "topic_statement"},
-    {"text": "I just wish my mother understood me better", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"}
+    {
+      "text": "I feel sad about my mother",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    },
+    {
+      "text": "But you know مادرم is really important to me",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "I just wish my mother understood me better",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 2 contains mixed English + Persian script. The engine's _isMixedLanguage should detect foreign letters above MIXED_SCRIPT_FOREIGN_MIN (3) and MIXED_SCRIPT_FOREIGN_RATIO (0.05). The response should use the language's mixedLanguageResponses pool with a polite redirect (60% probability). No topic is assigned during redirect. Turn 3 is pure English with 'my mother' and should route normally to family topic with no redirect.",

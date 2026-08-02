@@ -1,0 +1,29 @@
+{
+  "name": "relationship knowledge domain query with follow-up",
+  "description": "Tests the offline knowledge shelf relationship domain. The user asks about relationship advice, then about relationships, then transitions to a personal loneliness concern. Verifies knowledge responses from the relationship domain, substantive reply length, and seamless transition back to conversational rules.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I need some relationship advice",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "How can I build stronger relationships with people?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I've been feeling really lonely lately",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'relationship advice' keyword triggers knowledge rule, domainHints maps to 'relationship' domain, reply length > 40 chars. Turn 2: 'relationships' also maps to relationship domain, knowledge rule fires again. Turn 3: 'lonely' triggers loneliness conversational rule (priority 40), engine returns loneliness-specific reflection.",
+    "behavior": "Knowledge rule matches on 'relationship advice' and 'relationships', both mapped to 'relationship' domain via domainHints. The engine returns independent knowledge copies. After knowledge turns, the loneliness rule resumes normal conversational routing."
+  }
+}

@@ -3,9 +3,24 @@
   "description": "Tests the offline knowledge shelf mindfulness domain. The user asks about mindfulness practice, then about present-moment awareness, then transitions to a personal anxiety topic. Verifies that knowledge responses are returned from the mindfulness domain, that reply length exceeds 40 characters, and that natural conversational routing resumes after the knowledge query.",
   "language": "en",
   "turns": [
-    {"text": "Tell me about mindfulness meditation", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "How can I stay present in the moment?", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "My anxiety has been really bad lately", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+    {
+      "text": "Tell me about mindfulness meditation",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "How can I stay present in the moment?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "My anxiety has been really bad lately",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: mindfulness keyword triggers knowledge rule, DaryaKnowledge.answer('en', 'mindfulness') returns 4 entries, reply length > 40 chars. Turn 2: 'present moment' hint maps to mindfulness domain, dialogueAct is 'question' due to question mark. Turn 3: 'anxiety' keyword triggers anxiety conversational rule (priority 40), engine returns empathetic response from anxiety pool.",
