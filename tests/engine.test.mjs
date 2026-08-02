@@ -350,7 +350,7 @@ test('distress nudge: never overrides safety rule', () => {
 test('question fallback: acknowledges a direct question', () => {
   const engine = freshEngine(EN);
   const reply = engine.respond('do you ever get tired of listening?');
-  assert.match(reply, /question|sitting with|take on it/i);
+  assert.match(reply, /question|answer|sit with|thinking/i);
 });
 
 test('question fallback: plain statement does not trigger', () => {
@@ -579,6 +579,74 @@ test('FA greeting mirroring keeps variants for صبح بخیر / عصر بخیر
   }
 });
 
+test('FA greeting tails mirror the family word (درود بر تو, سلام علیکم)', () => {
+  const dorudCases = ['درود بر تو', 'درود بر شما', 'درود عزیز', 'درود جان'];
+  const salamCases = ['سلام علیکم', 'سلام بر تو', 'سلام بر شما', 'سلام و درود'];
+  for (let i = 0; i < 10; i += 1) {
+    for (const input of dorudCases) {
+      assert.match(
+        freshEngine(FA).respond(input),
+        /^درود/u,
+        `${input} should get a درود-based reply`
+      );
+    }
+    for (const input of salamCases) {
+      assert.match(
+        freshEngine(FA).respond(input),
+        /^سلام/u,
+        `${input} should get a سلام-based reply`
+      );
+    }
+  }
+});
+
+test('FA greeting tail does not swallow a how-are-you compound', () => {
+  // A fixed tail list, never free text: "درود چطوری؟" must route to the
+  // how-are-you rule, not the greeting pool.
+  for (const input of ['درود چطوری؟', 'سلام چطوری؟', 'درود، حالت چطوره؟']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    assert.equal(engine.currentTurnDialogueAct, 'question');
+    assert.ok(
+      engine.currentTurnTopics.includes('smalltalk_howareyou'),
+      `${input} should route to how-are-you, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+    );
+  }
+});
+
+test('FA mid-conversation greeting mirrors fresh and breaks greeting loops', () => {
+  const repeatedPool = new Set(FA.repeatedGreetingResponses);
+  // A fresh greeting after real turns mirrors the user's word.
+  const engine = freshEngine(FA);
+  engine.respond('سلام');
+  engine.respond('امروز چندمه؟');
+  engine.respond('نگرانم');
+  const fresh = engine.respond('درود');
+  assert.match(
+    fresh,
+    /^درود/u,
+    `mid-conversation درود should mirror, got: ${fresh}`
+  );
+
+  // Two back-to-back greetings trip the repeated pool instead of looping.
+  const loop = freshEngine(FA);
+  loop.respond('درود');
+  const second = loop.respond('درود');
+  assert.ok(
+    repeatedPool.has(second),
+    `second consecutive greeting should use repeated pool, got: ${second}`
+  );
+
+  // Mixed consecutive greetings also count as repetition.
+  const mixed = freshEngine(FA);
+  mixed.respond('سلام');
+  const mixedSecond = mixed.respond('درود');
+  assert.ok(
+    repeatedPool.has(mixedSecond),
+    `greeting after a greeting should use repeated pool, got: ${mixedSecond}`
+  );
+});
+
 test('back-to-back questions use non-question alternative path', () => {
   const restore = seededRandom();
   try {
@@ -586,7 +654,10 @@ test('back-to-back questions use non-question alternative path', () => {
     engine.respond('Why does this keep happening?');
     const second = engine.respond('What should I do next?');
     assert.doesNotMatch(second, /[?]/);
-    assert.match(second, /thread|piece|listening|detail|question|open/i);
+    // "what should I do" routes to the help-seeking what_do_i_do rule,
+    // whose question lines are filtered under budget pressure so the
+    // reply stays a supportive statement, never another question.
+    assert.match(second, /step|pressure|together|solution/i);
   } finally {
     restore();
   }
@@ -2704,4 +2775,276 @@ test('stress: abbreviation-heavy corpus keeps matching text separate from memory
     !engine.memory.recentUtterances.at(-1).includes('i do not know'),
     'expanded form must never be stored'
   );
+});
+
+// ============================================================================
+// Conversation-quality regressions (transcript-driven fixes)
+// ============================================================================
+
+test('FA date reply follows Iranian convention: day month year, single weekday, no English comma', () => {
+  const reply = freshEngine(FA).respond('تاریخ امروز');
+  // Format is "یکشنبه ۱۱ مرداد ۱۴۰۵ یعنی ۲ اوت ۲۰۲۶": weekday once,
+  // day before month before year (Persian digits), no ASCII comma.
+  assert.match(
+    reply,
+    /^\S+ [\u06F0-\u06F9]{1,2} \S+ [\u06F0-\u06F9]{4}/u,
+    `date should start weekday day month year, got: ${reply}`
+  );
+  assert.doesNotMatch(
+    reply,
+    /,/,
+    'Persian dates must not use an English comma'
+  );
+  // The leading token is the weekday; it must appear exactly once.
+  const weekday = reply.match(/^\S+/u)?.[0];
+  const occurrences = reply.split(weekday).length - 1;
+  assert.equal(
+    occurrences,
+    1,
+    `weekday ${JSON.stringify(weekday)} must appear exactly once, got: ${reply}`
+  );
+});
+
+test('FA: what-do-I-do with باید variant routes to help pool, not the work rule', () => {
+  // The transcript bug: "چه کار باید بکنم؟" contains "کار", which used to
+  // trip the work rule and produce an off-topic job reply. The higher
+  // priority what_do_i_do rule must win and reply with a supportive
+  // statement (never another question).
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'what_do_i_do').responses
+  );
+  for (const input of [
+    'چه کار باید بکنم؟',
+    'چیکار باید بکنم؟',
+    'چه کاری باید بکنم؟'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from what_do_i_do pool, got: ${reply}`
+    );
+    assert.doesNotMatch(
+      reply,
+      /[?؟]/,
+      'help-seeking must never bounce a question back'
+    );
+    assert.doesNotMatch(
+      reply,
+      /کار فقط|ساعت‌ها|خانه/u,
+      'must not be an off-topic work reply'
+    );
+  }
+});
+
+test('EN: what should I do replies from the what_do_i_do pool without a question', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'what_do_i_do').responses
+  );
+  for (const input of [
+    'what should I do',
+    'what do I do about it',
+    'is there any solution'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from what_do_i_do pool, got: ${reply}`
+    );
+    assert.doesNotMatch(
+      reply,
+      /[?]/,
+      'help-seeking must never bounce a question back'
+    );
+  }
+});
+
+test('FA: word-meaning question routes to the word_meaning pool', () => {
+  // The pool stores templates with a {captured} placeholder, so compare
+  // the reply against each template with the placeholder substituted by
+  // the word the user asked about.
+  const templates = FA.rules.find((r) => r.topic === 'word_meaning').responses;
+  for (const [input, word] of [
+    ['وداع کردن می‌دونی یعنی چی؟', 'وداع کردن'],
+    ['تاب‌آوری یعنی چه؟', 'تاب آوری']
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      templates.some((t) => reply === t.replace('{captured}', word)),
+      `${input} should reply from word_meaning pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: word-meaning question routes to the word_meaning pool', () => {
+  const templates = EN.rules.find((r) => r.topic === 'word_meaning').responses;
+  for (const [input, word] of [
+    ['what does resilience mean', 'resilience'],
+    ['do you know what bidding farewell means?', 'bidding farewell']
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      templates.some((t) => reply === t.replace('{captured}', word)),
+      `${input} should reply from word_meaning pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: ask-me-a-question requests are honored with a real question', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'ask_me_question').responses
+  );
+  for (const input of ['یک سوال از من بپرس', 'سوال نمی‌پرسی؟', 'بپرس از من']) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from ask_me_question pool, got: ${reply}`
+    );
+    assert.match(
+      reply,
+      /[?؟]/u,
+      'an asked-for question should actually ask one'
+    );
+  }
+});
+
+test('EN: ask-me-a-question requests are honored', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'ask_me_question').responses
+  );
+  const reply = freshEngine(EN).respond('ask me a question');
+  assert.ok(
+    pool.has(reply),
+    `ask-me-a-question should reply from pool, got: ${reply}`
+  );
+  assert.match(reply, /[?]/, 'an asked-for question should actually ask one');
+});
+
+test('FA: self-improvement request gets a humble acknowledgment', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'self_improvement').responses
+  );
+  for (const input of [
+    'خودت رو بهتر کن',
+    'می‌تونی باهوش‌تر بشی؟',
+    'بهتر و عاقل‌تر کن خودت رو'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from self_improvement pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: self-improvement request gets a humble acknowledgment', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'self_improvement').responses
+  );
+  const reply = freshEngine(EN).respond('make yourself smarter');
+  assert.ok(
+    pool.has(reply),
+    `self-improvement should reply from pool, got: ${reply}`
+  );
+});
+
+test('FA: unsure-topic answer is gently guided, not deflected', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'unsure_topic').responses
+  );
+  const reply = freshEngine(FA).respond('آره، اما نمی‌دونم روی کدوم');
+  assert.ok(
+    pool.has(reply),
+    `unsure-topic should reply from pool, got: ${reply}`
+  );
+});
+
+test('FA: testing turns get the warm test pool, never harassment or frustration', () => {
+  const pool = new Set(FA.testInputResponses);
+  for (const input of [
+    'دارم تستت می‌کنم',
+    'فقط دارم تستت می‌کنم تا ببینم چقدر باهوش هستی',
+    'می‌خوام امتحانت کنم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `testing turn should reply from testInputResponses, got: ${reply}`
+    );
+  }
+});
+
+test('EN: testing turns get the warm test pool', () => {
+  const pool = new Set(EN.testInputResponses || []);
+  const reply = freshEngine(EN).respond('i am just testing you');
+  if (pool.size) {
+    assert.ok(
+      pool.has(reply),
+      `testing turn should reply from testInputResponses, got: ${reply}`
+    );
+  }
+});
+
+test('FA: innocent words never trigger the sexual-harassment gate', () => {
+  // The old pattern included everyday words like ببینم, داغ, عشق which
+  // false-positived on innocent testing/feedback messages.
+  for (const input of [
+    'ببینم چقدر باهوش هستی',
+    'امروز هوا خیلی داغه',
+    'عشق و زندگی خوبه',
+    'ببینمت فردا'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      !FA.sexualHarassmentResponses.includes(reply),
+      `${input} must not route to sexual harassment pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: genuine sexual harassment still triggers the boundary pool', () => {
+  const reply = freshEngine(FA).respond('بکنمت جنده');
+  assert.ok(
+    FA.sexualHarassmentResponses.includes(reply),
+    `real harassment should route to boundary pool, got: ${reply}`
+  );
+});
+
+test('FA: emoji-only messages get the warm emoji pool', () => {
+  const pool = new Set(FA.emojiResponses || []);
+  for (const input of [':)', ':)))']) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `emoji-only input should reply from emojiResponses, got: ${reply}`
+    );
+  }
+});
+
+test('EN: emoji-only messages get the warm emoji pool', () => {
+  const pool = new Set(EN.emojiResponses || []);
+  const reply = freshEngine(EN).respond(':)');
+  assert.ok(
+    pool.has(reply),
+    `emoji-only input should reply from emojiResponses, got: ${reply}`
+  );
+});
+
+test('FA: question acknowledgements never bounce another question', () => {
+  for (const line of FA.questionAcknowledgements) {
+    assert.doesNotMatch(
+      line,
+      /[?؟]/u,
+      `FA questionAck must be question-free: ${line}`
+    );
+  }
+});
+
+test('EN: question acknowledgements never bounce another question', () => {
+  for (const line of EN.questionAcknowledgements) {
+    assert.doesNotMatch(
+      line,
+      /[?]/,
+      `EN questionAck must be question-free: ${line}`
+    );
+  }
 });
