@@ -1,22 +1,7 @@
 /**
- * Darya ambient scene particles: bubbles, bird shadows, and wave
- * animation variation.
- *
- * This module creates and manages dynamic visual elements for the two
- * available themes:
- *
- * Ocean theme:
- *   - Floating bubbles with randomized size, drift, and opacity
- *   - Gentle depth-breathe animation for atmospheric effect
- *
- * Beach theme:
- *   - Wave layers with randomized durations and delays per conversation
- *   - Bird shadow silhouettes linked to wave speed for natural pacing
- *
- * Fully standalone -- no dependency on app state or other UI modules.
- * Functions are exported to window.DaryaAmbient and called from app.js
- * during boot and conversation start.
+ * Darya classic script.
  */
+
 (function (global) {
   'use strict';
 
@@ -32,23 +17,36 @@
 
   /**
    * Initializes randomized wave animation durations and delays for each
-   * ocean layer in the beach scene. Each fresh conversation gets a unique
-   * set of wave timings so the water motion never repeats exactly.
-   * Also stores the average wave duration for bird shadow speed calculation.
+   * ocean layer in the beach scene. Runs once per page load: re-running it
+   * while the CSS animations are active would restart their timelines and
+   * cause visible jumps. Also stores the average wave duration for bird
+   * shadow speed calculation.
    */
   function initBeachWaveVariation() {
     const layers = document.querySelectorAll('.beach-scene__ocean');
-    const ranges = [[56, 72], [42, 58], [30, 46]];
+    const ranges = [
+      [56, 72],
+      [42, 58],
+      [30, 46]
+    ];
     const durations = [];
     layers.forEach((layer, index) => {
       const [min, max] = ranges[index] || ranges[ranges.length - 1];
       const duration = randomBetween(min, max);
       durations.push(duration);
       layer.style.setProperty('--wave-duration', `${duration.toFixed(2)}s`);
-      layer.style.setProperty('--wave-delay', `-${randomBetween(0, duration).toFixed(2)}s`);
+      layer.style.setProperty(
+        '--wave-delay',
+        `-${randomBetween(0, duration).toFixed(2)}s`
+      );
     });
-    const avgWave = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 48;
-    document.documentElement.style.setProperty('--avg-wave-duration', String(avgWave));
+    const avgWave = durations.length
+      ? durations.reduce((a, b) => a + b, 0) / durations.length
+      : 48;
+    document.documentElement.style.setProperty(
+      '--avg-wave-duration',
+      String(avgWave)
+    );
   }
 
   /**
@@ -58,7 +56,9 @@
    */
   function initBubbles() {
     const container = document.querySelector('.bubbles');
-    if (!container) return;
+    if (!container) {
+      return;
+    }
     const count = 8;
     for (let i = 0; i < count; i += 1) {
       const bubble = document.createElement('span');
@@ -68,10 +68,63 @@
       bubble.style.setProperty('--left', `${randomBetween(2, 96).toFixed(1)}%`);
       bubble.style.setProperty('--size', `${size.toFixed(1)}px`);
       bubble.style.setProperty('--duration', `${duration.toFixed(1)}s`);
-      bubble.style.setProperty('--delay', `-${randomBetween(0, duration).toFixed(1)}s`);
-      bubble.style.setProperty('--drift', `${randomBetween(-12, 12).toFixed(0)}px`);
-      bubble.style.setProperty('--peak-opacity', randomBetween(0.15, 0.45).toFixed(2));
+      bubble.style.setProperty(
+        '--delay',
+        `-${randomBetween(0, duration).toFixed(1)}s`
+      );
+      bubble.style.setProperty(
+        '--drift',
+        `${randomBetween(-12, 12).toFixed(0)}px`
+      );
+      bubble.style.setProperty(
+        '--peak-opacity',
+        randomBetween(0.15, 0.45).toFixed(2)
+      );
       container.appendChild(bubble);
+    }
+  }
+
+  /**
+   * Creates bioluminescent particles for the ocean theme. Each particle
+   * is a tiny glowing dot (2-5px) that rises slowly with a gentle
+   * horizontal sway, mimicking deep-sea plankton or microbial light.
+   * Randomized position, size, duration, glow radius, and sway distance
+   * ensure every conversation feels unique. Only visible in Ocean theme.
+   */
+  function initOceanParticles() {
+    var container = document.querySelector('.ocean-particles');
+    if (!container) {
+      return;
+    }
+    var count = 18;
+    for (var i = 0; i < count; i += 1) {
+      var particle = document.createElement('span');
+      particle.className = 'ocean-particle';
+      var size = randomBetween(2, 5);
+      var duration = randomBetween(32, 58);
+      particle.style.setProperty(
+        '--left',
+        `${randomBetween(3, 97).toFixed(1)}%`
+      );
+      particle.style.setProperty('--size', `${size.toFixed(1)}px`);
+      particle.style.setProperty('--duration', `${duration.toFixed(1)}s`);
+      particle.style.setProperty(
+        '--delay',
+        `-${randomBetween(0, duration * 0.9).toFixed(1)}s`
+      );
+      particle.style.setProperty(
+        '--glow-radius',
+        `${randomBetween(3, 8).toFixed(0)}px`
+      );
+      particle.style.setProperty(
+        '--sway',
+        `${randomBetween(-30, 30).toFixed(0)}px`
+      );
+      particle.style.setProperty(
+        '--peak-opacity',
+        randomBetween(0.15, 0.5).toFixed(2)
+      );
+      container.appendChild(particle);
     }
   }
 
@@ -79,32 +132,70 @@
    * Creates bird shadow silhouettes that drift across the beach scene.
    * Bird speed is linked to the average wave duration for a natural
    * visual balance, with random variance to prevent perfect syncing.
+   * The duration is scaled by viewport width so birds maintain a
+   * consistent visual speed on both mobile (narrow) and desktop (wide)
+   * screens: on a 360px phone, the distance across 145vw is 522px;
+   * on a 1440px laptop it is 2088px (4x farther). Without scaling,
+   * the same duration would make birds appear 4x slower on mobile.
    * Only visible when the beach theme is active.
    */
   function initBirdShadows() {
     const container = document.querySelector('.bird-shadows');
-    if (!container) return;
-    const avgWaveDuration = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--avg-wave-duration').trim()
-    ) || 48;
+    if (!container) {
+      return;
+    }
+    const avgWaveDuration =
+      parseFloat(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--avg-wave-duration')
+          .trim()
+      ) || 48;
+    // Viewport-aware speed scaling: clamp to a reference width of 1024px.
+    // On narrower screens the duration is shortened proportionally so
+    // birds traverse the visible width at roughly the same real speed.
+    const viewportWidth = window.innerWidth || 1024;
+    const speedScale = Math.max(0.35, Math.min(1.6, viewportWidth / 1024));
     const flockCount = 2 + Math.floor(Math.random() * 3);
     for (let f = 0; f < flockCount; f += 1) {
       const birdsInFlock = 3 + Math.floor(Math.random() * 3);
-      const waveFactor = randomBetween(0.35, 0.60);
-      const flockDuration = avgWaveDuration * waveFactor + randomBetween(-3, 3);
-      const clampedDuration = Math.max(14, Math.min(40, flockDuration));
+      const waveFactor = randomBetween(0.35, 0.6);
+      const flockDuration =
+        (avgWaveDuration * waveFactor + randomBetween(-3, 3)) * speedScale;
+      // The viewport scaling already shortens durations on narrow screens;
+      // a flat 10s floor would undo that and make birds crawl on phones.
+      // Use a lower floor on small viewports so the scaling can work.
+      const minFlockDuration = viewportWidth < 600 ? 6 : 10;
+      const clampedDuration = Math.max(
+        minFlockDuration,
+        Math.min(45, flockDuration)
+      );
       const flockDelay = -randomBetween(0, clampedDuration);
       const baseTop = randomBetween(8, 65);
       const baseScale = randomBetween(0.7, 1.2);
       for (let b = 0; b < birdsInFlock; b += 1) {
         const shadow = document.createElement('span');
         shadow.className = 'bird-shadow';
-        shadow.style.setProperty('--top', `${(baseTop + randomBetween(-6, 8)).toFixed(1)}%`);
-        shadow.style.setProperty('--scale', (baseScale * randomBetween(0.85, 1.15)).toFixed(2));
-        shadow.style.setProperty('--duration', `${clampedDuration.toFixed(1)}s`);
+        shadow.style.setProperty(
+          '--top',
+          `${(baseTop + randomBetween(-6, 8)).toFixed(1)}%`
+        );
+        shadow.style.setProperty(
+          '--scale',
+          (baseScale * randomBetween(0.85, 1.15)).toFixed(2)
+        );
+        shadow.style.setProperty(
+          '--duration',
+          `${clampedDuration.toFixed(1)}s`
+        );
         shadow.style.setProperty('--delay', `${flockDelay.toFixed(1)}s`);
-        shadow.style.setProperty('--peak-opacity', randomBetween(0.25, 0.50).toFixed(2));
-        shadow.style.setProperty('--flock-offset', `${randomBetween(-25, 25).toFixed(0)}px`);
+        shadow.style.setProperty(
+          '--peak-opacity',
+          randomBetween(0.25, 0.5).toFixed(2)
+        );
+        shadow.style.setProperty(
+          '--flock-offset',
+          `${randomBetween(-25, 25).toFixed(0)}px`
+        );
         container.appendChild(shadow);
       }
     }
@@ -115,6 +206,7 @@
     randomBetween,
     initBeachWaveVariation,
     initBubbles,
-    initBirdShadows,
+    initOceanParticles,
+    initBirdShadows
   };
 })(typeof window !== 'undefined' ? window : globalThis);
