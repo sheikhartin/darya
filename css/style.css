@@ -638,8 +638,8 @@ html[data-theme='beach'] .bird-shadows {
   position: absolute;
   top: var(--top, 10%);
   left: calc(-15vw + var(--flock-offset, 0px));
-  width: calc(70px * var(--scale, 1));
-  height: calc(14px * var(--scale, 1));
+  width: calc(60px * var(--scale, 1));
+  height: calc(8px * var(--scale, 1));
   border-radius: 50%;
   background: radial-gradient(
     ellipse at 45% 50%,
@@ -835,15 +835,6 @@ html[data-theme='beach'] .picker__note {
   display: block;
 }
 
-html[data-theme='beach'] .picker__lang-lock {
-  color: #f0f7f4;
-  opacity: 0.85;
-}
-
-/* --------------------------------------------------------------------- */
-/* Theme selection heading in the picker                                 */
-/* --------------------------------------------------------------------- */
-
 .picker__theme-heading {
   font-size: 12px;
   color: var(--color-foam-dim);
@@ -856,8 +847,11 @@ html[data-theme='beach'] .picker__lang-lock {
   opacity: 0.8;
 }
 
+html[data-theme='beach'] .picker__lang-lock,
 html[data-theme='beach'] .picker__theme-heading {
-  color: rgba(240, 247, 244, 0.75);
+  color: var(--color-on-sky);
+  opacity: 0.95;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 /* --------------------------------------------------------------------- */

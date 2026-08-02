@@ -172,9 +172,9 @@
     const speedScale = Math.max(0.68, Math.min(1.15, viewportWidth / 1024));
     // Scale bird sizes dynamically with screen size so they don't look like giant blobs on mobile
     const sizeScaleFactor = Math.max(0.45, Math.min(1.1, viewportWidth / 1024));
-    const flockCount = 2 + Math.floor(Math.random() * 3);
+    const flockCount = 1 + Math.floor(Math.random() * 2);
     for (let f = 0; f < flockCount; f += 1) {
-      const birdsInFlock = 3 + Math.floor(Math.random() * 3);
+      const birdsInFlock = 1 + Math.floor(Math.random() * 3);
       // Swift flight timing for a lively and charming feel
       const waveFactor = randomBetween(0.18, 0.32);
       const flockDuration =
@@ -206,7 +206,7 @@
         shadow.style.setProperty('--delay', `${flockDelay.toFixed(1)}s`);
         shadow.style.setProperty(
           '--peak-opacity',
-          randomBetween(0.25, 0.5).toFixed(2)
+          randomBetween(0.38, 0.6).toFixed(2)
         );
         shadow.style.setProperty(
           '--flock-offset',

@@ -747,6 +747,25 @@
   }
 
   // ========================================================================
+  /**
+   * Initializes a one-time global user gesture listener. The very first
+   * interaction anywhere on the screen (click, tap, or key) will trigger
+   * ambient sound playback if the user has it enabled in their settings.
+   */
+  function initAutoplayGesture() {
+    var startSound = function () {
+      if (typeof DaryaAmbientSound !== 'undefined' && DaryaAmbientSound.getSavedState() === true) {
+        DaryaAmbientSound.autoplayIfEnabled();
+      }
+      document.removeEventListener('click', startSound);
+      document.removeEventListener('keydown', startSound);
+      document.removeEventListener('touchstart', startSound);
+    };
+    document.addEventListener('click', startSound, { passive: true });
+    document.addEventListener('keydown', startSound, { passive: true });
+    document.addEventListener('touchstart', startSound, { passive: true });
+  }
+
   // Boot
   // ========================================================================
 
@@ -763,6 +782,7 @@
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();
   DaryaAmbient.initBirdShadows();
+  initAutoplayGesture();
 
   // Restore the saved sound toggle state from cookie so the menu item
   // reflects the user's last preference. Audio does NOT start playing
