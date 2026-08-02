@@ -2308,7 +2308,7 @@ html[data-theme='beach'] .beach-scene {
 
 @media (width < 600px) {
   .beach-scene__wave {
-    width: 600%; /* Prevents wave squeezing on mobile */
+    width: 800%; /* Prevents wave squeezing on mobile */
   }
 }
 

@@ -239,25 +239,9 @@
     st.chatActive = true;
     startConversation();
 
-    // Auto-play ambient sound if the saved state is enabled and not currently playing
-    if (typeof DaryaAmbientSound !== 'undefined' && DaryaAmbientSound.getSavedState() === true) {
-      if (!DaryaAmbientSound.isPlaying()) {
-        DaryaAmbientSound.toggle().then(function (enabled) {
-          if (el.menuSoundToggle) {
-            el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-            var label =
-              chosenLang && enabled
-                ? chosenLang.ui.soundOnTitle
-                : chosenLang.ui.soundOffTitle;
-            el.menuSoundToggle.setAttribute('title', label);
-            if (el.menuSoundLabel) {
-              el.menuSoundLabel.textContent = label;
-            }
-          }
-        }).catch(function () {
-          /* fail-safe */
-        });
-      }
+    // Auto-play ambient sound if enabled in settings
+    if (typeof DaryaAmbientSound !== 'undefined') {
+      DaryaAmbientSound.autoplayIfEnabled();
     }
   }
 
