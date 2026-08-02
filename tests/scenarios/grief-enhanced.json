@@ -3,9 +3,24 @@
   "description": "Tests the enhanced grief rule with additional response entries and broader pattern matching. Verifies that the grief rule now includes 'bereavement' and 'cope with loss' keywords, and that the expanded response pool provides more natural variety across repeated grief-related statements.",
   "language": "en",
   "turns": [
-    {"text": "I'm grieving the loss of my mother", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"},
-    {"text": "It's hard to cope with this loss", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"},
-    {"text": "Bereavement feels different from what I expected", "dialogueAct": "statement", "intent": "topic_statement", "topic": "grief"}
+    {
+      "text": "I'm grieving the loss of my mother",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    },
+    {
+      "text": "It's hard to cope with this loss",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    },
+    {
+      "text": "Bereavement feels different from what I expected",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    }
   ],
   "expected": {
     "finalTurn": "All three turns should match the grief rule (priority 45). Turn 1 via 'grieving' and 'loss of', turn 2 via 'cope with loss', turn 3 via 'bereavement'. Responses should show variety from the expanded 6-entry response pool. No unresponsiveness or generic fallback for grief-related input.",

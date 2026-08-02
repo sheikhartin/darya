@@ -3,9 +3,24 @@
   "description": "آزمایش قانون جدید ذهن‌آگاهی (اولویت ۴۰) برای مطابقت با کلمات کلیدی مدیتیشن، تنفس و حضور در لحظه.",
   "language": "fa",
   "turns": [
-    {"text": "اخیراً مدیتیشن را شروع کردم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"},
-    {"text": "فقط نفس می‌کشم و افکارم را نگاه می‌کنم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"},
-    {"text": "بعضی روزها حضور در لحظه خیلی سخته", "dialogueAct": "statement", "intent": "topic_statement", "topic": "mindfulness"}
+    {
+      "text": "اخیراً مدیتیشن را شروع کردم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "mindfulness"
+    },
+    {
+      "text": "فقط نفس می‌کشم و افکارم را نگاه می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "mindfulness"
+    },
+    {
+      "text": "بعضی روزها حضور در لحظه خیلی سخته",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "mindfulness"
+    }
   ],
   "expected": {
     "finalTurn": "هر نوبت باید با کلمات کلیدی (مدیتیشن، نفس، حضور در لحظه) با قانون ذهن‌آگاهی مطابقت داشته باشد. پاسخ‌ها گرم و غیردستوری هستند.",

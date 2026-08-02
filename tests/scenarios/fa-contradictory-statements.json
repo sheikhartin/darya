@@ -3,10 +3,28 @@
   "description": "آزمایش توانایی موتور در مدیریت کاربری که جملات متناقض در نوبت‌های متوالی می‌گوید. ابتدا شادی، بعد غم، سپس هر دو را ادعا می‌کند.",
   "language": "fa",
   "turns": [
-    {"text": "امروز خیلی خوشحالم!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "joy"},
-    {"text": "راستش دروغ گفتم، واقعاً افسرده‌ام", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
-    {"text": "نه صبر کن، هم خوشحالم هم غمگین", "dialogueAct": "statement", "intent": "statement"},
-    {"text": "دیگه نمی‌دونم چه حسی دارم", "dialogueAct": "statement", "intent": "statement"}
+    {
+      "text": "امروز خیلی خوشحالم!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "joy"
+    },
+    {
+      "text": "راستش دروغ گفتم، واقعاً افسرده‌ام",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    },
+    {
+      "text": "نه صبر کن، هم خوشحالم هم غمگین",
+      "dialogueAct": "statement",
+      "intent": "statement"
+    },
+    {
+      "text": "دیگه نمی‌دونم چه حسی دارم",
+      "dialogueAct": "statement",
+      "intent": "statement"
+    }
   ],
   "expected": {
     "finalTurn": "موتور باید تغییرات موضوع را از شادی به غم بدون کرش مدیریت کند. نشانه پریشانی فعال نمی‌شود چون شادی دنباله منفی را قطع می‌کند.",

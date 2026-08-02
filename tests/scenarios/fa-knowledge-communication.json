@@ -3,9 +3,24 @@
   "description": "Tests the Persian offline knowledge shelf communication domain. The user asks about communication in Persian, then about better communication, then transitions to a personal feeling topic. Verifies Persian knowledge responses from the communication domain.",
   "language": "fa",
   "turns": [
-    {"text": "درباره ارتباط بهتر توضیح بده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "چطور می‌تونم ارتباط بهتر داشته باشم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "احساس تنهایی می‌کنم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "loneliness"}
+    {
+      "text": "درباره ارتباط بهتر توضیح بده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور می‌تونم ارتباط بهتر داشته باشم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "احساس تنهایی می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'ارتباط بهتر' keyword triggers knowledge rule, domainHints maps to 'communication' domain. Persian response. Turn 2: 'ارتباط بهتری' contains 'ارتباط بهتر' substring, so it matches. Question dialogueAct. Turn 3: 'کسی حرفمو نمی‌فهمه' triggers loneliness conversational rule (priority 40), engine returns loneliness response.",

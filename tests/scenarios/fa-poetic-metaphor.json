@@ -3,10 +3,25 @@
   "description": "آزمایش توانایی موتور در مدیریت زبان شاعرانه، استعاری و انتزاعی که معنای تحت‌اللفظی ندارد.",
   "language": "fa",
   "turns": [
-    {"text": "آسمان امروز گریه می‌کند", "dialogueAct": "statement", "intent": "open_statement"},
-    {"text": "مثل یک برگ در بادم", "dialogueAct": "statement", "intent": "open_statement"},
-    {"text": "دلم مثل یک سنگ سنگینه", "dialogueAct": "statement", "intent": "open_statement"},
-    {"text": "به نظرت بارون می‌فهمه؟", "dialogueAct": "statement", "intent": "question"}
+    {
+      "text": "آسمان امروز گریه می‌کند",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "مثل یک برگ در بادم",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "دلم مثل یک سنگ سنگینه",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },  {
+   "text": "به نظرت بارون می‌فهمه؟",
+   "dialogueAct": "question",
+   "intent": "question"
+  }
   ],
   "expected": {
     "finalTurn": "موتور باید زبان استعاری را بدون نیاز به تفسیر تحت‌اللفظی مدیریت کند. به حس عاطفی پاسخ می‌دهد نه معنای ظاهری. سؤال آخر به جای تشخیص سؤال، به عنوان statement پردازش می‌شود.",

@@ -3,9 +3,24 @@
   "description": "Tests the offline knowledge shelf conflict resolution domain. The user asks about conflict resolution, then about nonviolent communication, then transitions to a personal relationship topic. Verifies knowledge responses from the conflict domain and smooth topic transition.",
   "language": "en",
   "turns": [
-    {"text": "Tell me about conflict resolution", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "I'd like to learn about nonviolent communication", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "My partner and I have been arguing a lot", "dialogueAct": "statement", "intent": "topic_statement", "topic": "relationship"}
+    {
+      "text": "Tell me about conflict resolution",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I'd like to learn about nonviolent communication",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "My partner and I have been arguing a lot",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'conflict resolution' keyword triggers knowledge rule pattern, domainHints maps to 'conflict' domain. Turn 2: 'nonviolent communication' maps to conflict domain, knowledge rule fires again. Turn 3: 'my partner' matches relationship conversational rule (priority 40), engine returns relationship-focused reflection.",

@@ -3,10 +3,29 @@
   "description": "Tests the engine's ability to handle a user who rapidly changes topics without providing depth on any single subject. Verifies that topicHistory tracks each topic's weight, that currentSubject updates properly, and that the engine does not generate stale callbacks for an abandoned thread. Also verifies that the topic-recovery responses remain available.",
   "language": "en",
   "turns": [
-    {"text": "I'm worried about my exam tomorrow", "dialogueAct": "statement", "intent": "topic_statement", "topic": "school"},
-    {"text": "Actually I've been fighting with my sister", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
-    {"text": "Also I'm in pain", "dialogueAct": "statement", "intent": "topic_statement", "topic": "health"},
-    {"text": "And the weather is so gloomy", "dialogueAct": "statement", "intent": "open_statement"}
+    {
+      "text": "I'm worried about my exam tomorrow",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "school"
+    },
+    {
+      "text": "Actually I've been fighting with my sister",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    },
+    {
+      "text": "Also I'm in pain",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    },
+    {
+      "text": "And the weather is so gloomy",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    }
   ],
   "expected": {
     "finalTurn": "The engine should have tracked all visited topics (school, family, health) in topicHistory/topicWeights. CurrentSubject should reflect the most recent substantive topic (health). No entity callback should fire from an earlier topic unless its activation threshold is crossed. The 'weather' turn is a statement with no matching rule - it should use genericFallbacks or strategyShiftFallbacks.",

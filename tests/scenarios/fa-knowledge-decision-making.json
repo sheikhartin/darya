@@ -3,9 +3,24 @@
   "description": "Tests the Persian offline knowledge shelf decision-making domain. The user asks about decision-making in Persian, then about choosing between options, then transitions to a personal work topic. Verifies Persian knowledge responses from the decision_making domain.",
   "language": "fa",
   "turns": [
-    {"text": "درباره تصمیم‌گیری توضیح بده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "بین دو گزینه موندم چطور انتخاب بین رو انجام بدم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "کارم خیلی سخت شده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+    {
+      "text": "درباره تصمیم‌گیری توضیح بده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "بین دو گزینه موندم چطور انتخاب بین رو انجام بدم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "کارم خیلی سخت شده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'تصمیم‌گیری' keyword triggers knowledge rule, domainHints maps to 'decision_making' domain. Persian response. Turn 2: 'انتخاب بین' maps to decision_making domain, question dialogueAct. Turn 3: 'مدیرم' triggers work conversational rule (priority 50), engine returns work-related reflection.",

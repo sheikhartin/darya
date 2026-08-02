@@ -3,10 +3,29 @@
   "description": "Tests the engine's sentiment scoring and response selection when the user alternates between positive and negative emotional content. Verifies that the engine correctly resets the distress streak on positive turns, that sentiment history reflects the alternating pattern, and that topic tracking handles positive topics (e.g., joy) alongside negative ones.",
   "language": "en",
   "turns": [
-    {"text": "My job is going really well - got a promotion!", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"},
-    {"text": "But my sister is going through something hard", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
-    {"text": "I'm grateful for you though", "dialogueAct": "gratitude", "intent": "gratitude"},
-    {"text": "The exam stress is also getting to me", "dialogueAct": "statement", "intent": "topic_statement", "topic": "school"}
+    {
+      "text": "My job is going really well - got a promotion!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "But my sister is going through something hard",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    },
+    {
+      "text": "I'm grateful for you though",
+      "dialogueAct": "gratitude",
+      "intent": "gratitude"
+    },
+    {
+      "text": "The exam stress is also getting to me",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "school"
+    }
   ],
   "expected": {
     "finalTurn": "Sentiment history should alternate: positive (happy/promotion), negative (sister going through hard time), positive (grateful), negative (exam stress). The distress streak should NOT trigger because the streak of consecutive negative scores is interrupted by positive turns. Topic weights should reflect work, family, and school.",

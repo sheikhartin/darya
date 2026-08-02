@@ -3,10 +3,30 @@
   "description": "Tests the engine's topic tracking, sentiment scoring, and distress nudge behavior across a conversation that starts with a neutral observation and escalates to a serious emotional disclosure. Verifies that seriousness blocks humor, that sentiment history drives the distress nudge, and that topic continuity is maintained across turns.",
   "language": "en",
   "turns": [
-    {"text": "My job has been really stressful lately", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"},
-    {"text": "I'm also having trouble sleeping", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sleep"},
-    {"text": "I feel exhausted and anxious all the time", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"},
-    {"text": "My boss keeps piling on work", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+    {
+      "text": "My job has been really stressful lately",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "I'm also having trouble sleeping",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    },
+    {
+      "text": "I feel exhausted and anxious all the time",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "My boss keeps piling on work",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
   ],
   "expected": {
     "finalTurn": "After 4 consecutive negative-sentiment turns (sentiment score < 0), the engine should track topics 'work', 'sleep', and 'anxiety'. The distress nudge (isInDistressStreak after DISTRESS_STREAK_LENGTH=3) should NOT have fired yet if DISTRESS_STREAK_LENGTH is checked against sentimentHistory length - verify exact condition.",

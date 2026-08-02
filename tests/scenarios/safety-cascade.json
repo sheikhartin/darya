@@ -3,10 +3,30 @@
   "description": "Tests the engine's safety rule (priority 100) across multiple crisis-related inputs: explicit suicidal ideation, self-harm signals, and then a recovery. Verifies that safety responses ALWAYS take precedence over all other routing including word repetition, frustration, and distress nudges, and that after the safety trigger clears, normal conversation can resume. Also verifies the safety rule is not falsely triggered by non-crisis phrases containing similar words.",
   "language": "en",
   "turns": [
-    {"text": "I feel really down today", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sadness"},
-    {"text": "I don't want to live anymore", "dialogueAct": "safety", "intent": "topic_statement", "topic": "safety"},
-    {"text": "I feel like I have no one to talk to about this", "dialogueAct": "statement", "intent": "topic_statement", "topic": "loneliness"},
-    {"text": "I feel so alone but at least I can talk here", "dialogueAct": "statement", "intent": "topic_statement", "topic": "loneliness"}
+    {
+      "text": "I feel really down today",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    },
+    {
+      "text": "I don't want to live anymore",
+      "dialogueAct": "safety",
+      "intent": "topic_statement",
+      "topic": "safety"
+    },
+    {
+      "text": "I feel like I have no one to talk to about this",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "I feel so alone but at least I can talk here",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 2 must trigger the safety rule (priority 100) because 'don't want to live' matches the crisis patterns. Response must contain crisis-line or professional-help redirect. Turn 3 should NOT trigger safety (no crisis keywords) - returns to loneliness topic via 'no one to talk to'. Distress nudge may fire if 3 consecutive negative turns accumulate after safety clears.",

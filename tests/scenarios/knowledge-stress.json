@@ -3,9 +3,24 @@
   "description": "Tests the offline knowledge shelf stress management domain. The user says they feel overwhelmed, then asks about burnout prevention, then transitions to a personal sleep concern. Verifies knowledge responses from the stress domain, substantive reply length, and seamless transition back to conversational rules.",
   "language": "en",
   "turns": [
-    {"text": "I'm feeling completely overwhelmed", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "Tell me about stress management techniques", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "I can't sleep because my mind is racing", "dialogueAct": "statement", "intent": "topic_statement", "topic": "sleep"}
+    {
+      "text": "I'm feeling completely overwhelmed",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "Tell me about stress management techniques",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "I can't sleep because my mind is racing",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'overwhelmed' keyword triggers knowledge rule pattern, domainHints maps 'overwhelmed' to 'stress' domain, reply length > 40 chars. Turn 2: 'stress management' also maps to stress domain, knowledge rule fires again. Turn 3: 'sleeping' triggers sleep conversational rule (priority 50), engine returns sleep-specific reflection.",

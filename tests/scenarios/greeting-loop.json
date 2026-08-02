@@ -1,15 +1,35 @@
 {
   "name": "repeated greeting loop without engagement",
-  "description": "Tests the engine's ability to detect and gracefully handle a user who repeatedly says hello without providing substantive content. Verifies that repeated greetings beyond the threshold (2) are classified as statements and trigger the language-specific repeatedGreetingResponses pool rather than being treated as fresh conversation starts.",
+  "description": "Tests the engine's ability to detect and gracefully handle a user who repeatedly says hello without providing substantive content. Consecutive greetings beyond the threshold (2) trigger the language-specific repeatedGreetingResponses pool, while greeting variants (hello again, hi there) still classify as greetings.",
   "language": "en",
   "turns": [
-    {"text": "hello", "dialogueAct": "greeting", "intent": "greeting", "topic": "greeting"},
-    {"text": "hi", "dialogueAct": "greeting", "intent": "greeting", "topic": "greeting"},
-    {"text": "hello again", "dialogueAct": "statement", "intent": "statement"},
-    {"text": "hi there", "dialogueAct": "statement", "intent": "statement"}
+    {
+      "text": "hello",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "hi",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "hello again",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "hi there",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    }
   ],
   "expected": {
-    "finalTurn": "After REPEATED_GREETING_THRESHOLD (2) consecutive greeting utterances, subsequent greetings are classified as 'statement' rather than 'greeting', and trigger repeatedGreetingResponses which acknowledge the repetition and invite a fresh start.",
-    "behavior": "The engine's repeated-greeting detection reclassifies excessive consecutive greetings as statements (no greeting topic assigned). The response uses the repeatedGreetingResponses pool (acknowledging the loop and inviting fresh engagement) instead of a standard greeting or generic fallback."
+    "finalTurn": "After REPEATED_GREETING_THRESHOLD (2) consecutive greeting utterances, later greetings use the repeatedGreetingResponses pool, which acknowledges the repetition and invites a fresh start instead of treating every greeting as a brand-new conversation. Greeting variants such as 'hello again' and 'hi there' are recognized as greetings and mirror their greeting family.",
+    "behavior": "The engine's repeated-greeting detection swaps in the repeatedGreetingResponses pool for repeated greetings instead of treating every greeting as a fresh conversation start. Extended greeting patterns keep common variants (hi there, hello again, hi Darya, hey, yo, sup) working as greetings while 'hi how are you' still falls through to the how-are-you rule."
   }
 }

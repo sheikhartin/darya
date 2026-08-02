@@ -104,12 +104,12 @@ run_smoke() {
 # -------------------------------------------------------------------
 run_engine() {
   if $VERBOSE; then
-    node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1
+    node --test --test-reporter spec tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1
     return $?
   fi
 
   local output
-  output="$(node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1)"
+  output="$(node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1)"
   local rc=$?
   local parsed
   parsed="$(parse_engine_result "$output")"
@@ -161,22 +161,38 @@ run_multi_round() {
   fi
 
   for i in $(seq 1 "$total"); do
-    local output
-    output="$(node --test-reporter tap tests/engine.test.js tests/language.test.js tests/quality.test.js 2>&1)"
-    local rc=$?
-
-    local fail_count
-    fail_count="$(echo "$output" | grep -c '^not ok' || true)"
-
-    if [ "$fail_count" -eq 0 ]; then
-      passed=$((passed + 1))
-      $VERBOSE && printf "  Round %2d: PASS\n" "$i"
+    if $VERBOSE; then
+      echo "--- Round $i / $total ---"
+      node --test --test-reporter spec tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1
+      local rc=$?
     else
-      failed=$((failed + 1))
-      local failed_names
-      failed_names="$(echo "$output" | grep '^not ok' | sed 's/^not ok [0-9]* - //')"
-      fail_details="${fail_details}  Round $i: ${failed_names}"$'\n'
-      $VERBOSE && printf "  Round %2d: FAIL - %s\n" "$i" "$failed_names"
+      local output
+      output="$(node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1)"
+      local rc=$?
+    fi
+
+    if $VERBOSE; then
+      if [ "$rc" -eq 0 ]; then
+        passed=$((passed + 1))
+        echo "--- Round $i: PASS ---"
+      else
+        failed=$((failed + 1))
+        fail_details="${fail_details}  Round $i: (see failures above)"$'\n'
+        echo "--- Round $i: FAIL ---"
+      fi
+    else
+      local fail_count
+      fail_count="$(echo "$output" | grep -c '^not ok' || true)"
+      if [ "$fail_count" -eq 0 ]; then
+        passed=$((passed + 1))
+      else
+        failed=$((failed + 1))
+        local failed_names
+        failed_names="$(echo "$output" | grep '^not ok' | sed 's/^not ok [0-9]* - //')"
+        fail_details="${fail_details}  Round $i: ${failed_names}"$'\n'
+      fi
+      # Print a progress character for every round (the summary tells the full story)
+      printf "."
     fi
   done
 
@@ -196,6 +212,8 @@ run_multi_round() {
       echo "[ALL PASS]"
     fi
   else
+    # newline after progress dots (only if any rounds were run)
+    [ "$total" -gt 0 ] && echo ""
     echo "Engine: $passed/$total rounds passed ($pass_pct%)"
   fi
 

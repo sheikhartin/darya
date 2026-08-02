@@ -3,9 +3,24 @@
   "description": "Tests entity correction detection and reference resolution: the user mentions a work problem, then corrects a named entity, and finally refers back to the topic. Verifies that the engine updates its entity memory correctly and maintains topic continuity.",
   "language": "en",
   "turns": [
-    {"text": "My job has been stressful", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"},
-    {"text": "I meant my manager, not my boss", "dialogueAct": "correction", "intent": "correction", "topic": "work"},
-    {"text": "it happened again", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+    {
+      "text": "My job has been stressful",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "I meant my manager, not my boss",
+      "dialogueAct": "correction",
+      "intent": "correction",
+      "topic": "work"
+    },
+    {
+      "text": "it happened again",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
   ],
   "expected": {
     "finalTurn": "The engine should detect 'it happened again' as a reference to the current subject (work), maintain topic continuity, and not use stale entity callbacks for the corrected entity.",

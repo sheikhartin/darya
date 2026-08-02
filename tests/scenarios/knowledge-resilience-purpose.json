@@ -1,0 +1,35 @@
+{
+  "name": "Knowledge routing for resilience, forgiveness, and purpose",
+  "description": "Verifies the engine routes resilience, forgiveness, and purpose queries to the knowledge shelf (priority 55) and returns a relevant reply rather than a generic fallback.",
+  "turns": [
+    {
+      "dialogueAct": "statement",
+      "text": "I'm trying to be more resilient these days. Life has been throwing a lot at me.",
+      "intent": "seek_knowledge_resilience"
+    },
+    {
+      "dialogueAct": "statement",
+      "text": "I also struggle with forgiveness. It is hard to let go of old hurts.",
+      "intent": "seek_knowledge_forgiveness"
+    },
+    {
+      "dialogueAct": "statement",
+      "text": "Sometimes I wonder what the meaning of life really is. I feel lost.",
+      "intent": "seek_knowledge_purpose"
+    },
+    {
+      "dialogueAct": "statement",
+      "text": "What do the stoics say about resilience and strength?",
+      "intent": "seek_knowledge_stoicism"
+    },
+    {
+      "dialogueAct": "statement",
+      "text": "I want to find my purpose, but I don't know where to start.",
+      "intent": "seek_knowledge_purpose_deeper"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: 'resilient' keyword triggers knowledge rule, domainHints maps to 'resilience' domain (or 'philosophy' via 'purpose'), reply length > 40 chars. Turn 2: 'forgiveness' maps to forgiveness domain. Turn 3: 'meaning of life' maps to purpose domain. Turn 4: 'stoics' maps to philosophy domain. Turn 5: 'purpose' maps to purpose domain, knowledge rule fires again.",
+    "behavior": "Knowledge rule (priority 55) matches on 'resilient', 'forgiveness', 'meaning of life', 'stoics', 'purpose' keywords. All five turns route to the knowledge shelf via domain hints. The engine returns substantive knowledge responses rather than generic fallbacks."
+  }
+}

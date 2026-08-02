@@ -3,10 +3,29 @@
   "description": "Tests the engine's named-entity memory system across multiple turns with different emotional weights and topic contexts. The user introduces entities on emotionally weighted turns (person, place, object, activity) and then refers back to them indirectly. Verifies that entities are stored with correct contextTopics, activation decays properly between turns, and entity callbacks only fire when the current topic context overlaps with the entity's stored contextTopics.",
   "language": "en",
   "turns": [
-    {"text": "I feel sad about my mother", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
-    {"text": "My mother lives in a small apartment downtown", "dialogueAct": "statement", "intent": "topic_statement", "topic": "family"},
-    {"text": "I've been painting a lot to cope", "dialogueAct": "statement", "intent": "topic_statement"},
-    {"text": "My job has also been demanding", "dialogueAct": "statement", "intent": "topic_statement", "topic": "work"}
+    {
+      "text": "I feel sad about my mother",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    },
+    {
+      "text": "My mother lives in a small apartment downtown",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "family"
+    },
+    {
+      "text": "I've been painting a lot to cope",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "My job has also been demanding",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
   ],
   "expected": {
     "finalTurn": "Entities 'mother' (person) and 'apartment' (place) should be stored in memory from turns 1-2. 'painting' (activity) from turn 3. All stored with contextTopics 'family' for turns 1-2 (no specific rule topic for turn 3), 'work' for turn 4. Entity activation decays by ENTITY_DECAY_PER_TURN (0.18) each turn. By turn 4, 'mother' should still be eligible (activation ~0.55 > 0.6 threshold depends on exact count). Entity callbacks should only reference 'mother' when current context overlaps with 'family' contextTopics.",

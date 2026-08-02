@@ -3,9 +3,24 @@
   "description": "Tests the Persian offline knowledge shelf stress domain. The user asks about stress management in Persian, then about burnout, then transitions to a personal anxiety topic. Verifies Persian knowledge responses from the stress domain and smooth transition to conversational rules.",
   "language": "fa",
   "turns": [
-    {"text": "درباره مدیریت استرس توضیح بده", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "چطور با فرسودگی شغلی کنار بیایم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "خیلی نگران آینده کاری‌ام هستم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+    {
+      "text": "درباره مدیریت استرس توضیح بده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور با فرسودگی شغلی کنار بیایم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "خیلی نگران آینده کاری‌ام هستم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: 'مدیریت استرس' keyword triggers knowledge rule, domainHints maps to 'stress' domain. Persian response. Turn 2: 'فرسودگی' maps to stress domain, knowledge rule fires again. Turn 3: 'نگران' triggers anxiety conversational rule (priority 40), engine returns anxiety-specific response.",

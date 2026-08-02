@@ -3,9 +3,24 @@
   "description": "Tests the Persian knowledge shelf integration. The user asks about Stoic philosophy in Persian, then about focus/concentration, then transitions to a personal anxiety topic. Verifies that Persian knowledge responses are returned with Persian text (حروف فارسی), that the knowledge module returns domain-appropriate content, and that natural topic routing resumes after knowledge queries.",
   "language": "fa",
   "turns": [
-    {"text": "درباره فلسفه رواقی برام بگو", "dialogueAct": "statement", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "چطور می‌تونم بهتر تمرکز کنم؟", "dialogueAct": "question", "intent": "topic_statement", "topic": "knowledge"},
-    {"text": "ممنون. من خیلی نگران آینده‌ام هستم", "dialogueAct": "statement", "intent": "topic_statement", "topic": "anxiety"}
+    {
+      "text": "درباره فلسفه رواقی برام بگو",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور می‌تونم بهتر تمرکز کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "ممنون. من خیلی نگران آینده‌ام هستم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
   ],
   "expected": {
     "finalTurn": "Turn 1: Persian knowledge matches 'رواقی' hint -> thinkers domain. Response contains Persian text. Turn 2: 'تمرکز' hint -> focus domain but dialogueAct is 'question' since input has question mark. Persian response. Turn 3: transitions to anxiety with natural engine routing via 'نگران'.",

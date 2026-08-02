@@ -1,70 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl" id="html-root">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0d2b33" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#cfe7ec" media="(prefers-color-scheme: light)">
-  <title id="page-title">دریا · همراه گفتگوی آرام</title>
-  <meta id="page-description" name="description" content="دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی.">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a2029" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f0dec0" media="(prefers-color-scheme: light)" />
+    <title id="page-title">دریا · همراه گفتگوی آرام</title>
+    <meta id="page-description" name="description" content="دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی." />
 
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="alternate icon" href="assets/favicon.ico">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="assets/favicon.ico" />
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+    <link rel="manifest" href="manifest.json" />
 
-  <!-- iOS does not support the web app manifest for "add to home screen"
+    <!-- iOS does not support the web app manifest for "add to home screen"
        behavior, so these Apple-specific tags cover the same ground:
        standalone (no browser chrome) and a matching status bar style. -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Darya">
-  <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Darya" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
-  <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
+    <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
        English: Be Vietnam Pro (body, warm and rounded) + Quicksand (display wordmark only). -->
-  <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
+    <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
        rules) for full offline capability (no CDN dependency). -->
-  <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin />
 
-  <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css" />
 
-  <!-- Prevent FOUC: apply saved theme before first paint so the user
+    <!-- Prevent FOUC: apply saved theme before first paint so the user
        never sees the wrong theme flash. This tiny blocking script reads
        localStorage (with cookie fallback) and sets the data-theme
        attribute synchronously, before any rendering occurs. -->
-  <script>
-    (function() {
-      let stored = null;
-      try {
-        stored = localStorage.getItem('darya_theme');
-      } catch (e) {}
-      if (!stored) {
+    <script>
+      (function () {
+        let stored = null;
         try {
-          const match = document.cookie.match(/(?:^|; )darya_theme=([^;]*)/);
-          stored = match ? decodeURIComponent(match[1]) : null;
+          stored = localStorage.getItem('darya_theme');
         } catch (e) {}
-      }
-      if (stored === 'beach' || stored === 'ocean') {
-        document.documentElement.setAttribute('data-theme', stored);
-      } else {
-        document.documentElement.setAttribute('data-theme', 'ocean');
-      }
-      // Disable transitions during initial load to prevent flash of
-      // animated theme change. The class is removed after a tick.
-      document.documentElement.classList.add('no-theme-transition');
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          document.documentElement.classList.remove('no-theme-transition');
+        if (!stored) {
+          try {
+            const match = document.cookie.match(/(?:^|; )darya_theme=([^;]*)/);
+            stored = match ? decodeURIComponent(match[1]) : null;
+          } catch (e) {}
+        }
+        if (stored === 'beach' || stored === 'ocean') {
+          document.documentElement.setAttribute('data-theme', stored);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'ocean');
+        }
+        // Disable transitions during initial load to prevent flash of
+        // animated theme change. The class is removed after a tick.
+        document.documentElement.classList.add('no-theme-transition');
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            document.documentElement.classList.remove('no-theme-transition');
+          });
         });
-      });
-    })();
-  </script>
-</head>
-<body>
-
-  <!-- Ambient backdrop. Ocean theme: soft light glows, a faint horizon
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- Ambient backdrop. Ocean theme: soft light glows, a faint horizon
        silhouette, and randomly-placed rising bubbles (populated by
        app.js, so each one gets a genuinely random size/position/timing
        rather than a repeating formula). Beach theme: a proper shoreline
@@ -73,196 +72,341 @@
        instead of bubbles, since floating bubbles read as underwater, not
        beach. Both themes' elements live here; CSS shows only the active
        theme's set. -->
-  <div class="backdrop" aria-hidden="true">
-    <div class="backdrop__glow backdrop__glow--one"></div>
-    <div class="backdrop__glow backdrop__glow--two"></div>
-    <div class="backdrop__depth-breath" aria-hidden="true"></div>
+    <div class="backdrop" aria-hidden="true">
+      <div class="backdrop__glow backdrop__glow--one"></div>
+      <div class="backdrop__glow backdrop__glow--two"></div>
+      <div class="backdrop__depth-breath" aria-hidden="true"></div>
 
-    <svg class="backdrop__horizon" viewBox="0 0 1200 300" preserveAspectRatio="none">
-      <path d="M0,150 C200,90 400,210 600,150 C800,90 1000,210 1200,150 L1200,300 L0,300 Z" fill="#7fbeb0"/>
-    </svg>
+      <svg class="backdrop__horizon" viewBox="0 0 1200 300" preserveAspectRatio="none">
+        <path d="M0,150 C200,90 400,210 600,150 C800,90 1000,210 1200,150 L1200,300 L0,300 Z" fill="#83c3b1" />
+      </svg>
 
-    <div class="beach-scene">
-      <div class="beach-scene__sky"></div>
-      <div class="beach-scene__sun" aria-hidden="true">
-        <div class="beach-scene__sun-halo"></div>
-        <div class="beach-scene__sun-core"></div>
+      <div class="beach-scene">
+        <div class="beach-scene__sky"></div>
+        <div class="beach-scene__sun" aria-hidden="true">
+          <div class="beach-scene__sun-halo"></div>
+          <div class="beach-scene__sun-core"></div>
+        </div>
+        <div class="beach-scene__ocean beach-scene__ocean--far">
+          <svg class="beach-scene__wave" viewBox="0 0 2400 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M0 80 C40 76 120 76 160 80 C220 86 340 86 400 80 C450 75 550 75 600 80 C670 87 810 87 880 80 C920 76 1000 76 1040 80 C1080 84 1160 84 1200 80 C1240 76 1320 76 1360 80 C1420 86 1540 86 1600 80 C1650 75 1750 75 1800 80 C1870 87 2010 87 2080 80 C2120 76 2200 76 2240 80 C2280 84 2360 84 2400 80 L2400 160 L0 160Z"
+              fill="#226a85"
+            />
+          </svg>
+        </div>
+        <div class="beach-scene__ocean beach-scene__ocean--mid">
+          <svg class="beach-scene__wave" viewBox="0 0 2400 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M0 75 C70 68 210 68 280 75 C370 84 550 84 640 75 C700 69 820 69 880 75 C960 83 1120 83 1200 75 C1270 68 1410 68 1480 75 C1570 84 1750 84 1840 75 C1900 69 2020 69 2080 75 C2160 83 2320 83 2400 75 L2400 160 L0 160Z"
+              fill="#4da0c2"
+            />
+          </svg>
+        </div>
+        <div class="beach-scene__ocean beach-scene__ocean--near">
+          <svg class="beach-scene__wave" viewBox="0 0 2400 160" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M0 70 C90 55 270 55 360 70 C438 83 594 83 672 70 C732 60 852 60 912 70 C984 82 1128 82 1200 70 C1290 55 1470 55 1560 70 C1638 83 1794 83 1872 70 C1932 60 2052 60 2112 70 C2184 82 2328 82 2400 70 L2400 160 L0 160Z"
+              fill="#9cd4e8"
+            />
+          </svg>
+        </div>
+        <div class="beach-scene__foam"></div>
+        <div class="beach-scene__sand"></div>
       </div>
-      <div class="beach-scene__ocean beach-scene__ocean--far"></div>
-      <div class="beach-scene__ocean beach-scene__ocean--mid"></div>
-      <div class="beach-scene__ocean beach-scene__ocean--near"></div>
-      <div class="beach-scene__foam"></div>
-      <div class="beach-scene__sand"></div>
+
+      <div class="backdrop__scrim"></div>
+
+      <div class="ocean-particles"></div>
+      <div class="ocean-caustic ocean-caustic--one"></div>
+      <div class="ocean-caustic ocean-caustic--two"></div>
+      <div class="ocean-current"></div>
+
+      <div class="bubbles"></div>
+      <div class="bird-shadows"></div>
     </div>
 
-    <div class="backdrop__scrim"></div>
-
-    <div class="bubbles"></div>
-    <div class="bird-shadows"></div>
-  </div>
-
-  <!-- Language picker: shown before any conversation starts, and again
+    <!-- Language picker: shown before any conversation starts, and again
        whenever "New chat" is chosen, since the language is locked for
        the duration of a conversation and can only change at a fresh
        start. Each half is self-contained with its own dir/lang so both
        languages are presented on equal footing. -->
-  <div class="picker" id="picker">
-    <div class="picker__inner">
-      <div class="picker__intro">
-        <span class="picker__intro-fa" lang="fa" dir="rtl">با دریا آشنا شوید</span>
-        <span class="picker__intro-sep">·</span>
-        <span class="picker__intro-en" lang="en" dir="ltr">Meet Darya</span>
-      </div>
+    <div class="picker" id="picker">
+      <div class="picker__inner">
+        <div class="picker__intro">
+          <span class="picker__intro-fa" lang="fa" dir="rtl">با دریا آشنا شوید</span>
+          <span class="picker__intro-sep">·</span>
+          <span class="picker__intro-en" lang="en" dir="ltr">Meet Darya</span>
+        </div>
 
-      <div class="picker__options">
-        <button class="picker__option" id="picker-fa" type="button" lang="fa" dir="rtl" title="شروع گفت‌وگوی تازه به زبان فارسی">
-          <span class="picker__option-title">فارسی</span>
-          <span class="picker__option-desc">شروع گفت‌وگو به زبان فارسی</span>
-        </button>
-        <button class="picker__option" id="picker-en" type="button" lang="en" dir="ltr" title="Start a new conversation in English">
-          <span class="picker__option-title">English</span>
-          <span class="picker__option-desc">Start the conversation in English</span>
-        </button>
-      </div>
+        <div class="picker__options">
+          <button
+            class="picker__option"
+            id="picker-fa"
+            type="button"
+            lang="fa"
+            dir="rtl"
+            title="شروع گفت‌وگوی تازه به زبان فارسی"
+          >
+            <span class="picker__option-title">فارسی</span>
+            <span class="picker__option-desc">شروع گفت‌وگو به زبان فارسی</span>
+          </button>
+          <button
+            class="picker__option"
+            id="picker-en"
+            type="button"
+            lang="en"
+            dir="ltr"
+            title="Start a new conversation in English"
+          >
+            <span class="picker__option-title">English</span>
+            <span class="picker__option-desc">Start the conversation in English</span>
+          </button>
+        </div>
 
-      <!-- Language-lock note: relocated from the menu dropdown to here.
+        <!-- Language-lock note: relocated from the menu dropdown to here.
            Subtle and muted. Each language variant sits on its own line
            so both read independently. -->
-      <div class="picker__lang-lock" id="picker-lang-lock" aria-live="polite">
-        <span lang="fa" dir="rtl" class="picker__lang-lock-fa">زبان فقط تا شروع گفت‌وگوی بعدی تغییرپذیر است.</span>
-        <span lang="en" dir="ltr" class="picker__lang-lock-en">Language locks once your conversation begins.</span>
-      </div>
+        <div class="picker__lang-lock" id="picker-lang-lock" aria-live="polite">
+          <span lang="fa" dir="rtl" class="picker__lang-lock-fa">زبان فقط تا شروع گفت‌وگوی بعدی تغییرپذیر است.</span>
+          <span lang="en" dir="ltr" class="picker__lang-lock-en">Language locks once your conversation begins.</span>
+        </div>
 
-      <!-- Theme selection heading: RTL direction ensures the Farsi
+        <!-- Theme selection heading: RTL direction ensures the Farsi
            text stays on the right side and English on the left, with
            consistent alignment regardless of the overall page dir. -->
-      <p class="picker__theme-heading" id="picker-theme-heading" dir="rtl">
-        <span lang="fa">انتخاب پوسته</span>
-        <span class="picker__note-sep">·</span>
-        <span lang="en" dir="ltr">Choose your theme</span>
-      </p>
+        <p class="picker__theme-heading" id="picker-theme-heading" dir="rtl">
+          <span lang="fa">انتخاب پوسته</span>
+          <span class="picker__note-sep">·</span>
+          <span lang="en" dir="ltr">Choose your theme</span>
+        </p>
 
-      <div class="theme-picker" id="theme-picker" role="group" aria-label="Theme / پوسته">
-        <button class="theme-picker__option" type="button" data-theme-choice="ocean" aria-pressed="true" title="انتخاب پوسته اقیانوس / Choose the ocean theme">
-          <span class="theme-picker__icon" aria-hidden="true">🌊</span>
-          <span class="theme-picker__label">
-            <span lang="fa" dir="rtl">اقیانوس</span><span class="theme-picker__sep">·</span><span lang="en" dir="ltr">Ocean</span>
-          </span>
-        </button>
-        <button class="theme-picker__option" type="button" data-theme-choice="beach" aria-pressed="false" title="انتخاب پوسته ساحل / Choose the beach theme">
-          <span class="theme-picker__icon" aria-hidden="true">🏖️</span>
-          <span class="theme-picker__label">
-            <span lang="fa" dir="rtl">ساحل</span><span class="theme-picker__sep">·</span><span lang="en" dir="ltr">Beach</span>
-          </span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="app" id="app" hidden>
-
-    <header class="header">
-      <span class="header__title" id="header-title">دریا</span>
-
-      <!-- Breathe trigger as a separate button right before the menu dropdown -->
-        <button id="breathe-trigger" class="breathe-trigger" type="button" aria-label="تمرین تنفس" title="تمرین تنفس آرام‌بخش" hidden>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <!-- Wind / breeze icon: three horizontal wavy lines suggesting a gentle breeze -->
-            <path d="M4 7h10c1.5 0 3-.8 3-2.5S15.5 2 14 2s-2.5 1.2-2.5 2"/>
-            <path d="M4 12h13c1.5 0 3 .8 3 2.5s-1.5 2.5-3 2.5-2.5-1.2-2.5-2.5"/>
-            <path d="M4 17h7"/>
-          </svg>
-        </button>
-
-      <div class="menu">
-        <button id="menu-trigger" class="menu__trigger" type="button" aria-haspopup="true" aria-controls="menu-popover" aria-expanded="false" aria-label="باز کردن منوی گزینه‌های گفتگو" title="باز کردن منوی گزینه‌های گفتگو">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <circle cx="5" cy="12" r="1.8" fill="currentColor"/>
-            <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
-            <circle cx="19" cy="12" r="1.8" fill="currentColor"/>
-          </svg>
-        </button>
-
-        <div id="menu-popover" class="menu__popover" role="menu" hidden>
-          <button id="menu-new-chat" class="menu__item" type="button" role="menuitem" title="شروع گفتگوی تازه">
-            <span class="menu__item-icon" aria-hidden="true">↺</span>
-            <span id="menu-new-chat-label">گفتگوی تازه</span>
+        <div class="theme-picker" id="theme-picker" role="group" aria-label="Theme / پوسته">
+          <button
+            class="theme-picker__option"
+            type="button"
+            data-theme-choice="ocean"
+            aria-pressed="true"
+            title="انتخاب پوسته اقیانوس / Choose the ocean theme"
+          >
+            <span class="theme-picker__icon" aria-hidden="true">🌊</span>
+            <span class="theme-picker__label">
+              <span lang="fa" dir="rtl">اقیانوس</span><span class="theme-picker__sep">·</span
+              ><span lang="en" dir="ltr">Ocean</span>
+            </span>
           </button>
-          <div class="menu__divider" role="separator"></div>
-          <button id="menu-export-txt" class="menu__item" type="button" role="menuitem" aria-label="دانلود گفتگوی متن ساده" title="دانلود گفتگوی متن ساده">
-            <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span id="menu-export-txt-label">دانلود گفتگوی متن ساده</span>
-          </button>
-          <button id="menu-export-md" class="menu__item" type="button" role="menuitem" aria-label="دانلود گفتگوی مارک‌داون" title="دانلود گفتگوی مارک‌داون">
-            <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span id="menu-export-md-label">دانلود گفتگوی مارک‌داون</span>
-          </button>
-          <div class="menu__divider" role="separator"></div>
-          <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem" title="تغییر پوسته گفتگو">
-            <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🌊</span>
-            <span id="menu-theme-label">پوسته ساحل</span>
+          <button
+            class="theme-picker__option"
+            type="button"
+            data-theme-choice="beach"
+            aria-pressed="false"
+            title="انتخاب پوسته ساحل / Choose the beach theme"
+          >
+            <span class="theme-picker__icon" aria-hidden="true">🏖️</span>
+            <span class="theme-picker__label">
+              <span lang="fa" dir="rtl">ساحل</span><span class="theme-picker__sep">·</span
+              ><span lang="en" dir="ltr">Beach</span>
+            </span>
           </button>
         </div>
       </div>
-    </header>
-
-    <main class="chat" id="chat" aria-live="polite">
-      <!-- Messages are injected here by app.js -->
-    </main>
-
-    <div class="typing-row" id="typing-row" role="status" aria-live="polite" aria-label="دریا در حال فکر کردن است" hidden>
-      <div class="bubble bubble--bot bubble--typing">
-        <span class="ripple-dot"></span>
-        <span class="ripple-dot"></span>
-        <span class="ripple-dot"></span>
-      </div>
     </div>
 
-    <p class="input-hint" id="input-hint" role="alert" hidden></p>
+    <div class="app" id="app" hidden>
+      <header class="header">
+        <span class="header__title" id="header-title">دریا</span>
 
-    <div class="exit-confirm-bar" id="exit-confirm-bar" role="alertdialog" aria-label="Confirm exit" hidden>
-      <span class="exit-confirm-bar__label" id="exit-confirm-label"></span>
-      <div class="exit-confirm-bar__actions">
-        <button class="exit-confirm-bar__btn exit-confirm-bar__btn--yes" id="exit-confirm-yes" type="button" title="Confirm exit"></button>
-        <button class="exit-confirm-bar__btn exit-confirm-bar__btn--no" id="exit-confirm-no" type="button" title="Cancel exit"></button>
+        <!-- Breathe trigger as a separate button right before the menu dropdown -->
+        <button
+          id="breathe-trigger"
+          class="breathe-trigger"
+          type="button"
+          aria-label="تمرین تنفس"
+          title="تمرین تنفس آرام‌بخش"
+          hidden
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <!-- Wind / breeze icon: three horizontal wavy lines suggesting a gentle breeze -->
+            <path d="M4 7h10c1.5 0 3-.8 3-2.5S15.5 2 14 2s-2.5 1.2-2.5 2" />
+            <path d="M4 12h13c1.5 0 3 .8 3 2.5s-1.5 2.5-3 2.5-2.5-1.2-2.5-2.5" />
+            <path d="M4 17h7" />
+          </svg>
+        </button>
+
+        <div class="menu">
+          <button
+            id="menu-trigger"
+            class="menu__trigger"
+            type="button"
+            aria-haspopup="true"
+            aria-controls="menu-popover"
+            aria-expanded="false"
+            aria-label="باز کردن منوی گزینه‌های گفتگو"
+            title="باز کردن منوی گزینه‌های گفتگو"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <circle cx="5" cy="12" r="1.8" fill="currentColor" />
+              <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+              <circle cx="19" cy="12" r="1.8" fill="currentColor" />
+            </svg>
+          </button>
+
+          <div id="menu-popover" class="menu__popover" role="menu" hidden>
+            <button id="menu-new-chat" class="menu__item" type="button" role="menuitem" title="شروع گفتگوی تازه">
+              <span class="menu__item-icon" aria-hidden="true">↺</span>
+              <span class="menu__item-label" id="menu-new-chat-label">گفتگوی تازه</span>
+            </button>
+            <div class="menu__divider" role="separator"></div>
+            <button
+              id="menu-export-txt"
+              class="menu__item"
+              type="button"
+              role="menuitem"
+              aria-label="دانلود گفتگوی متن ساده"
+              title="دانلود گفتگوی متن ساده"
+            >
+              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="menu__item-label" id="menu-export-txt-label">دانلود گفتگوی متن ساده</span>
+            </button>
+            <button
+              id="menu-export-md"
+              class="menu__item"
+              type="button"
+              role="menuitem"
+              aria-label="دانلود گفتگوی مارک‌داون"
+              title="دانلود گفتگوی مارک‌داون"
+            >
+              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="menu__item-label" id="menu-export-md-label">دانلود گفتگوی مارک‌داون</span>
+            </button>
+            <div class="menu__divider" role="separator"></div>
+            <button
+              id="menu-sound-toggle"
+              class="menu__item"
+              type="button"
+              role="menuitem"
+              aria-pressed="false"
+              title="پخش صدای محیطی: خاموش"
+            >
+              <span class="menu__item-label" id="menu-sound-label">پخش صدای محیطی: خاموش</span>
+            </button>
+            <div class="menu__divider" role="separator"></div>
+            <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem" title="تغییر پوسته گفتگو">
+              <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🌊</span>
+              <span class="menu__item-label" id="menu-theme-label">پوسته ساحل</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="chat" id="chat" aria-live="polite">
+        <!-- Messages are injected here by app.js -->
+      </main>
+
+      <div
+        class="typing-row"
+        id="typing-row"
+        role="status"
+        aria-live="polite"
+        aria-label="دریا در حال فکر کردن است"
+        hidden
+      >
+        <div class="bubble bubble--bot bubble--typing">
+          <span class="ripple-dot"></span>
+          <span class="ripple-dot"></span>
+          <span class="ripple-dot"></span>
+        </div>
       </div>
+
+      <p class="input-hint" id="input-hint" role="alert" hidden></p>
+
+      <div class="exit-confirm-bar" id="exit-confirm-bar" role="alertdialog" aria-label="Confirm exit" hidden>
+        <span class="exit-confirm-bar__label" id="exit-confirm-label"></span>
+        <div class="exit-confirm-bar__actions">
+          <button
+            class="exit-confirm-bar__btn exit-confirm-bar__btn--yes"
+            id="exit-confirm-yes"
+            type="button"
+            title="Confirm exit"
+          ></button>
+          <button
+            class="exit-confirm-bar__btn exit-confirm-bar__btn--no"
+            id="exit-confirm-no"
+            type="button"
+            title="Cancel exit"
+          ></button>
+        </div>
+      </div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <textarea id="composer-input" class="composer__input" rows="1" maxlength="4000"></textarea>
+        <button
+          type="submit"
+          id="composer-send"
+          class="composer__send"
+          aria-label="ارسال پیام به دریا"
+          title="ارسال پیام فعلی"
+          disabled
+        >
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <path d="M4 12l16-7-6 16-2.5-6.5L4 12z" fill="currentColor" />
+          </svg>
+        </button>
+      </form>
+
+      <p class="disclaimer" id="disclaimer-text">
+        دریا یک همراه شنونده است، نه جایگزین کمک تخصصی. در شرایط بحرانی، لطفاً با یک متخصص یا خط بحران تماس بگیرید.
+      </p>
     </div>
 
-    <form class="composer" id="composer" autocomplete="off">
-      <textarea
-        id="composer-input"
-        class="composer__input"
-        rows="1"
-        maxlength="4000"
-      ></textarea>
-      <button type="submit" id="composer-send" class="composer__send" aria-label="ارسال پیام به دریا" title="ارسال پیام فعلی" disabled>
-        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
-          <path d="M4 12l16-7-6 16-2.5-6.5L4 12z" fill="currentColor"/>
-        </svg>
-      </button>
-    </form>
-
-    <p class="disclaimer" id="disclaimer-text">
-      دریا یک همراه شنونده است، نه جایگزین کمک تخصصی. در شرایط بحرانی، لطفاً با یک متخصص یا خط بحران تماس بگیرید.
-    </p>
-  </div>
-
-  <script src="js/data/knowledge-base.js"></script>
-  <script src="js/languages/halfspace.js"></script>
-  <script src="js/languages/entity-extractor.js"></script>
-  <script src="js/languages/fa.js"></script>
-  <script src="js/languages/en.js"></script>
-  <script src="js/engine/utils.js"></script>
-  <script src="js/engine/responder.js"></script>
-  <script src="js/ui/core.js"></script>
-  <script src="js/ui/ambient.js"></script>
-  <script src="js/ui/export.js"></script>
-  <script src="js/ui/overlays.js"></script>
-  <script src="js/app.js"></script>
-</body>
+    <script src="js/languages/halfspace.js"></script>
+    <script src="js/languages/entity-extractor.js"></script>
+    <script src="js/data/knowledge-base.js"></script>
+    <script src="js/engine/utils.js"></script>
+    <script src="js/engine/time-utils.js"></script>
+    <script src="js/engine/recap.js"></script>
+    <script src="js/engine/factual.js"></script>
+    <script src="js/languages/en-responses.js"></script>
+    <script src="js/languages/fa-responses.js"></script>
+    <script src="js/languages/en.js"></script>
+    <script src="js/languages/fa.js"></script>
+    <script src="js/languages/index.js"></script>
+    <script src="js/engine/responder.js"></script>
+    <script src="js/engine/index.js"></script>
+    <script src="js/ui/core.js"></script>
+    <script src="js/ui/logger.js"></script>
+    <script src="js/ui/ambient.js"></script>
+    <script src="js/ui/ambient-sound.js"></script>
+    <script src="js/ui/export.js"></script>
+    <script src="js/ui/overlays.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>

@@ -1,21 +1,17 @@
 /**
- * Darya conversation export: Markdown and plain-text transcript downloads.
- *
- * Provides two export formats:
- *   - Markdown (.md): Rich text with bold labels, italic timestamps, and
- *     a front-matter header. Ideal for viewing in a Markdown renderer.
- *   - Plain text (.txt): Simple labeled entries with timestamp prefixes.
- *     Universally readable in any text editor.
- *
- * Nearly standalone -- reads transcript and lang from the shared DaryaUI
- * namespace (set by core.js), and exposes functions called by app.js.
- * Both exports are no-ops (silently return) when there is no active
- * language or no transcript content, preventing blank downloads.
- *
- * File naming convention: darya-chat-{language-code}-{ISO-timestamp}.{ext}
+ * Darya classic script.
  */
+
 (function (global) {
   'use strict';
+
+  var DaryaUI = global.DaryaUI;
+
+  const ui = DaryaUI;
+
+  // ========================================================================
+  // Helpers
+  // ========================================================================
 
   /**
    * Formats a date using the active language's locale for human-readable
@@ -25,13 +21,18 @@
    * @returns {string} Locale-formatted date-time string
    */
   function formatLocalizedDateTime(date) {
-    const lang = global.DaryaUI ? global.DaryaUI.state.lang : null;
-    if (!lang) return date.toISOString();
+    var lang = global.DaryaUI ? global.DaryaUI.state.lang : null;
+    if (!lang) {
+      return date.toISOString();
+    }
     try {
       return new Intl.DateTimeFormat(lang.ui.dateLocale, {
-        dateStyle: 'full', timeStyle: 'short',
+        dateStyle: 'full',
+        timeStyle: 'short'
       }).format(date);
     } catch (error) {
+      // If the locale string is invalid or the Intl API is unavailable,
+      // fall back to ISO-8601 format silently.
       return date.toISOString();
     }
   }
@@ -42,9 +43,7 @@
    * @returns {string} The formatted header line
    */
   function buildExportHeader() {
-    const lines = [];
-    lines.push(formatLocalizedDateTime(new Date()));
-    return lines.join('\n');
+    return formatLocalizedDateTime(new Date());
   }
 
   /**
@@ -55,14 +54,15 @@
    * @returns {string} Complete Markdown transcript
    */
   function buildMarkdownTranscript() {
-    const ui = global.DaryaUI;
-    const lang = ui.state.lang;
-    const transcript = ui.state.transcript;
-    const header = buildExportHeader();
-    const lines = [`# ${lang.ui.exportTitle}`, '', header, '', '---', ''];
-    for (const entry of transcript) {
-      const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
-      lines.push(`**${label}** _(${entry.time})_`);
+    var lang = ui.state.lang;
+    var transcript = ui.state.transcript;
+    var header = buildExportHeader();
+    var lines = ['# ' + lang.ui.exportTitle, '', header, '', '---', ''];
+    for (var i = 0; i < transcript.length; i += 1) {
+      var entry = transcript[i];
+      var label =
+        entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
+      lines.push('**' + label + '** _(' + entry.time + ')_');
       lines.push('');
       lines.push(entry.text);
       lines.push('');
@@ -77,14 +77,22 @@
    * @returns {string} Complete plain-text transcript
    */
   function buildPlainTextTranscript() {
-    const ui = global.DaryaUI;
-    const lang = ui.state.lang;
-    const transcript = ui.state.transcript;
-    const header = buildExportHeader();
-    const lines = [lang.ui.exportTitle, '', header, '', lang.ui.exportDivider, ''];
-    for (const entry of transcript) {
-      const label = entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
-      lines.push(`${label} (${entry.time}):`);
+    var lang = ui.state.lang;
+    var transcript = ui.state.transcript;
+    var header = buildExportHeader();
+    var lines = [
+      lang.ui.exportTitle,
+      '',
+      header,
+      '',
+      lang.ui.exportDivider,
+      ''
+    ];
+    for (var i = 0; i < transcript.length; i += 1) {
+      var entry = transcript[i];
+      var label =
+        entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
+      lines.push(label + ' (' + entry.time + '):');
       lines.push(entry.text);
       lines.push('');
     }
@@ -93,23 +101,73 @@
 
   /**
    * Triggers a file download in the browser by creating a temporary anchor
-   * element with a Blob URL. The URL is revoked with URL.revokeObjectURL
-   * immediately after the click to free memory. Works in all modern browsers
-   * and most mobile browsers.
+   * element with a Blob URL. The URL is revoked immediately after the click
+   * to free memory.
+   *
+   * Gracefully handles environments where the Blob API or URL.createObjectURL
+   * are unavailable (e.g. very old browsers, some testing environments).
    * @param {string} filename - Download filename (e.g., "darya-chat-en-2025-03-15.md")
    * @param {string} content - Text content to write to the file
    * @param {string} mimeType - MIME type ("text/markdown" or "text/plain")
    */
   function downloadTextFile(filename, content, mimeType) {
-    const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    // Guard: Blob API may not be available in all environments
+    if (typeof Blob === 'undefined') {
+      console.warn('Darya export: Blob API not available, download skipped');
+      return;
+    }
+
+    // Guard: prevent attempting to download empty content
+    if (!content || content.length === 0) {
+      return;
+    }
+
+    var blob;
+    try {
+      blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+    } catch (e) {
+      console.warn('Darya export: could not create Blob (' + e.message + ')');
+      return;
+    }
+
+    var url;
+    try {
+      url = URL.createObjectURL(blob);
+    } catch (e) {
+      console.warn(
+        'Darya export: could not create object URL (' + e.message + ')'
+      );
+      return;
+    }
+
+    var link = document.createElement('a');
     link.href = url;
     link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    link.style.display = 'none';
+
+    try {
+      document.body.appendChild(link);
+      link.click();
+    } catch (e) {
+      // Some environments (e.g. test runners, sandboxed iframes) may
+      // reject the DOM manipulation. Swallow silently.
+    }
+
+    // Clean up: remove the link and revoke the blob URL immediately,
+    // including if the appendChild or click threw.
+    try {
+      if (link.parentNode) {
+        document.body.removeChild(link);
+      }
+    } catch (e) {
+      /* ignore cleanup errors */
+    }
+
+    try {
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      /* ignore revoke errors */
+    }
   }
 
   /**
@@ -128,10 +186,15 @@
    * Triggers a browser file download with a descriptive filename.
    */
   function exportMarkdown() {
-    const ui = global.DaryaUI;
-    if (!ui.state.lang || ui.state.transcript.length === 0) return;
+    if (
+      !ui.state.lang ||
+      !ui.state.transcript ||
+      ui.state.transcript.length === 0
+    ) {
+      return;
+    }
     downloadTextFile(
-      `darya-chat-${ui.state.lang.code}-${exportTimestamp()}.md`,
+      'darya-chat-' + ui.state.lang.code + '-' + exportTimestamp() + '.md',
       buildMarkdownTranscript(),
       'text/markdown'
     );
@@ -143,18 +206,24 @@
    * Triggers a browser file download with a descriptive filename.
    */
   function exportPlainText() {
-    const ui = global.DaryaUI;
-    if (!ui.state.lang || ui.state.transcript.length === 0) return;
+    if (
+      !ui.state.lang ||
+      !ui.state.transcript ||
+      ui.state.transcript.length === 0
+    ) {
+      return;
+    }
     downloadTextFile(
-      `darya-chat-${ui.state.lang.code}-${exportTimestamp()}.txt`,
+      'darya-chat-' + ui.state.lang.code + '-' + exportTimestamp() + '.txt',
       buildPlainTextTranscript(),
       'text/plain'
     );
   }
 
-  // Export for use by app.js
-  global.DaryaExport = {
+  const DaryaExport = {
     exportMarkdown,
-    exportPlainText,
+    exportPlainText
   };
+
+  global.DaryaExport = DaryaExport;
 })(typeof window !== 'undefined' ? window : globalThis);
