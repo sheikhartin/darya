@@ -1605,14 +1605,22 @@ class DaryaResponseEngine {
       this.currentTurnSeriousness < 0.5 &&
       this.memory
         .eligibleNamedEntities(this.entityCallbackThreshold)
-        .some((entity) => entity.lastMentionTurn < this.memory.turnCount)
+        .some(
+          (entity) =>
+            entity.type !== 'time' &&
+            entity.lastMentionTurn < this.memory.turnCount
+        )
     );
   }
 
   _humanTouchLine() {
     const entity = this.memory
       .eligibleNamedEntities(this.entityCallbackThreshold)
-      .find((item) => item.lastMentionTurn < this.memory.turnCount);
+      .find(
+        (item) =>
+          item.type !== 'time' &&
+          item.lastMentionTurn < this.memory.turnCount
+      );
     const pool = this.lang.humanTouch || [];
     return entity && pool.length
       ? this._pickVaried(pool).replace(/\{surface\}/gu, entity.surface)
@@ -1937,6 +1945,22 @@ class DaryaResponseEngine {
       return this._pickVaried(DaryaKnowledge.answer(this.lang.code, domain));
     }
 
+    if (matchedRule.topic === 'greeting') {
+      // Greetings are exempt from the question budget: a warm opening
+      // question never reads as interrogative, and the pool must never
+      // degrade into a generic fallback mid-conversation.
+      return this._pickVaried(matchedRule.responses, {
+        ignoreQuestionBudget: true
+      });
+    }
+    if (matchedRule.topic === 'ask_me_question') {
+      // The user explicitly asked for a question, so the budget must not
+      // swallow the pool.
+      return this._pickVaried(matchedRule.responses, {
+        ignoreQuestionBudget: true
+      });
+    }
+
     // The same-rule streak guard only exists to stop the SAME rule from
     // firing its pool too many turns in a row (e.g. a user who keeps
     // typing "ok" re-matching the how-are-you rule). It must only degrade
@@ -2106,6 +2130,14 @@ class DaryaResponseEngine {
     const probability = Number.isFinite(this.entityCallbackProbability)
       ? Math.max(0, Math.min(1, this.entityCallbackProbability))
       : ENTITY_CALLBACK_PROBABILITY;
+    // Ultra-short inputs ("بله", "خوبی", "🙂") are answers or
+    // acknowledgements, not material for an entity callback; a callback
+    // here would derail the user's thread with an off-topic reference.
+    const currentInput = String(this._currentNormalizedInput || '');
+    const currentWordCount = currentInput.split(/\s+/u).filter(Boolean).length;
+    if (currentInput && currentWordCount <= 2) {
+      return null;
+    }
     const candidates = this.memory
       .eligibleNamedEntities(threshold)
       .filter((entity) => entity.lastMentionTurn < this.memory.turnCount)
@@ -2114,6 +2146,10 @@ class DaryaResponseEngine {
         context: this._entityContextConfidence(entity)
       }))
       .filter((entry) => entry.context >= 0.6)
+      // Time references ("امروز", "هر روز") are far too common and
+      // generic to reference back: the callback would read as a
+      // non-sequitur ("جزئیات زمانیِ امروز...") on routine answers.
+      .filter((entry) => entry.entity.type !== 'time')
       .sort(
         (a, b) =>
           b.entity.activation * b.context - a.entity.activation * a.context
