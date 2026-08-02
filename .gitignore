@@ -135,6 +135,9 @@ dist
 !.yarn/releases
 !.yarn/sdks
 
+# Husky internal directory (auto-generated, not committed)
+.husky/_
+
 # Vite files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

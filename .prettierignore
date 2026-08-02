@@ -1,0 +1,10 @@
+node_modules
+assets
+fonts
+LICENSE.md
+*.woff2
+*.yml
+# responder.js holds large hand-formatted response data blocks whose
+# reflow by Prettier would create noisy diffs; it is intentionally kept
+# out of auto-formatting (format:check passes because it is excluded).
+js/engine/responder.js
