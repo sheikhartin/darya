@@ -649,7 +649,7 @@ html[data-theme='beach'] .bird-shadows {
     transparent 80%
   );
   filter: blur(2px);
-  animation: bird-shadow-drift var(--duration, 20s) ease-in-out infinite;
+  animation: bird-shadow-drift var(--duration, 20s) linear infinite;
   animation-delay: var(--delay, 0s);
   opacity: 0;
   will-change: transform, opacity;
@@ -2304,6 +2304,18 @@ html[data-theme='beach'] .beach-scene {
   animation-iteration-count: infinite;
   will-change: transform;
   pointer-events: none;
+}
+
+@media (width < 600px) {
+  .beach-scene__wave {
+    width: 600%; /* Prevents wave squeezing on mobile */
+  }
+}
+
+@media (600px <= width < 1024px) {
+  .beach-scene__wave {
+    width: 400%; /* Prevents wave squeezing on tablet screens */
+  }
 }
 
 .beach-scene__ocean--far .beach-scene__wave {
