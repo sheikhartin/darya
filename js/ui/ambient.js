@@ -166,7 +166,7 @@
     // On narrower screens the duration is shortened proportionally so
     // birds traverse the visible width at roughly the same real speed.
     const viewportWidth = window.innerWidth || 1024;
-    const speedScale = Math.max(0.35, Math.min(1.2, viewportWidth / 1024));
+    const speedScale = Math.max(0.24, Math.min(1.1, (viewportWidth / 1024) * 0.75));
     // Scale bird sizes dynamically with screen size so they don't look like giant blobs on mobile
     const sizeScaleFactor = Math.max(0.45, Math.min(1.1, viewportWidth / 1024));
     const flockCount = 2 + Math.floor(Math.random() * 3);
@@ -177,10 +177,10 @@
       const flockDuration =
         (avgWaveDuration * waveFactor + randomBetween(-2, 2)) * speedScale;
       // Lower minFlockDuration floor on small viewports so the flight stays nimble and brisk
-      const minFlockDuration = viewportWidth < 600 ? 4.5 : 8;
+      const minFlockDuration = viewportWidth < 600 ? 3.2 : 7.5;
       const clampedDuration = Math.max(
         minFlockDuration,
-        Math.min(32, flockDuration)
+        Math.min(28, flockDuration)
       );
       const flockDelay = -randomBetween(0, clampedDuration);
       const baseTop = randomBetween(8, 65);
