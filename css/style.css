@@ -2268,20 +2268,20 @@ html[data-theme='beach'] .beach-scene {
    keep their amplitude on small screens. */
 @media (width < 600px) {
   .beach-scene__ocean {
-    height: 34%;
-    min-height: 150px;
+    height: 28%;
+    min-height: 120px;
   }
 
   .beach-scene__ocean--far {
-    top: 34%;
+    top: 30%;
   }
 
   .beach-scene__ocean--mid {
-    top: 43%;
+    top: 38%;
   }
 
   .beach-scene__ocean--near {
-    top: 52%;
+    top: 46%;
   }
 }
 
