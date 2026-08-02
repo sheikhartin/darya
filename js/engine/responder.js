@@ -204,6 +204,7 @@ class DaryaResponseEngine {
       !isRepeatedGreeting &&
       !isSpamNoise &&
       this._isAmbiguousInput(matchingText);
+    const isPureEmoji = this._isPureEmoji(String(rawText));
 
     // Prefer the lived-experience rule over the broad knowledge shelf when
     // an emotional disclosure ("امروز احساس استرس دارم", "I'm feeling
@@ -345,6 +346,12 @@ class DaryaResponseEngine {
       reply = this._pickVaried(this.lang.blendResponses[blendKey]);
     } else if (matchedRule) {
       reply = this._respondWithRule(matchedRule, captured);
+    } else if (isPureEmoji && this.lang.emojiResponses) {
+      // A message made only of smileys gets a warm, light reply. Flag
+      // the turn so emotional calibration and human-tone coloring do
+      // not stack a heavy prefix on top of it.
+      this._lightPositiveFired = true;
+      reply = this._pickVaried(this.lang.emojiResponses);
     } else if (isAmbiguous && this.lang.ambiguousInputResponses) {
       reply = this._pickVaried(this.lang.ambiguousInputResponses);
     } else {
@@ -404,7 +411,15 @@ class DaryaResponseEngine {
       }
     }
 
-    if (!_safetyTurn && this.lang.frustrationResponses) {
+    if (
+      !_safetyTurn &&
+      // Turns where the user is clearly testing Darya ("تستت می‌کنم",
+      // "just testing you") get the warm testInputResponses pool instead
+      // of frustration de-escalation or harassment boundary-setting, so
+      // an innocent testing message can never be misread as an attack.
+      this.currentTurnDialogueAct !== 'test_input' &&
+      this.lang.frustrationResponses
+    ) {
       // Check Darya-targeted harassment FIRST (more specific, different
       // response tone: calm boundary-setting vs frustration de-escalation).
       // This runs before the general insult check so harassment takes
@@ -476,6 +491,10 @@ class DaryaResponseEngine {
       // empathy prefix (e.g. the hurt prefix on 'درد نکنه' inside
       // 'دستت درد نکنه') would misread a thank-you as distress.
       this.currentTurnDialogueAct !== 'gratitude' &&
+      // Testing turns get the warm testInputResponses pool; a distress
+      // prefix (e.g. on a message that denies being angry) would
+      // contradict the user's own words.
+      this.currentTurnDialogueAct !== 'test_input' &&
       // App/website feedback ("the theme looks broken", "the waves are
       // too small") is meta-talk about the app, not a personal emotional
       // disclosure: a hurt prefix would read as mock sympathy.
@@ -744,7 +763,10 @@ class DaryaResponseEngine {
   // ======================================================================
 
   classifyDialogueAct(text, matchedRule = null, rawText = '') {
-    if (TEST_INPUT_PATTERNS.test(text.trim())) {
+    if (
+      TEST_INPUT_PATTERNS.test(text.trim()) ||
+      (this.lang.testInputPattern && this.lang.testInputPattern.test(text))
+    ) {
       return 'test_input';
     }
     if (this._lastTurnCorrection) {
@@ -959,6 +981,27 @@ class DaryaResponseEngine {
   _isAmbiguousInput(normalizedText) {
     const wordCount = normalizedText.split(/\s+/u).filter(Boolean).length;
     return wordCount <= 2 && normalizedText.length < 10;
+  }
+
+  /**
+   * Detects a message made only of smileys or emoji (":)", ":))))) ",
+   * "🙂", "🔥"). These deserve a warm light reply, never the ambiguous
+   * "explain more" line or a heavy therapeutic prefix.
+   * @param {string} rawText - The raw user input (pre-normalization)
+   * @returns {boolean}
+   */
+  _isPureEmoji(rawText) {
+    const trimmed = String(rawText || '').trim();
+    if (!trimmed) {
+      return false;
+    }
+    // ASCII smileys and text faces
+    if (/^[:;=xX][\-]?[()DdpPoO*\^]{1,12}$/u.test(trimmed)) {
+      return true;
+    }
+    // Unicode emoji-only input (emoji with optional ZWJ and variation
+    // selectors, plus surrounding whitespace)
+    return /^[\p{Emoji}\u200d\ufe0f\s]+$/u.test(trimmed);
   }
 
   _detectWordRepetition(normalizedText) {
@@ -1498,6 +1541,12 @@ class DaryaResponseEngine {
       // greeting reply exactly as the pool intended.
       return reply;
     }
+    if (this.currentTurnDialogueAct === 'test_input') {
+      // Testing turns get the warm testInputResponses pool. Replacing
+      // them with random humor or a heavy warmth prefix would misread
+      // a playful "I am testing you" as a topic to joke over.
+      return reply;
+    }
     // Light, already-warm rule topics (smalltalk pools, how-are-you,
     // gratitude, app feedback, joy) ship their own warm pool lines.
     // Prepending a generic warmth line ("You don't have to solve it all
@@ -1507,7 +1556,14 @@ class DaryaResponseEngine {
       topic.startsWith('smalltalk_') ||
       topic === 'gratitude' ||
       topic === 'app_feedback' ||
-      topic === 'joy'
+      topic === 'joy' ||
+      // The meta-topic pools below ship their own warm lines, so humor
+      // or warmth coloring would stack tones and read as robotic.
+      topic === 'word_meaning' ||
+      topic === 'ask_me_question' ||
+      topic === 'self_improvement' ||
+      topic === 'what_do_i_do' ||
+      topic === 'unsure_topic'
     );
     if (alreadyWarmTopic) {
       return reply;
@@ -1516,6 +1572,11 @@ class DaryaResponseEngine {
       return this._pickVaried(this.lang.humor || [reply]);
     }
     if (
+      // Warmth lines are heavy statements ("این موضوع واقعاً سنگین
+      // است") that only fit turns with an actual topic. Without this
+      // guard a topic-less light turn ("چی رو؟!", ":)") could get a
+      // misplaced "this feels heavy" prefix.
+      this.currentTurnTopics.length > 0 &&
       this.currentTurnSeriousness >= 0.3 &&
       this.currentTurnSeriousness < 0.6 &&
       this.memory.turnCount - this.memory.lastWarmthTurn >= 3 &&
