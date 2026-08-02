@@ -7,7 +7,7 @@
 
   // Long lines in this file are intentional (embedded response pools,
   // regex patterns, and knowledge entries).
-  // eslint-disable max-len
+  /* eslint-disable max-len */
 
   // Load response pools from the data file.
   var R = global.DaryaEnResponses;
@@ -199,7 +199,6 @@
     rule(
       'smalltalk_silly',
       55,
-      // eslint-disable-next-line max-len
       /\b(do you like|what do you think of|would you ever|have you ever|are you a|can you eat|do you eat|what\'s your favourite|what is your favorite|how old are you|where do you live|do you sleep)\b/i,
       R['ruleSmalltalkSilly']
     ),
@@ -228,7 +227,6 @@
     rule(
       'mindfulness',
       40,
-      // eslint-disable-next-line max-len
       /\b(mindfulness|meditation|meditate|mindful|breathing (?:exercise|technique)|present moment|be present|grounding|ground myself|in the moment|calm my mind|quiet my mind|clear my head|body scan|just breathe|focus on my breath|watching my thoughts|notice my thoughts|noticing my thoughts|being aware)\b/i,
       R['ruleMindfulness']
     ),
@@ -236,7 +234,6 @@
     rule(
       'stress',
       40,
-      // eslint-disable-next-line max-len
       /\b(overwhelmed|burnout|burned out|can'?t cope|too much to handle|stressed out|under (?:so much|a lot of) pressure|at my limit|stretched (?:too )?thin|breaking point|mentally exhausted|drained|can'?t keep up|maxed out|running on empty|about to snap|can'?t take (?:it|this) anymore)\b/i,
       R['ruleStress']
     ),
@@ -247,7 +244,6 @@
     rule(
       'simplify',
       45,
-      // eslint-disable-next-line max-len
       /\b(make it (?:simpler|simplest)|keep it (?:short|simple)|too (?:long|wordy|complicated)|more simply|say it (?:simply|shorter)|in simpler words|simpler and friendlier words|plain (?:english|words)|simplify it|less complicated)\b/i,
       R['ruleSimplify']
     ),
@@ -260,14 +256,13 @@
     rule(
       'app_feedback',
       32,
-      /\b(website|web ?site|the app|this app|theme|design|interface|button|menu|font|icon|animation)\b/i,
+      /\b(website|web ?site|the app|this app|theme|design|interface|button|menu|font|icon|animation|waves?|beach|format)\b/i,
       R['ruleAppFeedback']
     ),
 
     rule(
       'gratitude',
       25,
-      // eslint-disable-next-line max-len
       /\b(thanks?(?: a (?:lot|bunch|million))?|thank you(?: so much)?|thanks darya|thank you darya|i appreciate(?: you| it| that)|grateful for you|much appreciated|many thanks|appreciate it|you'?re a (?:lifesaver|star|legend)|i owe you(?: one)?)\b/i,
       R['ruleGratitude']
     ),
@@ -297,10 +292,63 @@
 
     rule('need', 25, /\b(?:i need|i want|i wish i had)\s+(.*)/i, R['ruleNeed']),
 
+    // The user asks what a word means ("what does 'bidding farewell'
+    // mean?"). Answer warmly without pretending to be a dictionary: name
+    // the word back and turn it into a conversation. "What does life
+    // mean" and "what does that/this/it mean" are excluded - those ask
+    // for a philosophy take or for Darya to clarify her own words.
+    // Two shapes are accepted so both "what does X mean" and the more
+    // conversational "do you know what X means?" route to the same pool;
+    // captured picks the last populated group either way. Both
+    // alternatives are end-anchored and pronouns are excluded, so
+    // "what does he mean by that" can never false-match.
+    rule(
+      'word_meaning',
+      58,
+      /^(?:do you know )?what does (?!life\b|that\b|this\b|it\b|he\b|she\b|they\b|you\b|we\b)(.+?)\s+mean(?:s)?[!?.]*$|^do you know what (.+?)\s+mean(?:s)?[!?.]*$/iu,
+      R['ruleWordMeaning']
+    ),
+
+    // The user asks Darya to ask them a question ("ask me a question",
+    // "why don't you ask?"). Darya complies with a real, gentle question.
+    rule(
+      'ask_me_question',
+      58,
+      /\b(?:ask me a question|ask me something|why (?:don'?t|do not|didn'?t) you ask|ask away|you should ask me)\b/i,
+      R['ruleAskMeQuestion']
+    ),
+
+    // The user tells Darya to improve herself ("make yourself better",
+    // "become smarter"). Acknowledge humbly instead of deflecting with
+    // humor or a generic line.
+    rule(
+      'self_improvement',
+      55,
+      /(?<![\p{L}])(?:make yourself (?:better|smarter|wiser)|become (?:smarter|better|wiser|more intelligent)|improve yourself|upgrade yourself|be (?:smarter|better|wiser)|learn more)(?![\p{L}])/iu,
+      R['ruleSelfImprovement']
+    ),
+
+    // "What should I do?" answers the help-seeking intent directly
+    // instead of being swallowed by a topic rule or an evasive fallback.
+    rule(
+      'what_do_i_do',
+      52,
+      /\b(?:what should i do|what do i do|what can i do about|what am i supposed to do|what am i going to do|give me (?:a )?solution|is there any solution)\b/i,
+      R['ruleWhatDoIDo']
+    ),
+
+    // The user answers "yes but I do not know which one" after Darya
+    // offered several topics. Gently help them pick.
+    rule(
+      'unsure_topic',
+      52,
+      /\b(?:not sure which|do not know which|don'?t know which|i (?:can'?t|can not) decide)\b/i,
+      R['ruleUnsureTopic']
+    ),
+
     rule(
       'knowledge',
       55,
-      // eslint-disable-next-line max-len
       /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief)\b/i,
       R['ruleKnowledge']
     ),
@@ -308,7 +356,6 @@
     rule(
       'professional_boundary',
       90,
-      // eslint-disable-next-line max-len
       /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i,
       R['ruleProfessionalBoundary']
     ),
@@ -519,7 +566,6 @@
     /\b(?:how (?:are you|are you doing|you doing|have you been)|you (?:ok|alright|good|doing okay)|what about you)\b/i;
 
   const insultPattern =
-    // eslint-disable-next-line max-len
     /\b(?:stupid|dumb|idiot|moron|foolish|retard|dummy|loser|jerk|ass(?:hole|hat|bag|clown|face|wipe)?|arse(?:hole)?|bitch(?:ing)?|bastard|bullshit|shit(?:head|hole|ty|fuck)?|dipshit|shite|crap(?:head|py)?|damn|goddamn(?:it)?|dick(?:head|wad)?|prick|knob(?:head)?|twat|wanker|tosser|cock(?:sucker)?|cunt|fuck(?:er|ing|tard|wit|face|nut|ed)?|motherfucker|dumbfuck|shitfuck|horseshit|piss(?:ant|ed off)?|slut|whore|skank|slag|scum(?:bag)?|jackass|dumbass|douche(?:bag)?|bugger|bollocks|screw|disgusting|despicable|contemptible|vile|obnoxious|repulsive|pathetic|useless|ignorant|worthless|hopeless|wretched|you suck|you (?:are )?(?:an? )?(?:ass|idiot|moron|joke|fool|cretin|bastard|bitch|dick|dumbass|fucker|loser|pathetic|worthless|piece of shit|jerk|cunt|twat|wanker|stupid|dumb))\b/i;
 
   // Date/time question patterns for the _handleDateTimeQuestion engine
@@ -529,7 +575,6 @@
     /\b(what('?s| time) (is it|do you have)|tell me the time|what time is it now|current time|time now)\b/i;
 
   const dateTimeDatePattern =
-    // eslint-disable-next-line max-len
     /\b(what('?s| is) (the date|today(?:'s date)?|the day(?: today)?)|what day is it|tell me the date|what is today(?:'s date)?|what date is it|whats today)\b/i;
 
   // Darya-targeted harassment: insults and name-calling directed at
@@ -537,7 +582,6 @@
   // These are distinct from general insults in insultPattern because
   // they target the companion and need a different response tone.
   const daryaHarassmentPattern =
-    // eslint-disable-next-line max-len
     /\b(darya(?:,| |\s)+you(?:'?re| are)?(?:\s+(?:a |an )?)?(?:stupid|dumb|idiot|moron|useless|pathetic|annoying|worthless|bitch|bastard|whore|slut|cunt|loser|joke|fool|creep|psycho|insane|crazy|terrible|awful|horrible|bad)|you(?:'?re| are)?\s+darya\b|(?:fuck|screw|damn)\s+(?:you|darya)\b|shut\s+up(?:\s+(?:darya|bot))?|i hate you|i hate darya|darya is\s+(?:stupid|dumb|useless|pathetic|annoying|the worst|terrible|awful|bad)|you suck(?:\s+darya)?|darya sucks)\b/i;
 
   // Sexual or inappropriate comments directed at Darya. These set a
@@ -545,7 +589,6 @@
   // (Note: this is not a comprehensive filter; it catches the most
   // common patterns while avoiding false positives in everyday speech.)
   const sexualHarassmentPattern =
-    // eslint-disable-next-line max-len
     /\b(?:show me your (?:tits|ass|pussy|dick|breasts|nipples|naked body)|i want to (?:fuck|screw) (?:you|darya)|suck my (?:dick|cock|balls)|eat my (?:ass|pussy)|lick my (?:ass|pussy|dick|cock)|naked(?:\s+darya)?|undress(?:\s+(?:me|darya))?|strip(?:\s+(?:for|me))?|your (?:tits|boobs|ass|pussy|dick|cock|breasts|nipples)|horny(?:\s+darya)?|darya is (?:sexy|hot|horny)|you are (?:sexy|hot|horny) darya|blowjob|handjob|69|anal|bondage|bdsm)\b/i;
 
   const stopWords = new Set([
@@ -735,7 +778,6 @@
    */
 
   function foreignLanguageRedirect() {
-    // eslint-disable-next-line max-len
     return `I'm ${BOT_NAME}, and I can only have this conversation in English so I can support you well. Could you write your message in English so we can continue?`;
   }
 
@@ -798,7 +840,12 @@
     smalltalk_capability: 0.25,
     app_feedback: 0.15,
     recap: 0.35,
-    knowledge: 0.25
+    knowledge: 0.25,
+    word_meaning: 0.2,
+    ask_me_question: 0.2,
+    self_improvement: 0.2,
+    what_do_i_do: 0.45,
+    unsure_topic: 0.25
   };
 
   const selfAwareness = {
@@ -844,6 +891,7 @@
     humor: R.humor,
     warmth: R.warmth,
     smalltalk: R.smalltalk,
+    emojiResponses: R.emojiResponses,
     gratitudeResponses: R.gratitudeResponses,
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
@@ -888,6 +936,11 @@
     dateTimeDatePattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
+    // English test-input signals beyond the engine's built-in
+    // TEST_INPUT_PATTERNS (which already covers "test", "hello bot",
+    // "ping" etc.). Catches explicit "I am just testing you" phrasing.
+    testInputPattern:
+      /(?:i am just testing|i'?m just testing|just testing you|testing the bot|are you testing me)/iu,
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,

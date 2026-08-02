@@ -7,7 +7,7 @@
 
   // Long lines in this file are intentional (embedded response pools,
   // regex patterns, and knowledge entries).
-  // eslint-disable max-len
+  /* eslint-disable max-len */
 
   // Load response pools from the data file.
   var R = global.DaryaFaResponses;
@@ -131,7 +131,6 @@
       // in phrases like "جمله خوبی گفتی" (you said a good sentence) and
       // hijacking the turn with a how-are-you reply. The optional "است"
       // tail keeps the formal "حال شما چطور است؟" working.
-      // eslint-disable-next-line max-len
       /^(?:سلام|درود|هی|خب|اوکی|باشه)?\s*(?:خوبی|تو خوبی|خوبی تو|حالت چطور|حالتون چطور|حال شما چطور|احوال شما چطور|چطوری|حالت خوبه)(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?(?:\s*است)?[!.؟]*$/iu,
       R['ruleSmalltalkHowareyou']
     ),
@@ -165,12 +164,23 @@
       R['ruleSmalltalkSilly']
     ),
 
-    rule('greeting', 65, /^(?:درود)[!.؟]*$/iu, R['ruleGreetingDorud']),
+    // Greeting families mirror the user's greeting word back (درود ->
+    // درود-based reply, سلام -> سلام-based reply). Each family also
+    // accepts a short fixed tail (بر تو, بر شما, عزیز, دوست, جان, و درود)
+    // so "درود بر تو" and "سلام علیکم" get a warm greeting instead of a
+    // generic fallback. The tail is a fixed list, never free text, so
+    // "درود چطوری؟" still falls through to the how-are-you rule.
+    rule(
+      'greeting',
+      65,
+      /^(?:درود)(?:\s+(?:بر تو|بر شما|عزیز|دوست|جان))?[!.؟]*$/iu,
+      R['ruleGreetingDorud']
+    ),
 
     rule(
       'greeting',
       65,
-      /^(?:سلام|صبح بخیر|عصر بخیر|سلام صبح بخیر)[!.؟]*$/iu,
+      /^(?:سلام)(?:\s+(?:علیکم|بر تو|بر شما|عزیز|دوست|جان|و درود))?[!.؟]*$|^(?:صبح بخیر|عصر بخیر|سلام صبح بخیر)[!.؟]*$/iu,
       R['ruleGreetingSalam']
     ),
 
@@ -298,7 +308,7 @@
       'app_feedback',
       32,
       pw(
-        'وب‌سایت|وبسایت|وب سایت|وب‌سایتم|وبسایتم|سایت|تم|پوسته|رابط کاربری|طراحی|دکمه|منو|فونت|آیکون|انیمیشن'
+        'وب‌سایت|وبسایت|وب سایت|وب‌سایتم|وبسایتم|سایت|تم|پوسته|رابط کاربری|طراحی|دکمه|منو|فونت|آیکون|انیمیشن|موج|امواج|ساحل|موبایل|فرمت'
       ),
       R['ruleAppFeedback']
     ),
@@ -329,7 +339,6 @@
     rule(
       'feeling',
       30,
-      // eslint-disable-next-line max-len
       /(?<!\p{L})(?:احساس می‌کنم|احساس میکنم|احساس می کنم|حس می‌کنم|حس میکنم|حس می کنم|فکر می‌کنم|فکر میکنم|فکر می کنم)(?!\p{L})\s*(.*)/iu,
       R['ruleFeeling']
     ),
@@ -348,18 +357,76 @@
       R['ruleNeed']
     ),
 
+    // The user asks what a word or phrase means ("وداع کردن می‌دونی
+    // یعنی چی؟!"). Answer warmly without pretending to be a dictionary:
+    // name the word back and turn it into a conversation. "منظور..."
+    // ("what do you mean") is deliberately excluded - that asks Darya
+    // to clarify her own words, which needs a different response.
+    rule(
+      'word_meaning',
+      58,
+      /(?<!\p{L})(?!منظور(?:ت|تون| تو| شما)?|این|اون|آن|اینها|آنها)(.+?)\s*(?:می‌دونی|میدونی|می دونی|می‌دونید|میدونید|می دونید|می‌دانی|میدانی|می دانی|می‌دانید|میدانید|می دانید)?\s*(?:یعنی چی|یعنی چه|یعنی چیه|به چه معناست)[!?؟]*$/iu,
+      R['ruleWordMeaning']
+    ),
+
+    // The user asks Darya to ask them a question ("یک سوال از من بپرس",
+    // "سوال نمی‌پرسی؟!"). Darya complies with a real, gentle question.
+    rule(
+      'ask_me_question',
+      58,
+      pw(
+        'سوال نمی‌پرسی|سوال نمیپرسی|سوال نمی پرسی|چرا سوال نمی‌پرسی|چرا سوال نمیپرسی|چرا سوال نمی پرسی|سوال بپرس|بپرس ببینم|از من بپرس|ازم بپرس|یک سوال از من بپرس|یه سوال از من بپرس|بپرس از من|بپرس ازم|سوال بپرس از من'
+      ),
+      R['ruleAskMeQuestion']
+    ),
+
+    // The user tells Darya to improve herself ("خودت رو بهتر کن",
+    // "باهوش‌تر شو"). Acknowledge humbly instead of deflecting with
+    // humor or a generic line.
+    rule(
+      'self_improvement',
+      55,
+      pw(
+        'خودت رو بهتر|خودت را بهتر|خودتو بهتر|بهتر و عاقل|عاقل‌تر|عاقلتر|عاقل تر|هوشمندتر|باهوش‌تر بشی|باهوشتر بشی|باهوش تر بشی|باهوش‌تر شو|باهوشتر شو|باهوش تر شو|بهتر شو|بهتر بشو|ارتقا بده|ارتقا بدهی'
+      ),
+      R['ruleSelfImprovement']
+    ),
+
+    // "چی‌کار کنم؟!" (what should I do?) must answer the help-seeking
+    // intent instead of tripping the work rule, whose bare "کار" matches
+    // the normalized "چی کار کنم". This rule sits just above work so the
+    // general what-to-do request wins over the work-topic reading.
+    rule(
+      'what_do_i_do',
+      52,
+      pw(
+        'چی کار کنم|چیکار کنم|چه کار کنم|چی کار بکنم|چیکار بکنم|چه کاری بکنم|چی بکنم|چی کار باید بکنم|چیکار باید بکنم|چه کار باید بکنم|چه کاری باید بکنم|چه باید بکنم|راه‌حل نمی‌دی|راه حل نمی‌دی|راهکاری نداری|راهکار نمی‌دی'
+      ),
+      R['ruleWhatDoIDo']
+    ),
+
+    // The user answers "yes but I do not know which one" after Darya
+    // offered several topics. Gently help them pick instead of falling
+    // into the evasive deep-question pool.
+    rule(
+      'unsure_topic',
+      52,
+      pw(
+        'نمی‌دونم روی کدوم|نمیدونم روی کدوم|نمی دونم روی کدوم|نمی‌دونم کدوم|نمیدونم کدوم|نمی دونم کدوم|مطمئن نیستم کدوم|کدومش رو انتخاب کنم|کدومش را انتخاب کنم|کدومش رو بگم'
+      ),
+      R['ruleUnsureTopic']
+    ),
+
     rule(
       'knowledge',
       55,
-      // eslint-disable-next-line max-len
-      /(?<!\p{L})(?:سقراط|رواقی|رواقی‌گری|رواقی گری|رواقیگری|ارسطو|یونگ|نیچه|گاندی|ماندلا|چرچیل|زرتشت|فلسفه|تمرکز|تمرکز کنم|بهتر یاد بگیرم|بهتر درس بخوانم|ارتباط بهتر|خلاقیت|قفل خلاقیت|مدیریت استرس|استرس|فرسودگی|آرام‌شدن|آرام شدن|آرامشدن|خودشفقتی|مهربانی با خود|منتقد درونی|خودانتقادی|حل تعارض|اختلاف|بحث|ارتباط بدون خشونت|تصمیم‌گیری|تصمیم گیری|تصمیمگیری|تصمیم|انتخاب بین|تاب‌آوری|تاب آوری|تابآوری|بازگشت به زندگی|بازگشتن|بخشش|ببخشم|ببخش|بخشیدن|رها کردن|رها کنم|معنای زندگی|هدف در زندگی|پیدا کردن هدف|وجودی|معنادار|معنوی|روابط|رابطه|ارتباط عاطفی|شغل|حرفه|پیشرفت شغلی|رضایت شغلی|اضطراب|مدیریت اضطراب|نگرانی|فکر زیاد|ذهن\u200Cآگاهی|ذهن آگاهی|ذهنآگاهی|سوگ|فقدان)(?!\p{L})/iu,
+      /(?<!\p{L})(?:سقراط|رواقی|رواقی‌گری|رواقی گری|رواقیگری|ارسطو|یونگ|نیچه|گاندی|ماندلا|چرچیل|زرتشت|فلسفه|تمرکز|تمرکز کنم|بهتر یاد بگیرم|بهتر درس بخوانم|ارتباط بهتر|خلاقیت|قفل خلاقیت|مدیریت استرس|استرس|فرسودگی|آرام‌شدن|آرام شدن|آرامشدن|خودشفقتی|مهربانی با خود|منتقد درونی|خودانتقادی|حل تعارض|اختلاف|ارتباط بدون خشونت|تصمیم‌گیری|تصمیم گیری|تصمیمگیری|تصمیم|انتخاب بین|تاب‌آوری|تاب آوری|تابآوری|بازگشت به زندگی|بازگشتن|بخشش|ببخشم|ببخش|بخشیدن|رها کردن|رها کنم|معنای زندگی|معنی زندگی|هدف در زندگی|پیدا کردن هدف|وجودی|معنادار|معنوی|روابط|رابطه|ارتباط عاطفی|شغل|حرفه|پیشرفت شغلی|رضایت شغلی|اضطراب|مدیریت اضطراب|نگرانی|فکر زیاد|ذهن\u200Cآگاهی|ذهن آگاهی|ذهنآگاهی|سوگ|فقدان)(?!\p{L})/iu,
       R['ruleKnowledge']
     ),
 
     rule(
       'professional_boundary',
       90,
-      // eslint-disable-next-line max-len
       /(?<!\p{L})(?:مشاوره پزشکی|تشخیص|دارو|مشاوره حقوقی|وکیل|دادگاه|مشاوره مالی|سرمایه‌گذاری|سرمایهگذاری|مالیات|وام)(?!\p{L})/iu,
       R['ruleProfessionalBoundary']
     ),
@@ -551,33 +618,31 @@
   // rather than taking the sarcasm literally.
 
   const wellBeingPattern =
-    // eslint-disable-next-line max-len
     /^(?:سلام|درود|هی|خب|اوکی|باشه)?\s*(?:خوبی|تو خوبی|خوبی تو|حالت خوبه|چطوری|چه خبر|حالت چطور|حالتون چطور|حال شما چطور|احوال شما چطور|چیکار می‌کنی|چیکار میکنی|چیکار می کنی|چی کار می‌کنی|چی کار میکنی|چی کار می کنی|داری چیکار می‌کنی|داری چیکار میکنی|داری چیکار می کنی|چکار می‌کنی|چکار میکنی|چکار می کنی)(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?(?:\s*است)?[!.؟]*$/iu;
 
   const insultPattern =
-    // eslint-disable-next-line max-len
     /(?<!\p{L})(?:احمق|احمقی|کودن|کودنی|دیوونه|دیوونی|بی‌عقل|بیعقل|نادان|نادانم|نادانی|نادون|نادونی|خاک (?:به|تو|بر)?سر(?:ت)?|خاک تو سرت|خاک بر سرت|برو گمشو|برو بمیر|برو جهنم|برو به درک|مردک|حرومزاده|حرامزاده|فضول|چرت|چرتی|مزخرف|هذیان|گوه|کثافت|کثیف|بی‌شعور|بیشعور|بی‌شرف|بیشرف|بی‌ادب|بیادب|خار|کون|کونی|دهن|کیری|گایید|کص|کس|مادرت|مادرجنده|خواهرت|خفه|جاکش|احمقانه|نفهم|نفهمی|ابله|ابلهی|مسخره|مسخرهای|بی‌سواد|بیسواد|خر|گاو|سگ|خوک|الاغ|گور|پدرسوخته|جنده|قحبه|فاحشه|دیوث|ملعون|لعنتی|نامرد|بی‌غیرت|بیغیرت|ننگ)(?!\p{L})/iu;
 
   // Date/time question patterns (Persian). Time queries: asking the
   // current time. Date queries: asking the current date.
   const dateTimeTimePattern =
-    // eslint-disable-next-line max-len
     /(?<!\p{L})(?:ساعت (?:چنده|چند|چقدره|چقدر)|الان ساعت (?:چنده|چند)|ساعت الان چند|time|ساعت را می‌گویی|ساعت رو بگو|وقت چنده)(?!\p{L})/iu;
 
   const dateTimeDatePattern =
-    // eslint-disable-next-line max-len
     /(?<!\p{L})(?:تاریخ (?:امروز|چنده|چیست|رو بگو|رو می‌گی)|امروز (?:چندمه|چه روزیه|چه تاریخی|چند شنبه)|چند شنبه ایم|تاریخ شمسی|تاریخ ایرانی|تاریخ امروز چنده|what('?s| is) the date in iran|jalali date|persian date)(?!\p{L})/iu;
 
   // Darya-targeted harassment (Persian): insults and bullying
   // specifically directed at Darya.
   const daryaHarassmentPattern =
-    // eslint-disable-next-line max-len
     /(?<!\p{L})(?:دریا (?:تو|)(?:\s+)(?:احمق|کودن|دیوونه|بی‌عرضه|بی‌خاصیت|چرتی|مسخره|کصکش|کونی|بی‌شعور|بی‌سواد|نفهم|ابله|بد|کثیف|چقدر بدی|چقدر بی مصرفی|به دردم نمیخوری)|تو (?:یک )?(?:ربات )?(?:احمق|کودن|کونی|کصکش|مسخره|بدبخت|چرتی|بی‌خاصیت|بی‌شعور|نفهم|بی‌سواد))(?!\p{L})/iu;
 
-  // Sexual or inappropriate comments (Persian).
+  // Sexual or inappropriate comments (Persian). Only explicitly sexual
+  // terms are listed: everyday words like "ببینم" (let me see), "ببینمت"
+  // (see you), "داغ" (hot), "عشق" (love), "نشان بده" (show me), "بیا
+  // بیرون" (come out) and "بکنم" (I will do it) are far too common in
+  // innocent speech and must never trip the harassment gate.
   const sexualHarassmentPattern =
-    // eslint-disable-next-line max-len
-    /(?<!\p{L})(?:سکسی|داغ|بوس(?:یدن|ید)?|ببوس|عشق(?:م)?|بیا (?:بستر|تخت|پیشم|خونه)|بدنت(?:و| رو)|سینه(?: هات|ت)?|کون(?:ت)?|کس(?:ت)?|ساک(?: بزن| کن)|بکن(?:مت|م)?|جنده|قحبه|بزن قدش|بیا بیرون|نشان بده|ببینمت|ببینم|عریان|لخت|برهنه)(?!\p{L})/iu;
+    /(?<!\p{L})(?:سکسی|بوس(?:یدن|ید)?|ببوس|بیا (?:بستر|تخت|پیشم|خونه)|بدنت(?:و| رو)|سینه(?: هات|ت)?|کون(?:ت)?|کس(?:ت)?|ساک(?: بزن| کن)|بکنمت|جنده|قحبه|بزن قدش|عریان|لخت|برهنه)(?!\p{L})/iu;
 
   const stopWords = new Set([
     // Persian verb prefixes
@@ -920,7 +985,6 @@
    */
 
   function foreignLanguageRedirect() {
-    // eslint-disable-next-line max-len
     return `من ${BOT_NAME} هستم و تنها به زبان فارسی گفت‌وگو می‌کنم، تا بتوانم بهترین همراهی را داشته باشم. لطفاً پیام‌تان را به فارسی بنویسید تا ادامه دهیم.`;
   }
 
@@ -983,7 +1047,12 @@
     smalltalk_capability: 0.25,
     app_feedback: 0.15,
     recap: 0.35,
-    knowledge: 0.25
+    knowledge: 0.25,
+    word_meaning: 0.2,
+    ask_me_question: 0.2,
+    self_improvement: 0.2,
+    what_do_i_do: 0.45,
+    unsure_topic: 0.25
   };
 
   const selfAwareness = {
@@ -1029,6 +1098,7 @@
     humor: R.humor,
     warmth: R.warmth,
     smalltalk: R.smalltalk,
+    emojiResponses: R.emojiResponses,
     gratitudeResponses: R.gratitudeResponses,
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
@@ -1074,6 +1144,13 @@
     dateTimeDatePattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
+    // Persian test-input signals ("دارم تستت می‌کنم"). The English
+    // TEST_INPUT_PATTERNS in the engine only knows Latin phrases, so
+    // these phrases let the dialogue-act classifier recognize Persian
+    // testing turns and route them to testInputResponses instead of
+    // the frustration or harassment paths.
+    testInputPattern:
+      /(?:تستت می‌کنم|تستت میکنم|تستت کنم|امتحانت می‌کنم|امتحانت میکنم|امتحانت کنم|دارم تست|دارم امتحان|می‌خوام تستت کنم|میخوام تستت کنم|می‌خوام امتحانت کنم|میخوام امتحانت کنم|ببینم چقدر باهوش|ببینم چقدر هوشمند)/u,
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,

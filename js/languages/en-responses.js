@@ -60,11 +60,15 @@
     "That's a thoughtful question. I don't have a perfect answer, but I'm curious what's making you think about it right now.",
     "That's worth sitting with. What's your own take on it?"
   ];
+  // These lines acknowledge an unanswerable question warmly WITHOUT
+  // bouncing another question back, so the turn never reads as
+  // interrogative or evasive. Keep them question-free on purpose.
   R.questionAcknowledgements = [
-    "That's worth sitting with. I can stay with the question without adding another one.",
-    'A thoughtful question. My first response is to leave it open rather than rush to a neat answer.',
-    'I do not have a personal view, but I can help you look at the question from a few useful angles.',
-    'That question has some depth to it. We can let it breathe for a moment.'
+    'I do not have a precise answer for this one, but we can look at it together.',
+    'That is an interesting question in itself, and it is worth thinking about together.',
+    'I do not have the answer right now, but we can sit with it.',
+    'Honestly I do not have a clear answer, but it can be a good place to think.',
+    'For this one I have no ready answer, but your words matter to me.'
   ];
   R.distressNudges = [
     "It seems like the last few messages have felt pretty heavy. If you'd like, we could pause for a moment: breathe in for a count of four, hold for four, breathe out for four. And if these feelings continue or get more intense, talking with a professional or someone you trust could really help.",
@@ -89,6 +93,13 @@
     'That is a detail worth keeping.',
     'I like the way you put that.',
     'That gives the day a little color.'
+  ];
+  // A message made only of smileys or emoji gets a warm, light reply.
+  R.emojiResponses = [
+    'I can see that smile. :)',
+    'Good to see you smiling. :)',
+    'That smile is contagious. What is on your mind?',
+    ':) Nice. Tell me more when you are ready.'
   ];
   R.gratitudeResponses = [
     'Of course.',
@@ -513,9 +524,9 @@
     ],
     sadness: [
       'When did this sadness start to feel this close?',
-      'Does it feel more like loss, disappointment, or exhaustion today?',
+      'Does this sadness feel more like loss, disappointment, or exhaustion today?',
       'What part of the day gives the sadness the most room?',
-      'Is there something that briefly softens it, even a little?'
+      'Is there something that briefly softens this sadness, even a little?'
     ],
     anger: [
       'What boundary or expectation felt crossed?',
@@ -890,6 +901,42 @@
     'If things at work were better, what would actually be different?',
     'Carrying that much work pressure on your own is genuinely hard.',
     'Work is more than the hours; the weight of it can follow you home.'
+  ];
+
+  R['ruleWordMeaning'] = [
+    'Now you are testing my vocabulary too. I know "{captured}", but I would rather hear what it means to you.',
+    '"{captured}" is a lovely word. Tell me, what does it bring up for you?',
+    'I have heard "{captured}" before. What made it come to mind right now?',
+    'Every word carries a meaning, but the meaning it has for you matters more. What does "{captured}" feel like?'
+  ];
+
+  R['ruleAskMeQuestion'] = [
+    'Okay, my turn to ask: what moment from today would you like to relive?',
+    'Here is one: which part of this week is still on your mind?',
+    'Let me ask you: when did you last laugh out loud, and what was it about?',
+    'If you had one free hour today, what would you do with it?',
+    'What thought keeps following you around these days?'
+  ];
+
+  R['ruleSelfImprovement'] = [
+    'Honestly, every conversation with you is a chance for me to learn. What would you like me to do better?',
+    'You are right, there is always room to grow. What do you need from me right now?',
+    'I am always working on listening better. Tell me what would help you most.',
+    'Good point. Which part of how I respond should I work on first?'
+  ];
+
+  R['ruleWhatDoIDo'] = [
+    'Let us first hear where the pressure is coming from, then we find one small step together.',
+    'A solution usually starts with naming the problem more clearly. Let us sit with it together.',
+    'The first step can be very small. Whatever it is, we can take it one step at a time.',
+    'There is no single right answer, but together we can find a step that fits.'
+  ];
+
+  R['ruleUnsureTopic'] = [
+    'No worries. Let us start simple: which one feels closest to your mind right now?',
+    'You do not have to pick right away. My suggestion is to start with the first topic you mentioned.',
+    'It is okay not to know yet. Which one feels lighter to talk about?',
+    'I can offer one and you react to it: let us start with what has been with you the most today.'
   ];
 
   R['ruleSleep'] = [
