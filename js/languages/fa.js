@@ -1161,11 +1161,7 @@
       placeholderDefault: 'هر چه در دل دارید بنویسید...',
       placeholderEnded:
         'گفت‌وگو پایان یافت. برای شروع دوباره از منو «گفت‌وگوی تازه» را بزنید',
-      ariaSendLabel: 'ارسال',
-      ariaMenuLabel: 'گفت‌وگو',
       ariaInputLabel: 'پیام شما',
-      ariaExportMdLabel: 'دانلود گفت‌وگو با فرمت مارک‌داون',
-      ariaExportTxtLabel: 'دانلود گفت‌وگو با فرمت ساده',
       // Canonical labels: aria-label === title === visible text
       pickerFaTitle: 'شروع گفت‌وگوی تازه به فارسی',
       pickerEnTitle: 'شروع گفت‌وگوی تازه به انگلیسی',
@@ -1174,14 +1170,11 @@
       sendButtonTitle: 'ارسال',
       menuTriggerTitle: 'منو',
       newChatTitle: 'گفت‌وگوی تازه',
-      exportMdTitle: 'دانلود با فرمت مارک‌داون',
-      exportTxtTitle: 'دانلود با فرمت ساده',
-      themeToggleTitle: 'تغییر پوسته',
       themeGroupLabel: 'انتخاب پوسته',
       typingLabel: 'دریا در حال فکر کردن',
       menuNewChat: 'گفت‌وگوی تازه',
-      menuExportMd: 'دانلود گفتگو با فرمت مارک‌داون',
-      menuExportTxt: 'دانلود گفتگو با فرمت ساده',
+      menuExportLabel: 'دانلود گفتگو',
+      menuExportTitle: 'دانلود گفتگو',
       themeOceanLabel: 'پوسته اقیانوس',
       themeBeachLabel: 'پوسته ساحل',
       disclaimer:
@@ -1191,8 +1184,6 @@
       exportYouLabel: 'شما',
       exportDivider: '-----------------------------',
       dateLocale: 'fa-IR',
-      connectionError:
-        'در برقراری ارتباط مشکلی پیش آمد. لطفاً صفحه را دوباره بارگذاری کنید.',
       breatheTitle: 'تمرین تنفس',
       breatheIn: 'دم',
       breatheHold: 'نگه دار',
@@ -1206,15 +1197,17 @@
         'با شروع گفت‌وگوی تازه، گفت‌وگوی فعلی برای همیشه حذف می‌شود و قابل بازیابی نیست.',
       newChatConfirmYes: 'بله، شروع کن',
       newChatConfirmNo: 'انصراف',
-      breatheOffer: 'آیا دوست داری یک تمرین تنفس آرام‌بخش انجام بدی؟',
-      breatheAccept: 'باشه، شروع کن',
-      breatheDecline: 'نه، مرسی',
-      chatTitlePrefix: 'گفت‌وگو: ',
       soundOnTitle: 'پخش صدای محیطی: روشن',
       soundOffTitle: 'پخش صدای محیطی: خاموش',
+      soundAutoplayBlockedMsg:
+        'صدای محیطی نتوانست به‌طور خودکار پخش شود؛ برای فعال کردن، از منو روی آیکون صدا بزنید.',
       soundFallbackMsg:
         'فایل‌های صدای محیطی بارگذاری نشدند. از صدای تولیدشده به‌جای آن استفاده می‌شود.',
-      engineErrorHint: 'یک مشکل کوچک پیش آمد، اما گفتگو می‌تواند ادامه یابد.'
+      engineErrorHint: 'یک مشکل کوچک پیش آمد، اما گفتگو می‌تواند ادامه یابد.',
+      notificationError: 'خطا',
+      notificationWarning: 'هشدار',
+      notificationInfo: 'اطلاع',
+      notificationDismiss: 'بستن اعلان'
     }
   };
 

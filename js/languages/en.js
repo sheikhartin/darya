@@ -952,11 +952,7 @@
       placeholderDefault: "Write whatever's on your mind…",
       placeholderEnded:
         'This conversation has ended. Choose "New chat" from the menu to start again.',
-      ariaSendLabel: 'Send',
-      ariaMenuLabel: 'Conversation',
       ariaInputLabel: 'Your message',
-      ariaExportMdLabel: 'Download as Markdown',
-      ariaExportTxtLabel: 'Download as plain text',
       // Canonical labels: aria-label === title === visible text
       pickerFaTitle: 'New Persian conversation',
       pickerEnTitle: 'New English conversation',
@@ -965,14 +961,11 @@
       sendButtonTitle: 'Send',
       menuTriggerTitle: 'Menu',
       newChatTitle: 'New chat',
-      exportMdTitle: 'Download as Markdown',
-      exportTxtTitle: 'Download as plain text',
-      themeToggleTitle: 'Switch theme',
       themeGroupLabel: 'Choose a theme',
       typingLabel: 'Darya is thinking',
       menuNewChat: 'New chat',
-      menuExportMd: 'Download as Markdown',
-      menuExportTxt: 'Download as plain text',
+      menuExportLabel: 'Download conversation',
+      menuExportTitle: 'Download conversation',
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       disclaimer:
@@ -983,8 +976,6 @@
       exportYouLabel: 'You',
       exportDivider: '-----------------------------',
       dateLocale: 'en-US',
-      connectionError:
-        'Something went wrong connecting. Please reload the page.',
       breatheTitle: 'Breathing exercise',
       breatheIn: 'Breathe in',
       breatheHold: 'Hold',
@@ -998,16 +989,17 @@
         'Starting a new conversation will permanently delete the current one. It cannot be recovered.',
       newChatConfirmYes: 'Yes, start new',
       newChatConfirmNo: 'Cancel',
-      breatheOffer:
-        'Would you like to try a calming breathing exercise together?',
-      breatheAccept: 'Yes, let us begin',
-      breatheDecline: 'No, thank you',
-      chatTitlePrefix: 'Conversation: ',
       soundOnTitle: 'Ambient sound: on',
       soundOffTitle: 'Ambient sound: off',
+      soundAutoplayBlockedMsg:
+        'Ambient sound could not start automatically. Tap the sound icon in the menu to enable it.',
       soundFallbackMsg:
         'Ambient sound files could not be loaded. Using a generated ambient instead.',
-      engineErrorHint: 'A minor issue occurred. The conversation can continue.'
+      engineErrorHint: 'A minor issue occurred. The conversation can continue.',
+      notificationError: 'Error',
+      notificationWarning: 'Warning',
+      notificationInfo: 'Info',
+      notificationDismiss: 'Dismiss notification'
     }
   };
 
