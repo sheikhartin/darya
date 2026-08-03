@@ -25,6 +25,13 @@ coverage
 # nyc test coverage
 .nyc_output
 
+# Playwright test artifacts
+/test-results/
+
+# Capacitor generated projects (regenerated via npm run android:add)
+/android/
+/www/
+
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 

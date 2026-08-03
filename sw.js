@@ -59,12 +59,12 @@ const PRECACHE_URLS = [
   './fonts/Vazirmatn-Bold.woff2',
   './fonts/Lalezar-Regular.woff2',
   './fonts/Quicksand-VF.woff2',
-  './assets/favicon.svg',
   './assets/favicon.ico',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/icon-maskable-192.png',
-  './assets/icons/icon-maskable-512.png'
+  './assets/icons/favicon-16x16.png',
+  './assets/icons/favicon-32x32.png',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/android-chrome-192x192.png',
+  './assets/icons/android-chrome-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {

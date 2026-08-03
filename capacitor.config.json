@@ -1,8 +1,7 @@
 {
   "appId": "com.darya.companion",
   "appName": "Darya",
-  "webDir": ".",
-  "bundledWebRuntime": false,
+  "webDir": "www",
   "android": {
     "allowMixedContent": false
   },
