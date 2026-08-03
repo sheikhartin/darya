@@ -36,12 +36,9 @@
     menuPopover: document.getElementById('menu-popover'),
     menuNewChat: document.getElementById('menu-new-chat'),
     menuNewChatLabel: document.getElementById('menu-new-chat-label'),
-    menuExportMd: document.getElementById('menu-export-md'),
-    menuExportMdLabel: document.getElementById('menu-export-md-label'),
     menuExportTxt: document.getElementById('menu-export-txt'),
     menuExportTxtLabel: document.getElementById('menu-export-txt-label'),
     menuThemeToggle: document.getElementById('menu-theme-toggle'),
-    menuThemeIcon: document.getElementById('menu-theme-icon'),
     menuThemeLabel: document.getElementById('menu-theme-label'),
 
     menuSoundToggle: document.getElementById('menu-sound-toggle'),
@@ -177,9 +174,8 @@
     var current = elements.htmlRoot.getAttribute('data-theme') || DEFAULT_THEME;
     var target = current === 'ocean' ? 'beach' : 'ocean';
 
-    // Update the icon to show the opposite theme's icon
-    elements.menuThemeIcon.textContent =
-      target === 'ocean' ? '\uD83C\uDF0A' : '\uD83C\uDFD6\uFE0F';
+    // The menu icon is CSS-driven: html[data-theme] reveals the opposite
+    // theme's glyph (ocean waves or beach sun), so only the label swaps.
     elements.menuThemeLabel.textContent =
       target === 'ocean'
         ? state.lang.ui.themeOceanLabel
@@ -209,7 +205,6 @@
   function applyTheme(theme) {
     var safeTheme = theme === 'beach' ? 'beach' : 'ocean';
     var current = elements.htmlRoot.getAttribute('data-theme') || DEFAULT_THEME;
-    var isInitialLoad = !current || current === safeTheme;
 
     if (safeTheme === current) {
       // Theme hasn't changed, but still update aria-pressed for consistency
@@ -234,9 +229,9 @@
       updateThemeMenuItem();
     };
 
-    // Use the View Transition API for smooth animated theme changes,
-    // but only after the initial page load has completed.
-    if (!isInitialLoad && typeof document.startViewTransition === 'function') {
+    // Use the View Transition API for smooth animated theme changes when
+    // it is available; fall back to a direct switch otherwise.
+    if (typeof document.startViewTransition === 'function') {
       try {
         document.startViewTransition(applySwitch);
       } catch (e) {

@@ -18,6 +18,9 @@
   /** @type {Element|null} The active breathe overlay element. */
   var breatheOverlay = null;
 
+  /** @type {Element|null} The element focused before the overlay opened. */
+  var breatheFocusTarget = null;
+
   /** @type {number|null} Handle for the active breathe countdown interval. */
   var breatheCountdownTimer = null;
 
@@ -38,6 +41,12 @@
       breatheOverlay.remove();
       breatheOverlay = null;
     }
+    // WAI-ARIA dialog pattern: return focus to the invoking control when
+    // it is still part of the document.
+    if (breatheFocusTarget && document.body.contains(breatheFocusTarget)) {
+      breatheFocusTarget.focus();
+    }
+    breatheFocusTarget = null;
   }
 
   /**
@@ -91,7 +100,27 @@
       }
     });
 
+    // Keyboard contract for the modal dialog: Escape dismisses, and Tab
+    // stays inside the overlay (Close is its only focusable element, so
+    // focus is contained there) so background content stays inert.
+    breatheOverlay.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        dismissBreathe();
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        closeBtn.focus();
+      }
+    });
+
+    breatheFocusTarget = document.activeElement;
     document.body.appendChild(breatheOverlay);
+
+    // Move focus into the dialog so keyboard and screen-reader users land
+    // on the dismiss control instead of behind the overlay.
+    requestAnimationFrame(function () {
+      closeBtn.focus();
+    });
 
     var phases = [
       { action: 'breatheIn', duration: 4, circle: 'grow' },
@@ -386,6 +415,14 @@
       st.lang.ui.exitConfirmBarLabel
     );
 
+    // alertdialog pattern: move focus to the safe default (cancel) so
+    // keyboard users do not lose focus when the composer is disabled.
+    requestAnimationFrame(function () {
+      if (el.exitConfirmNo) {
+        el.exitConfirmNo.focus();
+      }
+    });
+
     // Disable the composer to prevent typing during the confirmation
     if (el.input) {
       el.input.disabled = true;
@@ -438,6 +475,15 @@
   /** @type {number|null} Handle for the auto-dismiss timer. */
   var notificationTimer = null;
 
+  /** @type {number|null} Timestamp when the auto-dismiss countdown armed. */
+  var notificationDeadline = null;
+
+  /** @type {boolean} Whether auto-dismiss is paused (hover or focus). */
+  var notificationPaused = false;
+
+  /** @type {Element|null} The element focused before the toast appeared. */
+  var notificationFocusTarget = null;
+
   /** Default auto-dismiss duration for non-error notifications (ms). */
   var NOTIFICATION_DURATION_DEFAULT = 5000;
 
@@ -460,10 +506,62 @@
       clearTimeout(notificationTimer);
       notificationTimer = null;
     }
+    notificationPaused = false;
+    notificationDeadline = null;
+    var focusInsideToast =
+      !!activeNotification &&
+      activeNotification.contains(document.activeElement);
     if (activeNotification) {
       activeNotification.remove();
       activeNotification = null;
     }
+    // Only reclaim focus when the user was interacting with the toast via
+    // keyboard (its dismiss button); a timed-out toast must never steal
+    // focus from wherever the user moved to in the meantime.
+    if (
+      focusInsideToast &&
+      notificationFocusTarget &&
+      document.body.contains(notificationFocusTarget)
+    ) {
+      notificationFocusTarget.focus();
+    }
+    notificationFocusTarget = null;
+  }
+
+  /**
+   * Suspends the auto-dismiss countdown, preserving the remaining time.
+   * Lets the user finish reading or reach the dismiss button without the
+   * toast vanishing mid-interaction (WCAG 2.2.1 Timing Adjustable).
+   */
+  function pauseNotificationTimer() {
+    if (notificationTimer === null || notificationPaused) {
+      return;
+    }
+    clearTimeout(notificationTimer);
+    notificationTimer = null;
+    notificationPaused = true;
+  }
+
+  /**
+   * Resumes the auto-dismiss countdown for the remaining time, or closes
+   * the toast right away when the pause outlasted its lifespan.
+   */
+  function resumeNotificationTimer() {
+    if (!notificationPaused || !activeNotification) {
+      return;
+    }
+    notificationPaused = false;
+    var remaining = notificationDeadline - Date.now();
+    if (remaining <= 0) {
+      dismissNotification();
+      return;
+    }
+    notificationTimer = setTimeout(function () {
+      notificationTimer = null;
+      if (activeNotification) {
+        dismissNotification();
+      }
+    }, remaining);
   }
 
   /**
@@ -530,8 +628,16 @@
 
     var typeLabel = document.createElement('span');
     typeLabel.className = 'notification-type notification-type--' + validLevel;
-    typeLabel.textContent =
-      validLevel === 'error'
+    // Localize the severity label and the close control; fall back to
+    // English when no language pack is loaded yet.
+    var ui = st.lang && st.lang.ui ? st.lang.ui : null;
+    typeLabel.textContent = ui
+      ? validLevel === 'error'
+        ? ui.notificationError
+        : validLevel === 'warn'
+          ? ui.notificationWarning
+          : ui.notificationInfo
+      : validLevel === 'error'
         ? 'Error'
         : validLevel === 'warn'
           ? 'Warning'
@@ -540,7 +646,10 @@
     var dismissBtn = document.createElement('button');
     dismissBtn.className = 'notification-dismiss';
     dismissBtn.textContent = '\u00D7'; // multiplication sign as close icon
-    dismissBtn.setAttribute('aria-label', 'Dismiss notification');
+    dismissBtn.setAttribute(
+      'aria-label',
+      ui ? ui.notificationDismiss : 'Dismiss notification'
+    );
     dismissBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       dismissNotification();
@@ -573,17 +682,26 @@
       }
     });
 
+    // Hovering or focusing the toast suspends the countdown so it never
+    // vanishes while the user is reading or reaching for the close button.
+    activeNotification.addEventListener('mouseenter', pauseNotificationTimer);
+    activeNotification.addEventListener('mouseleave', resumeNotificationTimer);
+    activeNotification.addEventListener('focusin', pauseNotificationTimer);
+    activeNotification.addEventListener('focusout', resumeNotificationTimer);
+
+    notificationFocusTarget = document.activeElement;
     document.body.appendChild(activeNotification);
 
-    // Set auto-dismiss timer
+    // Arm the auto-dismiss countdown
     var autoDuration =
       typeof duration === 'number' && duration > 0
         ? duration
         : validLevel === 'error'
           ? NOTIFICATION_DURATION_ERROR
           : NOTIFICATION_DURATION_DEFAULT;
+    notificationDeadline = Date.now() + autoDuration;
     notificationTimer = setTimeout(function () {
-      // Only auto-dismiss if the user hasn't hovered/focused the notification
+      notificationTimer = null;
       if (activeNotification) {
         dismissNotification();
       }

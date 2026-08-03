@@ -38,36 +38,12 @@
   }
 
   /**
-   * Builds the header section used in both Markdown and plain-text exports.
-   * Contains the localized date-time at export time.
+   * Builds the header section used in the plain-text export. Contains
+   * the localized date-time at export time.
    * @returns {string} The formatted header line
    */
   function buildExportHeader() {
     return formatLocalizedDateTime(new Date());
-  }
-
-  /**
-   * Builds a Markdown-formatted transcript of the entire conversation.
-   * Each message is wrapped in bold labels with italic timestamps,
-   * separated by blank lines for readability. The header includes
-   * the export title and localized date.
-   * @returns {string} Complete Markdown transcript
-   */
-  function buildMarkdownTranscript() {
-    var lang = ui.state.lang;
-    var transcript = ui.state.transcript;
-    var header = buildExportHeader();
-    var lines = ['# ' + lang.ui.exportTitle, '', header, '', '---', ''];
-    for (var i = 0; i < transcript.length; i += 1) {
-      var entry = transcript[i];
-      var label =
-        entry.sender === 'user' ? lang.ui.exportYouLabel : lang.botName;
-      lines.push('**' + label + '** _(' + entry.time + ')_');
-      lines.push('');
-      lines.push(entry.text);
-      lines.push('');
-    }
-    return lines.join('\n');
   }
 
   /**
@@ -181,26 +157,6 @@
   }
 
   /**
-   * Exports the conversation transcript as a Markdown file.
-   * No-op if there is no active language or no transcript content.
-   * Triggers a browser file download with a descriptive filename.
-   */
-  function exportMarkdown() {
-    if (
-      !ui.state.lang ||
-      !ui.state.transcript ||
-      ui.state.transcript.length === 0
-    ) {
-      return;
-    }
-    downloadTextFile(
-      'darya-chat-' + ui.state.lang.code + '-' + exportTimestamp() + '.md',
-      buildMarkdownTranscript(),
-      'text/markdown'
-    );
-  }
-
-  /**
    * Exports the conversation transcript as a plain text file.
    * No-op if there is no active language or no transcript content.
    * Triggers a browser file download with a descriptive filename.
@@ -221,7 +177,6 @@
   }
 
   const DaryaExport = {
-    exportMarkdown,
     exportPlainText
   };
 

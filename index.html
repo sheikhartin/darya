@@ -194,7 +194,24 @@
             aria-pressed="true"
             title="انتخاب پوسته اقیانوس / Choose the ocean theme"
           >
-            <span class="theme-picker__icon" aria-hidden="true">🌊</span>
+            <span class="theme-picker__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="19" height="19">
+                <path
+                  d="M4 9c1.5-1.6 4.5-1.6 6 0s4.5 1.6 6 0"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M4 15c1.5-1.6 4.5-1.6 6 0s4.5 1.6 6 0"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
             <span class="theme-picker__label">
               <span lang="fa" dir="rtl">اقیانوس</span><span class="theme-picker__sep">·</span
               ><span lang="en" dir="ltr">Ocean</span>
@@ -207,7 +224,18 @@
             aria-pressed="false"
             title="انتخاب پوسته ساحل / Choose the beach theme"
           >
-            <span class="theme-picker__icon" aria-hidden="true">🏖️</span>
+            <span class="theme-picker__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="19" height="19">
+                <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="2" fill="none" />
+                <path
+                  d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6L18 18M18 6l-1.4 1.4M7.4 16.6L6 18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
             <span class="theme-picker__label">
               <span lang="fa" dir="rtl">ساحل</span><span class="theme-picker__sep">·</span
               ><span lang="en" dir="ltr">Beach</span>
@@ -268,7 +296,22 @@
 
           <div id="menu-popover" class="menu__popover" role="menu" hidden>
             <button id="menu-new-chat" class="menu__item" type="button" role="menuitem" title="شروع گفتگوی تازه">
-              <span class="menu__item-icon" aria-hidden="true">↺</span>
+              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M5 3h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H10l-4 3.5V17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  fill="none"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12 7.5v5M9.5 10h5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
               <span class="menu__item-label" id="menu-new-chat-label">گفتگوی تازه</span>
             </button>
             <div class="menu__divider" role="separator"></div>
@@ -277,12 +320,12 @@
               class="menu__item"
               type="button"
               role="menuitem"
-              aria-label="دانلود گفتگوی متن ساده"
-              title="دانلود گفتگوی متن ساده"
+              aria-label="دانلود گفتگو"
+              title="دانلود گفتگو"
             >
               <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                 <path
-                  d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14"
+                  d="M12 3v10m0 0l-4-4m4 4l4-4M5 19h14"
                   stroke="currentColor"
                   stroke-width="1.8"
                   fill="none"
@@ -290,27 +333,7 @@
                   stroke-linejoin="round"
                 />
               </svg>
-              <span class="menu__item-label" id="menu-export-txt-label">دانلود گفتگوی متن ساده</span>
-            </button>
-            <button
-              id="menu-export-md"
-              class="menu__item"
-              type="button"
-              role="menuitem"
-              aria-label="دانلود گفتگوی مارک‌داون"
-              title="دانلود گفتگوی مارک‌داون"
-            >
-              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path
-                  d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <span class="menu__item-label" id="menu-export-md-label">دانلود گفتگوی مارک‌داون</span>
+              <span class="menu__item-label" id="menu-export-txt-label">دانلود گفتگو</span>
             </button>
             <div class="menu__divider" role="separator"></div>
             <button
@@ -321,11 +344,65 @@
               aria-pressed="false"
               title="پخش صدای محیطی: خاموش"
             >
+              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
+                <path
+                  class="sound-toggle__wave"
+                  d="M15.5 9a4 4 0 0 1 0 6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  class="sound-toggle__wave"
+                  d="M18 6.5a7.5 7.5 0 0 1 0 11"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  class="sound-toggle__slash"
+                  d="M4.5 4.5l15 15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
               <span class="menu__item-label" id="menu-sound-label">پخش صدای محیطی: خاموش</span>
             </button>
             <div class="menu__divider" role="separator"></div>
             <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem" title="تغییر پوسته گفتگو">
-              <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">🌊</span>
+              <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">
+                <svg class="theme-toggle__ocean" viewBox="0 0 24 24" width="16" height="16">
+                  <path
+                    d="M4 9c1.5-1.6 4.5-1.6 6 0s4.5 1.6 6 0"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M4 15c1.5-1.6 4.5-1.6 6 0s4.5 1.6 6 0"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <svg class="theme-toggle__beach" viewBox="0 0 24 24" width="16" height="16">
+                  <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.8" fill="none" />
+                  <path
+                    d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6L18 18M18 6l-1.4 1.4M7.4 16.6L6 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
               <span class="menu__item-label" id="menu-theme-label">پوسته ساحل</span>
             </button>
           </div>

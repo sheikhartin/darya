@@ -38,6 +38,14 @@ ok()   { PASS_COUNT=$((PASS_COUNT + 1)); echo "  [PASS] $1"; }
 fail() { FAIL_COUNT=$((FAIL_COUNT + 1)); echo "  [FAIL] $1"; }
 section() { echo; echo "==== $1 ===="; }
 
+# ANSI color helper used by the "skipping" notices: wraps the remaining
+# arguments in the escape sequence for the given color code (33 = yellow).
+color() {
+  local code="$1"
+  shift
+  printf '\033[%sm%s\033[0m' "$code" "$*"
+}
+
 cleanup() {
   if [[ -n "$SERVER_PID" ]] && kill -0 "$SERVER_PID" 2>/dev/null; then
     kill "$SERVER_PID" 2>/dev/null
@@ -143,6 +151,18 @@ if grep -q '\[hidden\]' css/style.css && grep -A2 '^\[hidden\]' css/style.css | 
   ok "[hidden] override rule present in style.css"
 else
   fail "[hidden] override rule missing; picker/app may not actually hide (see conversation history)"
+fi
+
+# The sound-cookie init-order bug: the cookie-name constant must be
+# declared before the module-state initializer that reads it. A hoisted
+# `var` made the cookie regex look for "undefined=" and silently dropped
+# the saved sound preference on every page load.
+sound_cookie_line=$(grep -n "SOUND_COOKIE_NAME = " js/ui/ambient-sound.js | head -1 | cut -d: -f1)
+sound_enabled_line=$(grep -n "var isEnabled = getSavedState" js/ui/ambient-sound.js | head -1 | cut -d: -f1)
+if [[ -n "$sound_cookie_line" && -n "$sound_enabled_line" && "$sound_cookie_line" -lt "$sound_enabled_line" ]]; then
+  ok "sound cookie constant is declared before the module state initializer"
+else
+  fail "sound cookie constant ordering regressed; saved preference would be lost on every visit"
 fi
 
 # The Persian word-boundary bug: \b does not work on Persian script in JS
@@ -261,17 +281,16 @@ else
   fail "broad 24vh beach scrim has regressed"
 fi
 
-if grep -q 'menuExportMd:.*دانلود گفتگو.*مارک‌داون' js/languages/fa.js && ! grep -q 'دانلود گفتگو (' js/languages/fa.js; then
-  ok "Persian export label uses Markdown transliteration without parentheses"
+if grep -q 'menuExportLabel:.*دانلود گفتگو' js/languages/fa.js && ! grep -q 'دانلود گفتگو (' js/languages/fa.js; then
+  ok "Persian export label is clean and free of parentheses"
 else
-  fail "Persian export label is missing the no-parentheses form"
+  fail "Persian export label is missing the clean no-parentheses form"
 fi
 
-legacy_markdown_label='دانلود گفتگو ('''Markdown''')'
-if ! grep -q "$legacy_markdown_label" index.html js/languages/fa.js js/languages/en.js 2>/dev/null; then
-  ok "old parenthesized Markdown export form is gone"
+if ! grep -RIn 'menuExportMd\|menu-export-md\|exportMarkdown' index.html js/ 2>/dev/null; then
+  ok "Markdown export has been fully removed"
 else
-  fail "old parenthesized Markdown export form remains"
+  fail "Markdown export references remain"
 fi
 
 # Additional hardening checks keep the static shell honest as assets evolve.
@@ -386,10 +405,10 @@ else
   fail "entity context confidence guard is missing"
 fi
 
-if [[ "$(grep -n 'id="menu-export-txt"' index.html | cut -d: -f1)" -lt "$(grep -n 'id="menu-export-md"' index.html | cut -d: -f1)" ]] && grep -q 'پوسته' js/languages/fa.js; then
-  ok "plain text export precedes Markdown and Persian uses پوسته"
+if grep -q 'id="menu-export-txt"' index.html && ! grep -q 'id="menu-export-md"' index.html && grep -q 'پوسته' js/languages/fa.js; then
+  ok "single plain-text export remains and Persian uses پوسته"
 else
-  fail "export order or Persian theme wording is wrong"
+  fail "single-export layout or Persian theme wording is wrong"
 fi
 
 if grep -q 'initBeachWaveVariation' js/app.js && grep -q -e '--wave-duration' js/ui/ambient.js && grep -q -e '--wave-delay' js/ui/ambient.js && ! grep -Eq 'beach-wave-drift[^}]*translate3d' css/style.css; then

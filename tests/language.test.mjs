@@ -73,6 +73,17 @@ test('bilingual parity: both packs expose the same UI string keys', () => {
   assert.deepEqual(faKeys, enKeys);
 });
 
+test('notification chrome is localized in both packs', () => {
+  for (const lang of [FA, EN]) {
+    assert.equal(typeof lang.ui.notificationError, 'string');
+    assert.equal(typeof lang.ui.notificationWarning, 'string');
+    assert.equal(typeof lang.ui.notificationInfo, 'string');
+    assert.ok(lang.ui.notificationDismiss.trim().length > 0);
+  }
+  assert.match(FA.ui.notificationDismiss, /بستن/);
+  assert.match(EN.ui.notificationDismiss, /dismiss/i);
+});
+
 test('English-only pronoun reflection is intentionally absent from Persian', () => {
   assert.equal(FA.pronounMap, null);
   assert.ok(EN.pronounMap && typeof EN.pronounMap === 'object');
@@ -182,9 +193,7 @@ test('new title keys are present symmetrically in both UI packs', () => {
     'sendButtonTitle',
     'menuTriggerTitle',
     'newChatTitle',
-    'exportMdTitle',
-    'exportTxtTitle',
-    'themeToggleTitle'
+    'menuExportTitle'
   ]) {
     assert.equal(typeof FA.ui[key], 'string');
     assert.equal(typeof EN.ui[key], 'string');
@@ -192,30 +201,28 @@ test('new title keys are present symmetrically in both UI packs', () => {
 });
 
 test('ARIA labels describe the action rather than using generic nouns', () => {
-  assert.match(FA.ui.ariaSendLabel, /^ارسال/);
-  assert.match(FA.ui.ariaMenuLabel, /^گفت/);
-  assert.match(EN.ui.ariaSendLabel, /^send$/i);
-  assert.match(EN.ui.ariaMenuLabel, /conversation/i);
+  // These are the keys actually wired to the controls in app.js (the
+  // send button and the menu trigger both use them as aria-label).
+  assert.match(FA.ui.sendButtonTitle, /^ارسال/);
+  assert.match(FA.ui.menuTriggerTitle, /^منو/);
+  assert.match(EN.ui.sendButtonTitle, /^send$/i);
+  assert.match(EN.ui.menuTriggerTitle, /menu/i);
 });
 
 test('menu export labels contain no parentheses in either language', () => {
   for (const lang of [FA, EN]) {
-    assert.doesNotMatch(lang.ui.menuExportMd, /[()]/);
-    assert.doesNotMatch(lang.ui.menuExportTxt, /[()]/);
+    assert.doesNotMatch(lang.ui.menuExportLabel, /[()]/);
+    assert.doesNotMatch(lang.ui.menuExportTitle, /[()]/);
   }
 });
 
-test('Persian Markdown label uses the requested ZWNJ transliteration', () => {
-  assert.match(FA.ui.menuExportMd, /دانلود/);
-  assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
-  assert.match(FA.ui.menuExportMd, /فرمت/);
-});
-
-test('export labels stay descriptive after removing the parenthesized forms', () => {
-  assert.match(FA.ui.menuExportMd, /دانلود/);
-  assert.match(FA.ui.menuExportMd, /مارک\u200cداون/);
-  assert.match(EN.ui.menuExportMd, /Markdown/);
-  assert.match(EN.ui.menuExportTxt, /plain text/i);
+test('the single export label names the action without the format', () => {
+  assert.match(FA.ui.menuExportLabel, /دانلود/);
+  assert.match(EN.ui.menuExportLabel, /conversation/i);
+  for (const lang of [FA, EN]) {
+    assert.doesNotMatch(lang.ui.menuExportLabel, /مارک|فرمت|Markdown|plain/i);
+    assert.doesNotMatch(lang.ui.menuExportTitle, /مارک|فرمت|Markdown|plain/i);
+  }
 });
 
 test('Persian theme terminology uses پوسته consistently', () => {
@@ -224,8 +231,7 @@ test('Persian theme terminology uses پوسته consistently', () => {
     FA.ui.themeBeachLabel,
     FA.ui.themeOceanTitle,
     FA.ui.themeBeachTitle,
-    FA.ui.themeGroupLabel,
-    FA.ui.themeToggleTitle
+    FA.ui.themeGroupLabel
   ]) {
     assert.match(value, /پوسته/u);
     assert.doesNotMatch(value, /تم/u);
