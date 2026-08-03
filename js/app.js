@@ -766,14 +766,21 @@
    */
   function initAutoplayGesture() {
     var startSound = function () {
-      if (typeof DaryaAmbientSound !== 'undefined' && DaryaAmbientSound.getSavedState() === true) {
+      if (
+        typeof DaryaAmbientSound !== 'undefined' &&
+        DaryaAmbientSound.getSavedState() === true
+      ) {
         DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
           if (el.menuSoundToggle) {
             el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
             var label =
               st.lang && enabled
                 ? st.lang.ui.soundOnTitle
-                : (st.lang ? st.lang.ui.soundOffTitle : (enabled ? "پخش صدای محیطی: روشن" : "پخش صدای محیطی: خاموش"));
+                : st.lang
+                  ? st.lang.ui.soundOffTitle
+                  : enabled
+                    ? 'پخش صدای محیطی: روشن'
+                    : 'پخش صدای محیطی: خاموش';
             el.menuSoundToggle.setAttribute('title', label);
             if (el.menuSoundLabel) {
               el.menuSoundLabel.textContent = label;
