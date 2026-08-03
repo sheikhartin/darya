@@ -2057,6 +2057,8 @@ html[data-theme='beach'] .notification-message {
   .breathe-overlay,
   .breathe-close,
   .menu__item,
+  .sound-toggle__wave,
+  .sound-toggle__slash,
   .composer,
   .exit-confirm-bar__btn,
   .confirm-btn,
@@ -2575,10 +2577,20 @@ html[data-theme='beach'] .backdrop__depth-breath {
   border-radius: var(--radius-full);
   cursor: pointer;
   flex-shrink: 0;
+  position: relative;
   transition:
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide);
+}
+
+/* Expand the invisible tap target to the recommended 44px while keeping
+   the compact 34px visual footprint (matches .menu__trigger). */
+.breathe-trigger::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-full);
 }
 
 .breathe-trigger:hover,
@@ -2632,12 +2644,40 @@ html[data-theme='beach'] .breathe-trigger:focus-visible {
 /* inherits .menu__item styling.                                         */
 /* --------------------------------------------------------------------- */
 
+/* Sound toggle icon states: muted (speaker with slash, waves hidden)
+   when off, speaker with waves when on. The slash and waves crossfade
+   via aria-pressed, which app.js keeps in sync with the audio state. */
+.sound-toggle__wave,
+.sound-toggle__slash {
+  transition: opacity 0.25s var(--ease-tide);
+}
+
+.sound-toggle__slash {
+  opacity: 0;
+}
+
 #menu-sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  opacity: 0.25;
+  opacity: 0;
+}
+
+#menu-sound-toggle[aria-pressed='false'] .sound-toggle__slash {
+  opacity: 1;
 }
 
 #menu-sound-toggle[aria-pressed='true'] .sound-toggle__wave {
   opacity: 1;
+}
+
+#menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash {
+  opacity: 0;
+}
+
+/* Theme toggle icon: the ocean (waves) and beach (sun) glyphs both live
+   in the menu item and CSS reveals only the theme the item switches TO
+   (the opposite of the active theme), mirroring the old emoji swap. */
+html[data-theme='ocean'] .theme-toggle__ocean,
+html[data-theme='beach'] .theme-toggle__beach {
+  display: none;
 }
 
 /* --------------------------------------------------------------------- */
