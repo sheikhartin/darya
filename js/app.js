@@ -168,15 +168,12 @@
     });
     el.menuNewChat.setAttribute('aria-label', chosenLang.ui.newChatTitle);
     el.menuNewChat.setAttribute('title', chosenLang.ui.newChatTitle);
-    el.menuExportMd.setAttribute('aria-label', chosenLang.ui.exportMdTitle);
-    el.menuExportMd.setAttribute('title', chosenLang.ui.exportMdTitle);
-    el.menuExportTxt.setAttribute('aria-label', chosenLang.ui.exportTxtTitle);
-    el.menuExportTxt.setAttribute('title', chosenLang.ui.exportTxtTitle);
+    el.menuExportTxt.setAttribute('aria-label', chosenLang.ui.menuExportTitle);
+    el.menuExportTxt.setAttribute('title', chosenLang.ui.menuExportTitle);
     el.themePicker.setAttribute('aria-label', chosenLang.ui.themeGroupLabel);
     el.typingStatus.setAttribute('aria-label', chosenLang.ui.typingLabel);
     el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
-    el.menuExportMdLabel.textContent = chosenLang.ui.menuExportMd;
-    el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportTxt;
+    el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
     el.disclaimer.textContent = chosenLang.ui.disclaimer;
     UI.theme.updateThemeMenuItem();
 
@@ -189,22 +186,12 @@
       }
     }
 
-    // Initialize sound toggle menu item labels from the language pack.
-    // If the saved cookie state was "enabled", show the "on" label instead
-    // so the visible text matches aria-pressed.
-    var soundWasEnabled = false;
+    // Initialize the sound toggle from the ACTUAL playback state. Audio
+    // cannot start before a user gesture, so this shows "off" until the
+    // autoplay attempt (started right after this call) settles and
+    // re-syncs the toggle from the real result.
     if (typeof DaryaAmbientSound !== 'undefined') {
-      soundWasEnabled = DaryaAmbientSound.getSavedState() === true;
-    }
-    var soundLabel = soundWasEnabled
-      ? chosenLang.ui.soundOnTitle
-      : chosenLang.ui.soundOffTitle;
-    if (el.menuSoundToggle) {
-      el.menuSoundToggle.setAttribute('title', soundLabel);
-      el.menuSoundToggle.setAttribute('aria-pressed', String(soundWasEnabled));
-    }
-    if (el.menuSoundLabel) {
-      el.menuSoundLabel.textContent = soundLabel;
+      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
     }
 
     if (el.pickerLangLock) {
@@ -239,19 +226,16 @@
     st.chatActive = true;
     startConversation();
 
-    // Auto-play ambient sound if enabled in settings, updating UI if blocked
+    // Auto-play ambient sound if the user previously opted in, syncing
+    // the toggle to the ACTUAL result: if the browser blocks the
+    // automatic start, the toggle rolls back to "off" and a brief toast
+    // points to the menu toggle for a gesture-based start.
     if (typeof DaryaAmbientSound !== 'undefined') {
+      var soundIntentOn = DaryaAmbientSound.getSavedState() === true;
       DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
-        if (el.menuSoundToggle) {
-          el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-          var label =
-            chosenLang && enabled
-              ? chosenLang.ui.soundOnTitle
-              : chosenLang.ui.soundOffTitle;
-          el.menuSoundToggle.setAttribute('title', label);
-          if (el.menuSoundLabel) {
-            el.menuSoundLabel.textContent = label;
-          }
+        syncSoundToggleUI(enabled);
+        if (!enabled && soundIntentOn) {
+          notifySoundAutoplayBlocked();
         }
       });
     }
@@ -296,6 +280,11 @@
       sessionStorage.removeItem(UI.constants.SESSION_KEY);
     } catch (e) {
       /* ignore */
+    }
+    // Move focus to the first language option so keyboard users land on
+    // a sensible control after choosing "New chat".
+    if (el.pickerFa) {
+      el.pickerFa.focus();
     }
   }
 
@@ -489,6 +478,12 @@
   function openMenu() {
     el.menuPopover.hidden = false;
     el.menuTrigger.setAttribute('aria-expanded', 'true');
+    // Always present the honest sound state when the menu opens, so a
+    // rare silent failure (e.g. a theme-change playback that got blocked
+    // or a tab-resume that failed) can never leave a stale "on" icon.
+    if (typeof DaryaAmbientSound !== 'undefined') {
+      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
+    }
     menuFocusIndex = 0;
     var items = [...el.menuPopover.querySelectorAll('[role="menuitem"]')];
     requestAnimationFrame(function () {
@@ -534,6 +529,33 @@
       openMenu();
     } else {
       closeMenu();
+    }
+  }
+
+  /**
+   * Moves focus to the visible focusable element before or after the menu
+   * trigger. Used when Tab closes the open menu: the popover is hidden by
+   * then, so this resolves the document tab order cleanly and hands focus
+   * to the next real control instead of dropping it on <body>.
+   * @param {number} step - 1 for next, -1 for previous
+   */
+  function focusMenuTriggerSibling(step) {
+    var focusables = [
+      ...document.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ].filter(function (node) {
+      // Keep only visible elements; hidden picker/menu items are
+      // excluded via offsetParent being null.
+      return node.offsetParent !== null;
+    });
+    var index = focusables.indexOf(el.menuTrigger);
+    if (index === -1) {
+      return;
+    }
+    var target = focusables[index + step];
+    if (target) {
+      target.focus();
     }
   }
 
@@ -613,6 +635,12 @@
       if (lastItem) {
         lastItem.focus();
       }
+    } else if (event.key === 'Tab') {
+      // WAI-ARIA menu-button pattern: Tab leaves the menu, closes it,
+      // and continues the page tab order from just after the trigger.
+      event.preventDefault();
+      closeMenu();
+      focusMenuTriggerSibling(event.shiftKey ? -1 : 1);
     } else if (event.key === 'Escape') {
       event.preventDefault();
       closeMenu(true);
@@ -645,19 +673,16 @@
     }
   });
 
-  el.menuExportMd.addEventListener('click', function () {
-    closeMenu();
-    DaryaExport.exportMarkdown();
-  });
-
   el.menuExportTxt.addEventListener('click', function () {
-    closeMenu();
     DaryaExport.exportPlainText();
+    // Return focus to the trigger (WAI-ARIA menu-button pattern); the
+    // download itself needs no focus target of its own.
+    closeMenu(true);
   });
 
   el.menuThemeToggle.addEventListener('click', function () {
     UI.theme.applyTheme(el.menuThemeToggle.dataset.themeChoice);
-    closeMenu();
+    closeMenu(true);
   });
 
   if (el.breatheTrigger) {
@@ -685,6 +710,7 @@
     });
   }
   if (el.exitConfirmBar) {
+    // Escape cancels the pending farewell, mirroring the cancel button.
     el.exitConfirmBar.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -710,20 +736,54 @@
   if (el.menuSoundToggle) {
     el.menuSoundToggle.addEventListener('click', function () {
       DaryaAmbientSound.toggle().then(function (enabled) {
-        el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-        // Update the visible label and tooltip to reflect sound state
-        var label =
-          st.lang && enabled
-            ? st.lang.ui.soundOnTitle
-            : st.lang.ui.soundOffTitle;
-        el.menuSoundToggle.setAttribute('title', label);
-        if (el.menuSoundLabel) {
-          el.menuSoundLabel.textContent = label;
-        }
-        // Close the menu after toggling, like the theme toggle does
-        closeMenu();
+        syncSoundToggleUI(enabled);
+        // Return focus to the trigger after toggling, like the theme
+        // toggle does.
+        closeMenu(true);
       });
     });
+  }
+
+  /**
+   * Syncs the menu sound toggle's visible state (aria-pressed, title, and
+   * label) with the ACTUAL ambient playback state, so the icon never
+   * shows "on" while silence plays. Falls back to hardcoded Persian when
+   * no language pack is active yet (the app shell defaults to Persian).
+   * @param {boolean} enabled - True when ambient sound is really playing.
+   */
+  function syncSoundToggleUI(enabled) {
+    if (!el.menuSoundToggle) {
+      return;
+    }
+    var onLabel = st.lang ? st.lang.ui.soundOnTitle : 'پخش صدای محیطی: روشن';
+    var offLabel = st.lang ? st.lang.ui.soundOffTitle : 'پخش صدای محیطی: خاموش';
+    var label = enabled ? onLabel : offLabel;
+    el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+    el.menuSoundToggle.setAttribute('title', label);
+    if (el.menuSoundLabel) {
+      el.menuSoundLabel.textContent = label;
+    }
+  }
+
+  /** True once a blocked-autoplay toast has been shown this session. */
+  var soundBlockedToastShown = false;
+
+  /**
+   * Explains, once per session, that ambient sound could not start
+   * automatically and points to the menu toggle. Called by both autoplay
+   * paths - the language picker and the global first-gesture listener -
+   * with a one-shot flag so a single click that triggers both never
+   * shows the toast twice.
+   */
+  function notifySoundAutoplayBlocked() {
+    if (soundBlockedToastShown) {
+      return;
+    }
+    soundBlockedToastShown = true;
+    var blockedMsg =
+      (st.lang && st.lang.ui.soundAutoplayBlockedMsg) ||
+      'Ambient sound could not start automatically.';
+    DaryaOverlays.showNotification('warn', blockedMsg, 6000);
   }
 
   // ========================================================================
@@ -771,20 +831,9 @@
         DaryaAmbientSound.getSavedState() === true
       ) {
         DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
-          if (el.menuSoundToggle) {
-            el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-            var label =
-              st.lang && enabled
-                ? st.lang.ui.soundOnTitle
-                : st.lang
-                  ? st.lang.ui.soundOffTitle
-                  : enabled
-                    ? 'پخش صدای محیطی: روشن'
-                    : 'پخش صدای محیطی: خاموش';
-            el.menuSoundToggle.setAttribute('title', label);
-            if (el.menuSoundLabel) {
-              el.menuSoundLabel.textContent = label;
-            }
+          syncSoundToggleUI(enabled);
+          if (!enabled) {
+            notifySoundAutoplayBlocked();
           }
         });
       }
@@ -815,16 +864,8 @@
   DaryaAmbient.initBirdShadows();
   initAutoplayGesture();
 
-  // Restore the saved sound toggle state from cookie so the menu item
-  // reflects the user's last preference. Audio does NOT start playing
-  // here; that requires a user gesture per browser autoplay policy.
-  // The toggle button's aria-pressed and label are updated to match.
-  if (typeof DaryaAmbientSound !== 'undefined' && el.menuSoundToggle) {
-    var savedSound = DaryaAmbientSound.getSavedState();
-    if (savedSound === true) {
-      el.menuSoundToggle.setAttribute('aria-pressed', 'true');
-      // The label stays as "on" even though audio hasn't started yet;
-      // the first click will actually begin playback.
-    }
-  }
+  // The menu sound toggle starts honest: the HTML default is "off" and
+  // nothing is playing yet (browsers require a user gesture before audio
+  // can start). The first interaction re-syncs the toggle from the
+  // actual playback result via autoplayIfEnabled().then(...).
 })(typeof window !== 'undefined' ? window : globalThis);
