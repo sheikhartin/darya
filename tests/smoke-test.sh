@@ -76,17 +76,17 @@ required_files=(
   "js/languages/halfspace.js"
   "js/languages/entity-extractor.js"
   "assets/favicon.ico"
-  "assets/favicon.svg"
   "manifest.json"
   "sw.js"
   "fonts/Vazirmatn-Regular.woff2"
   "fonts/Quicksand-VF.woff2"
   "fonts/Lalezar-Regular.woff2"
   "fonts/BeVietnamPro-Regular.woff2"
-  "assets/icons/icon-192.png"
-  "assets/icons/icon-512.png"
-  "assets/icons/icon-maskable-192.png"
-  "assets/icons/icon-maskable-512.png"
+  "assets/icons/favicon-16x16.png"
+  "assets/icons/favicon-32x32.png"
+  "assets/icons/apple-touch-icon.png"
+  "assets/icons/android-chrome-192x192.png"
+  "assets/icons/android-chrome-512x512.png"
 )
 
 for f in "${required_files[@]}"; do
@@ -193,6 +193,24 @@ if command -v python3 >/dev/null 2>&1; then
   else
     fail "manifest.json is not valid JSON"
   fi
+fi
+
+# Icon self-consistency: every icon referenced by the manifest or the
+# HTML <head> must exist on disk, so a favicon swap can never silently
+# ship broken asset paths.
+if python3 - <<'PYICON'
+import json, pathlib, re
+missing = []
+manifest = json.load(open('manifest.json'))
+missing += [i['src'] for i in manifest.get('icons', []) if not pathlib.Path(i['src']).is_file()]
+html = pathlib.Path('index.html').read_text()
+missing += [m for m in re.findall(r'href="(assets/(?:favicon\.ico|icons/[^"]+))"', html) if not pathlib.Path(m).is_file()]
+raise SystemExit(1 if missing else 0)
+PYICON
+then
+  ok "all icons referenced by index.html and manifest.json exist on disk"
+else
+  fail "index.html or manifest.json reference icon files that are missing"
 fi
 
 # ============================================================================
@@ -574,9 +592,11 @@ else
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"
     check_status "/fonts/Vazirmatn-Regular.woff2" "200"
-    check_status "/assets/icons/icon-192.png" "200"
-    check_status "/assets/icons/icon-512.png" "200"
-    check_status "/assets/favicon.svg" "200"
+    check_status "/assets/icons/favicon-16x16.png" "200"
+    check_status "/assets/icons/favicon-32x32.png" "200"
+    check_status "/assets/icons/apple-touch-icon.png" "200"
+    check_status "/assets/icons/android-chrome-192x192.png" "200"
+    check_status "/assets/icons/android-chrome-512x512.png" "200"
     check_status "/this-does-not-exist.xyz" "404"
 
     # Content sanity: the page should mention both language options and

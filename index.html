@@ -8,9 +8,14 @@
     <title id="page-title">دریا · همراه گفتگوی آرام</title>
     <meta id="page-description" name="description" content="دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی." />
 
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="alternate icon" href="assets/favicon.ico" />
-    <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+    <!-- Favicon set: raster-only (ICO + 16/32 PNGs) because the current
+       icon set ships no SVG source. The ICO with sizes="any" keeps
+       legacy clients happy; modern browsers pick the most specific
+       PNG match. -->
+    <link rel="icon" href="assets/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.json" />
 
     <!-- iOS does not support the web app manifest for "add to home screen"
