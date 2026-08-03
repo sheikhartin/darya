@@ -1913,6 +1913,31 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
   assert.match(app, /ArrowDown/);
   assert.match(app, /ArrowUp/);
   assert.match(app, /closeMenu\(true\)/);
+  // Tab closes the open menu and hands focus to the next real control
+  // instead of leaving the popover open with focus escaped.
+  assert.match(app, /event\.key === 'Tab'/u);
+  assert.match(app, /focusMenuTriggerSibling\(/u);
+});
+
+test('modal surfaces move focus in, contain it, and restore it', () => {
+  const overlays = read('js/ui/overlays.js');
+  const app = read('js/app.js');
+  // The breathing exercise is a true modal dialog: focus enters through
+  // the dismiss control, Escape closes it, and Tab stays inside so the
+  // background stays inert.
+  assert.match(overlays, /role', 'dialog'/u);
+  assert.match(overlays, /aria-modal', 'true'/u);
+  assert.match(overlays, /closeBtn\.focus\(\)/u);
+  assert.match(overlays, /e\.key === 'Escape'/u);
+  assert.match(overlays, /e\.key === 'Tab'/u);
+  assert.match(overlays, /breatheFocusTarget\.focus\(\)/u);
+  // The exit-confirm alertdialog hands focus to its safe default, and
+  // Escape routes through the same cancel path as the No button.
+  assert.match(overlays, /el\.exitConfirmNo\.focus\(\)/u);
+  assert.match(app, /exitConfirmBar\.addEventListener\('keydown'/u);
+  assert.match(app, /confirmExitNo\(\)/u);
+  // Toasts localize their chrome instead of hardcoding English labels.
+  assert.match(overlays, /ui\.notificationDismiss/u);
 });
 
 test('every static button has a title and every status surface is labelled', () => {
@@ -1924,15 +1949,12 @@ test('every static button has a title and every status surface is labelled', () 
   assert.match(html, /id="theme-picker"[^>]*role="group"/u);
 });
 
-test('export controls have the intended order and accessible names', () => {
+test('the single export control has an accessible name and no format suffix', () => {
   const html = read('index.html');
-  assert.ok(
-    html.indexOf('id="menu-export-txt"') < html.indexOf('id="menu-export-md"')
-  );
-  assert.match(html, /menu-export-txt[^>]*aria-label="[^"]+"/u);
-  assert.match(html, /menu-export-md[^>]*aria-label="[^"]+"/u);
-  assert.match(FA.ui.menuExportMd, /مارک‌داون/);
-  assert.doesNotMatch(FA.ui.menuExportMd, /[()]/u);
+  assert.match(html, /id="menu-export-txt"[^>]*aria-label="[^"]+"/u);
+  assert.doesNotMatch(html, /menu-export-md/u);
+  assert.doesNotMatch(FA.ui.menuExportLabel, /[()]/u);
+  assert.doesNotMatch(FA.ui.menuExportLabel, /مارک|فرمت/u);
 });
 
 test('Persian theme terminology uses پوسته consistently', () => {
@@ -1941,8 +1963,7 @@ test('Persian theme terminology uses پوسته consistently', () => {
     FA.ui.themeBeachLabel,
     FA.ui.themeOceanTitle,
     FA.ui.themeBeachTitle,
-    FA.ui.themeGroupLabel,
-    FA.ui.themeToggleTitle
+    FA.ui.themeGroupLabel
   ]) {
     assert.match(value, /پوسته/u);
     assert.doesNotMatch(value, /تم/u);
@@ -2207,6 +2228,86 @@ test('ambient sound starts playback within the user gesture, not after buffering
   assert.match(ambient, /PLAY_ATTEMPT_TIMEOUT_MS/u);
 });
 
+test('ambient sound cookie constants stay above the state initializer', () => {
+  // Regression guard for the var-hoisting cookie bug. The module-scope
+  // `var isEnabled = getSavedState() === true` initializer reads
+  // SOUND_COOKIE_NAME through getSavedState at load time. If a cookie
+  // constant is ever declared below that line, the initializer sees
+  // undefined (var hoisting) or a TDZ ReferenceError (const), and a
+  // returning user's saved sound preference is silently lost on every
+  // visit. This structural test locks the source order; the smoke-test
+  // marker gives the same guard in the bash-only runner, and the final
+  // assertions keep the two engines' anchors in sync.
+  const ambient = read('js/ui/ambient-sound.js');
+  const lines = ambient.split('\n');
+
+  const cookieNameLine = lines.findIndex((line) =>
+    /^\s*const SOUND_COOKIE_NAME = /u.test(line)
+  );
+  const cookieAgeLine = lines.findIndex((line) =>
+    /^\s*const SOUND_COOKIE_MAX_AGE_DAYS = /u.test(line)
+  );
+  const initializerLine = lines.findIndex((line) =>
+    /var isEnabled = getSavedState\(\) === true/u.test(line)
+  );
+  const internalStateHeader = lines.findIndex((line) =>
+    /^  \/\/ Internal state$/u.test(line)
+  );
+
+  // Every anchor must exist; a missing match (-1) must fail loudly
+  // instead of making the ordering comparisons below vacuously pass.
+  assert.ok(cookieNameLine >= 0, 'SOUND_COOKIE_NAME declaration not found');
+  assert.ok(cookieAgeLine >= 0, 'SOUND_COOKIE_MAX_AGE_DAYS not found');
+  assert.ok(initializerLine >= 0, 'isEnabled initializer not found');
+  assert.ok(
+    internalStateHeader >= 0,
+    'Internal state section header not found'
+  );
+
+  // The initializer must live inside the Internal state section, and
+  // every cookie constant must be declared strictly before it.
+  assert.ok(
+    initializerLine > internalStateHeader,
+    'isEnabled initializer must sit inside the Internal state section'
+  );
+  for (const [label, line] of [
+    ['SOUND_COOKIE_NAME', cookieNameLine],
+    ['SOUND_COOKIE_MAX_AGE_DAYS', cookieAgeLine]
+  ]) {
+    assert.ok(
+      line < initializerLine,
+      `${label} must be declared before the isEnabled initializer`
+    );
+    // A var/let redeclaration would reintroduce the hoisting hazard even
+    // in the correct position, so the declaration must stay a const.
+    assert.match(
+      lines[line],
+      /^\s*const SOUND_COOKIE_/u,
+      `${label} must stay a const declaration`
+    );
+  }
+
+  // getSavedState must keep reading SOUND_COOKIE_NAME. A rename that
+  // desyncs the binding would silently disable every guard above. Guard
+  // the slice bounds so a function reorder or rename fails here with a
+  // clear message instead of an empty slice.
+  const savedStateIndex = ambient.indexOf('function getSavedState');
+  const themeChangeIndex = ambient.indexOf('function onThemeChange');
+  assert.ok(
+    savedStateIndex >= 0 && themeChangeIndex > savedStateIndex,
+    'getSavedState must be defined before onThemeChange'
+  );
+  const savedStateBody = ambient.slice(savedStateIndex, themeChangeIndex);
+  assert.match(savedStateBody, /SOUND_COOKIE_NAME/u);
+
+  // The bash smoke marker must keep matching the same anchors; if the
+  // source patterns drift, the marker would go quiet and lose its
+  // coverage in the smoke runner.
+  const smoke = read('tests/smoke-test.sh');
+  assert.match(smoke, /grep -n "SOUND_COOKIE_NAME = "/u);
+  assert.match(smoke, /grep -n "var isEnabled = getSavedState"/u);
+});
+
 test('semantic theme tokens are defined for reusable component roles', () => {
   const css = read('css/style.css');
   for (const token of [
@@ -2247,6 +2348,11 @@ test('mobile-first responsive guards: touch targets, iOS zoom, safe areas', () =
     css,
     /\.menu__trigger::after[\s\S]*?inset: -5px/u,
     'menu trigger needs a 44px tap target'
+  );
+  assert.match(
+    css,
+    /\.breathe-trigger::after[\s\S]*?inset: -5px/u,
+    'breathe trigger needs a 44px tap target'
   );
   assert.match(
     css,

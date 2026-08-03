@@ -3,19 +3,22 @@
 # Darya test suite runner.
 #
 # Runs the Bash smoke test (file structure, syntax, known-bug regression
-# markers) then the Node.js engine test suite. With -n N, runs the engine
-# tests N times and prints a pass/fail summary.
+# markers) then the Node.js test suite: the unit tests plus a
+# headless-browser keyboard e2e test (auto-skips when no Chrome/Chromium
+# binary exists). With -n N, runs the engine tests N times and prints a
+# pass/fail summary (the browser e2e test is excluded from that mode to
+# keep rounds fast).
 #
 # Output modes:
 #   Default:     Minimal per-suite summary (2-4 lines)
 #   Verbose (-v): Full output with per-test names and round progress
 #
 # Usage:
-#   ./run-tests.sh                        # single run (smoke + engine)
+#   ./run-tests.sh                        # single run (smoke + node suites)
 #   ./run-tests.sh -n 10                  # 10 rounds of engine tests
 #   ./run-tests.sh -n 5 -v                # 5 rounds with verbose output
-#   ./run-tests.sh --engine-only          # engine tests only, single run
-#   ./run-tests.sh -v --engine-only       # engine only, verbose
+#   ./run-tests.sh --engine-only          # node suites only, single run
+#   ./run-tests.sh -v --engine-only       # node suites only, verbose
 
 set -uo pipefail
 
@@ -103,13 +106,17 @@ run_smoke() {
 # Single engine test run
 # -------------------------------------------------------------------
 run_engine() {
+  local test_files="tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs"
+
   if $VERBOSE; then
-    node --test --test-reporter spec tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1
+    # shellcheck disable=SC2086
+    node --test --test-reporter spec $test_files 2>&1
     return $?
   fi
 
   local output
-  output="$(node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs 2>&1)"
+  # shellcheck disable=SC2086
+  output="$(node --test --test-reporter tap $test_files 2>&1)"
   local rc=$?
   local parsed
   parsed="$(parse_engine_result "$output")"
