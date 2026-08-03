@@ -47,6 +47,12 @@
   /** Expected theme keys that must exist in a valid manifest. */
   const EXPECTED_MANIFEST_THEMES = ['beach', 'ocean'];
 
+  /** Name of the cookie used to persist the sound toggle state. */
+  const SOUND_COOKIE_NAME = 'darya_sound';
+
+  /** Number of days until the sound cookie expires. */
+  const SOUND_COOKIE_MAX_AGE_DAYS = 365;
+
   // ========================================================================
   // Internal state
   // ========================================================================
@@ -83,6 +89,14 @@
 
   /** @type {boolean} True if fallback synthesis is active instead of file playback. */
   var isUsingFallback = false;
+
+  /**
+   * @type {Promise<boolean>|null} In-flight autoplay attempt, shared by
+   * concurrent callers so a single user gesture never starts two audio
+   * elements (e.g. the language-picker click and the first-gesture
+   * document listener firing on the same click).
+   */
+  var pendingAutoplay = null;
 
   // ========================================================================
   // Visibility change handler
@@ -763,11 +777,6 @@
     loadManifest();
   }
 
-  /** Name of the cookie used to persist the sound toggle state. */
-  var SOUND_COOKIE_NAME = 'darya_sound';
-  /** Number of days until the sound cookie expires. */
-  var SOUND_COOKIE_MAX_AGE_DAYS = 365;
-
   /**
    * Saves the current sound enabled/disabled state to a persistent cookie
    * so the preference is remembered across visits.
@@ -806,7 +815,13 @@
    * @returns {Promise<boolean>} Resolves with the new enabled state.
    */
   function toggle() {
-    if (isEnabled) {
+    // The button reflects ACTUAL playback, so a click always does what
+    // its visible state promises: stop when playing, start otherwise.
+    // Keying off isPlaying() also recovers the edge case where the
+    // module was left "enabled" but silent (e.g. an autoplay attempt
+    // was blocked or a tab-resume failed): the next click restarts
+    // within the gesture instead of toggling to a confusing "off".
+    if (isPlaying()) {
       // Disable: clear any pending theme change, then stop current audio
       isEnabled = false;
       if (pendingThemeTimer) {
@@ -826,6 +841,11 @@
     // gesture, keeping Chrome's transient activation alive.
     return loadManifest().then(function (loaded) {
       if (!loaded) {
+        // Nothing can play without a manifest; stay (or become) honestly
+        // disabled so the toggle never reports an enabled state that no
+        // sound could ever back up.
+        isEnabled = false;
+        saveCookieState();
         return false;
       }
       var theme =
@@ -905,10 +925,18 @@
       currentTheme = null;
     }
 
-    // Schedule the new theme's sound to start after a short delay
+    // Schedule the new theme's sound to start after a short delay. The
+    // start is caught: a theme change can happen outside a user gesture,
+    // and an autoplay-policy rejection on the first or second attempt
+    // would otherwise surface as an unhandled promise rejection.
     pendingThemeTimer = setTimeout(function () {
       pendingThemeTimer = null;
-      playThemeSound(newTheme);
+      playThemeSound(newTheme).catch(function () {
+        // Roll back so the module state, cookie, and UI all agree that
+        // no sound is actually playing.
+        isEnabled = false;
+        saveCookieState();
+      });
     }, THEME_CHANGE_DELAY_MS);
   }
 
@@ -956,17 +984,38 @@
    * Automatically starts playback of the current theme sound if ambient
    * sound is enabled in the user's settings, utilizing a user-gesture context.
    * Safe to call multiple times; if already playing, does nothing.
-   * @returns {Promise<void>}
+   * Concurrent callers (the language-picker click and the first-gesture
+   * document listener can fire on the same click) share one in-flight
+   * attempt instead of each starting their own Audio element.
+   * @returns {Promise<boolean>} Resolves with the ACTUAL enabled state.
    */
   function autoplayIfEnabled() {
+    if (pendingAutoplay) {
+      return pendingAutoplay;
+    }
     if (isEnabled && !isPlaying()) {
       var theme =
         document.documentElement.getAttribute('data-theme') || 'ocean';
-      return playThemeSound(theme).catch(function () {
-        /* fail-safe */
-      });
+      pendingAutoplay = playThemeSound(theme).then(
+        function () {
+          pendingAutoplay = null;
+          // Resolve with the ACTUAL state: the synthesized fallback may
+          // have disabled the system internally if it could not start.
+          return isEnabled;
+        },
+        function () {
+          pendingAutoplay = null;
+          // Autoplay was blocked (no user gesture yet) or playback
+          // failed. Roll back so the UI, module state, and saved cookie
+          // all agree that no sound is actually playing.
+          isEnabled = false;
+          saveCookieState();
+          return false;
+        }
+      );
+      return pendingAutoplay;
     }
-    return Promise.resolve();
+    return Promise.resolve(isEnabled);
   }
 
   const DaryaAmbientSound = {
