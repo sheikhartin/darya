@@ -57,6 +57,62 @@ test('fa normalize: corrects already space-free known verb forms', () => {
   assert.equal(FA.normalize('میخواهم بروم'), 'می\u200cخواهم بروم');
 });
 
+test('normalizeForMatching: Persian progressive-prefix spellings unify', () => {
+  // ZWNJ, full-space, and no-space spellings of می/نمی all collapse to
+  // the same matching token, so a rule that lists one form fires for all.
+  const needInputs = ['می خوام برم', 'میخوام برم', 'می\u200cخوام برم'];
+  assert.deepEqual(
+    needInputs.map((t) => normalizeForMatching(t, FA)),
+    ['میخوام برم', 'میخوام برم', 'میخوام برم']
+  );
+  const apologyInputs = ['عذر می‌خوام', 'عذر میخوام', 'عذر می خوام'];
+  assert.deepEqual(
+    apologyInputs.map((t) => normalizeForMatching(t, FA)),
+    ['عذر میخوام', 'عذر میخوام', 'عذر میخوام']
+  );
+  // Mid-word "می" must never be merged (regression for "کمی").
+  assert.equal(normalizeForMatching('کمی ساده تر بگو', FA), 'کمی ساده تر بگو');
+  assert.equal(normalizeForMatching('درک می کنم', FA), 'درک میکنم');
+});
+
+test('FA: half-space spelling variants all route to the same rule', () => {
+  const engine = freshEngine(FA);
+  const routed = (input) => {
+    const matches = engine._matchRules(normalizeForMatching(input, FA));
+    return matches[0]?.rule.topic || '(none)';
+  };
+  const groups = {
+    need: ['می خوام برم', 'میخوام برم', 'می‌خوام برم'],
+    simplify: [
+      'کمی ساده‌تر توضیح بده',
+      'کمی ساده تر توضیح بده',
+      'ساده‌تر بنویس'
+    ],
+    apology: [
+      'ببخشید',
+      'عذر می‌خوام',
+      'عذر میخوام',
+      'شرمنده‌ام',
+      'شرمنده ام',
+      'شرمندهام'
+    ],
+    what_do_i_do: [
+      'چه کار باید بکنم',
+      'چیکار باید بکنم',
+      'راه حل نمی‌دی',
+      'راه‌حل نمیدی',
+      'راهحل نمیدی'
+    ]
+  };
+  for (const [topic, inputs] of Object.entries(groups)) {
+    const topics = inputs.map(routed);
+    assert.ok(
+      topics.every((t) => t === topic),
+      `${topic} variants must all route to ${topic}, got: ${JSON.stringify(topics)}`
+    );
+  }
+});
+
 test('en normalize: unifies smart/curly quotes to plain ASCII', () => {
   assert.equal(EN.normalize('I\u2019m tired'), "I'm tired");
   assert.equal(EN.normalize('\u201chello\u201D'), '"hello"');
@@ -572,10 +628,23 @@ test('EN compound greeting falls through to the how-are-you rule instead of the 
 });
 
 test('FA greeting mirroring keeps variants for صبح بخیر / عصر بخیر / سلام صبح بخیر', () => {
-  for (const greeting of ['صبح بخیر', 'عصر بخیر', 'سلام صبح بخیر']) {
+  for (const greeting of ['صبح بخیر', 'سلام صبح بخیر']) {
     const engine = freshEngine(FA);
     const reply = engine.respond(greeting);
-    assert.match(reply, /^سلام/u, `${greeting} should get a سلام-based reply`);
+    assert.match(
+      reply,
+      /^صبح بخیر/u,
+      `${greeting} should get a صبح بخیر-based reply`
+    );
+  }
+  for (const greeting of ['عصر بخیر']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(greeting);
+    assert.match(
+      reply,
+      /^عصر بخیر/u,
+      `${greeting} should get a عصر بخیر-based reply`
+    );
   }
 });
 
@@ -2570,6 +2639,237 @@ test('Persian ambiguous and question fallbacks use informal friendly tone', () =
       line,
       /\u067E\u0631\u0633\u06CC\u062F\u06CC\u062F|\u0628\u0631\u0627\u062A\u0648\u0646|\u062E\u0648\u062F\u062A\u0627\u0646/u
     );
+  }
+});
+
+// ============================================================================
+// New rules: apology, meta_feedback, about_eliza, compliment_darya,
+// misread_correction
+// ============================================================================
+
+test('FA: apology gets warm acceptance from pool', () => {
+  const pool = new Set(FA.rules.find((r) => r.topic === 'apology').responses);
+  for (const input of ['ببخشید', 'عذر می‌خوام', 'متاسفم']) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `FA apology: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: apology gets warm acceptance from pool', () => {
+  const pool = new Set(EN.rules.find((r) => r.topic === 'apology').responses);
+  for (const input of ['sorry', "i'm sorry", 'i apologize']) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `EN apology: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: meta_feedback routes to its pool for feedback about quoting/intelligence', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'meta_feedback').responses
+  );
+  for (const input of [
+    'دوباره نقل وقول کردی',
+    'باید معنا و مفهوم متن ورودی من رو درک کنی',
+    'بررسی کن که چه واکنشی نشون میدی',
+    'تو در بیشتر جملهها نقطه میذاری'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `FA meta_feedback: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: meta_feedback routes to its pool for feedback about quoting/memory', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'meta_feedback').responses
+  );
+  for (const input of [
+    'you keep quoting words',
+    'you should understand the meaning of my message',
+    'pay attention to the previous messages',
+    'feedback about your responses'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `EN meta_feedback: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('meta_feedback bypasses frustration override even when insults present', () => {
+  const metaPool = new Set(
+    FA.rules.find((r) => r.topic === 'meta_feedback').responses
+  );
+  const frustrationPool = FA.frustrationResponses;
+  const reply = freshEngine(FA).respond(
+    'احمق، باید معنا و مفهوم متن ورودی من رو درک کنی'
+  );
+  assert.ok(metaPool.has(reply), 'meta_feedback should beat frustration');
+  assert.ok(
+    !frustrationPool.includes(reply),
+    'should not be a frustration response'
+  );
+});
+
+test('FA: about_eliza routes to its pool for creator/origin questions', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'about_eliza').responses
+  );
+  for (const input of [
+    'تو رو کی ساخته؟',
+    'کی ساخته تو رو؟',
+    'الیزا چیست',
+    'هدف از ساخت پروژه الیزا',
+    'آرتین کیست'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `FA about_eliza: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: about_eliza routes to its pool for creator/origin questions', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'about_eliza').responses
+  );
+  for (const input of [
+    'who made you',
+    'who built darya',
+    'tell me about eliza',
+    'who created you',
+    'artin made you'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `EN about_eliza: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+test('about_eliza pool mentions Artin and ELIZA in both languages', () => {
+  for (const lang of [FA, EN]) {
+    const pool = lang.rules.find((r) => r.topic === 'about_eliza').responses;
+    const combined = pool.join(' ');
+    assert.match(combined, /Artin|آرتین/, 'pool mentions Artin');
+    assert.match(combined, /ELIZA|الیزا/, 'pool mentions ELIZA');
+  }
+});
+
+test('FA: compliment_darya routes to its pool', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'compliment_darya').responses
+  );
+  const reply = freshEngine(FA).respond('خوشم میاد از حرفت');
+  assert.ok(
+    pool.has(reply),
+    `FA compliment: should reply from pool, got: ${reply}`
+  );
+});
+
+test('EN: compliment_darya routes to its pool', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'compliment_darya').responses
+  );
+  const reply = freshEngine(EN).respond('well said');
+  assert.ok(
+    pool.has(reply),
+    `EN compliment: should reply from pool, got: ${reply}`
+  );
+});
+
+test('FA: misread_correction routes to its pool for correction statements', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'misread_correction').responses
+  );
+  const reply = freshEngine(FA).respond('مگه من راجع به کار صحبت کردم؟!');
+  assert.ok(
+    pool.has(reply),
+    `FA misread: should reply from pool, got: ${reply}`
+  );
+});
+
+test('EN: misread_correction routes to its pool', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'misread_correction').responses
+  );
+  for (const input of [
+    "that's not what i meant",
+    'i never said that',
+    'you misunderstood me'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `EN misread: ${input} should reply from pool, got: ${reply}`
+    );
+  }
+});
+
+// ============================================================================
+// Word repetition does not fire on questions
+// ============================================================================
+
+test('word repetition does not trigger when the turn is a question', () => {
+  const engine = freshEngine(FA);
+  const wordRepetitionPool = new Set(FA.wordRepetitionResponses);
+  // Repeated questions about the same topic must not get the
+  // "you keep saying X" response.
+  for (let i = 0; i < 4; i += 1) {
+    engine.respond('تو رو کی ساخته؟');
+  }
+  const reply = engine.respond('تو رو کی ساخته؟');
+  assert.ok(reply.length > 0);
+  assert.ok(
+    !wordRepetitionPool.has(reply),
+    'word repetition must not fire on repeated questions'
+  );
+});
+
+test('EN: word repetition does not trigger when the turn is a question', () => {
+  const engine = freshEngine(EN);
+  const wordRepetitionPool = new Set(EN.wordRepetitionResponses);
+  for (let i = 0; i < 4; i += 1) {
+    engine.respond('who made you?');
+  }
+  const reply = engine.respond('who made you?');
+  assert.ok(reply.length > 0);
+  assert.ok(
+    !wordRepetitionPool.has(reply),
+    'word repetition must not fire on questions'
+  );
+});
+
+// ============================================================================
+// Exit keywords: expanded farewell detection
+// ============================================================================
+
+test('FA: expanded exit keywords are recognized', () => {
+  for (const input of ['وقت خداحافظیه', 'وداع', 'بای بای', 'وقتشه برم']) {
+    assert.equal(freshEngine(FA).isExitCommand(input), true, input);
+  }
+});
+
+test('EN: expanded exit keywords are recognized', () => {
+  for (const input of [
+    'time to go',
+    'i should go',
+    'got to go',
+    'ciao',
+    'bye bye'
+  ]) {
+    assert.equal(freshEngine(EN).isExitCommand(input), true, input);
   }
 });
 

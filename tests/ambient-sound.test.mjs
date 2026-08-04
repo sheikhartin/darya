@@ -144,3 +144,148 @@ test('concurrent autoplay callers share one in-flight audio start', async () => 
     globalThis.Audio = originalAudio;
   }
 });
+
+/**
+ * Loads the module with a fake document and a fake Audio whose play()
+ * behaves according to the given behavior.
+ * @param {string} cookie - The document.cookie to expose
+ * @param {Function} play - play() implementation returning a promise
+ * @returns {object} the sandbox surface (ambient, instances, handlers)
+ */
+function loadSandbox(cookie, play) {
+  const originalDocument = globalThis.document;
+  const originalFetch = globalThis.fetch;
+  const originalAudio = globalThis.Audio;
+  const instances = [];
+  const handlers = {};
+  class FakeAudio {
+    constructor() {
+      instances.push(this);
+      this.paused = true;
+      this.readyState = 0;
+    }
+    addEventListener() {}
+    removeEventListener() {}
+    play() {
+      return play(this);
+    }
+    pause() {
+      this.paused = true;
+    }
+    removeAttribute() {}
+    load() {}
+  }
+  const fakeDocument = {
+    cookie,
+    hidden: true,
+    documentElement: { getAttribute: () => 'ocean' },
+    addEventListener(name, handler) {
+      handlers[name] = handler;
+    },
+    removeEventListener() {}
+  };
+  globalThis.document = fakeDocument;
+  globalThis.fetch = () =>
+    Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({ beach: ['beach.mp3'], ocean: ['ocean.mp3'] })
+    });
+  globalThis.Audio = FakeAudio;
+  vm.runInThisContext(SCRIPT, { filename: 'js/ui/ambient-sound.js' });
+  return {
+    ambient: globalThis.DaryaAmbientSound,
+    instances,
+    handlers,
+    fakeDocument,
+    restore() {
+      delete globalThis.DaryaAmbientSound;
+      globalThis.document = originalDocument;
+      globalThis.fetch = originalFetch;
+      globalThis.Audio = originalAudio;
+    }
+  };
+}
+
+function notAllowedError() {
+  const err = new Error('autoplay policy');
+  err.name = 'NotAllowedError';
+  return err;
+}
+
+test('autoplay blocked by autoplay policy keeps the saved preference', async () => {
+  const box = loadSandbox('darya_sound=1', () =>
+    Promise.reject(notAllowedError())
+  );
+  try {
+    const result = await box.ambient.autoplayIfEnabled();
+    // A NotAllowedError is not a load failure: the module must keep its
+    // enabled intent and the saved cookie so a later gesture can retry.
+    assert.equal(result, true);
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.ambient.isPlaying(), false);
+    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+  } finally {
+    box.restore();
+  }
+});
+
+test('a genuine load failure still rolls back and wipes the preference', async () => {
+  const box = loadSandbox('darya_sound=1', () =>
+    Promise.reject(
+      Object.assign(new Error('decode failed'), { name: 'TypeError' })
+    )
+  );
+  try {
+    const result = await box.ambient.autoplayIfEnabled();
+    assert.equal(result, false);
+    assert.equal(box.ambient.enabled, false);
+    assert.ok(
+      box.fakeDocument.cookie.startsWith('darya_sound=0'),
+      `cookie should record the disabled state, got: ${box.fakeDocument.cookie}`
+    );
+  } finally {
+    box.restore();
+  }
+});
+
+test('toggle keeps user intent when playback is policy-blocked', async () => {
+  const box = loadSandbox('darya_sound=0', () =>
+    Promise.reject(notAllowedError())
+  );
+  try {
+    const result = await box.ambient.toggle();
+    // The user asked to enable sound; a NotAllowedError must not silently
+    // convert that into a disabled preference. The module keeps its
+    // enabled intent for the session (a later gesture or tab return can
+    // retry) without writing a "playing" cookie that no sound backs up.
+    assert.equal(result, true);
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.fakeDocument.cookie, 'darya_sound=0');
+  } finally {
+    box.restore();
+  }
+});
+
+test('tab becoming visible retries autoplay without wiping preference', async () => {
+  const box = loadSandbox('darya_sound=1', () =>
+    Promise.reject(notAllowedError())
+  );
+  try {
+    // Simulate an initial autoplay attempt that was policy-blocked.
+    await box.ambient.autoplayIfEnabled();
+    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+
+    // Tab returns to the foreground: the visibility handler must retry
+    // autoplay rather than silently staying silent, and the retry must
+    // remain preference-safe.
+    box.fakeDocument.hidden = false;
+    box.handlers.visibilitychange();
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+  } finally {
+    box.restore();
+  }
+});
