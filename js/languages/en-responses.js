@@ -998,7 +998,8 @@
   R['ruleSmalltalkIdentity'] = [
     "I'm Darya, a companion here to listen. I'm not a real person, just a calm space to think out loud.",
     "I'm a simple chat companion, not a human. But I'm genuinely here to listen.",
-    'I am Darya, a conversation companion. I am here for whatever you want to share.'
+    'I am Darya, a conversation companion. I am here for whatever you want to share.',
+    'I am Darya, made by Artin as a tribute to ELIZA, the first chatbot, from MIT. I am here to listen to you.'
   ];
 
   R['ruleSmalltalkCapability'] = [
@@ -1194,6 +1195,66 @@
     'I am a conversation companion designed for support and reflection. Let us keep this exchange respectful.',
     'I am not able to engage with that type of comment. Would you like to talk about something else instead?',
     'This space works best when it stays respectful. I am here if you want to continue a real conversation.'
+  ];
+
+  // ------------------------------------------------------------------
+  // Apology: warm acceptance after the user says sorry (English).
+  // Kept brief and forward-moving: the pool never dwells on the
+  // apology or repeats it back.
+  // ------------------------------------------------------------------
+  R['ruleApology'] = [
+    'No problem at all. Everyone has a moment, and I am glad you are still here.',
+    'I hear your apology, and there is no judgment here. We can continue whenever you like.',
+    'There is nothing to forgive. This space is for you; what is on your mind right now?',
+    'Thank you for saying that. The conversation can pick up right from here.'
+  ];
+
+  // ------------------------------------------------------------------
+  // Meta-feedback: the user comments on Darya's own behavior, quoting,
+  // memory, or intelligence (English). A humble, non-defensive
+  // acknowledgement that commits to doing better and then reopens the
+  // conversation.
+  // ------------------------------------------------------------------
+  R['ruleMetaFeedback'] = [
+    'I take your feedback seriously and I will work to listen more closely. Would you like to keep going from here?',
+    'You are right that attention to detail matters. I will try to hold the whole thread of what you say.',
+    'Noted: more care in my answers and better attention to what came before. Thank you for telling me.',
+    'I understand, and I will try to do better. Your close attention to this conversation helps.'
+  ];
+
+  // ------------------------------------------------------------------
+  // About Darya / ELIZA: who built Darya and the origin story (English).
+  // Short, simple, and curiosity-engaging: built by Artin as a tribute
+  // to ELIZA, the first chatbot, developed at MIT. No surname and no
+  // repository are ever mentioned.
+  // ------------------------------------------------------------------
+  R['ruleAboutEliza'] = [
+    'I was made by Artin, as a tribute to ELIZA, the first chatbot ever, built at MIT in 1966. Short and simple: that is where this project began.',
+    'My creator is Artin, and this project is a quiet tribute to ELIZA, the first chatbot, developed at MIT. I am here to listen to you.',
+    'I was made by Artin, as a tribute to ELIZA, the first chatbot ever, built at MIT in 1966. Would you like to hear more, or talk about yourself?',
+    'My creator is Artin, and this project is a quiet tribute to ELIZA, the first chatbot, developed at MIT. What is on your mind?',
+    "A person named Artin built me. This project is a tribute to ELIZA, the world's first chatbot, created at MIT. Do you want to hear more, or tell me about yourself?"
+  ];
+
+  // ------------------------------------------------------------------
+  // Compliment to Darya: the user liked something she said (English).
+  // Warm acknowledgement that turns the focus back to the user.
+  // ------------------------------------------------------------------
+  R['ruleComplimentDarya'] = [
+    'Thank you, that means a lot. I am glad something I said felt right to you.',
+    'That is kind of you to say. This conversation is alive because of you.',
+    'I am happy that landed well. What part of it stood out for you?'
+  ];
+
+  // ------------------------------------------------------------------
+  // Misread correction: the user says Darya understood them wrong
+  // (English). Acknowledge the mistake and invite a restated version
+  // instead of re-triggering the same topic rule.
+  // ------------------------------------------------------------------
+  R['ruleMisreadCorrection'] = [
+    'Sorry, I misread that. Tell me again what you actually meant.',
+    'I misunderstood you. Could you say it in your own words?',
+    'You are right, I was not listening closely enough. What did you really mean?'
   ];
 
   global.DaryaEnResponses = R;

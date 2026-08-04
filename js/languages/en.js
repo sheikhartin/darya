@@ -367,6 +367,63 @@
       R['ruleRecap']
     ),
 
+    // The user apologizes ("sorry", "i apologize"). Warm acceptance beats
+    // the "could you elaborate" ambiguous-input fallback, so a bare
+    // "sorry" is never answered with a request for more detail. The pool
+    // stays brief and moves on.
+    rule(
+      'apology',
+      64,
+      /\b(?:sorry|i'?m sorry|i apologize|i apologise|apologize|apologise|my apologies|forgive me|my bad|pardon me)\b/i,
+      R['ruleApology']
+    ),
+
+    // Feedback aimed at Darya herself: how she quotes words, whether she
+    // understands the message chain, how "smart" she is, requests for a
+    // swear-word dictionary, open-question style, and so on. These turns
+    // deserve a humble acknowledgement even when worded harshly, so this
+    // topic is also excluded from the frustration/harassment override in
+    // the engine.
+    rule(
+      'meta_feedback',
+      62,
+      /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you listening|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning)\b/i,
+      R['ruleMetaFeedback']
+    ),
+
+    // Who made Darya, her origin story, and the ELIZA tribute. Darya
+    // answers with a short, curiosity-engaging intro: built by Artin as
+    // a tribute to ELIZA, the first chatbot, from MIT. Priority sits just
+    // above the how-are-you family so "who made you" never falls through
+    // to smalltalk.
+    rule(
+      'about_eliza',
+      66,
+      /\b(?:who (?:made|built|created|designed|invented) (?:you|darya|this)|who is your (?:creator|maker|developer|inventor)|who created (?:you|darya)|the (?:creator|maker|developer) (?:of|behind) darya|your (?:creator|maker|developer)|eliza|elyza|weizenbaum|artin|(?:built|made|created) at mit|(?:from|at) mit|(?:aim|purpose|point) of (?:making|building|creating) (?:you|darya)|why did you (?:get|come) to be|original chatbot)\b/i,
+      R['ruleAboutEliza']
+    ),
+
+    // The user compliments something Darya said ("well said", "i like
+    // that", "nice answer"). Warm acknowledgement instead of a topic
+    // fallback. Kept below about_eliza so a compliment about Darya's
+    // self-introduction still routes to the origin story.
+    rule(
+      'compliment_darya',
+      58,
+      /\b(?:i like (?:what you said|that (?:line|reply|answer|phrase|way|response))|^i like that[.!]*$|that(?:'s| is) (?:a )?(?:nice|good|beautiful|great|lovely|sweet|kind|warm|helpful) (?:thing|reply|answer|response|way) (?:to say|of you|you said)|well said|good point|nice (?:answer|reply|response|comeback)|you(?:'re| are) (?:really )?(?:good|great|nice|warm|kind|helpful)|i love (?:that|this)|that made me smile|beautifully (?:put|said|done)|that(?:'s| is) (?:so )?(?:kind|thoughtful|sweet))\b/i,
+      R['ruleComplimentDarya']
+    ),
+
+    // The user corrects Darya's misreading ("i wasn't talking about
+    // that", "that's not what i meant"). Acknowledge and invite a
+    // restated version instead of re-triggering the same topic rule.
+    rule(
+      'misread_correction',
+      56,
+      /\b(?:i never (?:said|meant|talked about|mentioned)|that(?:'s| is) not what i (?:said|meant|talking about)|you (?:misread|misunderstood|misinterpreted|got that wrong)|i wasn'?t (?:talking about|saying|referring to)|you got the wrong idea|not what i meant)\b/i,
+      R['ruleMisreadCorrection']
+    ),
+
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, R['ruleAffirmation']),
 
     rule('negation', 15, /^(no|nope|nah)\.?$/i, R['ruleNegation'])
@@ -521,6 +578,17 @@
     'i must go',
     'take care',
     'bye for now',
+    'time to go',
+    'time to say goodbye',
+    'i should go',
+    'i should get going',
+    'got to go',
+    'i got to go',
+    'leaving now',
+    'have to leave',
+    'i have to leave',
+    'ciao',
+    'bye bye',
     'exit',
     'quit'
   ];
@@ -845,7 +913,12 @@
     ask_me_question: 0.2,
     self_improvement: 0.2,
     what_do_i_do: 0.45,
-    unsure_topic: 0.25
+    unsure_topic: 0.25,
+    apology: 0.2,
+    meta_feedback: 0.15,
+    about_eliza: 0.25,
+    compliment_darya: 0.15,
+    misread_correction: 0.3
   };
 
   const selfAwareness = {
@@ -992,7 +1065,7 @@
       soundOnTitle: 'Ambient sound: on',
       soundOffTitle: 'Ambient sound: off',
       soundAutoplayBlockedMsg:
-        'Ambient sound could not start automatically. Tap the sound icon in the menu to enable it.',
+        'Ambient sound could not start automatically. Tap the sound icon to enable it.',
       soundFallbackMsg:
         'Ambient sound files could not be loaded. Using a generated ambient instead.',
       engineErrorHint: 'A minor issue occurred. The conversation can continue.',
