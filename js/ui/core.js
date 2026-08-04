@@ -43,6 +43,7 @@
 
     menuSoundToggle: document.getElementById('menu-sound-toggle'),
     menuSoundLabel: document.getElementById('menu-sound-label'),
+    pickerSoundToggle: document.getElementById('picker-sound-toggle'),
     breatheTrigger: document.getElementById('breathe-trigger'),
     exitConfirmBar: document.getElementById('exit-confirm-bar'),
     exitConfirmLabel: document.getElementById('exit-confirm-label'),
@@ -388,6 +389,13 @@
     var bubble = document.createElement('div');
     bubble.className = 'bubble bubble--' + sender;
     bubble.textContent = text;
+    // The page root stays RTL regardless of the active language (so the
+    // picker layout never shifts), so each bubble declares its own text
+    // direction: English bubbles lay out LTR while Persian ones stay RTL.
+    if (state.lang) {
+      bubble.dir = state.lang.dir;
+      bubble.lang = state.lang.code;
+    }
 
     var meta = document.createElement('div');
     meta.className = 'bubble-meta';

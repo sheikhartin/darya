@@ -139,8 +139,12 @@
   function applyLanguage(chosenLang) {
     st.lang = chosenLang;
 
-    el.htmlRoot.setAttribute('lang', chosenLang.code);
+    // Sync the document-level dir and lang so the full page layout (header,
+    // menu, composer, disclaimer) mirrors to match the active language.
+    // Individual chat bubbles and the composer input also get per-element
+    // dir/lang set later in this function and in core.js.
     el.htmlRoot.setAttribute('dir', chosenLang.dir);
+    el.htmlRoot.setAttribute('lang', chosenLang.code);
 
     el.pageTitle.textContent = chosenLang.ui.appTitle;
     el.pageDescription.setAttribute('content', chosenLang.ui.appDescription);
@@ -256,6 +260,11 @@
     el.picker.hidden = false;
     closeMenu();
     st.lang = null;
+    // Restore document-level defaults so the picker always renders in its
+    // native RTL layout; the next applyLanguage() call will set the real
+    // dir/lang when the user picks a language.
+    el.htmlRoot.setAttribute('dir', 'rtl');
+    el.htmlRoot.setAttribute('lang', 'fa');
     st.engine = null;
     st.conversationEnded = false;
     st.chatActive = false;
@@ -265,6 +274,11 @@
     }
     st.messageCount = 0;
     st.currentTitle = '';
+    // Sync the picker sound toggle with the actual playback state so the
+    // toggle shows correctly when returning to the picker.
+    if (typeof DaryaAmbientSound !== 'undefined') {
+      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
+    }
     if (el.pickerLangLock) {
       var faSpan = el.pickerLangLock.querySelector('.picker__lang-lock-fa');
       var enSpan = el.pickerLangLock.querySelector('.picker__lang-lock-en');
@@ -478,9 +492,8 @@
   function openMenu() {
     el.menuPopover.hidden = false;
     el.menuTrigger.setAttribute('aria-expanded', 'true');
-    // Always present the honest sound state when the menu opens, so a
-    // rare silent failure (e.g. a theme-change playback that got blocked
-    // or a tab-resume that failed) can never leave a stale "on" icon.
+    // Reflect the honest sound state when the menu opens so a rare
+    // silent failure can never leave a stale "on" icon.
     if (typeof DaryaAmbientSound !== 'undefined') {
       syncSoundToggleUI(DaryaAmbientSound.isPlaying());
     }
@@ -730,38 +743,50 @@
   }
 
   // ========================================================================
-  // Sound toggle event wiring (menu item)
+  // Sound toggle event wiring (menu + picker)
   // ========================================================================
 
   if (el.menuSoundToggle) {
     el.menuSoundToggle.addEventListener('click', function () {
       DaryaAmbientSound.toggle().then(function (enabled) {
         syncSoundToggleUI(enabled);
-        // Return focus to the trigger after toggling, like the theme
-        // toggle does.
         closeMenu(true);
       });
     });
   }
 
+  if (el.pickerSoundToggle) {
+    el.pickerSoundToggle.addEventListener('click', function () {
+      DaryaAmbientSound.toggle().then(function (enabled) {
+        syncSoundToggleUI(enabled);
+      });
+    });
+  }
+
   /**
-   * Syncs the menu sound toggle's visible state (aria-pressed, title, and
-   * label) with the ACTUAL ambient playback state, so the icon never
-   * shows "on" while silence plays. Falls back to hardcoded Persian when
-   * no language pack is active yet (the app shell defaults to Persian).
+   * Syncs both the menu and picker sound toggles' visible state with the
+   * ACTUAL ambient playback state, so neither icon ever shows "on" while
+   * silence plays. Falls back to hardcoded Persian when no language pack
+   * is active yet (the app shell defaults to Persian).
    * @param {boolean} enabled - True when ambient sound is really playing.
    */
   function syncSoundToggleUI(enabled) {
-    if (!el.menuSoundToggle) {
-      return;
+    if (el.menuSoundToggle) {
+      var onLabel = st.lang
+        ? st.lang.ui.soundOnTitle
+        : '\u067e\u062e\u0634 \u0635\u062f\u0627\u06cc \u062d\u0636\u0648\u0637\u06cc: \u0631\u0648\u0634\u0646';
+      var offLabel = st.lang
+        ? st.lang.ui.soundOffTitle
+        : '\u067e\u062e\u0634 \u0635\u062f\u0627\u06cc \u062d\u0636\u0648\u0637\u06cc: \u062e\u0627\u0645\u0648\u0634';
+      var label = enabled ? onLabel : offLabel;
+      el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
+      el.menuSoundToggle.setAttribute('title', label);
+      if (el.menuSoundLabel) {
+        el.menuSoundLabel.textContent = label;
+      }
     }
-    var onLabel = st.lang ? st.lang.ui.soundOnTitle : 'پخش صدای محیطی: روشن';
-    var offLabel = st.lang ? st.lang.ui.soundOffTitle : 'پخش صدای محیطی: خاموش';
-    var label = enabled ? onLabel : offLabel;
-    el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-    el.menuSoundToggle.setAttribute('title', label);
-    if (el.menuSoundLabel) {
-      el.menuSoundLabel.textContent = label;
+    if (el.pickerSoundToggle) {
+      el.pickerSoundToggle.setAttribute('aria-pressed', String(enabled));
     }
   }
 
@@ -840,10 +865,12 @@
       document.removeEventListener('click', startSound);
       document.removeEventListener('keydown', startSound);
       document.removeEventListener('touchstart', startSound);
+      document.removeEventListener('pointerdown', startSound);
     };
     document.addEventListener('click', startSound, { passive: true });
     document.addEventListener('keydown', startSound, { passive: true });
     document.addEventListener('touchstart', startSound, { passive: true });
+    document.addEventListener('pointerdown', startSound, { passive: true });
   }
 
   // Boot
@@ -862,6 +889,16 @@
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();
   DaryaAmbient.initBirdShadows();
+
+  // Initialize picker sound toggle state from saved preference.
+  if (
+    el.pickerSoundToggle &&
+    typeof DaryaAmbientSound !== 'undefined' &&
+    DaryaAmbientSound.getSavedState() === true
+  ) {
+    el.pickerSoundToggle.setAttribute('aria-pressed', 'true');
+  }
+
   initAutoplayGesture();
 
   // The menu sound toggle starts honest: the HTML default is "off" and

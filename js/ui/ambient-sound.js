@@ -125,6 +125,14 @@
         });
       }
       wasPlayingBeforeHidden = false;
+      // The tab returning to focus is a fresh activation. If the user's
+      // saved preference wants sound but nothing is actually playing (an
+      // earlier autoplay attempt was blocked before the first gesture),
+      // try to start it now. NotAllowedError is handled safely inside
+      // autoplayIfEnabled, so this never wipes the saved preference.
+      if (getSavedState() === true && !isPlaying()) {
+        autoplayIfEnabled();
+      }
     }
   }
 
@@ -588,8 +596,13 @@
         'Ambient sound files could not be loaded. Using a generated ambient instead.';
       if (typeof global.DaryaLang !== 'undefined') {
         // Pick the notification message in the user's active language.
-        // The active language is stored on the <html> element.
+        // Prefer the live UI state (which tracks the active conversation
+        // language); fall back to the document lang attribute.
         var docLang =
+          (global.DaryaUI &&
+            global.DaryaUI.state &&
+            global.DaryaUI.state.lang &&
+            global.DaryaUI.state.lang.code) ||
           (typeof document !== 'undefined' &&
             document.documentElement.getAttribute('lang')) ||
           'en';
@@ -665,6 +678,18 @@
     audio.loop = true;
     audio.volume = 0; // Start silent for fade-in
 
+    // Safety net: if the browser's native loop fails (e.g. the file has a
+    // gap at the end, or the element enters an error state at the loop
+    // boundary), restart playback manually. The guard prevents a stale
+    // handler from restarting an audio element that was replaced by a
+    // theme change or toggle-off.
+    audio.addEventListener('ended', function () {
+      if (currentAudio === audio) {
+        audio.currentTime = 0;
+        audio.play().catch(function () {});
+      }
+    });
+
     // Store references before the async play attempt so the module state
     // is consistent even if play() is rejected asynchronously.
     currentAudio = audio;
@@ -703,7 +728,13 @@
           currentTheme = null;
         }
         destroyAudio(audio);
-        consecutiveFailures += 1;
+        // An autoplay-policy rejection (NotAllowedError) is not a load or
+        // decode failure: the file is fine, the browser just needs a user
+        // gesture. It must not count toward the failure cap, or repeated
+        // pre-gesture autoplay attempts would wrongly disable the system.
+        if (err && err.name !== 'NotAllowedError') {
+          consecutiveFailures += 1;
+        }
         console.warn(
           'Darya ambient sound: play failed for "' +
             filePath +
@@ -755,9 +786,11 @@
           if (finished) {
             return;
           }
-          finished = true;
-          clearTimeout(attemptTimer);
-          audio.removeEventListener('error', onError);
+          // Delegate to fail() without pre-setting `finished`: fail() owns
+          // that flag plus the timer/error-listener cleanup and the final
+          // reject. Pre-setting it here made the fail() call a no-op and
+          // the attempt promise never settled on an autoplay-policy
+          // rejection, hanging the toggle.
           fail(err);
         }
       );
@@ -858,10 +891,18 @@
           // have disabled the system internally if it could not start.
           return isEnabled;
         },
-        function () {
-          // Playback rejected (autoplay policy, network error, decode
-          // failure, or load error). Roll back the enabled state so the
-          // UI correctly reports that no sound is playing.
+        function (err) {
+          // An autoplay-policy rejection (NotAllowedError) is not a
+          // playback failure: it means the browser wants a fresh gesture.
+          // Keep the saved intent so a later gesture or tab return can
+          // retry. Genuine load/decode errors still roll back honestly so
+          // the UI never claims sound is enabled when it cannot play.
+          if (err && err.name === 'NotAllowedError') {
+            return isEnabled;
+          }
+          // Playback rejected (network error, decode failure, or load
+          // error). Roll back the enabled state so the UI correctly
+          // reports that no sound is playing.
           isEnabled = false;
           saveCookieState();
           return false;
@@ -931,9 +972,14 @@
     // would otherwise surface as an unhandled promise rejection.
     pendingThemeTimer = setTimeout(function () {
       pendingThemeTimer = null;
-      playThemeSound(newTheme).catch(function () {
-        // Roll back so the module state, cookie, and UI all agree that
-        // no sound is actually playing.
+      playThemeSound(newTheme).catch(function (err) {
+        // An autoplay-policy rejection is not a failure of the new
+        // theme's file: keep the saved intent so a later gesture or tab
+        // return can retry. Real load/decode errors still roll back so
+        // the module state, cookie, and UI all agree on what is playing.
+        if (err && err.name === 'NotAllowedError') {
+          return;
+        }
         isEnabled = false;
         saveCookieState();
       });
@@ -1003,11 +1049,18 @@
           // have disabled the system internally if it could not start.
           return isEnabled;
         },
-        function () {
+        function (err) {
           pendingAutoplay = null;
-          // Autoplay was blocked (no user gesture yet) or playback
-          // failed. Roll back so the UI, module state, and saved cookie
-          // all agree that no sound is actually playing.
+          // An autoplay-policy rejection (NotAllowedError) means no user
+          // gesture has happened yet: the browser is not blocking the
+          // files, just the auto-start. Keep the saved preference and
+          // state so a later gesture or tab return can retry.
+          if (err && err.name === 'NotAllowedError') {
+            return isEnabled;
+          }
+          // A real playback failure (load or decode). Roll back so the
+          // UI, module state, and saved cookie all agree that no sound
+          // is actually playing.
           isEnabled = false;
           saveCookieState();
           return false;

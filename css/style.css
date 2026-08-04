@@ -120,7 +120,6 @@
   --color-coral-soft: #f1a98d;
   --color-seafoam: #83c3b1;
   --color-warning: #f2b987;
-  --color-success: #6fc7aa;
   --color-danger: #e2805f;
   --color-line: rgba(234, 243, 239, 0.1);
   /* Semantic roles keep component contrast consistent across themes. */
@@ -155,8 +154,6 @@
   /* Chips, tags, small controls: 12px */
   --radius-sm: 12px;
   --radius-full: 999px; /* reserved for small circular icon buttons only */
-  --shadow-sm: 0 2px 8px rgba(3, 12, 15, 0.2);
-  --shadow-md: 0 4px 14px rgba(3, 12, 15, 0.28);
   --shadow-soft: 0 6px 18px rgba(3, 12, 15, 0.35);
   --shadow-elevated: 0 10px 30px rgba(3, 12, 15, 0.42);
 
@@ -721,6 +718,7 @@ html[data-theme='beach'] .bird-shadows {
 .picker__intro-fa {
   font-family: Lalezar, Vazirmatn, sans-serif;
   color: var(--color-coral);
+  user-select: none;
 }
 
 .picker__intro-en {
@@ -728,6 +726,7 @@ html[data-theme='beach'] .bird-shadows {
   font-weight: 700;
   font-size: 1.05em;
   color: var(--color-seafoam);
+  user-select: none;
 }
 
 .picker__intro-sep {
@@ -903,6 +902,41 @@ html[data-theme='beach'] .picker__theme-heading {
 }
 
 /* --------------------------------------------------------------------- */
+/* Picker sound toggle (transparent icon-only)                            */
+/* --------------------------------------------------------------------- */
+
+.picker__sound-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-foam-dim);
+  cursor: pointer;
+  transition: color 0.2s var(--ease-tide);
+}
+
+.picker__sound-toggle:hover {
+  color: var(--color-foam);
+}
+
+.picker__sound-toggle[aria-pressed='true'] {
+  color: var(--color-foam);
+}
+
+.picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
+  display: none;
+}
+
+.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
+  display: none;
+}
+
+/* --------------------------------------------------------------------- */
 /* App shell */
 /* --------------------------------------------------------------------- */
 
@@ -977,6 +1011,7 @@ html[data-theme='beach'] .picker__theme-heading {
   letter-spacing: 0.5px;
   line-height: 1;
   font-weight: 700;
+  user-select: none;
 }
 
 /* --------------------------------------------------------------------- */
@@ -1095,10 +1130,11 @@ html[data-theme='beach'] .picker__theme-heading {
   line-height: 1;
 }
 
-.menu__divider {
-  height: 1px;
-  background: var(--color-line);
-  margin: var(--space-1) 4px;
+/* With the separator lines removed, a small gap between items keeps each
+   hover/active highlight from touching its neighbor while leaving the
+   trigger's own padding as the popover's safe top and bottom margin. */
+.menu__item + .menu__item {
+  margin-block-start: 2px;
 }
 
 /* --------------------------------------------------------------------- */
@@ -2470,6 +2506,18 @@ html[data-theme='beach'] .theme-picker__option[aria-pressed='true'] {
   background: rgba(40, 100, 90, 0.82);
 }
 
+html[data-theme='beach'] .picker__sound-toggle {
+  color: var(--color-on-sky-dim);
+}
+
+html[data-theme='beach'] .picker__sound-toggle:hover {
+  color: var(--color-on-sky);
+}
+
+html[data-theme='beach'] .picker__sound-toggle[aria-pressed='true'] {
+  color: var(--color-on-sky);
+}
+
 /* Beach menu popover: sky-inspired translucent backdrop with dark ink. */
 html[data-theme='beach'] .menu__popover {
   background: #c8dde5;
@@ -2669,6 +2717,22 @@ html[data-theme='beach'] .breathe-trigger:focus-visible {
 }
 
 #menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash {
+  opacity: 0;
+}
+
+.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
+  opacity: 0;
+}
+
+.picker__sound-toggle[aria-pressed='false'] .sound-toggle__slash {
+  opacity: 1;
+}
+
+.picker__sound-toggle[aria-pressed='true'] .sound-toggle__wave {
+  opacity: 1;
+}
+
+.picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
   opacity: 0;
 }
 

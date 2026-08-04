@@ -242,6 +242,42 @@
             </span>
           </button>
         </div>
+
+        <button
+          class="picker__sound-toggle"
+          id="picker-sound-toggle"
+          type="button"
+          aria-pressed="false"
+          title="Toggle ambient sound"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
+            <path
+              class="sound-toggle__wave"
+              d="M15.5 9a4 4 0 0 1 0 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path
+              class="sound-toggle__wave"
+              d="M18 6.5a7.5 7.5 0 0 1 0 11"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path
+              class="sound-toggle__slash"
+              d="M4.5 4.5l15 15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -314,7 +350,6 @@
               </svg>
               <span class="menu__item-label" id="menu-new-chat-label">گفتگوی تازه</span>
             </button>
-            <div class="menu__divider" role="separator"></div>
             <button
               id="menu-export-txt"
               class="menu__item"
@@ -335,7 +370,6 @@
               </svg>
               <span class="menu__item-label" id="menu-export-txt-label">دانلود گفتگو</span>
             </button>
-            <div class="menu__divider" role="separator"></div>
             <button
               id="menu-sound-toggle"
               class="menu__item"
@@ -373,7 +407,6 @@
               </svg>
               <span class="menu__item-label" id="menu-sound-label">پخش صدای محیطی: خاموش</span>
             </button>
-            <div class="menu__divider" role="separator"></div>
             <button id="menu-theme-toggle" class="menu__item" type="button" role="menuitem" title="تغییر پوسته گفتگو">
               <span class="menu__item-icon" id="menu-theme-icon" aria-hidden="true">
                 <svg class="theme-toggle__ocean" viewBox="0 0 24 24" width="16" height="16">
