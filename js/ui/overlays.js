@@ -616,6 +616,10 @@
     activeNotification.setAttribute('role', 'alert');
     activeNotification.setAttribute('aria-live', 'assertive');
     activeNotification.setAttribute('aria-atomic', 'true');
+    // Notification content is English-only, so force LTR regardless of
+    // the document direction.
+    activeNotification.setAttribute('dir', 'ltr');
+    activeNotification.setAttribute('lang', 'en');
 
     // Create the inner container with severity-specific class
     var container = document.createElement('div');
