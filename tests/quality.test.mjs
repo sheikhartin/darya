@@ -2614,3 +2614,45 @@ test('application keeps the numeric release and cache key out of user-facing sou
   const pkg = JSON.parse(read('package.json'));
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/u);
 });
+
+test('applyLanguage sets dir and lang on the document root for correct page layout', () => {
+  const app = read('js/app.js');
+  // When a language is selected, the document-level dir and lang must be
+  // updated so the full page layout (header, menu, composer, fonts) mirrors
+  // to match. Without this, English conversations render in RTL.
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]dir['"]\s*,\s*chosenLang\.dir\s*\)/u,
+    'applyLanguage must set dir on htmlRoot from chosenLang.dir'
+  );
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]lang['"]\s*,\s*chosenLang\.code\s*\)/u,
+    'applyLanguage must set lang on htmlRoot from chosenLang.code'
+  );
+});
+
+test('showPicker resets dir and lang to RTL defaults so the picker renders correctly', () => {
+  const app = read('js/app.js');
+  // The language picker is always shown in Persian first; when it is
+  // re-shown (e.g. "New Chat"), dir and lang must reset to RTL defaults.
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]dir['"]\s*,\s*['"]rtl['"]\s*\)/u,
+    'showPicker must reset dir to rtl'
+  );
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]lang['"]\s*,\s*['"]fa['"]\s*\)/u,
+    'showPicker must reset lang to fa'
+  );
+});
+
+test('index.html has html-root id for JS to reference the document root', () => {
+  const html = read('index.html');
+  assert.match(
+    html,
+    /id=["']html-root["']/u,
+    'the <html> element must have id="html-root" for JS reference'
+  );
+});

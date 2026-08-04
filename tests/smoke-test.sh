@@ -559,6 +559,27 @@ else
   fail "beach foreground visibility rules are missing"
 fi
 
+# RTL/LTR direction fix: applyLanguage must set dir and lang on the
+# document root element so the full page layout mirrors correctly when
+# English is selected. Without this, the entire UI stays RTL in English.
+if grep -q 'el\.htmlRoot\.setAttribute.*dir.*chosenLang\.dir' js/app.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*chosenLang\.code' js/app.js; then
+  ok "applyLanguage sets dir and lang on document root for correct RTL/LTR switching"
+else
+  fail "applyLanguage does not update dir/lang on document root; English UI will be RTL"
+fi
+
+if grep -q 'el\.htmlRoot\.setAttribute.*dir.*rtl' js/app.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*fa' js/app.js; then
+  ok "showPicker resets dir/lang to RTL defaults so the picker renders correctly"
+else
+  fail "showPicker does not reset dir/lang to defaults; picker may render in LTR"
+fi
+
+if grep -q 'id="html-root"' index.html; then
+  ok "html-root id present for JS document root reference"
+else
+  fail "html-root id missing from index.html"
+fi
+
 # ============================================================================
 section "Live server checks"
 # ============================================================================
