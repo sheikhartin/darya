@@ -25,6 +25,45 @@
   const QUESTION_BUDGET_WINDOW = 3;
   const QUESTION_BUDGET_LIMIT = 1;
   const REPEATED_GREETING_THRESHOLD = 2;
+  const EXIT_SCAN_WINDOW = 5;
+  const EXIT_SCAN_TRIGGER_LENGTH = 5;
+  const SERIOUS_TURN_THRESHOLD = 0.5;
+  const MODERATE_SERIOUSNESS_THRESHOLD = 0.4;
+  const SERIOUSNESS_TOPIC_FLOOR = 0.45;
+  const SERIOUSNESS_WEIGHT = 0.35;
+  const SERIOUSNESS_CAP = 0.9;
+  const SERIOUSNESS_LIGHT_TOPIC = 0.25;
+  const ENTITY_CONFIDENCE_THRESHOLD = 0.6;
+  const BOREDOM_SKIP_CHANCE = 0.4;
+  const EMOTION_PREFIX_CHANCE = 0.4;
+  const HUMOR_CHANCE = 0.2;
+  const WARMTH_MIN_SERIOUSNESS = 0.3;
+  const WARMTH_MAX_SERIOUSNESS = 0.6;
+  const WARMTH_MIN_TURN_GAP = 3;
+  const WARMTH_CHANCE = 0.3;
+  const SMALLTALK_MIN_LIGHT_STREAK = 2;
+  const SMALLTALK_TURN_INTERVAL = 3;
+  const SMALLTALK_CHANCE = 0.35;
+  const HUMAN_TOUCH_INTERVAL = 7;
+  const ENTITY_RECENT_TURNS = 4;
+  const ENTITY_RECENT_CONFIDENCE = 0.72;
+  const ENTITY_STALE_CONFIDENCE = 0.45;
+  const OPENING_RETURNING_PRIMARY = 0.6;
+  const OPENING_RETURNING_SECONDARY = 0.85;
+  const OPENING_NEW_PRIMARY = 0.5;
+  const ENTITY_CONFIDENCE_DECAY_RECENT_BASE = 0.94;
+  const ENTITY_CONFIDENCE_DECAY_RECENT_RATE = 0.06;
+  const ENTITY_CONFIDENCE_DECAY_STALE_BASE = 0.76;
+  const ENTITY_CONFIDENCE_DECAY_STALE_RATE = 0.04;
+  const MIXED_LANGUAGE_REDIRECT_CHANCE = 0.6;
+  const TOPIC_RELEVANCE_RECENT_BONUS = 0.64;
+  const TOPIC_RELEVANCE_STALE_BASE = 0.22;
+  const ENTITY_CONTEXT_THRESHOLD = 0.6;
+  const RECENT_BOT_MESSAGE_PENALTY = 0.9;
+  const CONSECUTIVE_QUESTION_PENALTY = 0.25;
+  const LONG_RESPONSE_THRESHOLD = 220;
+  const LONG_RESPONSE_PENALTY = 0.08;
+  const FILLER_RESPONSE_PENALTY = 0.12;
   const WORD_REPETITION_THRESHOLD = 4;
   const SPAM_MIN_LENGTH = 2;
   const SPAM_MAX_UNIQUE_RATIO = 0.3;
@@ -94,10 +133,12 @@
   /**
    * Canonicalizes the raw input for rule matching. The original text is
    * preserved unchanged in memory, while the return value is stripped of
-   * punctuation, zero-width non-joiners (ZWNJ / half-spaces), and
-   * excessive whitespace so that orthographic variants of the same word
-   * reach the same rule path. "خوشبین", "خوش‌بین", and "خوش بین" all
-   * become the same token.
+   * punctuation, zero-width characters (ZWNJ, ZWJ, etc.), and
+   * excessive whitespace. Persian progressive prefixes ("می"/"نمی")
+   * are further unified by removing the space after them, so "می شود",
+   * "می‌شود", and "میشود" all reach the same rule path. Other compound
+   * spellings ("خوش‌بین" vs "خوش بین") remain distinct and each
+   * needs a corresponding pattern alternative.
    *
    * Common Gen-Z and casual English abbreviations are also expanded here
    * (not in the language pack's normalize) so that the expanded form is
@@ -106,13 +147,20 @@
    * back to the user via the quoted-callback feature.
    */
   function normalizeForMatching(rawText, lang) {
-    const normalized = lang.normalize(rawText);
+    let text = lang
+      .normalize(rawText)
+      .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
+      .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
+      .replace(/[ \t\r\n]+/gu, ' ')
+      .trim();
+    // Persian progressive-prefix binding runs after the half-space has
+    // become a regular space, so "می شود", "می‌شود", and "میشود" all
+    // collapse to the same matching token. Other languages have no hook.
+    if (lang.bindPrefixesForMatching) {
+      text = lang.bindPrefixesForMatching(text);
+    }
     return (
-      normalized
-        .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
-        .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
-        .replace(/[ \t\r\n]+/gu, ' ')
-        .trim()
+      text
         // Expand abbreviations for matching only (not stored in memory):
         .replace(/\bafaik\b/gi, 'as far as i know')
         .replace(/\bafk\b/gi, 'away from keyboard')
@@ -537,6 +585,45 @@
     QUESTION_BUDGET_WINDOW,
     QUESTION_BUDGET_LIMIT,
     REPEATED_GREETING_THRESHOLD,
+    EXIT_SCAN_WINDOW,
+    EXIT_SCAN_TRIGGER_LENGTH,
+    SERIOUS_TURN_THRESHOLD,
+    MODERATE_SERIOUSNESS_THRESHOLD,
+    SERIOUSNESS_TOPIC_FLOOR,
+    SERIOUSNESS_WEIGHT,
+    SERIOUSNESS_CAP,
+    SERIOUSNESS_LIGHT_TOPIC,
+    ENTITY_CONFIDENCE_THRESHOLD,
+    BOREDOM_SKIP_CHANCE,
+    EMOTION_PREFIX_CHANCE,
+    HUMOR_CHANCE,
+    WARMTH_MIN_SERIOUSNESS,
+    WARMTH_MAX_SERIOUSNESS,
+    WARMTH_MIN_TURN_GAP,
+    WARMTH_CHANCE,
+    SMALLTALK_MIN_LIGHT_STREAK,
+    SMALLTALK_TURN_INTERVAL,
+    SMALLTALK_CHANCE,
+    HUMAN_TOUCH_INTERVAL,
+    ENTITY_RECENT_TURNS,
+    ENTITY_RECENT_CONFIDENCE,
+    ENTITY_STALE_CONFIDENCE,
+    OPENING_RETURNING_PRIMARY,
+    OPENING_RETURNING_SECONDARY,
+    OPENING_NEW_PRIMARY,
+    ENTITY_CONFIDENCE_DECAY_RECENT_BASE,
+    ENTITY_CONFIDENCE_DECAY_RECENT_RATE,
+    ENTITY_CONFIDENCE_DECAY_STALE_BASE,
+    ENTITY_CONFIDENCE_DECAY_STALE_RATE,
+    MIXED_LANGUAGE_REDIRECT_CHANCE,
+    TOPIC_RELEVANCE_RECENT_BONUS,
+    TOPIC_RELEVANCE_STALE_BASE,
+    ENTITY_CONTEXT_THRESHOLD,
+    RECENT_BOT_MESSAGE_PENALTY,
+    CONSECUTIVE_QUESTION_PENALTY,
+    LONG_RESPONSE_THRESHOLD,
+    LONG_RESPONSE_PENALTY,
+    FILLER_RESPONSE_PENALTY,
     WORD_REPETITION_THRESHOLD,
     SPAM_MIN_LENGTH,
     SPAM_MAX_UNIQUE_RATIO,
