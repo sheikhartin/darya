@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "python3 -m http.server 8080",
-    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs",
+    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs",
     "test:full": "npm run lint && npm run lint:css && npm run format:check && npm test",
     "test:smoke": "bash tests/smoke-test.sh",
     "sync:web": "bash scripts/sync-web.sh",

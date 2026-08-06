@@ -133,6 +133,10 @@
   --border-subtle: var(--color-line);
   --border-strong: var(--color-seafoam);
   --border-focus: var(--color-seafoam);
+  /* Input field boundaries need their own stronger line: 1.4.11 calls
+     out input boundaries explicitly, and the faint decorative line used
+     on bubbles and cards is far below the 3:1 threshold. */
+  --border-input: rgba(234, 243, 239, 0.45);
 
   /* --- Type: Persian is the default; overridden per-language below --- */
   --font-display: 'Lalezar', 'Vazirmatn', 'Tahoma', sans-serif;
@@ -186,6 +190,10 @@ html[data-theme='beach'] {
   --color-success: #7ac4a8;
   --color-danger: #dc7f5d;
   --color-line: rgba(15, 46, 58, 0.18);
+  /* The beach composer is a translucent teal panel over sand, which
+     composites to #456d5e; a light foam boundary keeps the input edge
+     at 3.3:1 while the dark translucent line is invisible. */
+  --border-input: rgba(240, 247, 244, 0.65);
 }
 
 * {
@@ -707,12 +715,14 @@ html[data-theme='beach'] .bird-shadows {
 }
 
 .picker__intro {
+  margin: 0;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
   flex-wrap: wrap;
   font-size: 20px;
+  font-weight: 400;
 }
 
 .picker__intro-fa {
@@ -776,7 +786,9 @@ html[data-theme='beach'] .bird-shadows {
 #picker-fa .picker__option-title {
   font-family: Lalezar, Vazirmatn, sans-serif;
   font-size: 22px;
-  color: var(--color-coral);
+  /* Coral alone clears only 4.08:1 on the panel (3.48:1 on hover); the
+     softer tone lifts it above the 4.5:1 AA threshold on both states. */
+  color: var(--color-coral-soft);
 }
 
 #picker-en .picker__option-title {
@@ -825,7 +837,10 @@ html[data-theme='beach'] .picker__note {
   text-align: center;
   margin: -4px 0 0;
   line-height: 1.7;
-  opacity: 0.75;
+  /* 0.75 opacity left the muted note at 4.45:1 on the backdrop gradient,
+     just under the 4.5:1 AA threshold; 0.9 keeps the subtle look while
+     clearing it with margin on every backdrop tone. */
+  opacity: 0.9;
 }
 
 .picker__lang-lock > span {
@@ -834,6 +849,7 @@ html[data-theme='beach'] .picker__note {
 
 .picker__theme-heading {
   font-size: 12px;
+  font-weight: 400;
   color: var(--color-foam-dim);
   text-align: center;
   margin: 0;
@@ -844,10 +860,17 @@ html[data-theme='beach'] .picker__note {
   opacity: 0.8;
 }
 
+/* The beach lang-lock and theme-heading sit over the animated
+   semi-transparent wave layers, whose drifting teal tones leave dark ink
+   at 2.1-3.8:1 (unstable). A light pill like the picker note gives both
+   text blocks a stable, readable backing. */
 html[data-theme='beach'] .picker__lang-lock,
 html[data-theme='beach'] .picker__theme-heading {
   color: var(--color-on-sky);
   opacity: 0.85;
+  background: rgba(240, 235, 218, 0.85);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
 }
 
 /* --------------------------------------------------------------------- */
@@ -876,13 +899,24 @@ html[data-theme='beach'] .picker__theme-heading {
   transition:
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
-    background 0.2s var(--ease-tide);
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
+}
+
+/* Hover hints that the segment is interactive before the pressed state
+   takes over; the pressed rule below it wins while actually selected. */
+.theme-picker__option:hover {
+  border-color: rgba(127, 190, 176, 0.45);
+  color: var(--color-foam);
 }
 
 .theme-picker__option[aria-pressed='true'] {
   border-color: var(--color-seafoam);
   color: var(--color-foam);
   background: var(--color-tide-soft);
+  /* The same soft seafoam halo the composer uses on focus-within, so
+     the selected segment and the focused input share one language. */
+  box-shadow: 0 0 0 2px rgba(127, 190, 176, 0.15);
 }
 
 .theme-picker__icon {
@@ -906,6 +940,7 @@ html[data-theme='beach'] .picker__theme-heading {
 /* --------------------------------------------------------------------- */
 
 .picker__sound-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -917,15 +952,91 @@ html[data-theme='beach'] .picker__theme-heading {
   border-radius: 50%;
   color: var(--color-foam-dim);
   cursor: pointer;
-  transition: color 0.2s var(--ease-tide);
+  transition:
+    color 0.2s var(--ease-tide),
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
+}
+
+/* Expand the invisible tap target to the recommended 44px while keeping
+   the compact 32px visual footprint (12px total, 6px per side), matching
+   the other compact icon buttons (.menu__trigger, .breathe-trigger,
+   .composer__send). The attention ring owns ::after, so the hit area
+   lives on ::before. */
+.picker__sound-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+/* Attention state on the welcome screen: when sound is enabled but
+   silent (autoplay needs a user gesture), the toggle fades in and out
+   with a soft ring a few seconds after the picker appears, inviting a
+   tap that both starts the sound and dismisses the nudge. GPU-only
+   properties (opacity/transform) are animated. */
+.picker__sound-toggle--attention {
+  color: var(--color-foam);
+  animation: sound-attention-fade 2.2s var(--ease-tide) infinite;
+}
+
+.picker__sound-toggle--attention::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--color-seafoam);
+  opacity: 0;
+  animation: sound-attention-ring 2.2s var(--ease-tide) infinite;
+  pointer-events: none;
+}
+
+@keyframes sound-attention-fade {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes sound-attention-ring {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker__sound-toggle--attention,
+  .picker__sound-toggle--attention::after {
+    animation: none;
+  }
+
+  .picker__sound-toggle--attention {
+    color: var(--color-foam);
+  }
 }
 
 .picker__sound-toggle:hover {
   color: var(--color-foam);
+  background: rgba(127, 190, 176, 0.08);
 }
 
 .picker__sound-toggle[aria-pressed='true'] {
   color: var(--color-foam);
+  background: rgba(127, 190, 176, 0.14);
+  box-shadow: 0 0 0 3px rgba(127, 190, 176, 0.12);
 }
 
 .picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
@@ -1005,6 +1116,7 @@ html[data-theme='beach'] .picker__theme-heading {
 }
 
 .header__title {
+  margin: 0;
   font-family: var(--font-display);
   font-size: 24px;
   color: var(--color-coral);
@@ -1064,11 +1176,11 @@ html[data-theme='beach'] .picker__theme-heading {
   min-width: 216px;
   background: var(--surface-panel);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
   padding: var(--space-2);
   z-index: 10;
-  animation: menu-in 0.16s var(--ease-tide) both;
+  animation: menu-in 0.22s var(--ease-tide) both;
 }
 
 @keyframes menu-in {
@@ -1098,7 +1210,7 @@ html[data-theme='beach'] .picker__theme-heading {
   min-height: 44px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background 0.15s var(--ease-tide);
+  transition: background 0.2s var(--ease-tide);
 }
 
 /* The label span holds the variable-width text. A flex item will not
@@ -1382,7 +1494,7 @@ html[dir='ltr'] .bubble-row--bot .bubble-meta {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
   background: var(--surface-control);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
   margin: var(--space-2) var(--space-3);
   transition:
@@ -1398,6 +1510,11 @@ html[dir='ltr'] .bubble-row--bot .bubble-meta {
 .composer__input {
   flex: 1;
   resize: none;
+  /* The input is the composer's primary touch target: line-height 1.7
+     at 16px plus 8px vertical padding lands at 43.2px, a whisker under
+     the 44px target-size guideline. A min-height floor keeps the resting
+     hit area compliant without changing the single-line look. */
+  min-height: 44px;
   max-height: 140px;
   background: transparent;
   border: none;
@@ -1430,9 +1547,9 @@ html[dir='ltr'] .bubble-row--bot .bubble-meta {
   justify-content: center;
   cursor: pointer;
   transition:
-    transform 0.15s var(--ease-tide),
-    background 0.15s var(--ease-tide),
-    opacity 0.15s,
+    transform 0.2s var(--ease-tide),
+    background 0.2s var(--ease-tide),
+    opacity 0.2s,
     box-shadow 0.2s var(--ease-tide);
 }
 
@@ -1940,10 +2057,31 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   justify-content: center;
   padding-top: max(env(safe-area-inset-top, 0px) + 16px, 4vh);
   pointer-events: none;
-  animation: reveal 0.25s var(--ease-tide) both;
+  animation: notification-in 0.28s var(--ease-tide) both;
+}
+
+/* The toast drops in gently from above (it lives at the top of the
+   viewport), a short slide plus fade over GPU-only opacity/transform.
+   Disabled under prefers-reduced-motion below. */
+@keyframes notification-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .notification-container {
+  /* Default accent (info teal) so the bar and chip never render
+     colorless even if a severity modifier is missing. Custom
+     properties lead the block per the project's stylelint rules. */
+  --notification-accent: #94d0c1;
+
+  position: relative;
   pointer-events: auto;
   max-width: 460px;
   width: calc(100% - 2 * var(--space-3));
@@ -1960,46 +2098,127 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   overflow: hidden;
 }
 
+/* Severity accent bar along the inline-start edge (right in RTL, left
+   in LTR). The card's own border-radius clips the square ends via
+   overflow: hidden; the soft glow is clipped to the card, so it adds
+   emphasis with no animation. */
+.notification-container::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  background: var(--notification-accent);
+  box-shadow: 0 0 10px var(--notification-accent);
+}
+
 .notification-container--error {
+  --notification-accent: #e2805f;
+
   border-color: #e2805f;
   box-shadow:
-    0 0 20px rgba(226, 128, 95, 0.15),
+    /* Subtle severity tint across the whole card: an inset shadow with a
+       huge spread covers the full surface without fighting the
+       theme-specific background overrides below. */
+    inset 0 0 0 1000px rgba(226, 128, 95, 0.05),
+    0 0 24px rgba(226, 128, 95, 0.18),
     var(--shadow-elevated);
 }
 
 .notification-container--warn {
+  --notification-accent: #f2b987;
+
   border-color: #f2b987;
   box-shadow:
-    0 0 20px rgba(242, 185, 135, 0.12),
+    inset 0 0 0 1000px rgba(242, 185, 135, 0.05),
+    0 0 24px rgba(242, 185, 135, 0.15),
     var(--shadow-elevated);
 }
 
-.notification-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+.notification-container--info {
+  --notification-accent: #94d0c1;
+
+  border-color: #94d0c1;
+  box-shadow:
+    inset 0 0 0 1000px rgba(148, 208, 193, 0.05),
+    0 0 24px rgba(148, 208, 193, 0.12),
+    var(--shadow-elevated);
 }
 
+/* The severity type chip sits centered in the card; the dismiss button
+   floats in the inline-end corner (absolute, so it never shifts the
+   chip off-center). */
+.notification-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The type label is a small emphasis chip. The pill is outlined with a
+   translucent severity border rather than a tinted background: a tinted
+   background would composite lighter than the panel and push the label
+   text below the 4.5:1 threshold in the beach theme, while a border
+   leaves the text on the plain panel where the luminous accents clear
+   WCAG AA with margin. */
 .notification-type {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(148, 208, 193, 0.35);
+}
+
+/* Severity icon: inherits the chip's luminous accent via currentColor.
+   It is decorative (the bilingual type text carries the meaning) and is
+   marked aria-hidden in the markup. */
+.notification-type__icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+/* The type label is bilingual ("هشدار · Warning"), mirroring the picker
+   intro's dot-separated pair. Each side keeps its own font and spacing:
+   Persian gets no uppercase or letterspacing (it has no case, and wide
+   tracking would look wrong), English keeps the compact uppercase chip. */
+.notification-type__fa {
+  font-family: Vazirmatn, Tahoma, sans-serif;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.notification-type__en {
+  font-family: 'Be Vietnam Pro', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-/* Labels sit on a dark panel in both themes, so they use luminous
-   accents that clear WCAG 4.5:1 against the darkest panel. */
+.notification-type__sep {
+  opacity: 0.65;
+}
+
+/* Labels and icons sit on a dark panel in both themes, so they use
+   luminous accents that clear WCAG 4.5:1 against the darkest panel
+   (the chip border is a translucent 40% stroke of the same hue). */
 .notification-type--error {
   color: #f7b8a5;
+  border-color: rgba(226, 128, 95, 0.4);
 }
 
 .notification-type--warn {
   color: #f2b987;
+  border-color: rgba(242, 185, 135, 0.4);
 }
 
 .notification-type--info {
   color: #94d0c1;
+  border-color: rgba(148, 208, 193, 0.4);
 }
 
 .notification-message {
@@ -2008,11 +2227,25 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   color: var(--text-primary);
   margin: 0;
   overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* Bilingual notifications render the Persian line on top and the
+   English line below, both centered. Each line carries its own font so
+   Persian glyphs never fall back to a Latin face and vice versa. */
+.notification-message--fa {
+  font-family: Vazirmatn, Tahoma, sans-serif;
+}
+
+.notification-message--en {
+  font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 .notification-dismiss {
-  position: relative;
-  flex-shrink: 0;
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block: 0;
+  margin-block: auto;
   width: 24px;
   height: 24px;
   display: flex;
@@ -2049,14 +2282,45 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   outline-offset: 2px;
 }
 
-/* Beach theme overrides for notification overlay */
+/* Beach theme overrides for notification overlay. The beach panel is
+   also dark teal, so the luminous severity accents keep working; the
+   generic border override must NOT be allowed to wash out the severity
+   border color, so it is replaced with explicit per-severity borders. */
 html[data-theme='beach'] .notification-container {
-  background: rgba(31, 84, 73, 0.96);
-  border-color: rgba(15, 46, 58, 0.15);
+  /* Solid, not translucent: at 96% alpha the teal composited over the
+     bright sand would lighten the surface just enough to push the
+     luminous severity accents below the 4.5:1 text threshold. A solid
+     panel is visually identical and keeps the contrast claims exact. */
+  background: var(--color-tide);
+}
+
+html[data-theme='beach'] .notification-container--error {
+  border-color: #e2805f;
+}
+
+html[data-theme='beach'] .notification-container--warn {
+  border-color: #f2b987;
+}
+
+html[data-theme='beach'] .notification-container--info {
+  border-color: #94d0c1;
 }
 
 html[data-theme='beach'] .notification-message {
   color: #f0f7f4;
+}
+
+/* The close glyph inherits foam-dim (#9dbdb6), which lands at 4.29:1 on
+   the solid tide panel. A brighter foam keeps the dismissal affordance
+   at 6.3:1 while the hover state still brightens to primary text. */
+html[data-theme='beach'] .notification-dismiss {
+  color: #cfe0da;
+}
+
+/* The dismiss glyph sits on the solid tide panel, so its focus ring
+   must be luminous rather than the dark ink used on light surfaces. */
+html[data-theme='beach'] .notification-dismiss:focus-visible {
+  outline-color: #a8d9cc;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2072,6 +2336,7 @@ html[data-theme='beach'] .notification-message {
 @media (prefers-reduced-motion: reduce) {
   .backdrop__glow,
   .backdrop__horizon,
+  .backdrop__scrim,
   .beach-scene__ocean,
   .beach-scene__wave,
   .bubble-particle,
@@ -2079,7 +2344,9 @@ html[data-theme='beach'] .notification-message {
   .ocean-caustic,
   .ocean-current,
   .bird-shadow,
+  .breathe-trigger,
   .breathe-trigger svg,
+  .picker__sound-toggle,
   .ripple-dot,
   .bubble-row,
   .bubble--bot,
@@ -2493,19 +2760,8 @@ html[data-theme='beach'] .picker__intro-sep {
   color: var(--color-on-sky-dim);
 }
 
-/* Beach theme-picker segments need dark ink surfaces. */
-html[data-theme='beach'] .theme-picker__option {
-  background: rgba(31, 84, 73, 0.7);
-  border-color: rgba(15, 46, 58, 0.2);
-  color: var(--color-on-sky-dim);
-}
-
-html[data-theme='beach'] .theme-picker__option[aria-pressed='true'] {
-  border-color: var(--color-on-sky-link);
-  color: var(--color-on-sky);
-  background: rgba(40, 100, 90, 0.82);
-}
-
+/* Beach theme-picker segments sit on the bright sky, so they use dark
+   ink surfaces (kept in sync with the solid opaque overrides below). */
 html[data-theme='beach'] .picker__sound-toggle {
   color: var(--color-on-sky-dim);
 }
@@ -2561,6 +2817,16 @@ textarea {
 
 html[data-theme='beach'] :focus-visible {
   outline-color: var(--color-on-sky-link);
+}
+
+/* The dark ink focus ring is tuned for the light sky surfaces (menu,
+   picker, sand). Dark panels - the composer, exit bar, and breathe
+   overlay - need a luminous ring instead so the indicator clears 3:1
+   against the teal surfaces it sits on. */
+html[data-theme='beach'] .composer__send:focus-visible,
+html[data-theme='beach'] .exit-confirm-bar__btn:focus-visible,
+html[data-theme='beach'] .breathe-close:focus-visible {
+  outline-color: #a8d9cc;
 }
 
 /* A very slow center pulse gives the ocean its own punctuation of stillness.
@@ -2641,9 +2907,16 @@ html[data-theme='beach'] .backdrop__depth-breath {
   border-radius: var(--radius-full);
 }
 
+/* The breathe trigger is the menu trigger's sibling in the header, so
+   it shares the same hover language: a soft seafoam fill with a glowing
+   border. (The beach theme overrides both with its sky-blue pill
+   treatment below.) */
 .breathe-trigger:hover,
 .breathe-trigger:focus-visible {
   cursor: pointer;
+  color: var(--color-foam);
+  border-color: var(--color-seafoam);
+  background: rgba(127, 190, 176, 0.08);
 }
 
 /* Wind icon subtle animation: gentle sway */
@@ -2746,17 +3019,20 @@ html[data-theme='beach'] .theme-toggle__beach {
 
 /* --------------------------------------------------------------------- */
 /* Beach theme: menu trigger with sky-complementing blue tones. */
+/* Idle and hover use darkened sky-blue inks so the trigger icon keeps
+   its teal identity while staying above the 4.5:1 threshold on the pale
+   sky chip (hover darkens a step further to preserve the feedback). */
 html[data-theme='beach'] .menu__trigger {
-  color: #2f7384;
-  border-color: rgba(47, 115, 132, 0.45);
+  color: #1a5f6d;
+  border-color: rgba(26, 95, 109, 0.55);
   background: rgba(200, 221, 229, 0.88);
   box-shadow: 0 2px 10px rgba(91, 61, 35, 0.08);
 }
 
 html[data-theme='beach'] .menu__trigger:hover,
 html[data-theme='beach'] .menu__trigger[aria-expanded='true'] {
-  color: #286573;
-  border-color: #286573;
+  color: #14505f;
+  border-color: #14505f;
   background: rgba(200, 221, 229, 0.95);
   box-shadow: 0 4px 14px rgba(91, 61, 35, 0.12);
 }
@@ -2805,6 +3081,23 @@ html[data-theme='beach'] .picker__option:hover {
   box-shadow: 0 6px 20px rgba(91, 61, 35, 0.15);
 }
 
+/* The beach panel is a translucent dark teal over bright sand, which
+   lightens the effective background enough that the ocean-tuned accent
+   text (coral, seafoam, foam-dim) falls below the 4.5:1 threshold.
+   Brighter variants keep the same hues and pass AA on both the idle and
+   hover panels. */
+html[data-theme='beach'] #picker-fa .picker__option-title {
+  color: #fdd6bd;
+}
+
+html[data-theme='beach'] #picker-en .picker__option-title {
+  color: #c2e6d8;
+}
+
+html[data-theme='beach'] .picker__option-desc {
+  color: #d6ece5;
+}
+
 html[data-theme='beach'] .bubble--user {
   background: var(--color-on-sky);
   color: #f0f7f4;
@@ -2822,16 +3115,28 @@ html[data-theme='beach'] .bubble-row--bot .bubble-meta {
 
 html[data-theme='beach'] .composer {
   background: rgba(31, 84, 73, 0.82);
-  border-color: rgba(15, 46, 58, 0.18);
+  border-color: var(--border-input);
 }
 
 html[data-theme='beach'] .composer:focus-within {
-  border-color: var(--color-on-sky-link);
-  box-shadow: 0 0 0 2px rgba(5, 69, 84, 0.18);
+  border-color: #a8d9cc;
+  box-shadow: 0 0 0 2px rgba(168, 217, 204, 0.22);
 }
 
 html[data-theme='beach'] .composer__input {
   color: #f0f7f4;
+}
+
+/* The send button sits on the translucent teal composer; the stock coral
+   only clears 2:1 there. A brighter shell tone keeps the warm identity
+   while lifting the boundary above the 3:1 non-text threshold, and the
+   dark arrow keeps its own strong contrast on the lighter fill. */
+html[data-theme='beach'] .composer__send {
+  background: #f5b28d;
+}
+
+html[data-theme='beach'] .composer__send:hover:not(:disabled) {
+  background: #f9c1a6;
 }
 
 html[data-theme='beach'] .composer__input::placeholder {
@@ -2845,10 +3150,20 @@ html[data-theme='beach'] .theme-picker__option {
   color: rgba(240, 247, 244, 0.75);
 }
 
+html[data-theme='beach'] .theme-picker__option:hover {
+  border-color: rgba(5, 69, 84, 0.45);
+  color: #f0f7f4;
+}
+
 html[data-theme='beach'] .theme-picker__option[aria-pressed='true'] {
-  border-color: var(--color-on-sky-link);
+  /* A luminous border keeps the selected state readable: the dark link
+     ink is invisible against the teal panel (1.8:1). */
+  border-color: #a8d9cc;
   color: #f0f7f4;
   background: rgba(40, 100, 90, 0.92);
+  /* Halo parity with the ocean pressed state and the beach composer
+     focus-within ring, translated to the beach luminous foam. */
+  box-shadow: 0 0 0 2px rgba(168, 217, 204, 0.2);
 }
 
 /* Beach front page intro text uses dark ink on bright sky. */

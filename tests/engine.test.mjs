@@ -931,6 +931,53 @@ test('entity extractor returns all five entity types', () => {
   );
 });
 
+test('possessive extraction stops at prepositions', () => {
+  // Regression: "my cat on the sofa" captured "cat on the" (the split
+  // only handled conjunctions/verbs). Prepositions now cut the phrase.
+  const entities = DaryaEntityExtractor.extract(
+    'I feel sad about my cat on the sofa',
+    EN,
+    { emotionalWeight: true }
+  );
+  const cat = entities.find((e) => e.type === 'object');
+  assert.ok(cat, 'expected a possessive object');
+  assert.equal(cat.surface, 'cat');
+  // Same for a capitalized noun followed by a preposition.
+  const home = DaryaEntityExtractor.extract(
+    'I feel sad about my Mother at Home',
+    EN,
+    { emotionalWeight: true }
+  );
+  assert.ok(!home.some((e) => e.surface === 'Mother at Home'));
+  const mother = home.find((e) => e.type === 'person');
+  assert.equal(mother.surface, 'Mother');
+});
+
+test('a surface is remembered under exactly one semantic type', () => {
+  // Regression: "my mother" became both person:mother (vocabulary) and
+  // object:mother (possessive), and "at Home" became both place:home and
+  // person:Home (capitalized-name). The strongest entity per surface now
+  // wins, so vocabulary classifications are never double-tagged.
+  const mother = DaryaEntityExtractor.extract(
+    'I feel sad about my mother',
+    EN,
+    { emotionalWeight: true }
+  );
+  assert.ok(
+    mother.some((e) => e.type === 'person' && /mother/i.test(e.surface))
+  );
+  assert.ok(!mother.some((e) => e.type === 'object'));
+
+  const home = DaryaEntityExtractor.extract(
+    'I feel sad about my Mother at Home',
+    EN,
+    { emotionalWeight: true }
+  );
+  const homeTypes = home.filter((e) => /^home$/i.test(e.surface));
+  assert.equal(homeTypes.length, 1, 'Home must have exactly one type');
+  assert.equal(homeTypes[0].type, 'place');
+});
+
 test('entity extractor gates neutral turns', () => {
   assert.deepEqual(
     DaryaEntityExtractor.extract('my mother is at home today', EN, {
@@ -1280,6 +1327,25 @@ test('recap uses remembered topics and real entities', () => {
   assert.doesNotMatch(reply, /nothing you said|something interesting/i);
 });
 
+test('recap survives missing recentTopics and an empty template pool', () => {
+  // Defensive: buildRecap must never throw when memory lacks
+  // recentTopics (a partially constructed engine) and must still
+  // produce a useful reply when the language pack ships no recap
+  // templates, instead of returning an empty string.
+  const engine = freshEngine(EN);
+  const emptyPool = Object.create(engine);
+  emptyPool.lang = Object.assign({}, EN, { recapTemplates: [] });
+  emptyPool.memory = { eligibleNamedEntities: () => [] };
+  emptyPool._pickVaried = () => '';
+  assert.ok(globalThis.DaryaRecap.buildRecap(emptyPool).length > 0);
+
+  const noTopics = Object.create(engine);
+  noTopics.lang = EN;
+  noTopics.memory = { eligibleNamedEntities: () => [] };
+  noTopics._pickVaried = () => 'a recap'; // real templates render
+  assert.equal(globalThis.DaryaRecap.buildRecap(noTopics), 'a recap');
+});
+
 test('professional boundary replies redirect to qualified help', () => {
   for (const [lang, input] of [
     [EN, 'Can you give me legal advice?'],
@@ -1503,6 +1569,35 @@ test('arithmetic: Persian multi-digit', () => {
 
 test('arithmetic: English negative result', () => {
   assert.match(freshEngine(EN).respond('3-10'), /-7/);
+});
+
+test('arithmetic: decimal input is never misread as a substring expression', () => {
+  // Regression: "5.5+3" used to match the trailing "5+3" inside the
+  // string and answer "5 + 3 = 8" (a silently wrong result). The bare
+  // expression regex now requires the first operand to start at a real
+  // number boundary, so decimal input falls through to normal routing.
+  assert.doesNotMatch(freshEngine(EN).respond('5.5+3'), /= 8/u);
+  assert.doesNotMatch(freshEngine(FA).respond('۵.۵+۳ چند می‌شه'), /۸/u);
+  assert.doesNotMatch(freshEngine(EN).respond('what is 5.5+3'), /8/u);
+});
+
+test('arithmetic: x and X operators work in bare expressions', () => {
+  // Regression: the x operator is a letter, so the "no surrounding
+  // letters" guard rejected bare expressions like "5x3" while "8*3"
+  // worked. The operator is now excluded before the letter scan.
+  assert.match(freshEngine(EN).respond('5x3'), /15/u);
+  assert.match(freshEngine(EN).respond('5 X 3'), /15/u);
+});
+
+test('arithmetic: division results are rounded, not float artifacts', () => {
+  // Regression: 10/3 replied "3.3333333333333335". Division now rounds
+  // to two decimals like the percentage path.
+  assert.match(freshEngine(EN).respond('10/3'), /3\.33/u);
+  assert.match(freshEngine(EN).respond('1/3'), /0\.33/u);
+  assert.match(freshEngine(FA).respond('۱۰ تقسیم بر 3'), /۳\.۳۳/u);
+  // Exact divisions stay exact.
+  assert.match(freshEngine(EN).respond('10/2'), /= 5/u);
+  assert.match(freshEngine(FA).respond('۱۰ تقسیم بر ۲'), /۵/u);
 });
 
 test('arithmetic: English large numbers', () => {

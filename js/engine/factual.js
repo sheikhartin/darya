@@ -37,12 +37,17 @@
       engine.lang.code === 'fa'
         ? text.match(
             // eslint-disable-next-line max-len
-            /([۰-۹0-9]+)\s*([+\-*xX\/\u00D7]|تقسیم\s+بر|ضربدر|بعلاوه|منهای)\s*([۰-۹0-9]+).*(?:چند|چقدر|چیست|چیه|می‌شه|میشه|می‌شود|مساوی)/u
+            /(?<![\d.۰-۹])([۰-۹0-9]+)\s*([+\-*xX\/\u00D7]|تقسیم\s+بر|ضربدر|بعلاوه|منهای)\s*([۰-۹0-9]+).*(?:چند|چقدر|چیست|چیه|می‌شه|میشه|می‌شود|مساوی)/u
           )
         : null;
 
+    // The negative lookbehind prevents matching a *substring* of a
+    // longer number: "5.5+3" must not silently answer "5 + 3 = 8" by
+    // matching the trailing "5+3". Requiring the first operand to start
+    // at a real number boundary (not preceded by a digit or dot) makes
+    // the whole expression the only valid match.
     const bareMath = text.match(
-      /([\d۰-۹]+)\s*([+\-*xX\/\u00D7]|بعلاوه|منهای|ضربدر|تقسیم\s+بر)\s*([\d۰-۹]+)(?:\s*[=:]?\s*)?$/u
+      /(?<![\d.۰-۹])([\d۰-۹]+)\s*([+\-*xX\/\u00D7]|بعلاوه|منهای|ضربدر|تقسیم\s+بر)\s*([\d۰-۹]+)(?:\s*[=:]?\s*)?$/u
     );
     let isBareExpression = false;
     if (bareMath) {
@@ -50,7 +55,12 @@
       const hasPersianWordOp = /(?:بعلاوه|منهای|ضربدر|تقسیم\s+بر)/u.test(
         String(bareMath[2] || '')
       );
-      const hasNoSurroundingLetters = !/[\p{L}]/u.test(matchText);
+      // The operator character itself may be a letter (x / X for
+      // multiplication), so it is excluded before the letter scan;
+      // otherwise "5x3" would be rejected as text while "8*3" works.
+      const opRaw = String(bareMath[2] || '');
+      const lettersProbe = opRaw ? matchText.split(opRaw).join('') : matchText;
+      const hasNoSurroundingLetters = !/[\p{L}]/u.test(lettersProbe);
       isBareExpression = hasNoSurroundingLetters || hasPersianWordOp;
     }
     const mathMatch =
@@ -107,6 +117,12 @@
           break;
         default:
           result = null;
+      }
+      // Integer division can repeat forever (10 / 3). Round to two
+      // decimals so the reply reads cleanly instead of exposing float
+      // artifacts (3.3333333333333335), matching the percentage path.
+      if (op === '/' && result !== null && Number.isFinite(result)) {
+        result = Math.round(result * 100) / 100;
       }
       if (result !== null && Number.isFinite(result)) {
         const isPersian = engine.lang.code === 'fa';

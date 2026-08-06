@@ -64,7 +64,14 @@ const PRECACHE_URLS = [
   './assets/icons/favicon-32x32.png',
   './assets/icons/apple-touch-icon.png',
   './assets/icons/android-chrome-192x192.png',
-  './assets/icons/android-chrome-512x512.png'
+  './assets/icons/android-chrome-512x512.png',
+  // Ambient sound files: precached so the PWA can play sound fully
+  // offline (both themes) even before the runtime cache ever sees a
+  // fetch. Together about 2MB, a deliberate trade for true offline
+  // parity with the bundled APK.
+  './assets/audio/manifest.json',
+  './assets/audio/ocean/stormy-sea-waves-loop.mp3',
+  './assets/audio/beach/sea-waves-with-birds-loop.mp3'
 ];
 
 self.addEventListener('install', (event) => {

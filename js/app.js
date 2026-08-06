@@ -20,6 +20,12 @@
   var MIN_REPLY_DELAY_MS = 1500;
   var MAX_REPLY_DELAY_MS = 2300;
 
+  /** Delay before the picker sound toggle draws attention (ms). */
+  var SOUND_ATTENTION_DELAY_MS = 3000;
+
+  /** @type {number|null} Handle for the pending sound-attention timer. */
+  var soundAttentionTimer = null;
+
   var menuFocusIndex = 0;
 
   // ========================================================================
@@ -228,6 +234,9 @@
     el.picker.hidden = true;
     el.app.hidden = false;
     st.chatActive = true;
+    // Leaving the picker stops any sound-attention nudge: the language
+    // click is itself a gesture that can start the sound.
+    clearSoundAttention();
     startConversation();
 
     // Auto-play ambient sound if the user previously opted in, syncing
@@ -236,9 +245,14 @@
     // points to the menu toggle for a gesture-based start.
     if (typeof DaryaAmbientSound !== 'undefined') {
       var soundIntentOn = DaryaAmbientSound.getSavedState() === true;
-      DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
-        syncSoundToggleUI(enabled);
-        if (!enabled && soundIntentOn) {
+      DaryaAmbientSound.autoplayIfEnabled().then(function () {
+        // Sync from the ACTUAL playback state: an autoplay attempt can
+        // keep the user's intent (a transient policy rejection) without
+        // any audio running, and the toggle must never claim sound is
+        // playing when it is not.
+        var actuallyPlaying = DaryaAmbientSound.isPlaying();
+        syncSoundToggleUI(actuallyPlaying);
+        if (!actuallyPlaying && soundIntentOn) {
           notifySoundAutoplayBlocked();
         }
       });
@@ -275,10 +289,12 @@
     st.messageCount = 0;
     st.currentTitle = '';
     // Sync the picker sound toggle with the actual playback state so the
-    // toggle shows correctly when returning to the picker.
+    // toggle shows correctly when returning to the picker, then arm the
+    // attention nudge for the saved-but-silent case.
     if (typeof DaryaAmbientSound !== 'undefined') {
       syncSoundToggleUI(DaryaAmbientSound.isPlaying());
     }
+    armSoundAttention();
     if (el.pickerLangLock) {
       var faSpan = el.pickerLangLock.querySelector('.picker__lang-lock-fa');
       var enSpan = el.pickerLangLock.querySelector('.picker__lang-lock-en');
@@ -454,15 +470,15 @@
         st.lang && st.lang.engineErrorReply
           ? st.lang.engineErrorReply
           : 'I need a moment to process. Could you repeat that?';
-      // Surface a localized notification to the user about the issue
+      // Surface a bilingual notification to the user about the issue
       if (
         typeof DaryaOverlays !== 'undefined' &&
         typeof DaryaOverlays.showNotification === 'function'
       ) {
-        var warnMsg =
-          st.lang && st.lang.ui && st.lang.ui.engineErrorHint
-            ? st.lang.ui.engineErrorHint
-            : 'A minor issue occurred. The conversation can continue.';
+        var warnMsg = getBilingualUiText(
+          'engineErrorHint',
+          'A minor issue occurred. The conversation can continue.'
+        );
         DaryaOverlays.showNotification('warn', warnMsg, 4000);
       }
     }
@@ -748,8 +764,11 @@
 
   if (el.menuSoundToggle) {
     el.menuSoundToggle.addEventListener('click', function () {
-      DaryaAmbientSound.toggle().then(function (enabled) {
-        syncSoundToggleUI(enabled);
+      DaryaAmbientSound.toggle().then(function () {
+        // Settle the toggle to the state the audio system actually
+        // reached: a blocked or failed start shows "off", never a
+        // silent "on".
+        syncSoundToggleUI(DaryaAmbientSound.isPlaying());
         closeMenu(true);
       });
     });
@@ -757,8 +776,10 @@
 
   if (el.pickerSoundToggle) {
     el.pickerSoundToggle.addEventListener('click', function () {
-      DaryaAmbientSound.toggle().then(function (enabled) {
-        syncSoundToggleUI(enabled);
+      // The tap is the gesture that starts the sound: stop the nudge.
+      clearSoundAttention();
+      DaryaAmbientSound.toggle().then(function () {
+        syncSoundToggleUI(DaryaAmbientSound.isPlaying());
       });
     });
   }
@@ -771,6 +792,11 @@
    * @param {boolean} enabled - True when ambient sound is really playing.
    */
   function syncSoundToggleUI(enabled) {
+    // Sound is genuinely playing now; the picker nudge has served its
+    // purpose and must not keep pulsing.
+    if (enabled) {
+      clearSoundAttention();
+    }
     if (el.menuSoundToggle) {
       var onLabel = st.lang
         ? st.lang.ui.soundOnTitle
@@ -787,6 +813,14 @@
     }
     if (el.pickerSoundToggle) {
       el.pickerSoundToggle.setAttribute('aria-pressed', String(enabled));
+      // The picker toggle used to show only a static English title, so its
+      // accessible name stayed English even in Farsi. Reuse the same
+      // localized label the menu item shows. `label` is computed in the
+      // menu branch above; guard in case that element ever goes missing.
+      if (typeof label !== 'undefined') {
+        el.pickerSoundToggle.setAttribute('aria-label', label);
+        el.pickerSoundToggle.setAttribute('title', label);
+      }
     }
   }
 
@@ -794,20 +828,110 @@
   var soundBlockedToastShown = false;
 
   /**
+   * Draws attention to the picker (welcome screen) sound toggle a few
+   * seconds after it appears when the user's saved preference wants
+   * sound but nothing is actually playing yet (browsers block autoplay
+   * until a user gesture). A smooth fade/pulse invites the user to tap
+   * the toggle, and that tap is the gesture that starts the sound.
+   *
+   * The effect is armed only while the picker is visible and the intent
+   * is "on" but silent; it is cleared by the first real interaction
+   * (toggling, selecting a language, or sound starting).
+   */
+  function armSoundAttention() {
+    clearSoundAttention();
+    if (
+      el.picker.hidden ||
+      typeof DaryaAmbientSound === 'undefined' ||
+      DaryaAmbientSound.getSavedState() !== true ||
+      DaryaAmbientSound.isPlaying()
+    ) {
+      return;
+    }
+    soundAttentionTimer = setTimeout(function () {
+      soundAttentionTimer = null;
+      // Re-check at fire time: the user may have started sound or
+      // navigated away while the timer was pending.
+      if (
+        el.picker.hidden ||
+        typeof DaryaAmbientSound === 'undefined' ||
+        DaryaAmbientSound.isPlaying()
+      ) {
+        return;
+      }
+      el.pickerSoundToggle.classList.add('picker__sound-toggle--attention');
+    }, SOUND_ATTENTION_DELAY_MS);
+  } /**
+   * Cancels any pending sound-attention timer and removes the attention
+   * styling from the picker sound toggle.
+   */
+  function clearSoundAttention() {
+    if (soundAttentionTimer !== null) {
+      clearTimeout(soundAttentionTimer);
+      soundAttentionTimer = null;
+    }
+    if (el.pickerSoundToggle) {
+      el.pickerSoundToggle.classList.remove('picker__sound-toggle--attention');
+    }
+  }
+
+  // When the tab returns to the foreground, the ambient-sound module may
+  // have started playback on its own (its visibility handler retries
+  // autoplay). If sound is genuinely playing now, the picker nudge has
+  // served its purpose and must not keep pulsing over a live sound.
+  document.addEventListener('visibilitychange', function () {
+    if (
+      !document.hidden &&
+      typeof DaryaAmbientSound !== 'undefined' &&
+      DaryaAmbientSound.isPlaying()
+    ) {
+      clearSoundAttention();
+    }
+  });
+
+  /**
+   * Returns the UI string for the given key from both language packs as
+   * a bilingual pair { fa, en }. Notifications always show Persian on
+   * top and English below, so both strings are needed regardless of the
+   * active conversation language. Falls back to the English fallback
+   * text when a pack is missing.
+   * @param {string} key - UI string key (e.g. 'soundAutoplayBlockedMsg')
+   * @param {string} fallbackEn - English fallback text
+   * @returns {{fa: string, en: string}}
+   */
+  function getBilingualUiText(key, fallbackEn) {
+    var faText = fallbackEn;
+    var enText = fallbackEn;
+    if (DaryaLang && DaryaLang.fa && DaryaLang.fa.ui && DaryaLang.fa.ui[key]) {
+      faText = DaryaLang.fa.ui[key];
+    } else if (st.lang && st.lang.ui && st.lang.ui[key]) {
+      faText = st.lang.ui[key];
+    }
+    if (DaryaLang && DaryaLang.en && DaryaLang.en.ui && DaryaLang.en.ui[key]) {
+      enText = DaryaLang.en.ui[key];
+    } else if (st.lang && st.lang.ui && st.lang.ui[key]) {
+      enText = st.lang.ui[key];
+    }
+    return { fa: faText, en: enText };
+  }
+
+  /**
    * Explains, once per session, that ambient sound could not start
    * automatically and points to the menu toggle. Called by both autoplay
    * paths - the language picker and the global first-gesture listener -
    * with a one-shot flag so a single click that triggers both never
-   * shows the toast twice.
+   * shows the toast twice. The message is bilingual (FA on top, EN
+   * below) because the notification system renders both languages.
    */
   function notifySoundAutoplayBlocked() {
     if (soundBlockedToastShown) {
       return;
     }
     soundBlockedToastShown = true;
-    var blockedMsg =
-      (st.lang && st.lang.ui.soundAutoplayBlockedMsg) ||
-      'Ambient sound could not start automatically.';
+    var blockedMsg = getBilingualUiText(
+      'soundAutoplayBlockedMsg',
+      'Ambient sound could not start automatically.'
+    );
     DaryaOverlays.showNotification('warn', blockedMsg, 6000);
   }
 
@@ -850,22 +974,45 @@
    * ambient sound playback if the user has it enabled in their settings.
    */
   function initAutoplayGesture() {
-    var startSound = function () {
-      if (
-        typeof DaryaAmbientSound !== 'undefined' &&
-        DaryaAmbientSound.getSavedState() === true
-      ) {
-        DaryaAmbientSound.autoplayIfEnabled().then(function (enabled) {
-          syncSoundToggleUI(enabled);
-          if (!enabled) {
-            notifySoundAutoplayBlocked();
-          }
-        });
-      }
+    /**
+     * Detaches the one-time first-gesture listeners.
+     */
+    function disarmStartSound() {
       document.removeEventListener('click', startSound);
       document.removeEventListener('keydown', startSound);
       document.removeEventListener('touchstart', startSound);
       document.removeEventListener('pointerdown', startSound);
+    }
+
+    var startSound = function (event) {
+      // If the first interaction lands on one of the sound toggles
+      // themselves, the toggle's own click handler owns that gesture: it
+      // starts or stops playback based on its visible state. Firing the
+      // first-gesture autoplay here as well would start the sound and
+      // then let the toggle's toggle() flip it right back off (the
+      // reported "turns on for a second and turns off" bug). Consume
+      // the gesture either way so a later click cannot double-start.
+      if (
+        event.target &&
+        typeof event.target.closest === 'function' &&
+        event.target.closest('#picker-sound-toggle, #menu-sound-toggle')
+      ) {
+        disarmStartSound();
+        return;
+      }
+      if (
+        typeof DaryaAmbientSound !== 'undefined' &&
+        DaryaAmbientSound.getSavedState() === true
+      ) {
+        DaryaAmbientSound.autoplayIfEnabled().then(function () {
+          var actuallyPlaying = DaryaAmbientSound.isPlaying();
+          syncSoundToggleUI(actuallyPlaying);
+          if (!actuallyPlaying) {
+            notifySoundAutoplayBlocked();
+          }
+        });
+      }
+      disarmStartSound();
     };
     document.addEventListener('click', startSound, { passive: true });
     document.addEventListener('keydown', startSound, { passive: true });
@@ -890,14 +1037,21 @@
   DaryaAmbient.initOceanParticles();
   DaryaAmbient.initBirdShadows();
 
-  // Initialize picker sound toggle state from saved preference.
-  if (
-    el.pickerSoundToggle &&
-    typeof DaryaAmbientSound !== 'undefined' &&
-    DaryaAmbientSound.getSavedState() === true
-  ) {
-    el.pickerSoundToggle.setAttribute('aria-pressed', 'true');
+  // Initialize both sound toggles from the ACTUAL playback state, not
+  // the saved preference. At boot nothing can be playing yet (browsers
+  // block audible autoplay until the user has interacted with the page;
+  // see the MDN autoplay guide), so the toggles start honestly "off"
+  // even when the user previously enabled sound. The saved preference
+  // is still honored by the first-gesture autoplay retry and by the
+  // picker attention nudge, which invites the tap that starts it.
+  if (el.pickerSoundToggle && typeof DaryaAmbientSound !== 'undefined') {
+    syncSoundToggleUI(DaryaAmbientSound.isPlaying());
   }
+
+  // The welcome screen is shown first: if the saved preference wants
+  // sound but the browser has not allowed autoplay yet, nudge the user
+  // toward the toggle after a short delay.
+  armSoundAttention();
 
   initAutoplayGesture();
 

@@ -2,7 +2,7 @@
 
 ## How Offline Works
 
-Fonts are self-hosted in `fonts/` (converted to WOFF2). A service worker (`sw.js`) precaches the entire app (HTML, CSS, JS, fonts, and icons) on first load. After that first load, the app needs no network at all. A web app manifest (`manifest.json`) makes it installable as a Progressive Web App.
+Fonts are self-hosted in `fonts/` (converted to WOFF2). A service worker (`sw.js`) precaches the entire app (HTML, CSS, JS, fonts, icons, and both ambient sound files) on first load. After that first load, the app needs no network at all, including ambient sound. A web app manifest (`manifest.json`) makes it installable as a Progressive Web App.
 
 ## PWA (Works Today, In Any Browser)
 
@@ -48,4 +48,4 @@ A few notes:
 
 - **App icon.** `assets/icons/android-chrome-512x512.png` is already the right size, and `assets/icons/apple-touch-icon.png` covers iOS. Android Studio's Asset Studio can regenerate the full launcher icon set from `assets/icons/android-chrome-512x512.png`.
 - **Permissions.** This app makes zero network requests once loaded. You can remove the internet permission from the generated `AndroidManifest.xml` to confirm nothing phones home.
-- **App size.** The whole web app (fonts included) is under 1 MB. The APK will be larger due to the Capacitor/WebView shell, but still small by app standards.
+- **App size.** The web app shell (fonts included) is under 1 MB; the two ambient sound loops (ocean and beach) add about 2 MB and are bundled in `assets/audio/` so sound plays offline in both the PWA and the APK. The APK is larger due to the Capacitor/WebView shell, but still small by app standards.

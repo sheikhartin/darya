@@ -106,7 +106,7 @@ run_smoke() {
 # Single engine test run
 # -------------------------------------------------------------------
 run_engine() {
-  local test_files="tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs"
+  local test_files="tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs"
 
   if $VERBOSE; then
     # shellcheck disable=SC2086

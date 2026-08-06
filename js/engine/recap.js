@@ -21,9 +21,14 @@
   // ======================================================================
 
   function buildRecap(engine) {
-    const topics = [...new Set(engine.memory.recentTopics.slice(-7))].slice(-4);
-    const entities = engine.memory
-      .eligibleNamedEntities(0)
+    const topics = [
+      ...new Set((engine.memory.recentTopics || []).slice(-7))
+    ].slice(-4);
+    const entities = (
+      engine.memory.eligibleNamedEntities
+        ? engine.memory.eligibleNamedEntities(0)
+        : []
+    )
       .slice(0, 3)
       .map((entity) => entity.surface);
     const topicText = topics.length
@@ -37,11 +42,20 @@
         ? 'چند جزئیات شخصی'
         : 'a few personal details';
     const pool = engine.lang.recapTemplates || [];
-    return engine
-      ._pickVaried(pool, {
-        ignoreQuestionBudget: true,
-        trackQuestions: false
-      })
+    const template = engine._pickVaried(pool, {
+      ignoreQuestionBudget: true,
+      trackQuestions: false
+    });
+    if (!template) {
+      // Defensive: if the language pack ships no recap templates, still
+      // produce a useful recap instead of an empty reply.
+      return (
+        (engine.lang.code === 'fa'
+          ? 'یادم است که درباره '
+          : 'I remember you spoke about ') + topicText
+      );
+    }
+    return template
       .replace(/\{topics\}/gu, topicText)
       .replace(/\{entities\}/gu, entityText);
   }

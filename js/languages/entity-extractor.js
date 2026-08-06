@@ -437,12 +437,42 @@
 
   function extractPossessiveObjects(text, lang) {
     const entities = [];
+    // Conjunctions, verbs, and prepositions end the possessed phrase:
+    // "my cat on the sofa" owns "cat", not "cat on the". The phrase is
+    // everything before the first cut word.
+    const POSSESSIVE_CUT_WORDS = new Set([
+      'and',
+      'but',
+      'because',
+      'that',
+      'which',
+      'when',
+      'while',
+      'is',
+      'was',
+      'feels',
+      'makes',
+      'at',
+      'in',
+      'on',
+      'near',
+      'for',
+      'with',
+      'about',
+      'of',
+      'from',
+      'by'
+    ]);
     if (lang.code === 'en') {
       const pattern = /\bmy\s+([a-z][a-z'-]*(?:\s+[a-z][a-z'-]*){0,2})/giu;
       for (const match of text.matchAll(pattern)) {
-        const phrase = match[1].split(
-          /\s+(?=(?:and|but|because|that|which|when|while|is|was|feels?|makes?)\b)/iu
-        )[0];
+        const phraseWords = match[1].split(/\s+/u).filter(Boolean);
+        const cutIndex = phraseWords.findIndex((word) =>
+          POSSESSIVE_CUT_WORDS.has(word.toLocaleLowerCase())
+        );
+        const phrase = (
+          cutIndex === -1 ? phraseWords : phraseWords.slice(0, cutIndex)
+        ).join(' ');
         const words = phrase.split(/\s+/u).filter(Boolean);
         const candidate = words.slice(0, 3).join(' ');
         const first = words[0]?.toLocaleLowerCase();
@@ -572,7 +602,24 @@
     entities.push(...extractPossessiveObjects(normalized, lang));
     entities.push(...extractProperNames(normalized, lang));
 
-    return deduplicate(entities).filter((entity) => entity.confidence >= 0.6);
+    const deduped = deduplicate(entities);
+    // A surface must be remembered under exactly one semantic type. The
+    // possessive and capitalized-name passes can double-tag a word the
+    // vocabulary passes already classified correctly ("my mother" becomes
+    // both person:mother and object:mother, or "at Home" becomes both
+    // place:home and person:Home). The vocabulary passes carry the
+    // highest confidence for their surfaces, so keeping only the
+    // strongest entity per surface resolves the duplicates in favor of
+    // the authoritative classification.
+    const bySurface = new Map();
+    for (const entity of deduped) {
+      const surface = entity.surface.toLocaleLowerCase();
+      const current = bySurface.get(surface);
+      if (!current || entity.confidence > current.confidence) {
+        bySurface.set(surface, entity);
+      }
+    }
+    return [...bySurface.values()].filter((entity) => entity.confidence >= 0.6);
   }
 
   function isEmotionallyWeighted(score, text, lang) {
