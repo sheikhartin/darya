@@ -21,6 +21,45 @@ const {
   QUESTION_BUDGET_WINDOW,
   QUESTION_BUDGET_LIMIT,
   REPEATED_GREETING_THRESHOLD,
+  EXIT_SCAN_WINDOW,
+  EXIT_SCAN_TRIGGER_LENGTH,
+  SERIOUS_TURN_THRESHOLD,
+  MODERATE_SERIOUSNESS_THRESHOLD,
+  SERIOUSNESS_TOPIC_FLOOR,
+  SERIOUSNESS_WEIGHT,
+  SERIOUSNESS_CAP,
+  SERIOUSNESS_LIGHT_TOPIC,
+  ENTITY_CONFIDENCE_THRESHOLD,
+  BOREDOM_SKIP_CHANCE,
+  EMOTION_PREFIX_CHANCE,
+  HUMOR_CHANCE,
+  WARMTH_MIN_SERIOUSNESS,
+  WARMTH_MAX_SERIOUSNESS,
+  WARMTH_MIN_TURN_GAP,
+  WARMTH_CHANCE,
+  SMALLTALK_MIN_LIGHT_STREAK,
+  SMALLTALK_TURN_INTERVAL,
+  SMALLTALK_CHANCE,
+  HUMAN_TOUCH_INTERVAL,
+  ENTITY_RECENT_TURNS,
+  ENTITY_RECENT_CONFIDENCE,
+  ENTITY_STALE_CONFIDENCE,
+  OPENING_RETURNING_PRIMARY,
+  OPENING_RETURNING_SECONDARY,
+  OPENING_NEW_PRIMARY,
+  ENTITY_CONFIDENCE_DECAY_RECENT_BASE,
+  ENTITY_CONFIDENCE_DECAY_RECENT_RATE,
+  ENTITY_CONFIDENCE_DECAY_STALE_BASE,
+  ENTITY_CONFIDENCE_DECAY_STALE_RATE,
+  MIXED_LANGUAGE_REDIRECT_CHANCE,
+  TOPIC_RELEVANCE_RECENT_BONUS,
+  TOPIC_RELEVANCE_STALE_BASE,
+  ENTITY_CONTEXT_THRESHOLD,
+  RECENT_BOT_MESSAGE_PENALTY,
+  CONSECUTIVE_QUESTION_PENALTY,
+  LONG_RESPONSE_THRESHOLD,
+  LONG_RESPONSE_PENALTY,
+  FILLER_RESPONSE_PENALTY,
   WORD_REPETITION_THRESHOLD,
   SPAM_MIN_LENGTH,
   SPAM_MAX_UNIQUE_RATIO,
@@ -96,7 +135,7 @@ class DaryaResponseEngine {
     // (emotional calibration, human-tone coloring) skip the turn so they
     // never stack an extra prefix onto an already-warm smalltalk reply.
     this._lightPositiveFired = false;
-    this.entityCallbackThreshold = 0.6;
+    this.entityCallbackThreshold = ENTITY_CONFIDENCE_THRESHOLD;
     this.entityCallbackProbability = ENTITY_CALLBACK_PROBABILITY;
     this.currentTurnTopics = [];
     this.currentTurnSeriousness = 0;
@@ -256,7 +295,7 @@ class DaryaResponseEngine {
       this.currentTurnTopics
     );
     this.lastTurnNeedsCare =
-      this.currentTurnSeriousness >= 0.5 ||
+      this.currentTurnSeriousness >= SERIOUS_TURN_THRESHOLD ||
       /\b(?:help|advice|problem|crisis|difficult|hard|worried|angry|mad|frustrated|annoyed|pissed)\b/iu.test(
         normalized
       ) ||
@@ -378,8 +417,6 @@ class DaryaResponseEngine {
     if (
       !_safetyTurn &&
       !isRepeatedGreeting &&
-      !isSpamNoise &&
-      !isRepeatedGreeting &&
       !isSpamNoise
     ) {
       const dateTimeReply = handleDateTimeQuestion(this, normalized);
@@ -398,6 +435,10 @@ class DaryaResponseEngine {
       !_safetyTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
+      // A repeated word inside a question usually means the user is
+      // re-asking or testing, not dwelling on a single word: re-asking
+      // "who made you?" must never be met with "you keep saying made".
+      this.currentTurnDialogueAct !== 'question' &&
       this.lang.wordRepetitionResponses
     ) {
       const repetition = this._detectWordRepetition(matchingText);
@@ -418,6 +459,13 @@ class DaryaResponseEngine {
       // of frustration de-escalation or harassment boundary-setting, so
       // an innocent testing message can never be misread as an attack.
       this.currentTurnDialogueAct !== 'test_input' &&
+      // Turns where the user is giving Darya feedback about her own
+      // behavior ("you keep quoting words", "be smarter", "understand
+      // my meaning") deserve a humble acknowledgement, not a frustration
+      // de-escalation, even when the message is worded harshly. The same
+      // applies to self-improvement requests.
+      matchedRule?.topic !== 'meta_feedback' &&
+      matchedRule?.topic !== 'self_improvement' &&
       this.lang.frustrationResponses
     ) {
       // Check Darya-targeted harassment FIRST (more specific, different
@@ -520,13 +568,13 @@ class DaryaResponseEngine {
       this.memory.turnCount >= BOREDOM_MIN_TURNS &&
       this.memory.turnCount % BOREDOM_CHECK_INTERVAL === 0 &&
       this.lang.boredomResponses &&
-      this.currentTurnSeriousness < 0.4
+      this.currentTurnSeriousness < MODERATE_SERIOUSNESS_THRESHOLD
     ) {
       const recentUtterances = this.memory.recentUtterances.slice(-3);
       const allBrief = recentUtterances.every(
         (u) => u.split(/\s+/u).filter(Boolean).length <= 3
       );
-      if (allBrief && Math.random() < 0.4) {
+      if (allBrief && Math.random() < BOREDOM_SKIP_CHANCE) {
         reply = this._pickVaried(this.lang.boredomResponses);
         _overrideFired = true;
       }
@@ -608,8 +656,22 @@ class DaryaResponseEngine {
     const words = normalized.split(/\s+/u).filter(Boolean);
     // For long inputs, only the first and last few tokens matter for
     // exit detection (e.g. a closing "gotta go" after a long message).
+    // The window must be at least as wide as the longest multi-word
+    // keyword, otherwise keywords like "i should get going" (4 tokens)
+    // could never fit inside it.
+    const longestKeyword = Math.max(
+      ...lang.exitKeywords.map((k) =>
+        normalizeForMatching(k, lang)
+          .toLowerCase()
+          .split(/\s+/u)
+          .filter(Boolean).length
+      ),
+      EXIT_SCAN_WINDOW
+    );
     const windows =
-      words.length > 5 ? [words.slice(0, 3), words.slice(-3)] : [words];
+      words.length > EXIT_SCAN_TRIGGER_LENGTH
+        ? [words.slice(0, longestKeyword), words.slice(-longestKeyword)]
+        : [words];
     return lang.exitKeywords.some(function (keyword) {
       // Normalize the keyword through the exact same pipeline as the
       // user input (including half-space handling), so both sides are
@@ -848,12 +910,17 @@ class DaryaResponseEngine {
       return 0;
     }
     if (!topics.length) {
-      return 0.25;
+      return SERIOUSNESS_LIGHT_TOPIC;
     }
     const seriousness = Math.max(
-      ...topics.map((topic) => this.lang.topicSeriousness?.[topic] ?? 0.45)
+      ...topics.map(
+        (topic) => this.lang.topicSeriousness?.[topic] ?? SERIOUSNESS_TOPIC_FLOOR
+      )
     );
-    return Math.min(0.9, 0.45 + seriousness * 0.35);
+    return Math.min(
+      SERIOUSNESS_CAP,
+      SERIOUSNESS_TOPIC_FLOOR + seriousness * SERIOUSNESS_WEIGHT
+    );
   }
 
   // ======================================================================
@@ -885,9 +952,9 @@ class DaryaResponseEngine {
     }
     const age = this.memory.turnCount - subject.since;
     const confidence = subject.entityRefs.length
-      ? 0.94 - age * 0.06
-      : 0.76 - age * 0.04;
-    if (confidence < 0.6) {
+      ? ENTITY_CONFIDENCE_DECAY_RECENT_BASE - age * ENTITY_CONFIDENCE_DECAY_RECENT_RATE
+      : ENTITY_CONFIDENCE_DECAY_STALE_BASE - age * ENTITY_CONFIDENCE_DECAY_STALE_RATE;
+    if (confidence < ENTITY_CONFIDENCE_THRESHOLD) {
       return null;
     }
     return {
@@ -952,7 +1019,7 @@ class DaryaResponseEngine {
     if (text.length < SPAM_MIN_LENGTH) {
       return false;
     }
-    if (/^\d+$/u.test(text) && text.length < 5) {
+    if (/^\p{N}+$/u.test(text) && text.length < 5) {
       return true;
     }
     const chars = [...text].filter((ch) => /\p{L}/u.test(ch));
@@ -1113,7 +1180,11 @@ class DaryaResponseEngine {
       this.memory.turnCount >= 2 &&
       this.memory.recentTopics
         .slice(-2)
-        .some((topic) => (this.lang.topicSeriousness?.[topic] || 0.5) >= 0.5);
+        .some(
+          (topic) =>
+            (this.lang.topicSeriousness?.[topic] || SERIOUSNESS_TOPIC_FLOOR) >=
+            SERIOUS_TURN_THRESHOLD
+        );
     let signals = 0;
     if (hasSarcasticPraise) {
       signals += 1;
@@ -1164,7 +1235,7 @@ class DaryaResponseEngine {
         matchingText
       );
     return (
-      avgSeriousness >= 0.4 ||
+      avgSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
       this.lastTurnNeedsCare ||
       isDirectWellBeingQuestion
     );
@@ -1201,7 +1272,7 @@ class DaryaResponseEngine {
     if (!text || this.lang.questionPattern?.test(text)) {
       return false;
     }
-    if (this.currentTurnSeriousness >= 0.4) {
+    if (this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD) {
       return false;
     }
     const words = text.split(/\s+/u).filter(Boolean);
@@ -1308,77 +1379,78 @@ class DaryaResponseEngine {
     const emotions = [
       {
         name: 'hurt',
-        patterns: /(?:hurt|pain|broken|wounded|شکسته|آسیب|درد)/iu
+        patterns:
+          /\b(?:hurt(?:s)?|pain(?:ful)?|broken|wounded)\b|(?:شکسته|آسیب|درد)/iu
       },
       {
         name: 'confused',
         patterns:
-          /(?:confused|lost|don'?t understand|don'?t know|گیج|گم شدم|نمی‌فهمم|نمی‌دونم|سرگردان|نامشخص)/iu
+          /\b(?:confused|lost|don'?t understand|don'?t know)\b|(?:گیج|گم شدم|نمی‌فهمم|نمی‌دونم|سرگردان|نامشخص)/iu
       },
       {
         name: 'excited',
         patterns:
-          /(?:excited|thrilled|amazing|awesome|great news|هیجان|عالی|فوق‌العاده|خارق‌العاده)/iu
+          /\b(?:excited|thrilled|amazing|awesome|great news)\b|(?:هیجان|عالی|فوق‌العاده|خارق‌العاده)/iu
       },
       {
         name: 'angry',
         patterns:
-          /(?:angry|furious|pissed|hate|mad|annoyed|عصبانی|خشم|نفرت|کفری|عصبی)/iu
+          /\b(?:angry|furious|pissed|hate|mad|annoyed)\b|(?:عصبانی|خشم|نفرت|کفری|عصبی)/iu
       },
       {
         name: 'grieving',
         patterns:
-          /(?:grief|loss|died|passed away|gone|miss|mourn|فقدان|فوت|از دست دادن|داغ|سوگ)/iu
+          /\b(?:grief|loss|died|passed away|gone|miss(?:ing)?|mourn)\b|(?:فقدان|فوت|از دست دادن|داغ|سوگ)/iu
       },
       {
         name: 'fear',
         patterns:
         // eslint-disable-next-line max-len
-          /(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|shook|لرزیدن|هراس|فوبیا|ترس\s+مرگ|شوکه|دلهره)/iu
+          /\b(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|shook)\b|(?:لرزیدن|هراس|فوبیا|ترس\s+مرگ|شوکه|دلهره)/iu
       },
       {
         name: 'anxious',
         patterns:
-          /(?:anxious|worry|panic|scared|afraid|nervous|نگران|اضطراب|ترس|دلشوره|وحشت)/iu
+          /\b(?:anxious|worry|worried|panic|scared|afraid|nervous)\b|(?:نگران|اضطراب|ترس|دلشوره|وحشت)/iu
       },
       {
         name: 'anxious',
         patterns:
         // eslint-disable-next-line max-len
-          /(?:heart\s+(?:racing|pounding|beating)|sweating|shaking|trembling|chest\s+(?:tight|heavy)|short\s+of\s+(?:breath|breathe)|palpitations|dizzy|nausea)/iu
+          /\b(?:heart\s+(?:racing|pounding|beating)|sweating|shaking|trembling|chest\s+(?:tight|heavy)|short\s+of\s+(?:breath|breathe)|palpitations|dizzy|nausea)\b/iu
       },
       {
         name: 'sad',
         patterns:
-          /(?:sad|depressed|down|unhappy|miserable|empty|numb|غمگین|ناراحت|افسرده|بی‌حال)/iu
+          /\b(?:sad|depressed|down|unhappy|miserable|empty|numb)\b|(?:غمگین|ناراحت|افسرده|بی‌حال)/iu
       },
       {
         name: 'hopeless',
         patterns:
-          /(?:hopeless|despair|giving up|can'?t go on|no point|ناشاد|ناامید|بی‌امید)/iu
+          /\b(?:hopeless|despair|giving up|can'?t go on|no point)\b|(?:ناشاد|ناامید|بی‌امید)/iu
       },
       {
         name: 'overwhelmed',
         patterns:
-          /(?:overwhelmed|drowning|can'?t cope|too much|suffocating|درمانده|غرق|طاقت فرسا)/iu
+          /\b(?:overwhelmed|drowning|can'?t cope|too much|suffocating)\b|(?:درمانده|غرق|طاقت فرسا)/iu
       },
       {
         name: 'ashamed',
         patterns:
-          /(?:ashamed|embarrassed|guilty|humiliated|شرمنده|خجالت|گناهکار)/iu
+          /\b(?:ashamed|embarrassed|guilty|humiliated)\b|(?:شرمنده|خجالت|گناهکار)/iu
       },
       {
         name: 'jealous',
-        patterns: /(?:jealous|envious|resentful|حسود|حسرت)/iu
+        patterns: /\b(?:jealous|envious|resentful)\b|(?:حسود|حسرت)/iu
       },
       {
         name: 'hopeful',
-        patterns: /(?:hopeful|optimistic|encouraged|امیدوار|خوشبین)/iu
+        patterns: /\b(?:hopeful|optimistic|encouraged)\b|(?:امیدوار|خوشبین)/iu
       },
       {
         name: 'grateful',
         patterns:
-          /(?:grateful|thankful|blessed|appreciative|سپاسگزار|قدردان|شکرگزار)/iu
+          /\b(?:grateful|thankful|blessed|appreciative)\b|(?:سپاسگزار|قدردان|شکرگزار)/iu
       }
     ];
     for (const emotion of emotions) {
@@ -1406,7 +1478,7 @@ class DaryaResponseEngine {
     if (!calibration || !calibration[detectedEmotion]) {
       return reply;
     }
-    if (Math.random() > 0.4) {
+    if (Math.random() > EMOTION_PREFIX_CHANCE) {
       return reply;
     }
     const prefix = calibration[detectedEmotion];
@@ -1435,7 +1507,7 @@ class DaryaResponseEngine {
     if (!this._isMixedLanguage(text)) {
       return null;
     }
-    if (Math.random() > 0.6) {
+    if (Math.random() > MIXED_LANGUAGE_REDIRECT_CHANCE) {
       return null;
     }
     const pool = Array.isArray(this.lang.mixedLanguageResponses)
@@ -1457,7 +1529,7 @@ class DaryaResponseEngine {
     ) {
       return 'clarifying';
     }
-    if (seriousness >= 0.5) {
+    if (seriousness >= SERIOUS_TURN_THRESHOLD) {
       return 'reflecting';
     }
     return this.memory.turnCount <= 1 ? 'greeting' : 'listening';
@@ -1465,9 +1537,9 @@ class DaryaResponseEngine {
 
   _seriousnessForTurn(topics) {
     const values = (topics || []).map(
-      (topic) => this.lang.topicSeriousness?.[topic] ?? 0.45
+      (topic) => this.lang.topicSeriousness?.[topic] ?? SERIOUSNESS_TOPIC_FLOOR
     );
-    const current = values.length ? Math.max(...values) : 0.35;
+    const current = values.length ? Math.max(...values) : SERIOUSNESS_WEIGHT;
     const recent = this.memory.seriousnessHistory.slice(-2);
     const average = recent.length
       ? recent.reduce((sum, v) => sum + v, 0) / recent.length
@@ -1498,7 +1570,7 @@ class DaryaResponseEngine {
   canHumorFire() {
     return (
       this.memory.turnCount >= 3 &&
-      this.currentTurnSeriousness < 0.5 &&
+      this.currentTurnSeriousness < SERIOUS_TURN_THRESHOLD &&
       !this.lastTurnNeedsCare
     );
   }
@@ -1510,7 +1582,7 @@ class DaryaResponseEngine {
     }
     if (
       this.currentTurnDialogueAct === 'question' ||
-      this.currentTurnQuestionNeed < 0.4
+      this.currentTurnQuestionNeed < MODERATE_SERIOUSNESS_THRESHOLD
     ) {
       return false;
     }
@@ -1563,12 +1635,17 @@ class DaryaResponseEngine {
       topic === 'ask_me_question' ||
       topic === 'self_improvement' ||
       topic === 'what_do_i_do' ||
-      topic === 'unsure_topic'
+      topic === 'unsure_topic' ||
+      topic === 'apology' ||
+      topic === 'meta_feedback' ||
+      topic === 'about_eliza' ||
+      topic === 'compliment_darya' ||
+      topic === 'misread_correction'
     );
     if (alreadyWarmTopic) {
       return reply;
     }
-    if (this.canHumorFire() && Math.random() < 0.2) {
+    if (this.canHumorFire() && Math.random() < HUMOR_CHANCE) {
       return this._pickVaried(this.lang.humor || [reply]);
     }
     if (
@@ -1577,19 +1654,19 @@ class DaryaResponseEngine {
       // guard a topic-less light turn ("چی رو؟!", ":)") could get a
       // misplaced "this feels heavy" prefix.
       this.currentTurnTopics.length > 0 &&
-      this.currentTurnSeriousness >= 0.3 &&
-      this.currentTurnSeriousness < 0.6 &&
-      this.memory.turnCount - this.memory.lastWarmthTurn >= 3 &&
-      Math.random() < 0.3
+      this.currentTurnSeriousness >= WARMTH_MIN_SERIOUSNESS &&
+      this.currentTurnSeriousness < WARMTH_MAX_SERIOUSNESS &&
+      this.memory.turnCount - this.memory.lastWarmthTurn >= WARMTH_MIN_TURN_GAP &&
+      Math.random() < WARMTH_CHANCE
     ) {
       this.memory.lastWarmthTurn = this.memory.turnCount;
       return `${this._pickVaried(this.lang.warmth || [])} ${reply}`.trim();
     }
     if (
-      this.memory.lightStreak >= 2 &&
+      this.memory.lightStreak >= SMALLTALK_MIN_LIGHT_STREAK &&
       !this.lastTurnNeedsCare &&
-      this.memory.turnCount % 3 === 0 &&
-      Math.random() < 0.35 &&
+      this.memory.turnCount % SMALLTALK_TURN_INTERVAL === 0 &&
+      Math.random() < SMALLTALK_CHANCE &&
       normalized &&
       !this.lang.questionPattern.test(normalized)
     ) {
@@ -1601,8 +1678,8 @@ class DaryaResponseEngine {
   _shouldAddHumanTouch() {
     return (
       this.memory.turnCount > 0 &&
-      this.memory.turnCount % 7 === 0 &&
-      this.currentTurnSeriousness < 0.5 &&
+      this.memory.turnCount % HUMAN_TOUCH_INTERVAL === 0 &&
+      this.currentTurnSeriousness < SERIOUS_TURN_THRESHOLD &&
       this.memory
         .eligibleNamedEntities(this.entityCallbackThreshold)
         .some(
@@ -1650,16 +1727,16 @@ class DaryaResponseEngine {
     let pool;
     if (returning) {
       pool =
-        roll < 0.6
+        roll < OPENING_RETURNING_PRIMARY
           ? this.lang.greetingsReturning || this.lang.greentingsReturning
-          : roll < 0.85
+          : roll < OPENING_RETURNING_SECONDARY
             ? this.lang.greetingsInviting || this.lang.greentingsInviting
             : this.lang.greetingsOpen || this.lang.greentingsOpen;
     } else {
       pool =
-        roll < 0.5
+        roll < OPENING_NEW_PRIMARY
           ? this.lang.greetingsInviting || this.lang.greentingsInviting
-          : roll < 0.85
+          : roll < OPENING_RETURNING_SECONDARY
             ? this.lang.greetingsOpen || this.lang.greentingsOpen
             : this.lang.greetingsReturning || this.lang.greentingsReturning;
     }
@@ -2109,7 +2186,7 @@ class DaryaResponseEngine {
     );
     const rememberedTopics = new Set(entity.contextTopics || []);
     if (activeTopics.size === 0 || rememberedTopics.size === 0) {
-      return entity.age <= 4 ? 0.72 : 0.45;
+      return entity.age <= ENTITY_RECENT_TURNS ? ENTITY_RECENT_CONFIDENCE : ENTITY_STALE_CONFIDENCE;
     }
     const overlap = [...activeTopics].some((topic) =>
       rememberedTopics.has(topic)
@@ -2120,13 +2197,13 @@ class DaryaResponseEngine {
     const recentTopic = this.memory.topicHistory
       .slice(-4)
       .some((entry) => rememberedTopics.has(entry.topic));
-    return recentTopic ? 0.64 : 0.22;
+    return recentTopic ? TOPIC_RELEVANCE_RECENT_BONUS : TOPIC_RELEVANCE_STALE_BASE;
   }
 
   _respondToEntityReference() {
     const threshold = Number.isFinite(this.entityCallbackThreshold)
       ? Math.max(0, Math.min(1, this.entityCallbackThreshold))
-      : 0.6;
+      : ENTITY_CONFIDENCE_THRESHOLD;
     const probability = Number.isFinite(this.entityCallbackProbability)
       ? Math.max(0, Math.min(1, this.entityCallbackProbability))
       : ENTITY_CALLBACK_PROBABILITY;
@@ -2145,7 +2222,7 @@ class DaryaResponseEngine {
         entity,
         context: this._entityContextConfidence(entity)
       }))
-      .filter((entry) => entry.context >= 0.6)
+      .filter((entry) => entry.context >= ENTITY_CONTEXT_THRESHOLD)
       // Time references ("امروز", "هر روز") are far too common and
       // generic to reference back: the callback would read as a
       // non-sequitur ("جزئیات زمانیِ امروز...") on routine answers.
@@ -2301,16 +2378,16 @@ class DaryaResponseEngine {
   scoreResponseCandidate(candidate) {
     let score = 1;
     if (this.memory.recentBotMessages.includes(candidate)) {
-      score -= 0.9;
+      score -= RECENT_BOT_MESSAGE_PENALTY;
     }
     if (this._isQuestionResponse(candidate)) {
-      score -= this.memory.consecutiveQuestions * 0.25;
+      score -= this.memory.consecutiveQuestions * CONSECUTIVE_QUESTION_PENALTY;
     }
-    if (candidate.length > 220) {
-      score -= 0.08;
+    if (candidate.length > LONG_RESPONSE_THRESHOLD) {
+      score -= LONG_RESPONSE_PENALTY;
     }
     if (/^(?:I see|Okay|Understood|متوجه شدم|باشه)[.!،؟]?$/iu.test(candidate)) {
-      score -= 0.12;
+      score -= FILLER_RESPONSE_PENALTY;
     }
     return score;
   }

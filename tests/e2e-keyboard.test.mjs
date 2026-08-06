@@ -429,3 +429,139 @@ test(
     }
   }
 );
+test(
+  'modal dialogs trap Tab focus and restore focus on Escape',
+  { timeout: 60000 },
+  async (t) => {
+    const server = await startStaticServer();
+    const chromePath = findChromeBinary();
+
+    let browser;
+    try {
+      if (!chromePath) {
+        return t.skip(
+          'no Chrome/Chromium binary found; skipping the e2e dialog test'
+        );
+      }
+      try {
+        browser = await chromium.launch({
+          executablePath: chromePath,
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-gpu',
+            '--mute-audio',
+            '--disable-dev-shm-usage',
+            '--autoplay-policy=no-user-gesture-required'
+          ]
+        });
+      } catch (err) {
+        return t.skip('headless Chrome failed to launch: ' + err.message);
+      }
+
+      const page = await browser.newPage();
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(String(err)));
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') {
+          pageErrors.push(msg.text());
+        }
+      });
+
+      const expectFocused = async (selector) => {
+        await page.waitForFunction(
+          (sel) => {
+            const el = document.activeElement;
+            return !!(el && el.matches(sel));
+          },
+          selector,
+          { timeout: 5000 }
+        );
+      };
+
+      // Start a conversation so the chat surface (and its menu) exist.
+      await page.goto(`http://127.0.0.1:${server.address().port}/`, {
+        waitUntil: 'load'
+      });
+      await page.waitForSelector('#picker-en');
+      await page.click('#picker-en');
+      await page.waitForFunction(
+        () => {
+          const input = document.getElementById('composer-input');
+          return input && !input.disabled;
+        },
+        null,
+        { timeout: 15000 }
+      );
+      await page
+        .waitForFunction(
+          () => {
+            const typing = document.getElementById('typing-row');
+            return !typing || typing.hidden;
+          },
+          null,
+          { timeout: 20000 }
+        )
+        .catch(() => {});
+
+      // ---- New-chat confirm dialog ----
+      // Open the menu and activate "New chat" to show the confirm dialog.
+      await page.evaluate(() =>
+        document.getElementById('menu-trigger').focus()
+      );
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(
+        () => !document.getElementById('menu-popover').hidden,
+        null,
+        { timeout: 5000 }
+      );
+      await expectFocused('#menu-new-chat');
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(
+        () => !!document.querySelector('.confirm-overlay'),
+        null,
+        { timeout: 5000 }
+      );
+
+      // The dialog focuses the safe "No" button by default.
+      await expectFocused('.confirm-btn--no');
+
+      // Tab stays inside the dialog, cycling between the two buttons.
+      await page.keyboard.press('Tab');
+      await expectFocused('.confirm-btn--yes');
+      await page.keyboard.press('Shift+Tab');
+      await expectFocused('.confirm-btn--no');
+
+      // Escape closes the dialog and returns focus to the menu trigger.
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(
+        () => !document.querySelector('.confirm-overlay'),
+        null,
+        { timeout: 5000 }
+      );
+      await expectFocused('#menu-trigger');
+
+      // ---- Exit confirm bar ----
+      await page.evaluate(() => window.DaryaOverlays.showExitConfirmBar());
+      // The bar focuses the cancel button (safe default).
+      await expectFocused('#exit-confirm-no');
+      // Escape cancels, hides the bar, and returns focus to the composer.
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(
+        () => document.getElementById('exit-confirm-bar').hidden === true,
+        null,
+        { timeout: 5000 }
+      );
+      await expectFocused('#composer-input');
+
+      // The whole journey must be free of uncaught errors.
+      assert.deepEqual(pageErrors, [], 'no uncaught errors in the browser');
+    } finally {
+      if (browser) {
+        await browser.close().catch(() => {});
+      }
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  }
+);

@@ -20,6 +20,8 @@ import {
   DaryaResponseEngine,
   DaryaKnowledge,
   normalizeForMatching,
+  luminance,
+  contrastRatio,
   read,
   SCRIPT_ORDER,
   ROOT
@@ -1940,6 +1942,92 @@ test('modal surfaces move focus in, contain it, and restore it', () => {
   assert.match(overlays, /ui\.notificationDismiss/u);
 });
 
+test('notifications are bilingual and the picker sound toggle draws attention', () => {
+  const overlays = read('js/ui/overlays.js');
+  const css = read('css/style.css');
+  const app = read('js/app.js');
+
+  // Notifications render the severity type in both languages with a dot
+  // separator (FA · EN), mirroring the picker intro pairing.
+  assert.match(overlays, /notification-type__fa/u);
+  assert.match(overlays, /notification-type__sep/u);
+  assert.match(overlays, /notification-type__en/u);
+  assert.match(overlays, /notification-message--fa/u);
+  assert.match(overlays, /notification-message--en/u);
+  assert.match(css, /\.notification-type__fa/u);
+  assert.match(css, /\.notification-type__sep/u);
+  assert.match(css, /\.notification-type__en/u);
+  assert.match(css, /\.notification-message--fa/u);
+  assert.match(css, /\.notification-message--en/u);
+
+  // The bilingual message lines must be centered.
+  assert.match(css, /\.notification-message \{[^}]*text-align: center/u);
+
+  // The welcome-screen sound toggle nudges the user when sound is
+  // enabled but silent (autoplay needs a gesture): a delayed attention
+  // class with a smooth fade/ring animation and a reduced-motion
+  // fallback.
+  assert.match(app, /SOUND_ATTENTION_DELAY_MS = 3000/u);
+  assert.match(app, /armSoundAttention/u);
+  assert.match(app, /clearSoundAttention/u);
+  assert.match(app, /picker__sound-toggle--attention/u);
+  assert.match(css, /\.picker__sound-toggle--attention/u);
+  assert.match(css, /@keyframes sound-attention-fade/u);
+  assert.match(css, /@keyframes sound-attention-ring/u);
+  assert.match(
+    css,
+    /prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.picker__sound-toggle--attention/u
+  );
+
+  // Severity icons are inline SVG (built via the DOM API, never
+  // markup strings) and render as an emphasis chip inside the type
+  // label.
+  assert.match(overlays, /notification-type__icon/u);
+  assert.match(overlays, /createElementNS/u);
+  assert.match(css, /\.notification-type__icon/u);
+  assert.match(css, /\.notification-type \{[^}]*padding/u);
+  // The chip outlines itself with a translucent severity border instead
+  // of a tinted background, so the label text keeps sitting on the plain
+  // panel where the luminous accents clear WCAG 4.5:1.
+  assert.match(css, /\.notification-type \{[^}]*border: 1px solid/u);
+
+  // The type chip is centered in the card: the header centers its
+  // content while the dismiss button floats in the inline-end corner,
+  // and the toast enters with a dedicated slide-down animation.
+  assert.match(css, /\.notification-header \{[^}]*justify-content: center/u);
+  assert.match(css, /\.notification-dismiss \{[^}]*position: absolute/u);
+  assert.match(css, /@keyframes notification-in/u);
+
+  // Sound toggles always reflect ACTUAL playback: the boot path syncs
+  // the picker toggle from isPlaying() (honest "off" before any user
+  // gesture) and must never force it pressed from the saved preference,
+  // which would fake an "on" state while nothing plays.
+  assert.match(app, /syncSoundToggleUI\(DaryaAmbientSound\.isPlaying\(\)\)/u);
+  assert.doesNotMatch(
+    app,
+    /pickerSoundToggle\.setAttribute\('aria-pressed', 'true'\)/u
+  );
+
+  // The container gains a severity accent bar and a per-severity tint
+  // driven by one custom property, and the beach theme restores the
+  // severity border colors instead of letting its generic border
+  // override wash them out (dark-mode parity in both themes).
+  assert.match(css, /--notification-accent/u);
+  assert.match(css, /\.notification-container::before/u);
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.notification-container--error/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.notification-container--warn/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.notification-container--info/u
+  );
+});
+
 test('every static button has a title and every status surface is labelled', () => {
   const html = read('index.html');
   for (const button of html.matchAll(/<button\b[^>]*>/gu)) {
@@ -1989,7 +2077,11 @@ test('beach controls and validation hints remain visible on the bright sky', () 
   const css = read('css/style.css');
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.menu__trigger[\s\S]*color: #2f7384/u
+    /html\[data-theme='beach'\] \.menu__trigger[\s\S]*color: #1a5f6d/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.menu__trigger:hover[\s\S]*color: #14505f/u
   );
   assert.match(
     css,
@@ -2198,6 +2290,132 @@ test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', (
   );
 });
 
+test('reduced motion disables every animation and transitions stay instant', () => {
+  /* WCAG 2.3.3 / 1.4.4 companion: users who set prefers-reduced-motion
+     must not be subjected to ambient or state-change motion. A
+     real-browser audit (Playwright + Chrome with reduced-motion
+     emulation) verified that no visible element runs a CSS animation or
+     a non-zero transition under the reduce query, in both themes and on
+     both the picker and chat surfaces. These pins guard the structural
+     guarantees that audit relies on. */
+  const css = read('css/style.css');
+
+  // The catch-all reduce block must cover every animating component:
+  // ambient layers, bubbles, menu, picker, composer, and overlays.
+  const catchAll = css.match(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?animation: none !important;[\s\S]*?transition: none !important;\s*\}/u
+  )?.[0];
+  assert.ok(catchAll, 'catch-all reduced-motion block exists');
+  for (const selector of [
+    '.backdrop__glow',
+    '.backdrop__horizon',
+    '.backdrop__scrim',
+    '.beach-scene__ocean',
+    '.beach-scene__wave',
+    '.bubble-particle',
+    '.ocean-particle',
+    '.ocean-caustic',
+    '.ocean-current',
+    '.bird-shadow',
+    '.breathe-trigger',
+    '.breathe-trigger svg',
+    '.picker__sound-toggle',
+    '.ripple-dot',
+    '.bubble-row',
+    '.bubble--bot',
+    '.bubble--bot::after',
+    '.menu__popover',
+    '.menu__trigger',
+    '.picker__option',
+    '.theme-picker__option',
+    '.composer__send',
+    '.composer__send:not(:disabled)::after',
+    '.breathe-overlay',
+    '.breathe-close',
+    '.menu__item',
+    '.sound-toggle__wave',
+    '.sound-toggle__slash',
+    '.composer',
+    '.exit-confirm-bar__btn',
+    '.confirm-btn',
+    '.notification-dismiss'
+  ]) {
+    assert.match(
+      catchAll,
+      new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'u'),
+      `catch-all reduce block covers ${selector}`
+    );
+  }
+
+  // Per-component reduce blocks for the remaining animating elements.
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.picker:not\(\[hidden\]\),[\s\S]*?animation: none;/u,
+    'picker/app reveal disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.exit-confirm-bar[\s\S]*?animation: none;/u,
+    'exit bar reveal disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.confirm-overlay[\s\S]*?animation: none;/u,
+    'confirm overlay disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.notification-overlay[\s\S]*?animation: none;/u,
+    'notification-in disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.beach-scene__sun,[\s\S]*?animation: none !important;/u,
+    'beach sun/ocean/wave disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.backdrop__depth-breath[\s\S]*?animation: none;/u,
+    'depth breath disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.breathe-circle[\s\S]*?transition: none !important;/u,
+    'breathe circle transition disabled under reduce'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.breathe-countdown[\s\S]*?transition: none !important;/u,
+    'breathe countdown transition disabled under reduce'
+  );
+
+  // The picker sound-toggle attention ring (added by JS when sound is
+  // enabled but silent) must also be static under reduce.
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.picker__sound-toggle--attention,[\s\S]*?animation: none;/u,
+    'sound attention ring disabled under reduce'
+  );
+});
+
+test('inactive-theme ambient layers pause instead of animating hidden', () => {
+  /* Pausing animations on hidden elements avoids wasted GPU work and
+     keeps the inactive theme's layers from running off-screen. A
+     real-browser audit verified beach-hidden ocean layers and
+     ocean-hidden beach layers compute to animation-play-state: paused. */
+  const css = read('css/style.css');
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.backdrop__glow,[\s\S]*?\.ocean-current \{[\s\S]*?animation-play-state: paused;/u,
+    'ocean layers pause under beach theme'
+  );
+  assert.match(
+    css,
+    /html:not\(\[data-theme='beach'\]\) \.beach-scene__ocean,[\s\S]*?\.bird-shadow \{[\s\S]*?animation-play-state: paused;/u,
+    'beach layers pause under ocean theme'
+  );
+});
+
 test('ambient sound starts playback within the user gesture, not after buffering', () => {
   // Regression test for the "play failed ... (canplaythrough timeout)"
   // bug. The old code waited up to 15s for a canplaythrough event (and
@@ -2342,6 +2560,15 @@ test('mobile-first responsive guards: touch targets, iOS zoom, safe areas', () =
     'composer input must be 16px to prevent iOS zoom'
   );
 
+  // The composer input is the primary touch target of the chat screen:
+  // 16px at line-height 1.7 plus 8px vertical padding lands at 43.2px,
+  // so a 44px min-height floor keeps the resting hit area compliant.
+  assert.match(
+    css,
+    /\.composer__input[\s\S]*?min-height: 44px/u,
+    'composer input needs a 44px touch height'
+  );
+
   // Compact icon buttons must still expose a 44px effective tap target
   // through an invisible hit-area pseudo-element.
   assert.match(
@@ -2363,6 +2590,11 @@ test('mobile-first responsive guards: touch targets, iOS zoom, safe areas', () =
     css,
     /\.notification-dismiss::after[\s\S]*?inset: -10px/u,
     'notification dismiss needs a 44px tap target'
+  );
+  assert.match(
+    css,
+    /\.picker__sound-toggle::before[\s\S]*?inset: -6px/u,
+    'picker sound toggle needs a 44px tap target'
   );
 
   // Text/row buttons must meet the 44px minimum touch height.
@@ -2405,37 +2637,423 @@ test('mobile-first responsive guards: touch targets, iOS zoom, safe areas', () =
   assert.match(css, /\.chat[\s\S]*?overscroll-behavior: contain/u);
 });
 
+test('responsive breakpoints keep all five widths free of horizontal overflow', () => {
+  const css = read('css/style.css');
+
+  // The layout is mobile-first with min-width breakpoints that add
+  // breathing room as the viewport grows: 600px and 900px are the two
+  // seams the whole shell responds at.
+  assert.match(
+    css,
+    /@media \(width >= 600px\) \{[\s\S]*?\.bubble-wrap \{[\s\S]*?max-width: 74%/u,
+    'bubbles widen at the 600px breakpoint'
+  );
+  assert.match(
+    css,
+    /@media \(width >= 900px\) \{[\s\S]*?\.app \{[\s\S]*?padding-inline/u,
+    'app shell pads at the 900px breakpoint'
+  );
+
+  // Word wrapping: chat bubbles and notification messages must break
+  // unbroken strings instead of pushing the page wider on narrow
+  // screens (verified at 360px with 80-char and RTL inputs).
+  assert.match(
+    css,
+    /\.bubble \{[\s\S]*?overflow-wrap: break-word/u,
+    'chat bubbles must wrap unbroken strings'
+  );
+  assert.match(
+    css,
+    /\.notification-message \{[\s\S]*?overflow-wrap: anywhere/u,
+    'notification messages must wrap anywhere'
+  );
+
+  // The menu popover is anchored to the header trigger and must never
+  // exceed the viewport width even at 360px; the min-width must stay
+  // small enough to fit while the max-width clamps to the viewport.
+  assert.match(
+    css,
+    /\.menu__popover \{[\s\S]*?min-width: 216px;/u,
+    'menu popover keeps a compact 216px min-width'
+  );
+  assert.match(
+    css,
+    /\.menu__popover \{[\s\S]*?max-width: calc\(100vw - 2 \* var\(--space-3\)\)/u,
+    'menu popover must clamp to the viewport width'
+  );
+
+  // The chat scroll container must scroll vertically, and the body is
+  // the page-level safety net that clips any stray element so a single
+  // mis-sized component can never create horizontal page scroll.
+  assert.match(
+    css,
+    /\.chat \{[\s\S]*?overflow-y: auto;/u,
+    'chat scrolls vertically'
+  );
+  assert.match(
+    css,
+    /body \{[\s\S]*?overflow-x: hidden;/u,
+    'body must clip horizontal overflow as a last-resort guard'
+  );
+
+  // The beach wave layers widen on small screens so waves keep their
+  // amplitude instead of squeezing into a thin stripe (mobile-first
+  // breakpoint for the animated scenery).
+  assert.match(
+    css,
+    /@media \(width < 600px\) \{[\s\S]*?\.beach-scene__ocean \{[\s\S]*?height: 28%;/u,
+    'ocean layers get extra vertical room below 600px'
+  );
+});
+
+test('picker, menu, and composer share one panel, timing, and hover language', () => {
+  // Cross-component design-language audit: every panel uses the panel
+  // radius token, interactive transitions respect the 200-400ms motion
+  // range, and sibling controls share the same hover/pressed treatment.
+  const css = read('css/style.css');
+
+  // The menu popover is a panel (like the picker options and the
+  // confirm dialog), so it uses the 24px panel radius, not the 16px
+  // control radius; its entrance respects the 200ms motion floor.
+  assert.match(
+    css,
+    /\.menu__popover[\s\S]*?border-radius: var\(--radius-lg\)/u,
+    'menu popover must use the panel radius token'
+  );
+  assert.match(
+    css,
+    /\.menu__popover[\s\S]*?animation: menu-in 0\.22s/u,
+    'menu entrance must respect the 200ms motion floor'
+  ); // Hover fills use one consistent translucent seafoam tint across the
+  // menu trigger, the breathe trigger (its header sibling), and the
+  // picker sound toggle. The tint is a literal string, so its regex
+  // metacharacters (parens, dot) are escaped before interpolation.
+  const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const seafoamFill = escapeRegExp('rgba(127, 190, 176, 0.08)');
+  assert.match(
+    css,
+    new RegExp(`\\.menu__trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    'menu trigger hover fill'
+  );
+  assert.match(
+    css,
+    new RegExp(`\\.breathe-trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    'breathe trigger must share the menu trigger hover fill'
+  );
+  assert.match(
+    css,
+    new RegExp(
+      `\\.picker__sound-toggle:hover[\\s\\S]*?background: ${seafoamFill}`
+    ),
+    'picker sound toggle hover fill'
+  );
+
+  // The selected theme-picker segment and the focused composer share
+  // one soft seafoam halo, and the segment also has a hover hint.
+  assert.match(
+    css,
+    /\.theme-picker__option:hover \{[^}]*\}/u,
+    'theme picker segments must have a hover state'
+  );
+  assert.match(
+    css,
+    /\.theme-picker__option\[aria-pressed='true'\][\s\S]*?box-shadow: 0 0 0 2px/u,
+    'selected theme segment must share the seafoam halo'
+  );
+
+  // Interactive transitions stay inside the 200-400ms motion range.
+  assert.match(
+    css,
+    /\.menu__item[\s\S]*?transition: background 0\.2s/u,
+    'menu item hover transition must be 0.2s'
+  );
+  assert.match(
+    css,
+    /\.composer__send[\s\S]*?transition:[\s\S]*?transform 0\.2s/u,
+    'composer send transitions must be 0.2s'
+  );
+});
+
 test('representative theme foregrounds meet WCAG AA contrast', () => {
-  const luminance = (hex) => {
-    const channels = [1, 3, 5].map(
-      (index) => parseInt(hex.slice(index, index + 2), 16) / 255
-    );
-    const linear = channels.map((value) =>
-      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
-    );
-    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
-  };
-  const ratio = (foreground, background) => {
-    const values = [luminance(foreground), luminance(background)].sort(
-      (a, b) => b - a
-    );
-    return (values[0] + 0.05) / (values[1] + 0.05);
-  };
   /* Beach theme: on-sky ink colors against the bright sand/sky. */
-  assert.ok(ratio('#0f2e3a', '#b3d6e0') >= 4.5, '--color-on-sky vs beach sky');
   assert.ok(
-    ratio('#1c404e', '#b3d6e0') >= 4.5,
+    contrastRatio('#0f2e3a', '#b3d6e0') >= 4.5,
+    '--color-on-sky vs beach sky'
+  );
+  assert.ok(
+    contrastRatio('#1c404e', '#b3d6e0') >= 4.5,
     '--color-on-sky-dim vs beach sky'
   );
   assert.ok(
-    ratio('#7a3f2a', '#b3d6e0') >= 4.5,
+    contrastRatio('#7a3f2a', '#b3d6e0') >= 4.5,
     '--color-on-sky-accent vs beach sky'
   );
   /* Ocean theme: foam text on deep panels. */
-  assert.ok(ratio('#eaf3ef', '#143f48') >= 4.5, '--color-foam vs --color-tide');
   assert.ok(
-    ratio('#9dbdb6', '#143f48') >= 4.5,
+    contrastRatio('#eaf3ef', '#143f48') >= 4.5,
+    '--color-foam vs --color-tide'
+  );
+  assert.ok(
+    contrastRatio('#9dbdb6', '#143f48') >= 4.5,
     '--color-foam-dim vs --color-tide'
+  );
+});
+test('beach translucent panel text clears WCAG AA on idle and hover', () => {
+  /* The beach picker panel composites the translucent teal over the
+     bright sand: idle #386557, hover #326a5f. The ocean-tuned accent
+     inks (coral, seafoam, foam-dim) dip below 4.5:1 there, so the
+     beach theme swaps in brighter variants that pass on BOTH panels. */
+  const idlePanel = '#386557';
+  const hoverPanel = '#326a5f';
+  for (const panel of [idlePanel, hoverPanel]) {
+    assert.ok(
+      contrastRatio('#fdd6bd', panel) >= 4.5,
+      `FA picker title on ${panel}`
+    );
+    assert.ok(
+      contrastRatio('#c2e6d8', panel) >= 4.5,
+      `EN picker title on ${panel}`
+    );
+    assert.ok(
+      contrastRatio('#d6ece5', panel) >= 4.5,
+      `picker desc on ${panel}`
+    );
+  }
+
+  /* The beach menu trigger is a pale sky chip; the icon ink darkened
+     from #2f7384 (3.85:1) to #1a5f6d, and hover darkens a step further
+     to #14505f. The notification close glyph on the solid tide panel
+     brightened from foam-dim (4.29:1) to #cfe0da. */
+  assert.ok(contrastRatio('#1a5f6d', '#cddde1') >= 4.5, 'trigger icon on sky');
+  assert.ok(contrastRatio('#14505f', '#cadde3') >= 4.5, 'trigger hover on sky');
+  assert.ok(contrastRatio('#cfe0da', '#1f5449') >= 4.5, 'notification dismiss');
+
+  /* The beach theme actually ships these overrides, scoped so the ocean
+     theme keeps its own accents untouched. */
+  const css = read('css/style.css');
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] #picker-fa \.picker__option-title[\s\S]*color: #fdd6bd/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] #picker-en \.picker__option-title[\s\S]*color: #c2e6d8/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.picker__option-desc[\s\S]*color: #d6ece5/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.notification-dismiss[\s\S]*color: #cfe0da/u
+  );
+});
+
+test('non-text contrast: input boundaries and focus rings clear WCAG 1.4.11', () => {
+  /* WCAG 1.4.11 (non-text contrast) needs 3:1 for the visual info that
+     identifies a component - including input field boundaries and focus
+     indicators. The composer border used to inherit the faint decorative
+     line (1.3:1 ocean, 1.2:1 beach), and the beach theme's dark-ink
+     focus rings were invisible on its dark panels. */
+  // Ocean composer boundary composites foam at 0.45 over tide #143f48.
+  const oceanComposer = blendHex([234, 243, 239, 0.45], [20, 63, 72]);
+  assert.ok(
+    contrastRatio(oceanComposer, '#143f48') >= 3.0,
+    'ocean composer boundary >= 3:1'
+  );
+  // Beach composer boundary: foam at 0.65 over the composited panel
+  // #456d5e (translucent teal rgba(31,84,73,0.82) over sand).
+  const beachComposer = blendHex([240, 247, 244, 0.65], [69, 109, 94]);
+  assert.ok(
+    contrastRatio(beachComposer, '#456d5e') >= 3.0,
+    'beach composer boundary >= 3:1'
+  );
+  // Beach dark-panel focus rings use luminous foam #a8d9cc.
+  assert.ok(contrastRatio('#a8d9cc', '#456d5e') >= 3.0, 'beach send focus');
+  assert.ok(
+    contrastRatio('#a8d9cc', '#1f5449') >= 3.0,
+    'beach notif dismiss focus'
+  );
+  assert.ok(
+    contrastRatio('#a8d9cc', '#386557') >= 3.0,
+    'beach exit-bar focus on panel'
+  );
+  // Beach selected theme-picker segment border is luminous too.
+  assert.ok(
+    contrastRatio('#a8d9cc', '#386e62') >= 3.0,
+    'beach selected theme segment'
+  );
+  // Beach send fill brightened from coral #dc7f5d (2.0:1) to shell.
+  assert.ok(contrastRatio('#f5b28d', '#456d5e') >= 3.0, 'beach send fill');
+  assert.ok(
+    contrastRatio('#f9c1a6', '#456d5e') >= 3.0,
+    'beach send fill hover'
+  );
+  assert.ok(
+    contrastRatio('#0e2a26', '#f5b28d') >= 3.0,
+    'send arrow stays readable on shell fill'
+  );
+
+  const css = read('css/style.css');
+  // The composer uses a dedicated --border-input token, not the faint
+  // decorative line shared with bubbles and cards.
+  assert.match(
+    css,
+    /\.composer \{[\s\S]*?border: 1px solid var\(--border-input\)/u,
+    'composer must use the dedicated input boundary token'
+  );
+  assert.match(css, /--border-input: rgba\(234, 243, 239, 0\.45\)/u);
+  assert.match(
+    css,
+    /html\[data-theme='beach'\][\s\S]*?--border-input: rgba\(240, 247, 244, 0\.65\)/u
+  );
+  // Beach luminous focus rings on dark panels (not the dark ink that the
+  // light-sky surfaces use).
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.composer__send:focus-visible,\nhtml\[data-theme='beach'\] \.exit-confirm-bar__btn:focus-visible,\nhtml\[data-theme='beach'\] \.breathe-close:focus-visible \{[\s\S]*?outline-color: #a8d9cc/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.notification-dismiss:focus-visible \{[\s\S]*?outline-color: #a8d9cc/u
+  );
+  // Beach composer focus-within and selected theme segment match the
+  // same luminous language, and the send button got a shell fill.
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.composer:focus-within \{[\s\S]*?border-color: #a8d9cc/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.theme-picker__option\[aria-pressed='true'\] \{[\s\S]*?border-color: #a8d9cc/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.composer__send \{[\s\S]*?background: #f5b28d/u
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.composer__send:hover:not\(:disabled\) \{[\s\S]*?background: #f9c1a6/u
+  );
+});
+
+test('keyboard focus indicators are visible on every interactive element', () => {
+  /* WCAG 2.4.7 (focus visible): every interactive element must show a
+     visible focus indicator. A real-browser audit (Playwright + Chrome,
+     real Tab and ArrowDown key events) verified each of the elements
+     below matches :focus-visible with a ring that clears 3:1 against
+     the surface the ring is drawn on (the parent, since outline-offset
+     pushes the ring outside the element's own fill).
+
+     The pins below guard the guarantees that audit relies on:
+     1. A global :focus-visible rule with a visible outline + offset.
+     2. The composer input deliberately removes its own outline and
+        instead exposes the focus via the composer's :focus-within
+        border ring, so keyboard users still get an indicator.
+     3. The beach theme keeps the dark-ink ring on light sky surfaces
+        while the luminous #a8d9cc rings cover its dark panels (already
+        asserted in the non-text contrast test above).
+  */
+  const css = read('css/style.css');
+
+  // Global keyboard focus ring: real outline, not outline: none.
+  assert.match(
+    css,
+    /:focus-visible \{[\s\S]*?outline: 2\.5px solid var\(--border-focus\)[\s\S]*?outline-offset: 2px/u,
+    'global :focus-visible ring with visible outline'
+  );
+
+  // The composer input is the one element that strips its own outline;
+  // it must hand the indicator to the composer's :focus-within ring.
+  assert.match(
+    css,
+    /\.composer__input:focus \{[\s\S]*?outline: none/u,
+    'composer input suppresses its own outline'
+  );
+  assert.match(
+    css,
+    /\.composer:focus-within \{[\s\S]*?border-color: var\(--color-seafoam\)[\s\S]*?box-shadow: 0 0 0 2px rgba\(127, 190, 176, 0\.15\)/u,
+    'ocean composer :focus-within ring substitutes the input outline'
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.composer:focus-within \{[\s\S]*?border-color: #a8d9cc/u,
+    'beach composer :focus-within ring stays luminous'
+  );
+
+  // Beach keeps the dark-ink ring for light sky surfaces (menu, picker,
+  // sand) so it clears 3:1 there instead of washing out.
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] :focus-visible \{[\s\S]*?outline-color: var\(--color-on-sky-link\)/u,
+    'beach light-surface focus rings use dark ink'
+  );
+
+  // Focus rings must exist on the interactive elements that live on the
+  // page in both themes; these all inherit the global rule, but a stray
+  // outline: none or a removed rule would silently break keyboard
+  // visibility, so pin the presence of the components themselves and the
+  // global rule applying to them.
+  for (const selector of [
+    '.picker__option',
+    '.theme-picker__option',
+    '.picker__sound-toggle',
+    '.menu__trigger',
+    '.breathe-trigger',
+    '.composer__send',
+    '.menu__item',
+    '.notification-dismiss',
+    '.exit-confirm-bar__btn',
+    '.breathe-close'
+  ]) {
+    const block = css.match(
+      new RegExp(selector.replaceAll('.', '\\.') + ' \\{[\\s\\S]*?\\}', 'u')
+    );
+    assert.ok(block, `${selector} has a CSS block`);
+    // Only the composer input is allowed to strip its own outline (it
+    // hands the indicator to the composer :focus-within ring, pinned
+    // above). Any other component dropping the ring breaks keyboard
+    // visibility for that element.
+    assert.doesNotMatch(
+      block[0],
+      /outline: none|outline: 0/u,
+      `${selector} must not strip its focus ring`
+    );
+  }
+});
+
+function blendHex(over, under) {
+  const a = over[3];
+  const out = over
+    .slice(0, 3)
+    .map((v, i) => Math.round(v * a + under[i] * (1 - a)));
+  return '#' + out.map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+test('modal dialogs trap focus and restore it on dismiss', () => {
+  /* WAI-ARIA dialog pattern: a modal dialog must keep Tab focus inside
+     itself and return focus to the invoking control when dismissed.
+     A real-browser audit found the new-chat confirm dialog let Tab
+     escape into the page behind it and dropped focus on <body> when
+     dismissed. These pins guard the two fixes. */
+  const overlays = read('js/ui/overlays.js');
+  // The confirm overlay handles Tab by cycling between its two buttons.
+  assert.match(
+    overlays,
+    /confirmOverlay\.addEventListener\('keydown',[\s\S]*?e\.key === 'Tab'[\s\S]*?next\.focus\(\)/u,
+    'new-chat confirm dialog traps Tab between its buttons'
+  );
+  // Dismiss restores focus to the invoker, falling back to the menu
+  // trigger when the invoking menu item is already hidden.
+  assert.match(
+    overlays,
+    /function dismissNewChatConfirm\(\)[\s\S]*?confirmFocusTarget/u,
+    'new-chat confirm dialog remembers the invoking control'
+  );
+  assert.match(
+    overlays,
+    /function dismissNewChatConfirm\(\)[\s\S]*?target\.focus\(\)/u,
+    'new-chat confirm dialog restores focus on dismiss'
   );
 });
 
@@ -2613,4 +3231,136 @@ test('application keeps the numeric release and cache key out of user-facing sou
   // package.json is the single source of truth for the release number.
   const pkg = JSON.parse(read('package.json'));
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/u);
+});
+
+test('applyLanguage sets dir and lang on the document root for correct page layout', () => {
+  const app = read('js/app.js');
+  // When a language is selected, the document-level dir and lang must be
+  // updated so the full page layout (header, menu, composer, fonts) mirrors
+  // to match. Without this, English conversations render in RTL.
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]dir['"]\s*,\s*chosenLang\.dir\s*\)/u,
+    'applyLanguage must set dir on htmlRoot from chosenLang.dir'
+  );
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]lang['"]\s*,\s*chosenLang\.code\s*\)/u,
+    'applyLanguage must set lang on htmlRoot from chosenLang.code'
+  );
+});
+
+test('showPicker resets dir and lang to RTL defaults so the picker renders correctly', () => {
+  const app = read('js/app.js');
+  // The language picker is always shown in Persian first; when it is
+  // re-shown (e.g. "New Chat"), dir and lang must reset to RTL defaults.
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]dir['"]\s*,\s*['"]rtl['"]\s*\)/u,
+    'showPicker must reset dir to rtl'
+  );
+  assert.match(
+    app,
+    /el\.htmlRoot\.setAttribute\(\s*['"]lang['"]\s*,\s*['"]fa['"]\s*\)/u,
+    'showPicker must reset lang to fa'
+  );
+});
+
+test('index.html has html-root id for JS to reference the document root', () => {
+  const html = read('index.html');
+  assert.match(
+    html,
+    /id=["']html-root["']/u,
+    'the <html> element must have id="html-root" for JS reference'
+  );
+});
+
+test('heading structure uses real heading elements with a single page-level h1', () => {
+  const html = read('index.html');
+  // Exactly one h1: the app title in the chat header. The picker greeting
+  // and theme heading become section headings below it so screen-reader
+  // users can navigate the welcome screen by heading.
+  const h1Count = (html.match(/<h1\b/gu) || []).length;
+  assert.equal(h1Count, 1, 'the document must have exactly one <h1>');
+  assert.match(
+    html,
+    /<h1 class="header__title" id="header-title">/u,
+    'the chat header title must be the single <h1>'
+  );
+  assert.match(
+    html,
+    /<h2 class="picker__intro">/u,
+    'the picker greeting must be an <h2>'
+  );
+  assert.match(
+    html,
+    /<h3 class="picker__theme-heading" id="picker-theme-heading"/u,
+    'the picker theme heading must be an <h3>'
+  );
+});
+
+test('ocean picker option titles and muted notes clear WCAG AA text contrast', () => {
+  const css = read('css/style.css');
+  // The FA option title is Lalezar at 22px/regular; coral alone measures
+  // 4.08:1 on the panel (3.48:1 on hover), so the softer coral tone is
+  // required to clear the 4.5:1 AA threshold on both states.
+  assert.match(
+    css,
+    /#picker-fa \.picker__option-title \{[\s\S]*?color: var\(--color-coral-soft\);/u,
+    'the FA picker option title must use the softer coral tone'
+  );
+  // At 0.75 opacity the muted lang-lock note measured 4.45:1 on the
+  // backdrop gradient, just under 4.5:1; 0.9 clears it with margin.
+  assert.match(
+    css,
+    /\.picker__lang-lock \{[\s\S]*?opacity: 0\.9;/u,
+    'the picker lang-lock must keep enough opacity to clear 4.5:1'
+  );
+});
+
+test('beach picker muted text sits on a light pill over the animated waves', () => {
+  const css = read('css/style.css');
+  // The beach lang-lock and theme-heading render over drifting
+  // semi-transparent wave layers; dark ink there measures 2.1-3.8:1 and
+  // shifts with the animation. A light backing pill (like the picker
+  // note) must keep the text readable.
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?background: rgba\(240, 235, 218, 0\.85\);/u,
+    'the beach lang-lock must have a light backing pill'
+  );
+  assert.match(
+    css,
+    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?padding: var\(--space-1\) var\(--space-3\);/u,
+    'the beach lang-lock pill must pad its text'
+  );
+});
+
+test('picker sound toggle gets a localized accessible name from JS', () => {
+  const html = read('index.html');
+  const app = read('js/app.js');
+  // The static markup must not ship an English-only name for the picker
+  // toggle: the runtime must replace it with the active language's label.
+  assert.doesNotMatch(
+    html,
+    /id="picker-sound-toggle"[^>]*title="Toggle ambient sound"/u,
+    'the static picker sound toggle title must not be English-only'
+  );
+  assert.match(
+    html,
+    /id="picker-sound-toggle"[^>]*title="[^"]*\/ Toggle ambient sound"/u,
+    'the static picker sound toggle title must stay bilingual as a fallback'
+  );
+  // syncSoundToggleUI must set the localized label on the picker toggle
+  // so its accessible name follows the UI language, not the HTML default.
+  assert.match(
+    app,
+    /el\.pickerSoundToggle\.setAttribute\(\s*['"]aria-label['"]\s*,\s*label\s*\)/u,
+    'syncSoundToggleUI must set a localized aria-label on the picker toggle'
+  );
+  assert.match(
+    app,
+    /el\.pickerSoundToggle\.setAttribute\(\s*['"]title['"]\s*,\s*label\s*\)/u,
+    'syncSoundToggleUI must set the localized title on the picker toggle'
+  );
 });

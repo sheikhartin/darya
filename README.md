@@ -15,8 +15,8 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **Emotional awareness.** When the conversation feels heavy, Darya may offer a gentle breathing exercise or a grounding pause.
 - **Time and calendar answers.** Ask for the current time or date and Darya replies in your language and calendar, with both Jalali and Gregorian dates for Persian.
 - **Professional handling of hostility.** Insults, bullying, and inappropriate comments aimed at Darya are met with calm, boundary-setting responses, never with an argument.
-- **Offline and private.** Everything runs in your browser. Nothing is stored after you close the tab. No network requests are made at any time.
-- **Conversation export.** Download your chat as Markdown or plain text whenever you like.
+- **Offline and private.** Everything runs in your browser. No network requests are made at any time. Conversation data is kept only in your browser tab.
+- **Conversation export.** Download your chat as plain text whenever you like.
 
 ## Quick Start
 
@@ -47,8 +47,10 @@ Each turn follows a deterministic pipeline:
      whitespace cleanup. This version is stored in conversation memory
      so Darya can quote the user back naturally.
    - A second version additionally strips punctuation, removes zero-width
-     characters, and expands common chat abbreviations (e.g. "btw" to
-     "by the way", "idk" to "i do not know"). This expanded form is used
+     characters, expands common chat abbreviations (e.g. "btw" to
+     "by the way", "idk" to "i do not know"), and for Persian unifies
+     progressive prefix spelling variants ("می شود", "می‌شود", "میشود"
+     all collapse to one canonical form). This expanded form is used
      only for pattern matching and is never stored in memory. Darya never
      quotes "i do not know" back at someone who typed "idk".
 
@@ -104,6 +106,8 @@ and configuration live in language packs with identical structure. Each
 pack provides:
 
 - A normalization function for memory storage
+- A progressive-prefix binding function (Persian only) that unifies
+  "می شود", "می‌شود", and "میشود" for rule matching
 - A priority-sorted rules list with regex patterns and response pools
 - Topic seriousness values that control question-asking behavior
 - Insult, teasing, and frustration detection patterns
@@ -286,7 +290,7 @@ professional.
 
 ## Privacy
 
-Darya has no accounts, no analytics, no tracking, and no server-side processing. Your conversation exists only in your browser tab. When you close the tab, everything is gone.
+Darya has no accounts, no analytics, no tracking, and no server-side processing. Your conversation exists only in your browser tab. When you close the tab, the conversation is gone.
 
 The only persistent data is your theme preference (Ocean or Beach) and ambient sound toggle state, each stored as a simple cookie so they are remembered on your next visit.
 
@@ -311,8 +315,8 @@ The project ships with dependency-free test suites:
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times
   and reports a pass/fail summary per round, useful for shaking out
   flaky assertions.
-- **`npm run lint`** and **`npm run format:check`** verify Google-style
-  ESLint and Prettier compliance without modifying files.
+- **`npm run lint`**, **`npm run lint:css`**, and **`npm run format:check`** verify Google-style
+  ESLint, Stylelint, and Prettier compliance without modifying files.
 
 ## License
 

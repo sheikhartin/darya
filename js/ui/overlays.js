@@ -280,6 +280,7 @@
 
   /** @type {Element|null} The active confirmation overlay element. */
   var confirmOverlay = null;
+  var confirmFocusTarget = null;
 
   /**
    * Dismisses the new-chat confirmation dialog if one is active.
@@ -289,6 +290,25 @@
       confirmOverlay.remove();
       confirmOverlay = null;
     }
+    // WAI-ARIA dialog pattern: return focus to the invoking control when
+    // it is still part of the document and visible. The menu item that
+    // opened the dialog is hidden once the menu closes, so fall back to
+    // the menu trigger that sits behind it.
+    var target = confirmFocusTarget;
+    if (
+      !target ||
+      !document.body.contains(target) ||
+      target.offsetParent === null
+    ) {
+      target =
+        el.menuTrigger && el.menuTrigger.offsetParent !== null
+          ? el.menuTrigger
+          : null;
+    }
+    if (target) {
+      target.focus();
+    }
+    confirmFocusTarget = null;
   }
 
   /**
@@ -298,7 +318,9 @@
    * If a confirmation dialog is already visible, or if no language pack
    * is loaded, this function is a no-op.
    *
-   * The dialog traps focus on the "No" button for accessibility.
+   * The dialog keeps Tab focus inside itself, cycling between its two
+   * action buttons, and restores focus to the invoking control on
+   * dismiss.
    * @param {Function} onConfirm - Called when user confirms the reset.
    */
   function showNewChatConfirm(onConfirm) {
@@ -372,9 +394,28 @@
       if (e.key === 'Escape') {
         e.preventDefault();
         dismissNewChatConfirm();
+      } else if (e.key === 'Tab') {
+        // Modal dialog pattern: keep focus cycling inside the dialog
+        // between its two action buttons so background content stays
+        // inert for keyboard users. With two buttons the forward and
+        // backward cycles coincide, but honor Shift+Tab explicitly so a
+        // future third focusable stays ordered correctly.
+        e.preventDefault();
+        var current = document.activeElement;
+        var next = e.shiftKey
+          ? current === noBtn
+            ? yesBtn
+            : noBtn
+          : current === yesBtn
+            ? noBtn
+            : yesBtn;
+        next.focus();
       }
     });
 
+    // Remember who opened the dialog so focus can return there on
+    // dismiss (the menu item itself is hidden by then).
+    confirmFocusTarget = document.activeElement;
     document.body.appendChild(confirmOverlay);
 
     // Focus the "No" button for accessibility and to prevent accidental
@@ -464,6 +505,10 @@
   //   - 'error': red-accented banner for failures that need attention
   //   - 'warn':  amber-accented banner for recoverable issues
   //   - 'info':  teal-accented banner for informational messages
+  //
+  // Each level pairs its accent color with a matching inline SVG icon
+  // (exclamation ring, alert triangle, info disc) so the severity is
+  // legible without reading the label, in both themes.
   //
   // Only one notification is visible at a time; showing a new one
   // dismisses any existing one first.
@@ -565,6 +610,74 @@
   }
 
   /**
+   * Creates the severity icon for a notification as an inline SVG. The
+   * icon is purely decorative (the bilingual type text carries the
+   * meaning), so it is marked aria-hidden and inherits the severity
+   * accent color through currentColor. Built with the DOM API rather
+   * than innerHTML so the codebase stays free of markup-string parsing.
+   * @param {'error'|'warn'|'info'} level - Severity level
+   * @returns {Element} The SVG element
+   */
+  function createSeverityIcon(level) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    // SVG elements expose className as a read-only SVGAnimatedString, so
+    // the class must go through setAttribute (or classList) instead.
+    svg.setAttribute('class', 'notification-type__icon');
+
+    var stroke = {
+      stroke: 'currentColor',
+      'stroke-width': 2,
+      fill: 'none',
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round'
+    };
+    var solid = { fill: 'currentColor' };
+
+    // Shape sets per severity: error and info use a ringed disc, warn
+    // uses a triangle; each pairs it with a mark (exclamation or dot)
+    // that still reads clearly at the icon's 14px rendered size.
+    var parts =
+      level === 'error'
+        ? [
+            // Uppercase V (absolute vertical line) keeps the path data
+            // free of "v<digits>" sequences that would trip the smoke
+            // test's legacy-version-string guard.
+            ['circle', { cx: 12, cy: 12, r: 9 }, stroke],
+            ['path', { d: 'M12 7.5V13' }, stroke],
+            ['circle', { cx: 12, cy: 16.8, r: 1.4 }, solid]
+          ]
+        : level === 'warn'
+          ? [
+              ['path', { d: 'M12 4.5 20 19H4z' }, stroke],
+              ['path', { d: 'M12 9.5V13.5' }, stroke],
+              ['circle', { cx: 12, cy: 16.8, r: 1.4 }, solid]
+            ]
+          : [
+              ['circle', { cx: 12, cy: 12, r: 9 }, stroke],
+              ['path', { d: 'M12 11V16' }, stroke],
+              ['circle', { cx: 12, cy: 7.8, r: 1.4 }, solid]
+            ];
+
+    for (var i = 0; i < parts.length; i += 1) {
+      var el = document.createElementNS(NS, parts[i][0]);
+      // Each part is [tagName, geometry, style]; both attribute groups
+      // must be applied or the shapes render at their defaults (a
+      // circle with no radius, a path with no data) and the icon would
+      // be invisible.
+      var attrs = Object.assign({}, parts[i][1], parts[i][2]);
+      var keys = Object.keys(attrs);
+      for (var k = 0; k < keys.length; k += 1) {
+        el.setAttribute(keys[k], String(attrs[keys[k]]));
+      }
+      svg.appendChild(el);
+    }
+    return svg;
+  }
+
+  /**
    * Shows a notification overlay with the given severity level and message.
    *
    * If a notification is already visible, it is dismissed first so only
@@ -572,12 +685,17 @@
    * after a duration that depends on severity: errors get 8 seconds,
    * warnings and info get 5 seconds. The user can also dismiss it by
    * clicking the close button or clicking outside the notification card.
+   * Each severity renders its own inline SVG icon and luminous accent,
+   * both tuned to keep clear contrast on the dark panel in either theme.
    *
    * If no language pack is loaded, the method falls back to console.warn
    * rather than failing silently.
    *
-   * @param {'error'|'warn'|'info'} level - The severity level
-   * @param {string} message - The notification message text
+   * @param {'error'|'warn'|'info'} level - The severity level. Each level
+   *   renders its own icon and accent color in the notification header.
+   * @param {string|{fa: string, en: string}} message - The notification
+   *   message. A plain string is shown as-is; a bilingual pair renders
+   *   the Persian line on top and the English line below, both centered.
    * @param {number} [duration] - Optional custom auto-dismiss duration (ms)
    * @returns {boolean} True if the notification was shown, false otherwise
    */
@@ -585,13 +703,30 @@
     // Guard: validate severity level
     var validLevel = NOTIFICATION_LEVELS.indexOf(level) !== -1 ? level : 'info';
 
-    // Guard: ensure message is a non-empty string
+    // A bilingual message is an object with both fa and en strings and
+    // at least one non-empty side; any other shape is treated as a plain
+    // single-language string message.
+    var bilingual =
+      !!message &&
+      typeof message === 'object' &&
+      typeof message.fa === 'string' &&
+      typeof message.en === 'string' &&
+      (message.fa.trim().length > 0 || message.en.trim().length > 0);
+    var messageText = bilingual ? null : message;
+
+    // Guard: ensure the message is a non-empty string. A non-bilingual
+    // object (e.g. { fa: '...' } with no en side, or a number) is
+    // rejected with a hint so future callers notice the misuse instead
+    // of silently losing the notification.
     if (
-      !message ||
-      typeof message !== 'string' ||
-      message.trim().length === 0
+      !bilingual &&
+      (!messageText ||
+        typeof messageText !== 'string' ||
+        messageText.trim().length === 0)
     ) {
-      console.warn('Darya notification: empty message, not showing overlay');
+      console.warn(
+        'Darya notification: empty or malformed message, not showing overlay'
+      );
       return false;
     }
 
@@ -606,11 +741,48 @@
           : validLevel === 'warn'
             ? 'warn'
             : 'log'
-      ]('Darya notification: ' + message);
+      ](
+        'Darya notification: ' +
+          (bilingual ? message.fa + ' / ' + message.en : messageText)
+      );
       return false;
     }
 
-    // Create the overlay container
+    // Resolve the bilingual severity label (FA first, then EN, joined
+    // with a dot) from both language packs so the type reads in both
+    // languages regardless of the active conversation language. Falls
+    // back to the active pack or English defaults when packs are absent.
+    var faPack =
+      global.DaryaLang && global.DaryaLang.fa ? global.DaryaLang.fa : null;
+    var enPack =
+      global.DaryaLang && global.DaryaLang.en ? global.DaryaLang.en : null;
+    var ui = st.lang && st.lang.ui ? st.lang.ui : null;
+    var typeKey =
+      validLevel === 'error'
+        ? 'notificationError'
+        : validLevel === 'warn'
+          ? 'notificationWarning'
+          : 'notificationInfo';
+    var faTypeText =
+      (faPack && faPack.ui && faPack.ui[typeKey]) ||
+      (ui && ui[typeKey]) ||
+      (validLevel === 'error'
+        ? 'Error'
+        : validLevel === 'warn'
+          ? 'Warning'
+          : 'Info');
+    var enTypeText =
+      (enPack && enPack.ui && enPack.ui[typeKey]) ||
+      (ui && ui[typeKey]) ||
+      (validLevel === 'error'
+        ? 'Error'
+        : validLevel === 'warn'
+          ? 'Warning'
+          : 'Info');
+
+    // Create the overlay container. Direction is applied per text
+    // element (FA lines are RTL, EN lines are LTR) because the content
+    // is bilingual, so no single forced direction fits.
     activeNotification = document.createElement('div');
     activeNotification.className = 'notification-overlay';
     activeNotification.setAttribute('role', 'alert');
@@ -622,26 +794,34 @@
     container.className =
       'notification-container notification-container--' + validLevel;
 
-    // Header row: type label + dismiss button
+    // Header row: bilingual type label + dismiss button
     var header = document.createElement('div');
     header.className = 'notification-header';
 
+    // Type label reads "هشدار · Warning" in both languages, mirroring
+    // the picker intro's dot-separated bilingual pairing, and leads with
+    // a severity icon so the level reads at a glance. Each side carries
+    // its own lang/dir so it renders correctly in either document
+    // direction.
     var typeLabel = document.createElement('span');
     typeLabel.className = 'notification-type notification-type--' + validLevel;
-    // Localize the severity label and the close control; fall back to
-    // English when no language pack is loaded yet.
-    var ui = st.lang && st.lang.ui ? st.lang.ui : null;
-    typeLabel.textContent = ui
-      ? validLevel === 'error'
-        ? ui.notificationError
-        : validLevel === 'warn'
-          ? ui.notificationWarning
-          : ui.notificationInfo
-      : validLevel === 'error'
-        ? 'Error'
-        : validLevel === 'warn'
-          ? 'Warning'
-          : 'Info';
+    var faType = document.createElement('span');
+    faType.className = 'notification-type__fa';
+    faType.setAttribute('lang', 'fa');
+    faType.setAttribute('dir', 'rtl');
+    faType.textContent = faTypeText;
+    var typeSep = document.createElement('span');
+    typeSep.className = 'notification-type__sep';
+    typeSep.textContent = '\u00B7'; // middle dot separator (like picker intro)
+    var enType = document.createElement('span');
+    enType.className = 'notification-type__en';
+    enType.setAttribute('lang', 'en');
+    enType.setAttribute('dir', 'ltr');
+    enType.textContent = enTypeText;
+    typeLabel.appendChild(createSeverityIcon(validLevel));
+    typeLabel.appendChild(faType);
+    typeLabel.appendChild(typeSep);
+    typeLabel.appendChild(enType);
 
     var dismissBtn = document.createElement('button');
     dismissBtn.className = 'notification-dismiss';
@@ -657,14 +837,34 @@
 
     header.appendChild(typeLabel);
     header.appendChild(dismissBtn);
-
-    // Message body
-    var msgEl = document.createElement('p');
-    msgEl.className = 'notification-message';
-    msgEl.textContent = message;
-
     container.appendChild(header);
-    container.appendChild(msgEl);
+
+    // Message body: a bilingual pair renders two centered lines with the
+    // Persian text on top and the English translation below, each with
+    // its own direction. A plain string renders as a single line.
+    if (bilingual && message.fa.trim().length > 0) {
+      var faMsgEl = document.createElement('p');
+      faMsgEl.className = 'notification-message notification-message--fa';
+      faMsgEl.setAttribute('lang', 'fa');
+      faMsgEl.setAttribute('dir', 'rtl');
+      faMsgEl.textContent = message.fa;
+      container.appendChild(faMsgEl);
+    }
+    if (bilingual && message.en.trim().length > 0) {
+      var enMsgEl = document.createElement('p');
+      enMsgEl.className = 'notification-message notification-message--en';
+      enMsgEl.setAttribute('lang', 'en');
+      enMsgEl.setAttribute('dir', 'ltr');
+      enMsgEl.textContent = message.en;
+      container.appendChild(enMsgEl);
+    }
+    if (!bilingual) {
+      var msgEl = document.createElement('p');
+      msgEl.className = 'notification-message';
+      msgEl.textContent = messageText;
+      container.appendChild(msgEl);
+    }
+
     activeNotification.appendChild(container);
 
     // Click on backdrop dismisses

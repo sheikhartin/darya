@@ -25,9 +25,13 @@
   const FADE_STEPS = 20;
 
   /**
-   * Maximum number of consecutive play-attempt failures allowed before
-   * the system automatically disables itself. Prevents infinite retry
-   * loops when audio files cannot be loaded (e.g. network issues).
+   * Maximum number of consecutive genuine play-attempt failures (load or
+   * decode errors; transient failures like autoplay policy, tab-hidden
+   * aborts, and timeouts never count) allowed before the system prefers
+   * the synthesized fallback and stops hammering broken files. The count
+   * accumulates across clicks on purpose (so genuinely broken files
+   * reach the cap) and self-heals when synthesis is unavailable, so
+   * broken files can never permanently disable the toggle.
    */
   const MAX_FAILURES_BEFORE_DISABLE = 3;
 
@@ -52,6 +56,39 @@
 
   /** Number of days until the sound cookie expires. */
   const SOUND_COOKIE_MAX_AGE_DAYS = 365;
+
+  /**
+   * Error names that describe playback being unavailable *right now*
+   * rather than the sound files being broken: the autoplay policy wants
+   * a user gesture, the load was aborted because the tab hid, or the
+   * attempt timed out while the network was slow. Transient failures
+   * never count toward the permanent-disable failure cap and never wipe
+   * the user's saved sound preference.
+   */
+  var TRANSIENT_ERROR_NAMES = ['NotAllowedError', 'AbortError', 'TimeoutError'];
+
+  /**
+   * Returns true when the given error is a transient playback failure
+   * (see TRANSIENT_ERROR_NAMES) rather than a genuine load or decode
+   * error.
+   * @param {*} err - The rejection reason
+   * @returns {boolean}
+   */
+  function isTransientError(err) {
+    return !!err && TRANSIENT_ERROR_NAMES.indexOf(err.name) !== -1;
+  }
+
+  /**
+   * Creates an Error tagged as a transient playback failure. The name is
+   * a real DOMException name so callers can rely on err.name alone.
+   * @param {string} name - One of TRANSIENT_ERROR_NAMES
+   * @returns {Error}
+   */
+  function makeTransientError(name) {
+    var err = new Error(name + ': playback attempt unsettled');
+    err.name = name;
+    return err;
+  }
 
   // ========================================================================
   // Internal state
@@ -91,12 +128,27 @@
   var isUsingFallback = false;
 
   /**
-   * @type {Promise<boolean>|null} In-flight autoplay attempt, shared by
-   * concurrent callers so a single user gesture never starts two audio
-   * elements (e.g. the language-picker click and the first-gesture
-   * document listener firing on the same click).
+   * @type {Promise<boolean>|null} In-flight start attempt, shared by
+   * concurrent callers (the language-picker click, the first-gesture
+   * document listener, the menu/picker toggle, and the theme-change
+   * timer) so a single user gesture never starts two audio elements.
    */
-  var pendingAutoplay = null;
+  var pendingStart = null;
+
+  /**
+   * @type {Promise<boolean>|null} In-flight toggle operation. Rapid
+   * clicks on either sound button join the running toggle instead of
+   * starting a second, interleaved enable/disable cycle.
+   */
+  var pendingToggle = null;
+
+  /**
+   * @type {{audio: Audio, fail: Function}|null} The play attempt
+   * currently awaiting its play() promise, so the visibility handler can
+   * abort it promptly when the tab hides (a backgrounded tab throttles
+   * media loading and would otherwise hang until the safety timeout).
+   */
+  var inFlightAttempt = null;
 
   // ========================================================================
   // Visibility change handler
@@ -109,6 +161,14 @@
    */
   function handleVisibilityChange() {
     if (document.hidden) {
+      // Abort any in-flight play attempt instead of letting it hang: a
+      // hidden tab throttles media loading, so the attempt would only
+      // sit until the safety timeout and then look like a failure. The
+      // abort is transient: it keeps the user's intent so the tab
+      // returning to focus can retry via autoplayIfEnabled.
+      if (inFlightAttempt) {
+        inFlightAttempt.fail(makeTransientError('AbortError'));
+      }
       if (currentAudio && !currentAudio.paused) {
         wasPlayingBeforeHidden = true;
         currentAudio.pause();
@@ -125,6 +185,14 @@
         });
       }
       wasPlayingBeforeHidden = false;
+      // The tab returning to focus is a fresh activation. If the user
+      // wants sound (saved preference, or a just-aborted toggle kept the
+      // intent) but nothing is actually playing, try to start it now.
+      // Transient failures are handled safely inside autoplayIfEnabled,
+      // so this never wipes the saved preference.
+      if ((getSavedState() === true || isEnabled) && !isPlaying()) {
+        autoplayIfEnabled();
+      }
     }
   }
 
@@ -564,10 +632,13 @@
 
     var controller = createSynthesizedAmbient(theme);
     if (!controller) {
-      // Web Audio API not available; disable completely
+      // Web Audio API not available; disable completely. Self-heal the
+      // failure counter so the next explicit toggle retries the files
+      // instead of being stuck at the cap forever.
       console.warn('Darya ambient sound: cannot create synthesized fallback');
       isEnabled = false;
       currentTheme = null;
+      consecutiveFailures = 0;
       return Promise.resolve();
     }
 
@@ -582,25 +653,22 @@
         '"'
     );
 
-    // Show a notification to the user via DaryaOverlays if available
+    // Show a bilingual notification to the user via DaryaOverlays if
+    // available: Persian on top, English below (the notification system
+    // renders both, so both packs are consulted regardless of the active
+    // conversation language). Falls back to English when a pack is
+    // missing.
     if (typeof global.DaryaOverlays !== 'undefined') {
-      var fallbackMsg =
+      var fallbackEn =
         'Ambient sound files could not be loaded. Using a generated ambient instead.';
-      if (typeof global.DaryaLang !== 'undefined') {
-        // Pick the notification message in the user's active language.
-        // The active language is stored on the <html> element.
-        var docLang =
-          (typeof document !== 'undefined' &&
-            document.documentElement.getAttribute('lang')) ||
-          'en';
-        var langPack =
-          global.DaryaLang[docLang] ||
-          global.DaryaLang.en ||
-          global.DaryaLang.fa;
-        if (langPack && langPack.ui && langPack.ui.soundFallbackMsg) {
-          fallbackMsg = langPack.ui.soundFallbackMsg;
-        }
-      }
+      var faPack =
+        global.DaryaLang && global.DaryaLang.fa ? global.DaryaLang.fa : null;
+      var enPack =
+        global.DaryaLang && global.DaryaLang.en ? global.DaryaLang.en : null;
+      var fallbackMsg = {
+        fa: (faPack && faPack.ui && faPack.ui.soundFallbackMsg) || fallbackEn,
+        en: (enPack && enPack.ui && enPack.ui.soundFallbackMsg) || fallbackEn
+      };
       try {
         global.DaryaOverlays.showNotification('warn', fallbackMsg, 6000);
       } catch (e) {
@@ -619,7 +687,9 @@
    * policies: the menu click that toggled sound on is still active, so
    * Chrome accepts the play() call. The browser buffers the file in the
    * background and the returned promise resolves once real playback
-   * starts.
+   * starts, which is exactly when play() succeeds (not after the volume
+   * fade-in completes), so callers like the toggle UI sync reflect the
+   * on-state immediately instead of waiting out the 800ms ramp.
    *
    * Previously the code waited for a canplaythrough event (up to 15
    * seconds) before calling play(). By then Chrome's transient user
@@ -628,11 +698,14 @@
    * the browser stream the file progressively instead of waiting for the
    * whole file to buffer.
    *
-   * Load failures, decode errors, and autoplay-policy rejections are
-   * caught and handled gracefully by falling back to a synthesized
-   * ambient sound (Web Audio API). If both file playback and synthesis
-   * fail, the system disables itself after MAX_FAILURES_BEFORE_DISABLE
-   * consecutive failures.
+   * Load failures and decode errors are counted as genuine failures and
+   * handled gracefully by falling back to a synthesized ambient sound
+   * (Web Audio API) once MAX_FAILURES_BEFORE_DISABLE is reached.
+   * Transient failures (autoplay policy, tab-hidden abort, slow-network
+   * timeout) never count and never wipe the user's preference, so a
+   * backgrounded tab or a slow network cannot break the toggle. The
+   * failure count self-heals when synthesis is unavailable, so broken
+   * files can never permanently disable the toggle.
    *
    * @param {string} theme - 'ocean' or 'beach'
    * @returns {Promise<void>}
@@ -642,15 +715,21 @@
       return Promise.resolve();
     }
 
-    // Check if we've hit the failure cap and should auto-disable
+    // Defensive net for the failure cap. In normal operation the only
+    // place the counter can reach the cap is inside fail(), which funnels
+    // the attempt straight into the synthesized fallback (and that
+    // resets the counter on both success and failure), so this branch is
+    // a belt-and-suspenders guard: keep any running synthesis, or try
+    // the synthesized ambient, or clear the stale counter and retry the
+    // files. It guarantees the toggle can never hard-disable forever.
     if (consecutiveFailures >= MAX_FAILURES_BEFORE_DISABLE) {
-      // Try using synthesized fallback before completely disabling
+      if (isUsingFallback && synthesizedController) {
+        return Promise.resolve();
+      }
       if (!isUsingFallback && !synthesizedController) {
         return startSynthesizedFallback(theme);
       }
-      console.warn('Darya ambient sound: too many load failures, disabling');
-      isEnabled = false;
-      return Promise.resolve();
+      consecutiveFailures = 0;
     }
 
     var filePath = getRandomSound(theme);
@@ -664,6 +743,18 @@
     var audio = new Audio(filePath);
     audio.loop = true;
     audio.volume = 0; // Start silent for fade-in
+
+    // Safety net: if the browser's native loop fails (e.g. the file has a
+    // gap at the end, or the element enters an error state at the loop
+    // boundary), restart playback manually. The guard prevents a stale
+    // handler from restarting an audio element that was replaced by a
+    // theme change or toggle-off.
+    audio.addEventListener('ended', function () {
+      if (currentAudio === audio) {
+        audio.currentTime = 0;
+        audio.play().catch(function () {});
+      }
+    });
 
     // Store references before the async play attempt so the module state
     // is consistent even if play() is rejected asynchronously.
@@ -679,10 +770,12 @@
 
       // Defensive timeout: if neither the play() promise nor the audio
       // 'error' event settles the attempt (a hung load is rare but
-      // possible), fail so the toggle never hangs. The timer never delays
-      // the immediate play() call itself.
+      // possible), fail so the toggle never hangs. The timer never
+      // delays the immediate play() call itself. Timeouts are transient:
+      // the file may be fine while the network is slow, so they do not
+      // count toward the failure cap or wipe the saved preference.
       var attemptTimer = setTimeout(function () {
-        fail(new Error('play attempt timed out'));
+        fail(makeTransientError('TimeoutError'));
       }, PLAY_ATTEMPT_TIMEOUT_MS);
 
       /**
@@ -698,12 +791,22 @@
         finished = true;
         clearTimeout(attemptTimer);
         audio.removeEventListener('error', onError);
+        if (inFlightAttempt && inFlightAttempt.audio === audio) {
+          inFlightAttempt = null;
+        }
         if (currentAudio === audio) {
           currentAudio = null;
           currentTheme = null;
         }
         destroyAudio(audio);
-        consecutiveFailures += 1;
+        // An autoplay-policy rejection, an abort (tab hidden), or a
+        // timeout is not a load or decode failure: the file is fine, the
+        // browser or network was just not ready. Transient failures must
+        // not count toward the failure cap, or repeated pre-gesture
+        // autoplay attempts would wrongly disable the system.
+        if (!isTransientError(err)) {
+          consecutiveFailures += 1;
+        }
         console.warn(
           'Darya ambient sound: play failed for "' +
             filePath +
@@ -717,17 +820,23 @@
           startSynthesizedFallback(theme).then(resolve, resolve);
           return;
         }
-        // Propagate the error so toggle() can roll back the enabled state
+        // Propagate the error so the caller can roll back the enabled
+        // state (transient errors keep the user's intent instead).
         reject(err);
       }
 
       /**
        * Handles the audio element's 'error' event (missing or unsupported
-       * file) when the play() promise has not already settled.
+       * file) when the play() promise has not already settled. A missing
+       * file is a genuine failure, so this is not tagged transient.
        */
       function onError() {
         fail(new Error('audio load error'));
       }
+
+      // Register the in-flight attempt so the visibility handler can
+      // abort it when the tab hides.
+      inFlightAttempt = { audio: audio, fail: fail };
 
       audio.addEventListener('error', onError);
       audio.play().then(
@@ -738,6 +847,9 @@
           finished = true;
           clearTimeout(attemptTimer);
           audio.removeEventListener('error', onError);
+          if (inFlightAttempt && inFlightAttempt.audio === audio) {
+            inFlightAttempt = null;
+          }
 
           // Ensure the audio element is still the active one (a theme
           // change or toggle-off may have swapped it out during
@@ -749,15 +861,23 @@
           }
           lastPlayedPath = filePath;
           consecutiveFailures = 0;
-          fadeIn(audio, targetVolume, FADE_DURATION_MS).then(resolve, resolve);
+          // Playback has genuinely begun now that play() resolved, so
+          // resolve immediately: the toggle UI flips on the moment audio
+          // truly starts instead of after the 800ms volume fade-in
+          // completes. The fade keeps running in the background and only
+          // shapes the volume ramp; nothing depends on its completion.
+          resolve();
+          fadeIn(audio, targetVolume, FADE_DURATION_MS);
         },
         function (err) {
           if (finished) {
             return;
           }
-          finished = true;
-          clearTimeout(attemptTimer);
-          audio.removeEventListener('error', onError);
+          // Delegate to fail() without pre-setting `finished`: fail() owns
+          // that flag plus the timer/error-listener cleanup and the final
+          // reject. Pre-setting it here made the fail() call a no-op and
+          // the attempt promise never settled on an autoplay-policy
+          // rejection, hanging the toggle.
           fail(err);
         }
       );
@@ -800,21 +920,78 @@
   }
 
   /**
-   * Toggles ambient sound on/off.
-   * - Off --> On: loads the manifest, picks a random sound for the current
-   *   theme, and starts playback with a fade-in.
+   * Toggles ambient sound on/off, deduplicating rapid clicks: while a
+   * toggle operation is in flight, or while a just-started file's
+   * fade-in is still ramping, further clicks join it instead of
+   * starting an interleaved second cycle. This keeps a double-click
+   * (or the menu and picker buttons pressed close together) from
+   * flipping the sound twice or spawning concurrent audio elements.
+   * @returns {Promise<boolean>} Resolves with the new enabled state.
+   */
+  function toggle() {
+    if (pendingToggle) {
+      return pendingToggle;
+    }
+    pendingToggle = Promise.resolve()
+      .then(performToggle)
+      .then(
+        function (enabled) {
+          // The operation resolves as soon as playback starts (the
+          // feedback-lag fix). Only file playback has a fade-in to
+          // protect: keep the rapid-click dedup guard armed through the
+          // volume ramp so a second click inside that window cannot
+          // kill a sound that is still fading in. When the toggle
+          // settled without playback (rolled back, or kept intent on a
+          // transient failure) or the synthesized fallback is playing
+          // (it starts instantly with no ramp), there is nothing to
+          // protect, so clear the guard immediately and let the next
+          // click act. A timer clears the guard without delaying the
+          // promise returned to callers, so the UI sync still happens
+          // at playback start.
+          if (enabled && isPlaying() && !isUsingFallback) {
+            setTimeout(function () {
+              pendingToggle = null;
+            }, FADE_DURATION_MS);
+          } else {
+            pendingToggle = null;
+          }
+          return enabled;
+        },
+        function () {
+          // Defensive: performToggle should never reject, but if it does
+          // (an unexpected internal error), settle as "off" and persist
+          // it rather than leaving an unhandled rejection that could
+          // freeze the toggle.
+          pendingToggle = null;
+          isEnabled = false;
+          saveCookieState();
+          return false;
+        }
+      );
+    return pendingToggle;
+  }
+
+  /**
+   * Performs the actual toggle work:
+   * - Off --> On: loads the manifest, picks a random sound for the
+   *   current theme, and starts playback with a fade-in. The failure
+   *   counter is deliberately not reset here: it accumulates across
+   *   clicks so genuinely broken files reach the cap and engage the
+   *   synthesized fallback (the cap self-heals when synthesis is
+   *   unavailable, so the toggle can never get stuck).
    * - On --> Off: fades out and stops playback, clearing all audio state.
    *
-   * If playback fails (manifest load error, audio load failure, or browser
-   * autoplay policy rejection), the enabled state is rolled back to false
-   * so the UI always reflects the actual audio state.
+   * If playback fails with a genuine load or decode error, the enabled
+   * state is rolled back to false so the UI always reflects the actual
+   * audio state. Transient failures (autoplay policy, tab-hidden abort,
+   * slow-network timeout) keep the user's intent instead.
    *
    * The current enabled/disabled state is saved to a cookie after each
    * successful toggle so it persists across sessions.
    *
    * @returns {Promise<boolean>} Resolves with the new enabled state.
    */
-  function toggle() {
+  function performToggle() {
     // The button reflects ACTUAL playback, so a click always does what
     // its visible state promises: stop when playing, start otherwise.
     // Keying off isPlaying() also recovers the edge case where the
@@ -835,10 +1012,11 @@
       });
     }
 
-    // Enable: load manifest first (already cached from the boot preload,
-    // so this resolves immediately), then start playback. Because the
-    // manifest is warm, playThemeSound calls audio.play() within the user
-    // gesture, keeping Chrome's transient activation alive.
+    // Enable: load the manifest first (already cached from the boot
+    // preload, so this resolves immediately), then start playback.
+    // Because the manifest is warm, playThemeSound calls audio.play()
+    // within the user gesture, keeping Chrome's transient activation
+    // alive.
     return loadManifest().then(function (loaded) {
       if (!loaded) {
         // Nothing can play without a manifest; stay (or become) honestly
@@ -848,25 +1026,16 @@
         saveCookieState();
         return false;
       }
+      // The theme already switched (the toggle starts the current
+      // theme's sound), so any scheduled theme-change start is stale.
+      if (pendingThemeTimer) {
+        clearTimeout(pendingThemeTimer);
+        pendingThemeTimer = null;
+      }
       var theme =
         document.documentElement.getAttribute('data-theme') || 'ocean';
       isEnabled = true;
-      return playThemeSound(theme).then(
-        function () {
-          saveCookieState();
-          // Report the ACTUAL enabled state: the synthesized fallback may
-          // have disabled the system internally if it could not start.
-          return isEnabled;
-        },
-        function () {
-          // Playback rejected (autoplay policy, network error, decode
-          // failure, or load error). Roll back the enabled state so the
-          // UI correctly reports that no sound is playing.
-          isEnabled = false;
-          saveCookieState();
-          return false;
-        }
-      );
+      return startPlayback(theme);
     });
   }
 
@@ -909,6 +1078,14 @@
       pendingThemeTimer = null;
     }
 
+    // Abort any in-flight load attempt: its theme is about to change, so
+    // letting it resolve would either start the wrong theme or get
+    // destroyed by the fade-out below. The abort is transient and keeps
+    // the user's intent.
+    if (inFlightAttempt) {
+      inFlightAttempt.fail(makeTransientError('AbortError'));
+    }
+
     // Start fading out the current audio immediately
     if (currentAudio) {
       var oldAudio = currentAudio;
@@ -926,17 +1103,15 @@
     }
 
     // Schedule the new theme's sound to start after a short delay. The
-    // start is caught: a theme change can happen outside a user gesture,
-    // and an autoplay-policy rejection on the first or second attempt
-    // would otherwise surface as an unhandled promise rejection.
+    // start can happen outside a user gesture, and an autoplay-policy
+    // rejection on the first or second attempt must not surface as an
+    // unhandled promise rejection. startPlayback shares any in-flight
+    // start and never rejects: transient failures keep the user's
+    // intent, and genuine failures roll back the enabled state
+    // internally.
     pendingThemeTimer = setTimeout(function () {
       pendingThemeTimer = null;
-      playThemeSound(newTheme).catch(function () {
-        // Roll back so the module state, cookie, and UI all agree that
-        // no sound is actually playing.
-        isEnabled = false;
-        saveCookieState();
-      });
+      startPlayback(newTheme);
     }, THEME_CHANGE_DELAY_MS);
   }
 
@@ -981,6 +1156,53 @@
   }
 
   /**
+   * Starts playback for the given theme, sharing a single in-flight
+   * attempt between concurrent callers (the toggle, the autoplay retry,
+   * and the theme-change timer) so one gesture never starts two audio
+   * elements. Resolves with the ACTUAL enabled state after the attempt
+   * settles: genuine failures roll back to disabled, transient failures
+   * (autoplay policy, tab-hidden abort, slow-network timeout) keep the
+   * user's intent.
+   * @param {string} theme - 'ocean' or 'beach'
+   * @returns {Promise<boolean>}
+   */
+  function startPlayback(theme) {
+    if (pendingStart) {
+      return pendingStart;
+    }
+    pendingStart = playThemeSound(theme).then(
+      function () {
+        pendingStart = null;
+        // Playback started (or the synthesized fallback took over):
+        // persist the state so the preference survives the session.
+        saveCookieState();
+        // Report the ACTUAL enabled state: the synthesized fallback may
+        // have disabled the system internally if it could not start.
+        return isEnabled;
+      },
+      function (err) {
+        pendingStart = null;
+        // A transient failure (autoplay policy, tab-hidden abort, or
+        // slow-network timeout) is not a playback failure: the file is
+        // fine, the context was just not ready. Keep the saved intent so
+        // a later gesture or tab return can retry. Genuine load/decode
+        // errors still roll back honestly so the UI never claims sound
+        // is enabled when it cannot play.
+        if (isTransientError(err)) {
+          return isEnabled;
+        }
+        // Playback rejected (network error, decode failure, or load
+        // error). Roll back the enabled state so the UI correctly
+        // reports that no sound is playing.
+        isEnabled = false;
+        saveCookieState();
+        return false;
+      }
+    );
+    return pendingStart;
+  }
+
+  /**
    * Automatically starts playback of the current theme sound if ambient
    * sound is enabled in the user's settings, utilizing a user-gesture context.
    * Safe to call multiple times; if already playing, does nothing.
@@ -990,30 +1212,13 @@
    * @returns {Promise<boolean>} Resolves with the ACTUAL enabled state.
    */
   function autoplayIfEnabled() {
-    if (pendingAutoplay) {
-      return pendingAutoplay;
+    if (pendingStart) {
+      return pendingStart;
     }
     if (isEnabled && !isPlaying()) {
       var theme =
         document.documentElement.getAttribute('data-theme') || 'ocean';
-      pendingAutoplay = playThemeSound(theme).then(
-        function () {
-          pendingAutoplay = null;
-          // Resolve with the ACTUAL state: the synthesized fallback may
-          // have disabled the system internally if it could not start.
-          return isEnabled;
-        },
-        function () {
-          pendingAutoplay = null;
-          // Autoplay was blocked (no user gesture yet) or playback
-          // failed. Roll back so the UI, module state, and saved cookie
-          // all agree that no sound is actually playing.
-          isEnabled = false;
-          saveCookieState();
-          return false;
-        }
-      );
-      return pendingAutoplay;
+      return startPlayback(theme);
     }
     return Promise.resolve(isEnabled);
   }
