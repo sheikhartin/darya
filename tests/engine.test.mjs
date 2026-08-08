@@ -406,7 +406,22 @@ test('distress nudge: never overrides safety rule', () => {
 test('question fallback: acknowledges a direct question', () => {
   const engine = freshEngine(EN);
   const reply = engine.respond('do you ever get tired of listening?');
-  assert.match(reply, /question|answer|sit with|thinking/i);
+  // The fallback may answer from the acknowledgement pool or, on the
+  // coin-flip, from the honest-unknown source-suggestion pool.
+  const pools = [
+    ...(EN.questionAcknowledgements || []),
+    ...(EN.sourceSuggestions || []),
+    ...(EN.questionFallbacks || [])
+  ];
+  assert.ok(
+    pools.includes(reply),
+    'question fallback must come from an acknowledgement or source pool, got: ' +
+      reply
+  );
+  assert.match(
+    reply,
+    /question|answer|sit with|thinking|wikipedia|youtube|expert/i
+  );
 });
 
 test('question fallback: plain statement does not trigger', () => {
@@ -426,7 +441,23 @@ test('FA stress disclosure routes to empathy, not knowledge shelf', () => {
   const engine = freshEngine(FA);
   const reply = engine.respond('امروز احساس استرس دارم');
   // A first-person stress disclosure must get an empathy question, not a
-  // knowledge-shelf essay or a generic fallback.
+  // knowledge-reflections essay or a generic fallback.
+  assert.match(
+    reply,
+    /فشار|سنگین|غرق|تاب‌آوری|استراحت|بدن|رهایی|تسکین|اضطراب|نگران|شدید|خسته/iu
+  );
+  assert.ok(!FA.genericFallbacks.includes(reply));
+  assert.ok(!FA.strategyShiftFallbacks.includes(reply));
+});
+
+test('FA emotional disclosure with کدوم stays empathetic, never a knowledge essay', () => {
+  // Regression: bare "کدوم" in the knowledge-request gate used to turn a
+  // first-person stress disclosure ("استرس دارم کدوم مسیر رو برم") into a
+  // knowledge-request, letting the knowledge rule hijack the lived emotion.
+  // The gate now requires specific buying markers (بخرم, هندزفری...) and
+  // leaves bare کدوم/کدام out, so the stress rule must win.
+  const engine = freshEngine(FA);
+  const reply = engine.respond('استرس دارم کدوم مسیر رو برم');
   assert.match(
     reply,
     /فشار|سنگین|غرق|تاب‌آوری|استراحت|بدن|رهایی|تسکین|اضطراب|نگران|شدید|خسته/iu
@@ -489,6 +520,52 @@ test('FA ی-suffixed insult (احمقی) triggers de-escalation', () => {
   // Should come from the frustration de-escalation pool, not a generic
   // "tell me more" line or a question fallback.
   assert.match(reply, /ناراحتی|انرژی|دلخوری|خشم|حق داری|مهم است|ناامیدی/iu);
+});
+
+test('FA space-separated خاک تو سر insult triggers de-escalation', () => {
+  // Regression from a real transcript: "خاک تو سر کودنت کنن" fell to a
+  // generic fallback because the pattern only matched the no-space
+  // "خاک تو سرت" form and the bare "کودن" without its ت suffix.
+  const engine = freshEngine(FA);
+  const reply = engine.respond('خاک تو سر کودنت کنن');
+  assert.match(
+    reply,
+    /ناراحتی|انرژی|دلخوری|خشم|حق داری|مهم است|ناامیدی|گفتگو|شنوم/iu,
+    `insult must de-escalate, got: ${reply}`
+  );
+  assert.ok(
+    !FA.genericFallbacks.includes(reply),
+    `insult must never use generic fallbacks, got: ${reply}`
+  );
+});
+
+test('FA پدوفیل (pedophile) accusation triggers a boundary response', () => {
+  // Being called a pedophile is a serious accusation directed at Darya;
+  // it must never be answered with a cheerful generic line.
+  const engine = freshEngine(FA);
+  const reply = engine.respond('بدرود مادرجنده پدوفیل احمق');
+  assert.ok(
+    !FA.genericFallbacks.includes(reply),
+    `pedophile accusation must not use generic fallbacks, got: ${reply}`
+  );
+  assert.match(
+    reply,
+    /ناراحتی|انرژی|دلخوری|خشم|حق داری|مهم است|ناامیدی|شنوم|گفتگو|محترم|آرام/iu,
+    `pedophile accusation must get a boundary or de-escalation reply, got: ${reply}`
+  );
+});
+
+test('EN pedophile accusation triggers a boundary response', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('bye you stupid pedophile');
+  assert.ok(
+    !EN.genericFallbacks.includes(reply),
+    `EN pedophile accusation must not use generic fallbacks, got: ${reply}`
+  );
+  assert.ok(
+    EN.frustrationResponses.includes(reply),
+    `EN pedophile accusation must get a de-escalation reply, got: ${reply}`
+  );
 });
 test('FA app/website feedback gets a warm acknowledgment', () => {
   const engine = freshEngine(FA);
@@ -1575,10 +1652,17 @@ test('arithmetic: decimal input is never misread as a substring expression', () 
   // Regression: "5.5+3" used to match the trailing "5+3" inside the
   // string and answer "5 + 3 = 8" (a silently wrong result). The bare
   // expression regex now requires the first operand to start at a real
-  // number boundary, so decimal input falls through to normal routing.
-  assert.doesNotMatch(freshEngine(EN).respond('5.5+3'), /= 8/u);
-  assert.doesNotMatch(freshEngine(FA).respond('۵.۵+۳ چند می‌شه'), /۸/u);
-  assert.doesNotMatch(freshEngine(EN).respond('what is 5.5+3'), /8/u);
+  // number boundary. Decimals are now fully supported, so the answer
+  // must be the correct 8.5, never the wrong substring result 8.
+  assert.match(freshEngine(EN).respond('5.5+3'), /8\.5/u);
+  assert.doesNotMatch(freshEngine(EN).respond('5.5+3'), /\b= 8\b/u);
+  assert.match(freshEngine(FA).respond('۵.۵+۳ چند می‌شه'), /۸٫۵/u);
+  // The wrong substring result would be a standalone ۸, not ۸٫۵.
+  assert.doesNotMatch(
+    freshEngine(FA).respond('۵.۵+۳ چند می‌شه'),
+    /مساوی است با ۸(?!٫)/u
+  );
+  assert.match(freshEngine(EN).respond('what is 5.5+3'), /8\.5/u);
 });
 
 test('arithmetic: x and X operators work in bare expressions', () => {
@@ -1594,7 +1678,8 @@ test('arithmetic: division results are rounded, not float artifacts', () => {
   // to two decimals like the percentage path.
   assert.match(freshEngine(EN).respond('10/3'), /3\.33/u);
   assert.match(freshEngine(EN).respond('1/3'), /0\.33/u);
-  assert.match(freshEngine(FA).respond('۱۰ تقسیم بر 3'), /۳\.۳۳/u);
+  // Persian decimals use the proper Persian decimal separator "٫".
+  assert.match(freshEngine(FA).respond('۱۰ تقسیم بر 3'), /۳٫۳۳/u);
   // Exact divisions stay exact.
   assert.match(freshEngine(EN).respond('10/2'), /= 5/u);
   assert.match(freshEngine(FA).respond('۱۰ تقسیم بر ۲'), /۵/u);
@@ -2334,6 +2419,960 @@ test('knowledge rule responds without network access', () => {
 test('Persian knowledge rule responds in Persian', () => {
   const reply = freshEngine(FA).respond('برای تمرکز چه کار کنم؟');
   assert.match(reply, /[\u0600-\u06FF]/u);
+});
+
+// ============================================================================
+// Factual knowledge layer (2025-2026 world knowledge, culture, careers)
+// ============================================================================
+
+test('knowledge: Jupiter question answered factually in both languages', () => {
+  const fa = freshEngine(FA).respond('راجع به سیاره مشتری برام توضیح بده');
+  assert.match(fa, /مشتری/);
+  assert.match(fa, /گاز|غول|بزرگ‌ترین/);
+  const en = freshEngine(EN).respond('tell me about Jupiter');
+  assert.match(en, /Jupiter/);
+  assert.match(en, /gas giant|largest planet/i);
+});
+
+test('knowledge: quantum physics answered directly, not evasively', () => {
+  const fa = freshEngine(FA).respond('فیزیک کوانتوم چیه');
+  assert.match(fa, /اتم|ذره|کوانتوم/);
+  assert.ok(!FA.questionAcknowledgements.includes(fa));
+  const en = freshEngine(EN).respond('what is quantum physics');
+  assert.match(en, /quantum|atom|particle/i);
+  assert.ok(!EN.questionAcknowledgements.includes(en));
+});
+
+test('knowledge: 2026 tech stack question gets a concrete answer', () => {
+  const fa = freshEngine(FA).respond(
+    'بهترین تک استک برای توسعه وب در سال ۲۰۲۶ چیه'
+  );
+  assert.match(fa, /React|Next|TypeScript|Node/);
+  const en = freshEngine(EN).respond(
+    'what is the best tech stack for web development in 2026'
+  );
+  assert.match(en, /React|Next|TypeScript|Node/);
+});
+
+test('knowledge: crush question answered instead of bounced back', () => {
+  const fa = freshEngine(FA).respond('کراش چیه');
+  assert.match(fa, /ابراز علاقه|کراش/);
+  const en = freshEngine(EN).respond('what is a crush');
+  assert.match(en, /feel|like|attraction/i);
+});
+
+test('knowledge: making money as a developer gets real paths', () => {
+  const fa = freshEngine(FA).respond('چطور پول دربیارم');
+  assert.match(fa, /فریلنس|ریموت|نمونه‌کار/);
+  const en = freshEngine(EN).respond('how to make money as a programmer');
+  assert.match(en, /freelance|portfolio|remote/i);
+});
+
+test('knowledge: imposter syndrome defined in both languages', () => {
+  const fa = freshEngine(FA).respond('سندرم ایمپاستر چیه');
+  assert.match(fa, /ایمپاستر/);
+  assert.match(fa, /شانس|بلوف|صلاحیت/);
+  const en = freshEngine(EN).respond('what is imposter syndrome');
+  assert.match(en, /imposter/i);
+});
+
+test('knowledge: factual override never hijacks an emotional disclosure', () => {
+  // "من استرس دارم" is a feeling, not a request for the stress entry.
+  // The reply must come from the lived-experience pools (anxiety/stress
+  // rules or their topic-specific questions), never from the factual
+  // shelf text (which starts with the definition).
+  const faReply = freshEngine(FA).respond('من استرس دارم');
+  const faPools = [
+    ...(globalThis.DaryaFaResponses.ruleAnxiety || []),
+    ...(globalThis.DaryaFaResponses.ruleStress || []),
+    ...(globalThis.DaryaFaResponses.topicSpecificQuestions.anxiety || []),
+    ...(globalThis.DaryaFaResponses.topicSpecificQuestions.stress || [])
+  ];
+  assert.ok(
+    faPools.includes(faReply),
+    'FA stress disclosure must use the emotional pools, got: ' + faReply
+  );
+  const enReply = freshEngine(EN).respond('I feel stressed today');
+  const enPools = [
+    ...(globalThis.DaryaEnResponses.ruleAnxiety || []),
+    ...(globalThis.DaryaEnResponses.ruleStress || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.anxiety || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.stress || [])
+  ];
+  assert.ok(
+    enPools.includes(enReply),
+    'EN stress disclosure must use the emotional pools, got: ' + enReply
+  );
+});
+
+test('knowledge: unknown factual question still gets a warm non-answer', () => {
+  const en = freshEngine(EN).respond(
+    'what is the capital of a fictional planet'
+  );
+  assert.ok(en.length > 0);
+  // The reply may be a plain acknowledgement or, on the coin-flip, an
+  // honest source suggestion; both are warm non-answers.
+  assert.ok(
+    EN.questionAcknowledgements.includes(en) ||
+      EN.sourceSuggestions.includes(en),
+    'unknown question must get an acknowledgement or source pointer, got: ' + en
+  );
+});
+
+test('knowledge: solar system planets answered in both languages', () => {
+  const cases = [
+    ['fa', 'راجع به خورشید توضیح بده', /ستاره|خورشید/],
+    ['en', 'tell me about the Sun', /star|sun/i],
+    ['fa', 'سیاره عطارد چیه', /عطارد/],
+    ['en', 'what is mercury the planet', /Mercury/],
+    ['fa', 'سیاره زهره چیه', /زهره/],
+    ['en', 'tell me about Venus', /Venus/],
+    ['fa', 'مریخ چطور سیاره ایه', /مریخ/],
+    ['en', 'what is Mars like', /Mars/],
+    ['fa', 'سیاره زحل چیه', /زحل/],
+    ['en', 'about Saturn', /Saturn/],
+    ['fa', 'اورانوس چیه', /اورانوس/],
+    ['en', 'what is Uranus', /Uranus/],
+    ['fa', 'نپتون چیه', /نپتون/],
+    ['en', 'what is Neptune', /Neptune/]
+  ];
+  for (const [lang, q, re] of cases) {
+    const reply = freshEngine(lang === 'fa' ? FA : EN).respond(q);
+    assert.match(reply, re, `${lang} ${q} should be answered factually`);
+  }
+});
+
+test('knowledge: college major and Iran konkur advice in both languages', () => {
+  const faMajor = freshEngine(FA).respond('چه رشته‌ای برای دانشگاه انتخاب کنم');
+  assert.match(faMajor, /رشته|دانشگاه|علاقه/);
+  const enMajor = freshEngine(EN).respond('how to choose a college major');
+  assert.match(enMajor, /major|interest|career/i);
+  const faKonkur = freshEngine(FA).respond('کنکور چطوریه و چطور آماده بشم');
+  assert.match(faKonkur, /کنکور|عمومی|تخصصی/);
+  const enKonkur = freshEngine(EN).respond('how to prepare for the konkur');
+  assert.match(enKonkur, /konkur|exam|subject/i);
+  const faTeen = freshEngine(FA).respond(
+    'نوجوان چطور شغل آینده‌اش رو پیدا کنه'
+  );
+  assert.match(faTeen, /شغل|مسیر|آزمایش/);
+  const enTeen = freshEngine(EN).respond('career ideas for teens');
+  assert.match(enTeen, /career|experiment|path/i);
+});
+
+test('knowledge: professions answered in both languages', () => {
+  const cases = [
+    ['fa', 'چطور نجار شوم', /نجار/],
+    ['en', 'how to become a carpenter', /carpent/i],
+    ['fa', 'مهندسی مکانیک چیه', /مکانیک/],
+    ['en', 'mechanical engineering career', /mechanical/i],
+    ['fa', 'اینترنت اشیا چیه', /اینترنت اشیا|IoT/],
+    ['en', 'what is the internet of things', /internet of things|iot/i],
+    ['fa', 'چطور مجسمه‌ساز شوم', /مجسمه/],
+    ['en', 'how to become a sculptor', /sculpt/i],
+    ['fa', 'شغل موسیقی و خوانندگی چطوره', /موسیقی/],
+    ['en', 'music career for a singer', /music|sing/i],
+    ['fa', 'چطور بازیگر شوم', /بازیگر/],
+    ['en', 'how to become an actor', /act/i],
+    ['fa', 'با مدرک ریاضی چه شغل هایی می‌تونم داشته باشم', /ریاضی/],
+    ['en', 'what can i do with a math degree', /math/i],
+    ['fa', 'چطور غواص شوم', /غواص/],
+    ['en', 'how to become a diver', /div/i],
+    ['fa', 'چطور آتش‌نشان شوم', /آتش‌نشان/],
+    ['en', 'how to become a firefighter', /firefight/i]
+  ];
+  for (const [lang, q, re] of cases) {
+    const reply = freshEngine(lang === 'fa' ? FA : EN).respond(q);
+    assert.match(reply, re, `${lang} ${q} should be answered factually`);
+  }
+});
+
+test('knowledge: movie and series recommendations in both languages', () => {
+  const fa = freshEngine(FA).respond('ده فیلم خوب معرفی کن');
+  assert.match(fa, /کیارستمی|فرهادی|سینما/);
+  assert.match(fa, /۱\.|۲\.|۳\./);
+  const en = freshEngine(EN).respond('recommend 10 good movies');
+  assert.match(en, /Kiarostami|Farhadi|film|movie/i);
+  assert.match(en, /1\.|2\.|3\./);
+});
+
+test('knowledge: genre movie requests answered per genre in both languages', () => {
+  const genreCases = [
+    ['fa', 'یک فیلم ترسناک پیشنهاد بده', /ترسناک|وحشت/],
+    ['en', 'recommend a horror movie', /horror|scary/i],
+    ['fa', 'فیلم عاشقانه معرفی کن', /عاشقانه/],
+    ['en', 'suggest a romantic movie', /romantic/i],
+    ['fa', 'فیلم کمدی پیشنهاد بده', /کمدی/],
+    ['en', 'recommend a comedy film', /comedy/i],
+    ['fa', 'فیلم کمدی سیاه معرفی کن', /کمدی سیاه/],
+    ['en', 'suggest a dark comedy movie', /dark comedy|black comedy/i],
+    ['fa', 'فیلم فانتزی پیشنهاد بده', /فانتزی/],
+    ['en', 'recommend a fantasy movie', /fantasy/i],
+    ['fa', 'یک سریال کوتاه معرفی کن', /سریال کوتاه/],
+    ['en', 'suggest a short series', /short.?series|mini series|miniseries/i],
+    ['fa', 'فیلم بر اساس داستان واقعی معرفی کن', /واقعی|واقعیت/],
+    ['en', 'recommend a movie based on true events', /true events|true story/i],
+    ['fa', 'یه فیلم هیجانی پیشنهاد بده', /هیجانی/],
+    ['en', 'suggest a thriller movie', /thriller/i],
+    ['fa', 'فیلم علمی تخیلی معرفی کن', /علمی/],
+    ['en', 'recommend a sci-fi film', /sci.?fi|science fiction/i],
+    ['fa', 'مستند خوب معرفی کن', /مستند/],
+    ['en', 'tell me a good documentary', /documentar/i],
+    ['fa', 'یه انیمیشن خوب بگو', /انیمیشن/],
+    ['en', 'best animated movie to watch', /animation|animated/i]
+  ];
+  for (const [lang, q, re] of genreCases) {
+    const reply = freshEngine(lang === 'fa' ? FA : EN).respond(q);
+    assert.match(reply, re, `${lang} ${q} should match its genre list`);
+  }
+});
+
+test('sequential: movie request then genre follow-up refines in place', () => {
+  const en = freshEngine(EN);
+  const first = en.respond(
+    'Suggest me just three good movies to see this weekend'
+  );
+  assert.match(first, /film|movie|cinema/i);
+  const horror = en.respond('in horror genre please');
+  assert.match(horror, /horror|scary/i);
+  assert.ok(
+    !/A few non-mainstream picks/.test(horror),
+    'genre follow-up must not repeat the general list'
+  );
+  const romantic = en.respond('now something romantic');
+  assert.match(romantic, /romantic/i);
+});
+
+test('sequential: FA movie request then genre follow-up refines in place', () => {
+  const fa = freshEngine(FA);
+  const first = fa.respond('سه فیلم خوب برای آخر هفته پیشنهاد بده');
+  assert.match(first, /سینما|فیلم/);
+  const horror = fa.respond('ترسناک');
+  assert.match(horror, /ترسناک|وحشت/);
+  assert.ok(
+    !/چند پیشنهاد غیرتکراری/.test(horror),
+    'FA genre follow-up must not repeat the general list'
+  );
+});
+
+test('sequential: genre follow-up without prior movie context stays generic', () => {
+  // A bare genre word with no preceding movie request must not fabricate
+  // a genre list; it falls back to a normal conversational reply.
+  const en = freshEngine(EN);
+  const reply = en.respond('horror');
+  assert.ok(reply.length > 0);
+  assert.doesNotMatch(reply, /Non-obvious horror picks/);
+});
+
+test('sequential: FA multi-hop genre chain keeps refining in place', () => {
+  const fa = freshEngine(FA);
+  fa.respond('سه فیلم خوب برای آخر هفته پیشنهاد بده');
+  const hops = [
+    ['ترسناک', /ترسناک|وحشت/],
+    ['کمدی سیاه', /کمدی سیاه/],
+    ['عاشقانه', /عاشقانه/],
+    ['فانتزی', /فانتزی/],
+    ['سریال کوتاه', /سریال کوتاه/]
+  ];
+  for (const [q, re] of hops) {
+    const reply = fa.respond(q);
+    assert.match(reply, re, `FA genre hop ${q} should refine in place`);
+  }
+});
+
+test('sequential: new genre follow-ups refine in place (thriller, sci-fi, documentary, animation)', () => {
+  const en = freshEngine(EN);
+  en.respond('Suggest me just three good movies to see this weekend');
+  assert.match(en.respond('in thriller genre please'), /thriller/i);
+  assert.match(en.respond('sci fi please'), /sci.?fi/i);
+  assert.match(en.respond('a documentary now'), /documentar/i);
+  assert.match(en.respond('animated one please'), /animation|animated/i);
+  const fa = freshEngine(FA);
+  fa.respond('سه فیلم خوب برای آخر هفته پیشنهاد بده');
+  assert.match(fa.respond('هیجانی'), /هیجانی/);
+  assert.match(fa.respond('علمی تخیلی'), /علمی/);
+  assert.match(fa.respond('مستند'), /مستند/);
+  assert.match(fa.respond('انیمیشن'), /انیمیشن/);
+});
+
+test('knowledge: expanded genre lists include the fifth picks', () => {
+  const cases = [
+    [EN, 'horror movie recommendations', /Tumbbad/],
+    [EN, 'romantic movie suggestions', /Past Lives/],
+    [EN, 'suggest a comedy film', /Death of Stalin/],
+    [EN, 'suggest a dark comedy movie', /The Square/],
+    [EN, 'recommend a fantasy movie', /Green Knight/],
+    [EN, 'suggest a short series', /Unorthodox/],
+    [EN, 'recommend a movie based on true events', /Zodiac/],
+    [FA, 'یه فیلم ترسناک پیشنهاد بده', /تام‌باد/],
+    [FA, 'فیلم عاشقانه معرفی کن', /زندگی‌های گذشته/],
+    [FA, 'یه فیلم هیجانی پیشنهاد بده', /شکارچی سر/]
+  ];
+  // A fresh engine per case: repeated movie requests on one engine trip the
+  // topic-cycling rule, which is a different behavior we are not testing here.
+  for (const [lang, q, re] of cases) {
+    assert.match(freshEngine(lang).respond(q), re, `${lang} ${q}`);
+  }
+});
+
+test('sequential: dark comedy follow-up returns the dark comedy list, not comedy', () => {
+  const en = freshEngine(EN);
+  en.respond('suggest me three movies');
+  const dark = en.respond('in dark comedy genre please');
+  assert.match(dark, /dark comedy|black comedy/i);
+  assert.doesNotMatch(dark, /^Non-obvious comedy picks/m);
+  const fa = freshEngine(FA);
+  fa.respond('سه فیلم پیشنهاد بده');
+  const faDark = fa.respond('کمدی سیاه');
+  assert.match(faDark, /کمدی سیاه/);
+  assert.doesNotMatch(faDark, /پیشنهادهای کمدی غیرتکراری/);
+});
+
+test('sequential: emotional genre word is not hijacked after movie talk', () => {
+  // After a movie request, an emotionally-used genre word ("horror" as
+  // a feeling, "ترسناک" about a situation) must stay with the
+  // lived-experience rule, never be answered with a movie list.
+  const en = freshEngine(EN);
+  en.respond('suggest me three movies');
+  const reply = en.respond('this situation is absolute horror for me');
+  assert.doesNotMatch(reply, /Non-obvious horror picks/);
+});
+
+test('knowledge: Darya can refer to its own project repository', () => {
+  const enCases = [
+    'where is your repository?',
+    'where is the project repo',
+    'where is the repo',
+    'tell me about your source code'
+  ];
+  for (const q of enCases) {
+    assert.match(
+      freshEngine(EN).respond(q),
+      /github\.com\/sheikhartin\/darya/,
+      q
+    );
+  }
+  const faCases = [
+    'سورس کدت کجاست؟',
+    'سورس کد پروژه کجاست',
+    'گیت هاب پروژه کجاست'
+  ];
+  for (const q of faCases) {
+    assert.match(
+      freshEngine(FA).respond(q),
+      /github\.com\/sheikhartin\/darya/,
+      q
+    );
+  } // Identity questions must never be replaced by the encyclopedia fact
+  // (the fact body contains "everything runs inside your browser" and the
+  // PWA line; identity replies are short pool lines and never the fact).
+  const enIdentity = freshEngine(EN).respond('who are you');
+  assert.match(enIdentity, /Darya|companion/i);
+  assert.doesNotMatch(enIdentity, /runs inside your browser|installs as a PWA/);
+  const faIdentity = freshEngine(FA).respond('تو کی هستی');
+  assert.match(faIdentity, /دریا|همراه/);
+  assert.doesNotMatch(faIdentity, /داخل مرورگر خودت اجرا|PWA/);
+  // A bare repo mention (no request framing) stays conversational.
+  assert.doesNotMatch(
+    freshEngine(EN).respond('my repo is private'),
+    /runs inside your browser/
+  );
+});
+
+test('knowledge: video game recommendations by era, platform, and genre', () => {
+  const cases = [
+    [EN, 'suggest some classic ps1 games', /Metal Gear|Final Fantasy/],
+    [FA, 'بازی های قدیمی پلی استیشن ۲ پیشنهاد بده', /متال گیر|فاینال فانتزی/],
+    [EN, 'best new games for ps5', /Elden Ring|Baldur/],
+    [FA, 'بازی های جدید معرفی کن', /الدن رینگ|بولدور/],
+    [EN, 'recommend mobile games', /Monument Valley|Stardew/],
+    [FA, 'بازی موبایل خوب معرفی کن', /مانومنت|استاردو/],
+    [EN, 'best horror games', /Silent Hill|Outlast/],
+    [FA, 'بازی ترسناک معرفی کن', /سایلنت|اوت‌لاست/]
+  ];
+  for (const [lang, q, re] of cases) {
+    assert.match(freshEngine(lang).respond(q), re, `${lang} ${q}`);
+  }
+});
+
+test('knowledge: generic adjectives never hijack into video games', () => {
+  // Regression: 'classic', 'modern', 'قدیمی', 'جدید' were once in the games
+  // weak lists, so a movie request carrying one of them got the game list.
+  const cases = [
+    [EN, 'recommend a classic movie', /cinema|film|movie/i],
+    [EN, 'recommend a modern movie', /cinema|film|movie/i],
+    [FA, 'یه فیلم قدیمی خوب پیشنهاد بده', /فیلم|سینما/],
+    [FA, 'یه فیلم جدید خوب پیشنهاد بده', /فیلم|سینما/]
+  ];
+  for (const [lang, q, re] of cases) {
+    const r = freshEngine(lang).respond(q);
+    assert.doesNotMatch(r, /game|بازی/, `${lang} ${q}`);
+    assert.match(r, re, `${lang} ${q}`);
+  }
+});
+
+test('knowledge: concrete career plans for common paths', () => {
+  const cases = [
+    [EN, 'how to become a developer? give me a plan', /specialty|projects/i],
+    [FA, 'چطور برنامه نویس شوم', /تخصص|پروژه/],
+    [EN, 'how to start a business?', /MVP|problem/i],
+    [FA, 'چطور معلم شوم', /تدریس|آموزش/],
+    [EN, 'how to become a data scientist', /statistics|python/i],
+    [FA, 'چطور کارشناس داده شوم', /آمار|پایتون/]
+  ];
+  for (const [lang, q, re] of cases) {
+    assert.match(freshEngine(lang).respond(q), re, `${lang} ${q}`);
+  }
+});
+
+test('knowledge: psychology, sports, history, and cooking facts in both languages', () => {
+  const cases = [
+    [EN, 'what is cbt?', /thoughts/],
+    [FA, 'سی بی تی چیه؟', /افکار/],
+    [EN, 'tell me about neuroplasticity', /brain/],
+    [FA, 'نوروپلاستیسیتی چیه', /مغز/],
+    [EN, 'how much sleep do i need', /seven/],
+    [FA, 'چند ساعت خواب نیاز دارم', /هفت/],
+    [EN, 'how to play football?', /eleven/],
+    [FA, 'قوانین فوتبال چیه', /یازده/],
+    [EN, 'what are the olympics?', /Athens/],
+    [FA, 'المپیک چیه', /آتن/],
+    [EN, 'how long is a marathon', /42/],
+    [FA, 'ماراتن چند کیلومتره', /۴۲/],
+    [EN, 'who was cyrus the great?', /Achaemenid/],
+    [FA, 'کوروش کبیر کی بود', /هخامنشی/],
+    [EN, 'how were the pyramids built?', /Giza/],
+    [FA, 'اهرام مصر چطور ساخته شد', /جیزه/],
+    [EN, 'tell me about the berlin wall', /1961/],
+    [FA, 'دیوار برلین چرا ساخته شد', /۱۹۶۱/],
+    [EN, 'tell me about persian food', /rice/],
+    [FA, 'غذای ایرانی چیه', /برنج/],
+    [EN, 'what is saffron?', /expensive/],
+    [FA, 'زعفران چیه', /گران/],
+    [EN, 'tell me about iranian tea', /national/],
+    [FA, 'چای ایرانی چیه', /ملی/]
+  ];
+  for (const [lang, q, re] of cases) {
+    assert.match(freshEngine(lang).respond(q), re, `${lang} ${q}`);
+  } // Personal statements mentioning a topic word stay empathetic, never
+  // encyclopedic, even though the gate now accepts چند/چقدر (how much)
+  // and how long/much/many. These phrases DO pass the gate, so they
+  // genuinely pin the guard against weak-word hijacking.
+  const faSleep = freshEngine(FA).respond('چند وقته خوابم نمیبره');
+  assert.doesNotMatch(faSleep, /بزرگسالان معمولاً به هفت/, 'fa insomnia');
+  const faFooty = freshEngine(FA).respond('چند وقته فوتبال بازی نکردم');
+  assert.doesNotMatch(faFooty, /یازده/, 'fa football statement');
+  const faTea = freshEngine(FA).respond('چقدر چای دوست دارم');
+  assert.doesNotMatch(faTea, /ملی/, 'fa tea statement');
+  const enWait = freshEngine(EN).respond(
+    'how long i have been waiting for this'
+  );
+  assert.doesNotMatch(enWait, /42/, 'en how long statement');
+  const enSleep = freshEngine(EN).respond(
+    'i have been unable to sleep all week'
+  );
+  assert.doesNotMatch(enSleep, /Adults typically need/, 'en insomnia');
+});
+
+test('sequential: knowledge follow-ups refine across topics in both languages', () => {
+  // Planets: "tell me about Jupiter" then "and Saturn?"
+  const en = freshEngine(EN);
+  en.respond('tell me about Jupiter');
+  assert.match(en.respond('and Saturn?'), /Saturn is the sixth planet/i);
+  assert.match(en.respond('uranus?'), /Uranus|seventh/i);
+  const fa = freshEngine(FA);
+  fa.respond('سیاره مشتری چیه');
+  assert.match(fa.respond('زحل چطور؟'), /ششمین سیاره/);
+  assert.match(fa.respond('و اورانوس'), /اورانوس|هفتمین/);
+  // Career advice then a business follow-up
+  const fa2 = freshEngine(FA);
+  fa2.respond('چطور برنامه نویس شوم');
+  assert.match(fa2.respond('بیزینس'), /کارآفرینی/);
+  // After movie talk, a game genre beats the movie-genre lookup
+  const en2 = freshEngine(EN);
+  en2.respond('suggest me three movies');
+  assert.match(en2.respond('horror games'), /Silent Hill/);
+  assert.match(en2.respond('horror'), /horror picks/i);
+  // High-frequency follow-up frames keep refining the remembered topic
+  const en3 = freshEngine(EN);
+  en3.respond('tell me about Jupiter');
+  assert.match(
+    en3.respond("what's Saturn like"),
+    /Saturn is the sixth planet/i
+  );
+  const en4 = freshEngine(EN);
+  en4.respond('tell me about Jupiter');
+  assert.match(
+    en4.respond('tell me more about Saturn'),
+    /Saturn is the sixth planet/i
+  );
+  const en5 = freshEngine(EN);
+  en5.respond('tell me about Jupiter');
+  assert.match(
+    en5.respond('can you tell me about Saturn'),
+    /Saturn is the sixth planet/i
+  );
+  const fa3 = freshEngine(FA);
+  fa3.respond('سیاره مشتری چیه');
+  assert.match(fa3.respond('زحل چه شکلیه'), /ششمین سیاره/);
+  const fa4 = freshEngine(FA);
+  fa4.respond('سیاره مشتری چیه');
+  assert.match(fa4.respond('بیشتر در مورد زحل بگو'), /ششمین سیاره/);
+  const fa5 = freshEngine(FA);
+  fa5.respond('سیاره مشتری چیه');
+  assert.match(fa5.respond('زحل رو بگو'), /ششمین سیاره/);
+  // The new domains refine too: an EN follow-up with an article and a
+  // Persian follow-up with a topic word both continue in place.
+  const en6 = freshEngine(EN);
+  en6.respond('tell me about Jupiter');
+  assert.match(en6.respond('and the pyramids?'), /Giza/);
+  const fa6 = freshEngine(FA);
+  fa6.respond('سیاره مشتری چیه');
+  assert.match(fa6.respond('زعفران چطور؟'), /گران/);
+});
+
+test('fun facts: count, single, and at-least requests in both languages', () => {
+  // Plain count: "tell me 3 fun facts"
+  const en3 = freshEngine(EN).respond('tell me 3 fun facts');
+  assert.match(en3, /Here are 3 interesting facts/);
+  assert.match(en3, /\n1\./);
+  assert.match(en3, /\n2\./);
+  assert.match(en3, /\n3\./);
+  // "at least 3" promises a minimum, never fewer
+  const enAtLeast = freshEngine(EN).respond('tell me at least 3 fun facts');
+  assert.match(enAtLeast, /Here are 3 interesting facts/);
+  // Single: "a fun fact" and "just one single shocking fact"
+  const enOne = freshEngine(EN).respond('give me a fun fact');
+  assert.match(enOne, /Here is one interesting fact/);
+  assert.match(enOne, /\n1\./);
+  assert.doesNotMatch(enOne, /\n2\./);
+  const enShocking = freshEngine(EN).respond(
+    'give me just one single shocking fact'
+  );
+  assert.match(enShocking, /Here is one interesting fact/);
+  // Persian count and single variants
+  const faThree = freshEngine(FA).respond('سه تا حقیقت بگو');
+  assert.match(faThree, /۳ حقیقت جالب/);
+  const faAtLeast = freshEngine(FA).respond('حداقل سه تا حقیقت بگو');
+  assert.match(faAtLeast, /۳ حقیقت جالب/);
+  const faOne = freshEngine(FA).respond('فقط یک حقیقت عجیب بگو');
+  assert.match(faOne, /یک حقیقت جالب/);
+});
+
+test('fun facts: topic-filtered and shocking-topic requests', () => {
+  // Topic filter: space facts only mention space-y content
+  const enSpace = freshEngine(EN).respond('give me 3 facts about space');
+  assert.match(enSpace, /Here are 3 interesting facts/);
+  // A shocking request with a named topic still respects the topic
+  const enShockSpace = freshEngine(EN).respond(
+    'give me a shocking fact about space'
+  );
+  assert.match(enShockSpace, /Here is one interesting fact/);
+  // Persian topic filter
+  const faAnimals = freshEngine(FA).respond('حقایقی درباره حیوانات بگو');
+  assert.match(faAnimals, /حقیقت جالب/);
+});
+
+test('fun facts: pool has enough curated entries per category', () => {
+  const kb = globalThis.DaryaKnowledge || {};
+  const faPool = (kb.randomFacts && kb.randomFacts('fa', 5, 'science')) || [];
+  assert.ok(faPool.length >= 3);
+  const enPool = (kb.randomFacts && kb.randomFacts('en', 5, 'history')) || [];
+  assert.ok(enPool.length >= 3);
+});
+
+test('fun facts: sports, art, and money categories are curated', () => {
+  const kb = globalThis.DaryaKnowledge || {};
+  for (const category of ['sports', 'art', 'money']) {
+    for (const code of ['fa', 'en']) {
+      const pool = (kb.randomFacts && kb.randomFacts(code, 10, category)) || [];
+      assert.ok(
+        pool.length >= 6,
+        `${code} ${category} pool should have at least 6 curated facts, got ${pool.length}`
+      );
+    }
+  }
+});
+
+test('fun facts: topic requests for sports/art/money stay in category', () => {
+  const kb = globalThis.DaryaKnowledge || {};
+  const fromPool = (code, category, reply) =>
+    (kb.randomFacts &&
+      kb
+        .randomFacts(code === 'fa' ? 'fa' : 'en', 20, category)
+        .some((line) => reply.includes(line))) ||
+    false;
+  const cases = [
+    ['en', 'sports', 'give me 3 facts about sports'],
+    ['en', 'art', 'tell me a fun fact about art and music'],
+    ['en', 'money', 'tell me 3 facts about money'],
+    ['fa', 'sports', '۳ تا حقیقت درباره ورزش بگو'],
+    ['fa', 'art', 'یه حقیقت جالب درباره هنر و موسیقی بگو'],
+    ['fa', 'money', 'حقایقی درباره پول بگو']
+  ];
+  for (const [code, category, input] of cases) {
+    for (let i = 0; i < 5; i += 1) {
+      const reply = freshEngine(code === 'fa' ? FA : EN).respond(input);
+      assert.ok(
+        fromPool(code, category, reply),
+        `${code} ${category} fact request should answer from its own pool, got: ${reply}`
+      );
+    }
+  }
+});
+
+test('fun facts: fact request beats knowledge; plain topic question does not', () => {
+  // A request that explicitly asks for facts must not be hijacked by the
+  // encyclopedia entry that shares the topic (sports career/game facts,
+  // music career entry).
+  const sports = freshEngine(EN).respond('give me 3 facts about sports');
+  assert.match(sports, /Here are 3 interesting facts/);
+  const art = freshEngine(EN).respond('tell me a fun fact about art');
+  assert.match(art, /Here is one interesting fact/);
+  // A plain topic question without fact framing still gets the
+  // encyclopedia-style knowledge answer.
+  const saturn = freshEngine(EN).respond('tell me about Saturn');
+  assert.match(saturn, /saturn/i);
+  assert.doesNotMatch(saturn, /Here (?:are|is)/);
+  const faMusic = freshEngine(FA).respond('درباره موسیقی و خوانندگی توضیح بده');
+  assert.match(faMusic, /موسیقی|خوانندگی/);
+  assert.doesNotMatch(faMusic, /حقیقت جالب/);
+});
+
+test('greetings: expanded pools stay warm and varied', () => {
+  assert.ok(EN.greetingsPhase1.length >= 12);
+  assert.ok(FA.greetingsPhase1.length >= 12);
+  assert.ok(EN.greetingsOpen.length >= 10);
+  assert.ok(FA.greetingsOpen.length >= 10);
+  assert.ok(EN.greetingsInviting.length >= 10);
+  assert.ok(FA.greetingsInviting.length >= 10);
+  assert.ok(EN.greetingsReturning.length >= 10);
+  assert.ok(FA.greetingsReturning.length >= 10);
+});
+
+test('self-discovery: ask-me-a-question replies are warm questions', () => {
+  // The reply must be a genuine warm question, never a canned
+  // acknowledgement or a generic fallback line.
+  const enReply = freshEngine(EN).respond('ask me a question');
+  assert.match(enReply, /[?]/);
+  assert.ok(!EN.questionAcknowledgements.includes(enReply));
+  assert.ok(!EN.genericFallbacks.includes(enReply));
+  const faReply = freshEngine(FA).respond('یه سوال از من بپرس');
+  assert.match(faReply, /[؟?]/);
+  assert.ok(!FA.questionAcknowledgements.includes(faReply));
+  assert.ok(!FA.genericFallbacks.includes(faReply));
+});
+
+test('knowledge: sex education answers are respectful and shame-free', () => {
+  const en = freshEngine(EN).respond('what is consent?');
+  assert.match(en, /consent means/i);
+  assert.match(en, /withdrawn/i);
+  const fa = freshEngine(FA).respond('آموزش جنسی چیه؟');
+  assert.match(fa, /رضایت/);
+  // A genuine question must never route to the harassment boundary pool
+  assert.ok(!FA.sexualHarassmentResponses.includes(fa));
+});
+
+test('knowledge: relationship plans give structured, actionable steps', () => {
+  const en = freshEngine(EN).respond('how to build a healthy relationship?');
+  assert.match(en, /clear communication/i);
+  assert.match(en, /boundaries/i);
+  const fa = freshEngine(FA).respond('چطور یک رابطه سالم بسازم؟');
+  assert.match(fa, /ارتباط شفاف/);
+  // Personal disclosures about a relationship are not encyclopedia entries
+  const faPersonal = freshEngine(FA).respond('رابطه ام خراب شده و خسته شدم');
+  assert.doesNotMatch(faPersonal, /ارتباط شفاف/);
+  const enPersonal = freshEngine(EN).respond(
+    'my relationship just ended and I feel lost'
+  );
+  assert.doesNotMatch(enPersonal, /clear communication/i);
+});
+
+test('sequential: ambiguous fragments are never hijacked', () => {
+  // "مشتری جذب کنم" (attract customers) must never answer with the
+  // Jupiter encyclopedia entry, even right after a knowledge answer.
+  const fa = freshEngine(FA);
+  fa.respond('چطور پول دربیارم');
+  const reply = fa.respond('مشتری جذب کنم');
+  assert.doesNotMatch(reply, /بزرگ‌ترین سیاره/);
+  const en = freshEngine(EN);
+  en.respond('tell me about Jupiter');
+  assert.doesNotMatch(en.respond('and how are you'), /Jupiter is the largest/);
+});
+
+test('knowledge: marriage and children get balanced guidance', () => {
+  const fa = freshEngine(FA).respond('ازدواج خوبه یا نه؟ بچه دار بشم؟');
+  assert.match(fa, /ازدواج|بچه/);
+  assert.ok(!FA.questionAcknowledgements.includes(fa));
+  const en = freshEngine(EN).respond(
+    'is marriage worth it and should i have children'
+  );
+  assert.match(en, /marriage|children|personal/i);
+  assert.ok(!EN.questionAcknowledgements.includes(en));
+});
+
+test('knowledge: religion question gets respectful non-judgment', () => {
+  const fa = freshEngine(FA).respond('کدام دین بهترین است');
+  assert.match(fa, /دین|احترام/);
+  const en = freshEngine(EN).respond('which religion is best');
+  assert.match(en, /religion|respect|personal/i);
+});
+
+test('knowledge: homesickness and grief stay empathetic, not encyclopedic', () => {
+  const fa = freshEngine(FA).respond('دلم برای خانواده‌ام تنگه، خارج از کشورم');
+  assert.ok(!fa.startsWith('دلتنگی'));
+  const en = freshEngine(EN).respond('i miss my family, i am abroad');
+  assert.ok(!/^missing family/i.test(en));
+  // The reply must come from the lived-experience pools (family/grief/
+  // loneliness), never from the factual shelf text. A warmth or empathy
+  // prefix may be prepended to the pool line, so assert containment.
+  const enPools = [
+    ...(globalThis.DaryaEnResponses.ruleFamily || []),
+    ...(globalThis.DaryaEnResponses.ruleGrief || []),
+    ...(globalThis.DaryaEnResponses.ruleLoneliness || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.family || [])
+  ];
+  const faPools = [
+    ...(globalThis.DaryaFaResponses.ruleFamily || []),
+    ...(globalThis.DaryaFaResponses.ruleGrief || []),
+    ...(globalThis.DaryaFaResponses.ruleLoneliness || []),
+    ...(globalThis.DaryaFaResponses.topicSpecificQuestions.family || [])
+  ];
+  assert.ok(
+    enPools.some((line) => en.includes(line)),
+    'EN homesickness must use emotional pools, got: ' + en
+  );
+  assert.ok(
+    faPools.some((line) => fa.includes(line)),
+    'FA homesickness must use emotional pools, got: ' + fa
+  );
+});
+
+test('knowledge: economic despair routes to empathy, not advice', () => {
+  const fa = freshEngine(FA).respond('از وضعیت اقتصادی ناامیدم');
+  assert.ok(!FA.questionAcknowledgements.includes(fa));
+  const en = freshEngine(EN).respond('i feel economic despair');
+  assert.ok(!EN.questionAcknowledgements.includes(en));
+  // The reply may come from the anxiety/stress empathy pools or from the
+  // repetition rule; either way it must never be a knowledge-reflections essay.
+  const enPools = [
+    ...(globalThis.DaryaEnResponses.ruleAnxiety || []),
+    ...(globalThis.DaryaEnResponses.ruleStress || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.anxiety || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.stress || []),
+    ...(globalThis.DaryaEnResponses.topicSpecificQuestions.feeling || []),
+    ...(globalThis.DaryaEnResponses.wordRepetitionResponses || [])
+  ];
+  assert.ok(
+    enPools.some((line) => en.includes(line)) ||
+      /heavy|weight|feeling/i.test(en),
+    'EN economic despair must stay empathetic, got: ' + en
+  );
+});
+test('knowledge: expanded safety patterns catch hopelessness phrases', () => {
+  const faCases = ['دلیلی برای زندگی ندارم', 'دیگه نمی‌خوام زندگی کنم'];
+  for (const q of faCases) {
+    const reply = freshEngine(FA).respond(q);
+    assert.match(
+      reply,
+      /بحران|خط|تماس|کمک|فوری|اورژانس/,
+      `FA safety phrase should get crisis support: ${q}`
+    );
+  }
+  const enCases = [
+    'i have nothing to live for',
+    'i do not want to live anymore'
+  ];
+  for (const q of enCases) {
+    const reply = freshEngine(EN).respond(q);
+    assert.match(
+      reply,
+      /crisis|hotline|reach out|support|helpline|help/i,
+      `EN safety phrase should get crisis support: ${q}`
+    );
+  }
+});
+
+test('safety: location-phrased "do not want to live" is not a false positive', () => {
+  // "I do not want to live in this city anymore" is about a place, not
+  // suicidal intent; it must NOT route to the crisis response.
+  const reply = freshEngine(EN).respond(
+    'i do not want to live in this city anymore'
+  );
+  assert.doesNotMatch(
+    reply,
+    /crisis|hotline|helpline/i,
+    'location-phrased live should not get a crisis response, got: ' + reply
+  );
+});
+
+test('knowledge: job loss stays empathetic, never a career essay', () => {
+  const reply = freshEngine(FA).respond('شغلم رو از دست دادم');
+  assert.ok(
+    !globalThis.DaryaFaResponses.questionAcknowledgements.includes(reply),
+    'FA job loss must not get an evasive acknowledgement, got: ' + reply
+  );
+  // Must come from the grief/work lived-experience pools, never the
+  // factual shelf or a generic acknowledgement.
+  const faPools = [
+    ...(globalThis.DaryaFaResponses.ruleGrief || []),
+    ...(globalThis.DaryaFaResponses.ruleWork || []),
+    ...(globalThis.DaryaFaResponses.topicSpecificQuestions.grief || []),
+    ...(globalThis.DaryaFaResponses.topicSpecificQuestions.work || [])
+  ];
+  assert.ok(
+    faPools.some((line) => reply.includes(line)),
+    'FA job loss must use emotional pools, got: ' + reply
+  );
+  const en = freshEngine(EN).respond('i lost my job today');
+  assert.match(en, /sorry|hard|heavy|losing|work|job/i);
+});
+
+test('math: random number between bounds in both languages', () => {
+  for (let i = 0; i < 8; i += 1) {
+    const en = freshEngine(EN);
+    const reply = en.respond('pick a random number between 5 and 20');
+    const match = reply.match(/between 5 and 20: (\d+)/i);
+    assert.ok(match, `EN random reply missing bounds, got: ${reply}`);
+    const value = Number(match[1]);
+    assert.ok(
+      value >= 5 && value <= 20,
+      `EN random value out of range: ${value}`
+    );
+  }
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('بین ۵ و ۲۰ یک عدد تصادفی بگو');
+  assert.match(faReply, /بین ۵ و ۲۰/);
+  const faValue = faReply.match(/:\s*([۰-۹]+)/u);
+  assert.ok(faValue, `FA random reply missing value, got: ${faReply}`);
+  const value = Number(
+    String(faValue[1]).replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+  );
+  assert.ok(
+    value >= 5 && value <= 20,
+    `FA random value out of range: ${value}`
+  );
+});
+
+test('math: prime check in both languages', () => {
+  const enPrime = freshEngine(EN).respond('is 17 a prime number?');
+  assert.match(enPrime, /Yes, 17 is a prime number/i);
+  const enComposite = freshEngine(EN).respond('is 15 prime?');
+  assert.match(enComposite, /No, 15 is not a prime number/i);
+  const faPrime = freshEngine(FA).respond('آیا ۱۷ عدد اول است؟');
+  assert.match(faPrime, /بله، ۱۷ یک عدد اول است/);
+  const faComposite = freshEngine(FA).respond('۱۵ عدد اول هست؟');
+  assert.match(faComposite, /خیر، ۱۵ عدد اول نیست/);
+});
+
+test('math: coin flip returns heads or tails in both languages', () => {
+  for (let i = 0; i < 10; i++) {
+    assert.match(
+      freshEngine(EN).respond('flip a coin'),
+      /It came up (heads|tails)\./i
+    );
+  }
+  assert.match(freshEngine(FA).respond('شیر یا خط'), /شیر آمد\.|خط آمد\./);
+  assert.match(freshEngine(FA).respond('سکه بنداز'), /شیر آمد\.|خط آمد\./);
+});
+
+test('knowledge: honest unknown can suggest reliable sources', () => {
+  const eng = freshEngine(EN);
+  let sawSource = false;
+  for (let i = 0; i < 30; i++) {
+    const reply = eng.respond(
+      'what is the orbital period of comet 67p in hours'
+    );
+    if (/wikipedia|youtube|expert/i.test(reply)) {
+      sawSource = true;
+      break;
+    }
+  }
+  assert.ok(sawSource, 'EN source suggestions should fire on a coin flip');
+  const faEng = freshEngine(FA);
+  let faSawSource = false;
+  for (let i = 0; i < 30; i++) {
+    const reply = faEng.respond(
+      'راجع به دوره تناوب مداری دنباله‌دار ۶۷پی توضیح بده'
+    );
+    if (/ویکی‌پدیا|یوتیوب|متخصص/.test(reply)) {
+      faSawSource = true;
+      break;
+    }
+  }
+  assert.ok(faSawSource, 'FA source suggestions should fire on a coin flip');
+});
+
+test('topic change: FA and EN follow the lead', () => {
+  // A warmth or empathy prefix may be prepended to the pool line, so the
+  // assertion checks the reply contains a pool entry as a suffix.
+  const fa = freshEngine(FA).respond('بیا راجع به یه چیز دیگه صحبت کنیم');
+  assert.ok(
+    globalThis.DaryaFaResponses.ruleTopicChange.some((line) =>
+      fa.includes(line)
+    ),
+    'FA topic change must use the topic-change pool, got: ' + fa
+  );
+  const en = freshEngine(EN).respond('let us talk about something else');
+  assert.ok(
+    globalThis.DaryaEnResponses.ruleTopicChange.some((line) =>
+      en.includes(line)
+    ),
+    'EN topic change must use the topic-change pool, got: ' + en
+  );
+});
+
+test('praise: آفرین and great question get warm acknowledgement', () => {
+  const fa = freshEngine(FA).respond('آفرین، سوال خوبی بود');
+  assert.ok(
+    globalThis.DaryaFaResponses.ruleComplimentDarya.includes(fa),
+    'FA praise must use the compliment pool, got: ' + fa
+  );
+  const en = freshEngine(EN).respond('great question');
+  assert.ok(
+    globalThis.DaryaEnResponses.ruleComplimentDarya.includes(en),
+    'EN praise must use the compliment pool, got: ' + en
+  );
+});
+
+test('recap: today topic question triggers recap in FA and EN', () => {
+  const fa = freshEngine(FA).respond('امروز راجع به چی صحبت کردیم؟');
+  assert.match(fa, /گفتی|نخ|خلاصه|گفتگو/);
+  const en = freshEngine(EN).respond('what did we talk about');
+  assert.match(en, /talk|thread|so far|recap/i);
+});
+
+test('dodging feedback: پیچوندی recognized as meta feedback', () => {
+  const fa = freshEngine(FA).respond('خوب پیچوندی و جواب ندادی');
+  assert.ok(
+    globalThis.DaryaFaResponses.ruleMetaFeedback.includes(fa),
+    'FA dodging must use the meta-feedback pool, got: ' + fa
+  );
+  const en = freshEngine(EN).respond('you are dodging the question');
+  assert.ok(
+    globalThis.DaryaEnResponses.ruleMetaFeedback.includes(en),
+    'EN dodging must use the meta-feedback pool, got: ' + en
+  );
+});
+
+test('arithmetic: Latin word math never crashes in a Persian session', () => {
+  // Regression: "10 divided by 2" typed in a FA session matched the
+  // English word-math branch while the Persian formatter dereferenced
+  // null faWordMath, throwing a TypeError. It must either answer or
+  // route to the mixed-language redirect, never crash.
+  const fa = freshEngine(FA);
+  const reply = fa.respond('10 divided by 2');
+  assert.ok(reply.length > 0);
+  assert.match(reply, /فارسی|زبان|درباره/); // mixed-language redirect
+});
+
+test('questions are never answered with a stale quote callback', () => {
+  // Regression: a direct question used to get hijacked by a quote of an
+  // old message. The question path must run before entity/quote callbacks.
+  const engine = freshEngine(EN);
+  engine.respond('I have been thinking about my cat all day');
+  const reply = engine.respond('what is quantum physics');
+  assert.match(reply, /quantum|atom|particle/i);
+  assert.ok(!reply.includes('cat'));
 });
 
 // ============================================================================
@@ -3314,6 +4353,57 @@ test('EN: ask-me-a-question requests are honored', () => {
   assert.match(reply, /[?]/, 'an asked-for question should actually ask one');
 });
 
+test('EN: opener-help requests get concrete starting suggestions', () => {
+  const pool = new Set(
+    EN.rules.find((r) => r.topic === 'opener_help').responses
+  );
+  for (const input of [
+    'how do i start?',
+    "i don't know what to say",
+    'i do not know what to say',
+    'what should i say?'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from opener_help pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: opener-help requests get concrete starting suggestions', () => {
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'opener_help').responses
+  );
+  for (const input of [
+    'چطور شروع کنم؟',
+    'نمیدونم چی بگم',
+    'از کجا شروع کنم',
+    'نمیدونم چطور شروع کنم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from opener_help pool, got: ${reply}`
+    );
+  }
+});
+
+test('both languages ship an idle-openers pool for the proactive opener', () => {
+  for (const lang of [EN, FA]) {
+    assert.ok(
+      Array.isArray(lang.idleOpeners) && lang.idleOpeners.length >= 6,
+      `${lang.code} should have a healthy idleOpeners pool`
+    );
+    for (const opener of lang.idleOpeners) {
+      assert.ok(
+        opener.trim().length > 10,
+        `${lang.code} idle opener should be a real sentence`
+      );
+    }
+  }
+});
+
 test('FA: self-improvement request gets a humble acknowledgment', () => {
   const pool = new Set(
     FA.rules.find((r) => r.topic === 'self_improvement').responses
@@ -3442,4 +4532,1057 @@ test('EN: question acknowledgements never bounce another question', () => {
       `EN questionAck must be question-free: ${line}`
     );
   }
+});
+
+test('EN: joke requests reply from the clean joke pool', () => {
+  const pool = new Set(EN.ruleTellJoke || []);
+  for (const input of [
+    'tell me a joke',
+    'make me laugh',
+    'say something funny',
+    'give me a funny joke'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `joke request should reply from ruleTellJoke, got: ${reply}`
+    );
+  }
+});
+
+test('FA: joke requests reply from the clean joke pool', () => {
+  const pool = new Set(FA.ruleTellJoke || []);
+  for (const input of ['یه جوک بگو', 'بخندون من', 'جوک بلدی؟']) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `joke request should reply from ruleTellJoke, got: ${reply}`
+    );
+  }
+});
+
+test('EN: depression disclosure gets professional-support nudge', () => {
+  const reply = freshEngine(EN).respond(
+    'I think I am depressed and nothing matters anymore'
+  );
+  assert.match(
+    reply,
+    /depression|professional|doctor|support|not your fault/i,
+    `depression disclosure should nudge to professional support, got: ${reply}`
+  );
+  assert.ok(
+    !/I do not have an answer/i.test(reply),
+    'depression reply must not be an evasion'
+  );
+});
+
+test('FA: depression disclosure gets professional-support nudge', () => {
+  const reply = freshEngine(FA).respond(
+    'احساس می‌کنم افسردگی دارم و هیچ‌چیز برام معنی نداره'
+  );
+  assert.match(
+    reply,
+    /افسردگی|متخصص|پزشک|حمایت|تقصیر تو نیست/,
+    `depression disclosure should nudge to professional support, got: ${reply}`
+  );
+  assert.ok(
+    !/جواب آماده‌ای ندارم/.test(reply),
+    'depression reply must not be an evasion'
+  );
+});
+
+test('EN: age-gap crush gets balanced non-judgmental guidance', () => {
+  const reply = freshEngine(EN).respond(
+    'I have a crush on a woman 30 years older than me'
+  );
+  assert.ok(
+    reply.length > 25 && !/I do not have an answer/i.test(reply),
+    `age-gap crush should get real guidance, got: ${reply}`
+  );
+  assert.match(
+    reply,
+    /age|gap|life stage|balance|power|respect|consent/i,
+    `age-gap reply should discuss balance, got: ${reply}`
+  );
+});
+
+test('FA: age-gap crush gets balanced non-judgmental guidance', () => {
+  const reply = freshEngine(FA).respond(
+    'به یه خانوم که ۳۰ سال از من بزرگتره کراش دارم'
+  );
+  assert.ok(
+    reply.length > 25 && !/جواب آماده‌ای ندارم/.test(reply),
+    `age-gap crush should get real guidance, got: ${reply}`
+  );
+  assert.match(
+    reply,
+    /فاصله|سن|زندگی|برابری|قدرت|احترام/,
+    `age-gap reply should discuss balance, got: ${reply}`
+  );
+});
+
+test('EN: minor-attraction disclosure gets the protected help reply', () => {
+  const pool = new Set(EN.minorAttractionResponses || []);
+  for (const input of [
+    "I'm 40 and I have sexual feelings for a 15-year-old",
+    'I am 45 and I am in love with a 14-year-old girl'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `minor-attraction disclosure must use the protected pool, got: ${reply}`
+    );
+    assert.match(
+      reply,
+      /under 18|Stop It Now|professional/,
+      `protected reply must signpost help, got: ${reply}`
+    );
+  }
+});
+
+test('EN: teen peer crush and family love never trigger protection', () => {
+  const pool = new Set(EN.minorAttractionResponses || []);
+  for (const input of [
+    "I'm 15 and I have a crush on a 17-year-old from school",
+    'I love my daughter very much'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      !pool.has(reply),
+      `${input} must not route to the protected pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: minor-attraction disclosure gets the protected help reply', () => {
+  const pool = new Set(FA.minorAttractionResponses || []);
+  for (const input of [
+    'من ۴۵ سالمه و به یه نوجوان ۱۵ ساله احساس جنسی دارم',
+    'من ۴۰ سالمه و عاشق یه دختر ۱۶ ساله شدم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `FA minor-attraction disclosure must use the protected pool, got: ${reply}`
+    );
+    assert.match(
+      reply,
+      /زیر ۱۸|استاپ ایت ناو|متخصص/,
+      `FA protected reply must signpost help, got: ${reply}`
+    );
+  }
+});
+
+test('FA: teen peer crush and family love never trigger protection', () => {
+  const pool = new Set(FA.minorAttractionResponses || []);
+  for (const input of [
+    'من ۱۶ سالمه و به یه نوجوان ۱۷ ساله کراش دارم',
+    'دخترم را خیلی دوست دارم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      !pool.has(reply),
+      `${input} must not route to the protected pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: near-peer 18-20 crush on a 16-17 year old gets practical guidance', () => {
+  const nearPool = new Set(EN.nearPeerLoveResponses || []);
+  const protectedPool = new Set(EN.minorAttractionResponses || []);
+  for (const input of [
+    "I'm 19 and I have a crush on a 16-year-old girl",
+    "I'm 20 and I have feelings for a 17-year-old",
+    'I am 18 and in love with a 16-year-old from school'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      nearPool.has(reply),
+      `near-peer crush must use the guidance pool, got: ${reply}`
+    );
+    assert.ok(
+      !protectedPool.has(reply),
+      `near-peer crush must never use the adult-minor pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: mature adults with minors keep the protected reply, not near-peer', () => {
+  const nearPool = new Set(EN.nearPeerLoveResponses || []);
+  const protectedPool = new Set(EN.minorAttractionResponses || []);
+  for (const input of [
+    "I'm 40 and I have sexual feelings for a 15-year-old",
+    'I am 45 and I am in love with a 14-year-old girl',
+    "I'm 22 and I am in love with a 16-year-old"
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      protectedPool.has(reply),
+      `adult-minor disclosure must use the protected pool, got: ${reply}`
+    );
+    assert.ok(
+      !nearPool.has(reply),
+      `adult-minor disclosure must not use the near-peer pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: near-peer 18-20 crush on a 16-17 year old gets practical guidance', () => {
+  const nearPool = new Set(FA.nearPeerLoveResponses || []);
+  const protectedPool = new Set(FA.minorAttractionResponses || []);
+  for (const input of [
+    'من ۱۹ سالمه و به یه دختر ۱۶ ساله کراش دارم',
+    'من ۲۰ سالمه و به یه نوجوان ۱۷ ساله علاقه دارم',
+    'من ۱۸ سالمه و عاشق یه دختر ۱۶ ساله شدم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      nearPool.has(reply),
+      `FA near-peer crush must use the guidance pool, got: ${reply}`
+    );
+    assert.ok(
+      !protectedPool.has(reply),
+      `FA near-peer crush must never use the adult-minor pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA: mature adults with minors keep the protected reply, not near-peer', () => {
+  const nearPool = new Set(FA.nearPeerLoveResponses || []);
+  const protectedPool = new Set(FA.minorAttractionResponses || []);
+  for (const input of [
+    'من ۴۵ سالمه و به یه نوجوان ۱۵ ساله احساس جنسی دارم',
+    'من ۴۰ سالمه و عاشق یه دختر ۱۶ ساله شدم',
+    'من ۳۰ سالمه و به یه نوجوان ۱۷ ساله علاقه دارم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      protectedPool.has(reply),
+      `FA adult-minor disclosure must use the protected pool, got: ${reply}`
+    );
+    assert.ok(
+      !nearPool.has(reply),
+      `FA adult-minor disclosure must not use the near-peer pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: shopping requests reply from the shopping pool', () => {
+  const pool = EN.ruleShoppingHelp || [];
+  // These are purchase requests for items WITHOUT a dedicated buying-guide
+  // fact, so the honest shopping pool answers. Guided categories (laptop,
+  // phone, headphones, camera) are covered by the knowledge buying-guide
+  // tests instead, and where-to-buy phrasing routes to the marketplace
+  // fact.
+  for (const input of [
+    'Can you buy me a watch?',
+    'Where can I buy a used bike?',
+    'Buy me some new socks'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.some((line) => reply.includes(line)),
+      `shopping request should answer from ruleShoppingHelp, got: ${reply}`
+    );
+  }
+});
+
+test('FA: shopping requests reply from the shopping pool', () => {
+  const pool = FA.ruleShoppingHelp || [];
+  // These are purchase imperatives or where-to-buy questions for items
+  // WITHOUT a dedicated buying-guide fact, so the honest shopping pool
+  // answers. Requests for guided categories (laptop, phone, headphones)
+  // are covered by the knowledge buying-guide tests instead.
+  for (const input of [
+    'برام یه لپ‌تاپ بخر',
+    'می‌خوام یه صندلی بخرم',
+    'کجا می‌تونم یه جاروبرقی بخرم؟',
+    'برام یه کتاب بگیر'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.some((line) => reply.includes(line)),
+      `FA shopping request should answer from ruleShoppingHelp, got: ${reply}`
+    );
+  }
+});
+
+test('shopping pools keep a non-question line for budget pressure', () => {
+  for (const lang of [EN, FA]) {
+    const pool = lang.ruleShoppingHelp || [];
+    const hasStatement = pool.some((line) => !/[?؟]/u.test(line));
+    assert.ok(
+      hasStatement,
+      `${lang.code} shopping pool should keep a statement line under budget pressure`
+    );
+  }
+});
+
+test('safety: split-turn minor-attraction disclosure completes across turns', () => {
+  // The transcript failure: "من عاشق یک دختر ۱۳ ساله شدم" then
+  // "من ۵۲ سالمه". Attraction + minor age in turn one must be remembered,
+  // and the adult age in turn two must fire the protected reply.
+  const pool = new Set(FA.minorAttractionResponses || []);
+  const engine = freshEngine(FA);
+  engine.respond('من عاشق یک دختر ۱۳ ساله شدم');
+  const reply = engine.respond('من ۵۲ سالمه');
+  assert.ok(
+    pool.has(reply),
+    `split-turn FA disclosure should fire minorAttractionResponses, got: ${reply}`
+  );
+});
+
+test('safety: split-turn disclosure ages out without an adult age', () => {
+  const pool = new Set(EN.minorAttractionResponses || []);
+  const engine = freshEngine(EN);
+  engine.respond('I am in love with a 13-year-old girl');
+  // Three unrelated turns later the pending window has expired.
+  engine.respond('the weather is nice today');
+  engine.respond('I had a good lunch');
+  engine.respond('let us talk about work');
+  const reply = engine.respond('I am 52 years old');
+  assert.ok(
+    !pool.has(reply),
+    `aged-out FA disclosure must not fire protection, got: ${reply}`
+  );
+});
+
+test('safety: split-turn minor-attraction disclosure fires in English too', () => {
+  const pool = new Set(EN.minorAttractionResponses || []);
+  const engine = freshEngine(EN);
+  engine.respond('I have strong feelings for a 14-year-old');
+  const reply = engine.respond('I am 45 years old');
+  assert.ok(
+    pool.has(reply),
+    `split-turn EN disclosure should fire minorAttractionResponses, got: ${reply}`
+  );
+});
+
+test('safety: same-message minor-attraction disclosure still fires (regression)', () => {
+  const pool = new Set(EN.minorAttractionResponses || []);
+  const reply = freshEngine(EN).respond(
+    'I am 40 and I am in love with a 13-year-old girl'
+  );
+  assert.ok(
+    pool.has(reply),
+    `same-message disclosure should still fire protection, got: ${reply}`
+  );
+});
+
+test('safety: split-turn near-peer 18-20 age completes to near-peer guidance', () => {
+  const pool = new Set(EN.nearPeerLoveResponses || []);
+  const engine = freshEngine(EN);
+  engine.respond('I have a crush on a 16-year-old');
+  const reply = engine.respond('I am 19');
+  assert.ok(
+    pool.has(reply),
+    `split-turn near-peer should fire nearPeerLoveResponses, got: ${reply}`
+  );
+});
+
+test('safety: 12-year-old target is a minor in both languages', () => {
+  // Regression from a real transcript: the minor-age pattern only listed
+  // 13-17, so a 12-year-old was invisible and the protected reply never
+  // fired for "من عاشق یک دختر ۱۲ ساله شدم" + "من ۲۸ سالمه".
+  const faPool = new Set(FA.minorAttractionResponses || []);
+  const fa = freshEngine(FA);
+  fa.respond('من عاشق یک دختر ۱۲ ساله شدم');
+  const faReply = fa.respond('من ۲۸ سالمه');
+  assert.ok(
+    faPool.has(faReply),
+    `FA 12-year-old split-turn must fire the protected pool, got: ${faReply}`
+  );
+
+  const enPool = new Set(EN.minorAttractionResponses || []);
+  const en = freshEngine(EN);
+  en.respond('I fell in love with a 12 year old girl');
+  const enReply = en.respond('I am 28');
+  assert.ok(
+    enPool.has(enReply),
+    `EN 12-year-old split-turn must fire the protected pool, got: ${enReply}`
+  );
+});
+
+test('safety: same-message 12-year-old disclosure fires in one turn (both languages)', () => {
+  const faPool = new Set(FA.minorAttractionResponses || []);
+  const faReply = freshEngine(FA).respond(
+    'من ۲۸ سالمه و عاشق یه دختر ۱۲ ساله شدم'
+  );
+  assert.ok(
+    faPool.has(faReply),
+    `FA same-message 12yo must fire protection, got: ${faReply}`
+  );
+
+  const enPool = new Set(EN.minorAttractionResponses || []);
+  const enReply = freshEngine(EN).respond(
+    'I am 28 and I am in love with a 12-year-old girl'
+  );
+  assert.ok(
+    enPool.has(enReply),
+    `EN same-message 12yo must fire protection, got: ${enReply}`
+  );
+});
+
+test('safety: adult ages 18+ never look like a minor marker', () => {
+  // The extended minor pattern must not treat the trailing digit of a
+  // multi-digit age (28, 18, 55) as a standalone minor age.
+  const faMinor = FA.minorAttractionSignals.minor;
+  assert.equal(faMinor.test('من ۱۸ سالمه'), false, 'FA 18 must not be minor');
+  assert.equal(faMinor.test('من ۲۸ سالمه'), false, 'FA 28 must not be minor');
+  assert.equal(
+    faMinor.test('من ۵۵ ساله هستم'),
+    false,
+    'FA 55 must not be minor'
+  );
+  const enMinor = EN.minorAttractionSignals.minor;
+  assert.equal(
+    enMinor.test('I am 18 years old'),
+    false,
+    'EN 18 must not be minor'
+  );
+  assert.equal(
+    enMinor.test('I am 28 years old'),
+    false,
+    'EN 28 must not be minor'
+  );
+});
+
+test('safety: 12-year-old single-turn disclosure with a stated adult age fires (both languages)', () => {
+  const faPool = new Set(FA.minorAttractionResponses || []);
+  const faReply = freshEngine(FA).respond(
+    'من ۳۰ سالمه و عاشق یه دختر ۱۲ ساله شدم'
+  );
+  assert.ok(
+    faPool.has(faReply),
+    `FA 30+12 same-message must fire protection, got: ${faReply}`
+  );
+  const enPool = new Set(EN.minorAttractionResponses || []);
+  const enReply = freshEngine(EN).respond(
+    "I'm 30 and I have sexual feelings for a 12-year-old"
+  );
+  assert.ok(
+    enPool.has(enReply),
+    `EN 30+12 same-message must fire protection, got: ${enReply}`
+  );
+});
+
+test('safety: 12-year-old never routes to near-peer guidance', () => {
+  // Near-peer is reserved for 16-17 targets with an 18-20 speaker. A
+  // 12-year-old target with any adult speaker is full protection.
+  const nearPool = new Set(EN.nearPeerLoveResponses || []);
+  const protectedPool = new Set(EN.minorAttractionResponses || []);
+  const reply = freshEngine(EN).respond(
+    "I'm 19 and I have a crush on a 12-year-old"
+  );
+  assert.ok(
+    protectedPool.has(reply),
+    `19+12 must use the protected pool, got: ${reply}`
+  );
+  assert.ok(!nearPool.has(reply), '19+12 must never use the near-peer pool');
+});
+
+test('safety: bare single-digit ages do not look like minor markers', () => {
+  // The widened minor pattern must only treat a single digit 1-9 as a
+  // minor age when followed by explicit year context, so statements like
+  // "I am 5" or "امروز ۵ شنبه است" never fire a safety rule.
+  const enMinor = EN.minorAttractionSignals.minor;
+  assert.equal(enMinor.test('I am 5'), false, 'EN bare 5 must not be minor');
+  assert.equal(
+    enMinor.test('I am 5 years old'),
+    true,
+    'EN 5 years old must be minor'
+  );
+  const faMinor = FA.minorAttractionSignals.minor;
+  assert.equal(
+    faMinor.test('امروز ۵ شنبه است'),
+    false,
+    'FA bare digit in a date must not be minor'
+  );
+});
+
+test('safety: 19-year-old with a 17-year-old still gets near-peer guidance', () => {
+  // Regression guard: the widened minor pattern (ages 1-17) must not
+  // capture 16-17 near-peer targets away from the warm guidance pool
+  // when the speaker is a young adult (18-20).
+  const nearPool = new Set(EN.nearPeerLoveResponses || []);
+  const protectedPool = new Set(EN.minorAttractionResponses || []);
+  const en = freshEngine(EN);
+  en.respond('I have a crush on a 17 year old girl');
+  const reply = en.respond('I am 19 years old');
+  assert.ok(
+    nearPool.has(reply),
+    `19+17 must use the near-peer pool, got: ${reply}`
+  );
+  assert.ok(
+    !protectedPool.has(reply),
+    '19+17 must never use the full protected pool'
+  );
+});
+
+test('knowledge: short comedy series request resolves to the dedicated list', () => {
+  for (const [lang, q] of [
+    [FA, 'فقط ۶تا سریال کوتاه طنز معرفی کن (غیر ایرانی)'],
+    [EN, 'recommend exactly 6 short comedy series, non-Iranian']
+  ]) {
+    const reply = freshEngine(lang).respond(q);
+    assert.match(
+      reply,
+      /Fleabag|فلیبگ|The Office|آفیس|After Life|پس از زندگی/i
+    );
+    assert.match(reply, /Crashing|کرَشینگ|Staged|استیجد|Extras|اکسترا/i);
+  }
+});
+
+test('knowledge: short comedy request is trimmed to the requested count', () => {
+  // Persian: فقط ۳تا -> only three items remain (no item ۴).
+  const fa = freshEngine(FA).respond('فقط ۳تا سریال کوتاه طنز معرفی کن');
+  assert.match(fa, /۱\./u);
+  assert.doesNotMatch(fa, /۴\./u);
+  assert.doesNotMatch(fa, /۶\./u);
+  // English: exactly 3 -> only three items remain.
+  const en = freshEngine(EN).respond('recommend exactly 3 short comedy series');
+  assert.match(en, /1\./);
+  assert.doesNotMatch(en, /4\./);
+});
+
+test('knowledge: buying headphones request gets the buying guide fact', () => {
+  const fa = freshEngine(FA).respond(
+    'می‌تونی کمکم کنی کدوم هندزفری زیر ۱ میلیون تومن رو بخرم؟'
+  );
+  assert.match(fa, /هندزفری|نیازت|بودجه|گارانتی|میکروفون/iu);
+  const en = freshEngine(EN).respond(
+    'which headphones should I buy under 100 dollars?'
+  );
+  assert.match(en, /headphones|budget|warranty|wired|wireless/i);
+});
+
+test('knowledge: general buying guide request gets the buying guide fact', () => {
+  for (const [lang, q] of [
+    [FA, 'راهنمایی خرید اصلاً می‌تونی بکنی؟'],
+    [EN, 'can you give me a buying guide?']
+  ]) {
+    const reply = freshEngine(lang).respond(q);
+    assert.match(
+      reply,
+      /بودجه|نیاز|گارانتی|مقایسه|budget|need|warranty|compare/i
+    );
+  }
+});
+
+test('knowledge: laptop buying request gets the laptop guide fact', () => {
+  for (const [lang, q] of [
+    [FA, 'کدوم لپ تاپ بخرم؟'],
+    [EN, 'which laptop should I buy?']
+  ]) {
+    const reply = freshEngine(lang).respond(q);
+    assert.match(
+      reply,
+      /رم|حافظه|باتری|گرافیک|ram|storage|battery|graphics/i,
+      `${lang.code} laptop request should answer from the buying_laptop fact, got: ${reply}`
+    );
+  }
+});
+
+test('knowledge: phone buying request gets the phone guide fact', () => {
+  for (const [lang, q] of [
+    [FA, 'بهترین گوشی زیر ۲۰ میلیون چی؟'],
+    [EN, 'which phone should I get?']
+  ]) {
+    const reply = freshEngine(lang).respond(q);
+    assert.match(
+      reply,
+      /دوربین|باتری|رم|گارانتی|camera|battery|warranty|storage/i,
+      `${lang.code} phone request should answer from the buying_phone fact, got: ${reply}`
+    );
+  }
+});
+
+test('knowledge: camera buying request gets the camera guide fact', () => {
+  for (const [lang, q] of [
+    [FA, 'دوربین عکاسی بخرم'],
+    [EN, 'which camera should I buy for beginners?'],
+    [EN, 'best camera to buy for beginners']
+  ]) {
+    const reply = freshEngine(lang).respond(q);
+    assert.match(
+      reply,
+      /لنز|حسگر|میرورلس|lens|sensor|mirrorless/i,
+      `${lang.code} camera request should answer from the buying_camera fact, got: ${reply}`
+    );
+  }
+});
+
+test('knowledge: generic words never misfire into buying-guide facts', () => {
+  // Regression: weak words must stay product-specific. "خانه هوشمند چیه"
+  // (what is a smart home) must never answer with the phone buying guide,
+  // and "learn mobile development" must never answer with it either.
+  const faHome = freshEngine(FA).respond('خانه هوشمند چیه');
+  assert.doesNotMatch(faHome, /راهنمای خرید گوشی|گارانتی.*باتری|دوربین.*بخرم/u);
+  const enMobile = freshEngine(EN).respond('learn mobile development');
+  assert.doesNotMatch(enMobile, /Phone buying guide|RAM and storage/i);
+});
+
+test('knowledge: VPN choice request answers with balanced criteria', () => {
+  const fa = freshEngine(FA).respond('۳تا فیلترشکن خوب چی؟');
+  assert.match(fa, /سرعت|حریم خصوصی|قیمت|پشتیبانی/iu);
+  const en = freshEngine(EN).respond('can you recommend a good vpn?');
+  assert.match(en, /speed|privacy|price|support/i);
+});
+
+test('knowledge: video game request matches the games_modern fact', () => {
+  const fa = freshEngine(FA).respond('۲تا بازی ویدئویی چی؟');
+  assert.match(fa, /بازی|Elden|الدن/i);
+  const en = freshEngine(EN).respond('recommend some video games');
+  assert.match(en, /Elden Ring|Baldur|Zelda|Hades/i);
+});
+
+test('privacy boundary: pushback on Darya question gets a graceful boundary reply', () => {
+  const pool = FA.rulePrivacyBoundary || [];
+  const reply = freshEngine(FA).respond(
+    'به تو ربطی نداره که چرا این سوال به ذهنم رسید'
+  );
+  assert.ok(
+    pool.some((line) => reply.includes(line)),
+    `FA privacy pushback should reply from rulePrivacyBoundary, got: ${reply}`
+  );
+});
+
+test('privacy boundary: English pushback gets a graceful boundary reply', () => {
+  const pool = EN.rulePrivacyBoundary || [];
+  for (const input of [
+    'none of your business',
+    'that is private, stop asking'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      pool.some((line) => reply.includes(line)),
+      `EN privacy pushback should reply from rulePrivacyBoundary, got: ${reply}`
+    );
+  }
+});
+
+test('capability: FA چیکاره هستی variant routes to the capability pool', () => {
+  const pool = FA.ruleSmalltalkCapability || [];
+  for (const input of ['تو چیکاره هستی؟!', 'چیکاره هستی؟']) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.some((line) => reply.includes(line)),
+      `FA ${input} should reply from ruleSmalltalkCapability, got: ${reply}`
+    );
+  }
+});
+
+test('format feedback: one-per-line request re-emits the last knowledge list', () => {
+  const engine = freshEngine(FA);
+  const first = engine.respond('۴تا فیلم ترسناک معرفی کن');
+  assert.match(first, /ترسناک|وحشت|تام‌باد/iu);
+  const reply = engine.respond('بهتر نیست هر کدوم رو در یک خط جداگانه بنویسی؟');
+  assert.ok(
+    reply.includes('\n'),
+    `format-feedback reply should re-emit the list with newlines, got: ${reply}`
+  );
+});
+
+test('format feedback: no remembered list means an ack without re-emission', () => {
+  const engine = freshEngine(FA);
+  const reply = engine.respond('بهتر نیست هر کدوم رو در یک خط جداگانه بنویسی؟');
+  const pool = FA.formatFeedbackResponses || [];
+  assert.ok(
+    pool.some((line) => reply.includes(line)),
+    `format feedback without a list should reply from ruleFormatFeedback, got: ${reply}`
+  );
+});
+
+// ============================================================================
+// Short-answer context: yes/no/maybe answers a pending question
+// ============================================================================
+
+// The short-answer context tests need a pending question to exist, but the
+// topic pools randomly mix question and statement lines. Retry with a fresh
+// engine until Darya actually asks a question, so the assertion below never
+// depends on random pool selection. When `topic` is given, the pending
+// question must also carry that topic (e.g. 'anxiety' or 'grief'); this is
+// how the anxiety/work/grief chaining tests pin the right rule.
+function engineWithPendingQuestion(lang, input, topic) {
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    const engine = freshEngine(lang);
+    engine.respond(input);
+    const pending = engine.memory.pendingQuestions.find((q) => !q.answered);
+    if (pending && (!topic || pending.topic === topic)) {
+      return engine;
+    }
+  }
+  throw new Error(
+    topic
+      ? `could not reach a pending-question state for topic ${topic}`
+      : 'could not reach a pending-question state'
+  );
+}
+
+test('EN short answer continues the pending question thread', () => {
+  // Darya asks a question first (recorded in pendingQuestions), then the
+  // user answers with a bare "yes". The reply must continue that thread
+  // (a topic-specific follow-up or the warm affirm pool), never bounce to
+  // the generic affirmation pool, and the pending question is marked
+  // answered.
+  const engine = engineWithPendingQuestion(EN, "I can't sleep");
+  const reply = engine.respond('yes');
+  const specific = EN.topicSpecificQuestions?.sleep || [];
+  const affirm = EN.shortAnswerAffirmContext || [];
+  assert.ok(
+    specific.includes(reply) || affirm.includes(reply),
+    `EN yes-answer should continue the sleep thread, got: ${reply}`
+  );
+  assert.ok(
+    engine.memory.pendingQuestions.some((q) => q.answered),
+    'the original pending question should be marked answered'
+  );
+});
+
+test('EN short negative answer respects the boundary', () => {
+  const engine = engineWithPendingQuestion(EN, "I can't sleep");
+  const reply = engine.respond('no');
+  const negate = EN.shortAnswerNegateContext || [];
+  assert.ok(
+    negate.includes(reply),
+    `EN no-answer should reply from shortAnswerNegateContext, got: ${reply}`
+  );
+});
+
+test('EN short maybe answer leaves the door open', () => {
+  const engine = engineWithPendingQuestion(EN, "I can't sleep");
+  const reply = engine.respond('maybe');
+  const maybe = EN.shortAnswerMaybeContext || [];
+  assert.ok(
+    maybe.includes(reply),
+    `EN maybe-answer should reply from shortAnswerMaybeContext, got: ${reply}`
+  );
+});
+
+test('FA short answer continues the pending question thread', () => {
+  const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
+  const reply = engine.respond('بله');
+  const specific = FA.topicSpecificQuestions?.sleep || [];
+  const affirm = FA.shortAnswerAffirmContext || [];
+  assert.ok(
+    specific.includes(reply) || affirm.includes(reply),
+    `FA بله-answer should continue the sleep thread, got: ${reply}`
+  );
+  assert.ok(
+    engine.memory.pendingQuestions.some((q) => q.answered),
+    'the original pending question should be marked answered'
+  );
+});
+
+test('FA short negative answer respects the boundary', () => {
+  const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
+  const reply = engine.respond('نه');
+  const negate = FA.shortAnswerNegateContext || [];
+  assert.ok(
+    negate.includes(reply),
+    `FA نه-answer should reply from shortAnswerNegateContext, got: ${reply}`
+  );
+});
+
+test('short answer without a pending question falls back to the regular pools', () => {
+  // A bare "yes" with no pending question is a standalone affirmation, so
+  // the regular affirmation/negation pools answer instead of the context
+  // pools (which would reference a thread that does not exist).
+  const engine = freshEngine(EN);
+  const reply = engine.respond('yes');
+  const affirmation = EN.rules.find((r) => r.topic === 'affirmation');
+  const calibration = EN.emotionCalibration?.joy;
+  const clean =
+    calibration && reply.startsWith(calibration)
+      ? reply.slice(calibration.length).trim()
+      : reply;
+  // The affirmation rule can prepend a random warmth line to the bare
+  // reply, so check that the response ends with a known line from the
+  // regular pools (the generic/affirmation path) instead of the short-
+  // answer context pools, which reference a thread that does not exist.
+  const known = [
+    ...(affirmation.responses || []),
+    ...(EN.genericFallbacks || []),
+    ...(EN.shortAnswerAffirmContext || [])
+  ];
+  assert.ok(
+    known.some((line) => clean === line || clean.endsWith(line)),
+    `standalone yes should stay in the generic/affirmation path, got: ${reply}`
+  );
+});
+
+test('short answers never hijack opener-help or other non-question turns', () => {
+  // Some opener-help pool lines contain an embedded question ("How has
+  // your day been?" / «امروز چطور گذشت؟»). That line is recorded as a
+  // pending question in the SAME turn Darya replies. The short-answer
+  // context override must not consume it: a question asked this turn
+  // cannot have been answered by the same message, and an input like
+  // "نمیدونم چی بگم" (classified as a Persian 'maybe') is an opener-help
+  // request, not an answer. So every opener-help input must keep replying
+  // from the opener_help pool, never from the short-answer context pools.
+  const cases = [
+    [EN, "i don't know what to say"],
+    [EN, 'what should i say?'],
+    [EN, 'how do i start?'],
+    [EN, "i'm not sure how to start"],
+    [FA, 'نمیدونم چی بگم'],
+    [FA, 'چطور شروع کنم؟'],
+    [FA, 'از کجا شروع کنم'],
+    [FA, 'نمیدونم چه بگم']
+  ];
+  for (const [lang, input] of cases) {
+    const openerPool = new Set(
+      lang.rules.find((r) => r.topic === 'opener_help').responses
+    );
+    // Defense in depth: even if a future pool edit ever shared a string
+    // between opener_help and a short-answer context pool, this catches it.
+    const contextPools = [
+      ...(lang.shortAnswerAffirmContext || []),
+      ...(lang.shortAnswerMaybeContext || []),
+      ...(lang.shortAnswerNegateContext || [])
+    ];
+    // The opener-help pool mixes statement and question lines at random;
+    // 40 runs make it near-certain the question lines are exercised (FA
+    // picks one 25% of the time, so 1 - 0.75^40 is ~99.99%).
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const engine = freshEngine(lang);
+      const reply = engine.respond(input);
+      assert.ok(
+        openerPool.has(reply),
+        `${lang.code} ${input} should reply from the opener_help pool, got: ${reply}`
+      );
+      assert.ok(
+        !contextPools.includes(reply),
+        `${lang.code} ${input} must not be hijacked by a short-answer context pool, got: ${reply}`
+      );
+    }
+  }
+});
+
+test('short answers never hijack other question-bearing pools', () => {
+  // Beyond opener-help, the affirmation, negation, acknowledgement,
+  // ambiguous-input, and fallback pools all contain embedded-question
+  // lines that get recorded as pending during the same turn a short
+  // answer fires them. The same-turn guard (askedAtTurn < now in
+  // _latestUnansweredQuestion) must keep the short-answer override from
+  // consuming them, or the user would see a context-pool reply instead
+  // of the pool's own line.
+  const cases = [
+    [EN, 'yes'], // rule:affirmation (question lines)
+    [EN, 'no'], // rule:negation (question lines)
+    [EN, 'ok'], // acknowledgementResponses (question lines)
+    [EN, 'maybe'], // ambiguousInputResponses (question lines)
+    [EN, "i'd rather not"], // strategyShiftFallbacks (question lines)
+    [EN, "i don't know"], // maybe-kind fallback (question lines)
+    [EN, 'never mind'], // strategyShiftFallbacks (question lines)
+    [FA, 'بله'], // rule:affirmation (question lines)
+    [FA, 'نه'], // rule:negation (question lines)
+    [FA, 'باشه'], // acknowledgementResponses (question lines)
+    [FA, 'شاید'], // ambiguousInputResponses (question lines)
+    [FA, 'مطمئن نیستم'], // strategyShiftFallbacks (question lines)
+    [FA, 'نمیدونم'], // ambiguousInputResponses (question lines)
+    [FA, 'نه نه'] // spamNoiseResponses (question lines)
+  ];
+  for (const [lang, input] of cases) {
+    const contextPools = [
+      ...(lang.shortAnswerAffirmContext || []),
+      ...(lang.shortAnswerMaybeContext || []),
+      ...(lang.shortAnswerNegateContext || [])
+    ];
+    // Negative assertion only: a context-pool hit is the precise hijack
+    // signature. Positive pool membership is not asserted because some
+    // base replies carry {captured}-style substitutions and would not
+    // match the raw pool line exactly.
+    // 40 runs per input: the base pools pick their question-bearing lines
+    // at random, so this exercises every embedded-question variant.
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const engine = freshEngine(lang);
+      const reply = engine.respond(input);
+      assert.ok(
+        !contextPools.includes(reply),
+        `${lang.code} ${input} must not be hijacked by a short-answer context pool, got: ${reply}`
+      );
+    }
+  }
+});
+
+test('EN two consecutive short answers keep continuing the same thread', () => {
+  // After a short answer, Darya asks a topic-specific follow-up which must
+  // be recorded as pending, so a second "yes" continues the same thread
+  // instead of falling back to the generic pools.
+  const engine = engineWithPendingQuestion(EN, "I can't sleep");
+  const first = engine.respond('yes');
+  const specific = EN.topicSpecificQuestions?.sleep || [];
+  const affirm = EN.shortAnswerAffirmContext || [];
+  assert.ok(
+    specific.includes(first) || affirm.includes(first),
+    `first yes should continue the sleep thread, got: ${first}`
+  );
+  const second = engine.respond('yes');
+  assert.ok(
+    specific.includes(second) || affirm.includes(second),
+    `second yes should keep continuing the sleep thread, got: ${second}`
+  );
+});
+
+test('FA two consecutive short answers keep continuing the same thread', () => {
+  const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
+  const first = engine.respond('بله');
+  const specific = FA.topicSpecificQuestions?.sleep || [];
+  const affirm = FA.shortAnswerAffirmContext || [];
+  assert.ok(
+    specific.includes(first) || affirm.includes(first),
+    `first بله should continue the sleep thread, got: ${first}`
+  );
+  const second = engine.respond('بله');
+  assert.ok(
+    specific.includes(second) || affirm.includes(second),
+    `second بله should keep continuing the sleep thread, got: ${second}`
+  );
+});
+
+// Anxiety, work, grief, sadness, anger, loneliness, and relationship
+// chaining: the short-answer context override must continue these threads
+// exactly like sleep, because those topics are in questionTopics and ship
+// topicSpecificQuestions in both languages.
+const chainCases = [
+  [EN, 'I am feeling so anxious about everything', 'yes', 'anxiety'],
+  [EN, 'My job is overwhelming me completely', 'yes', 'work'],
+  [EN, 'I am still grieving my best friend', 'yes', 'grief'],
+  [EN, 'I feel so sad today', 'yes', 'sadness'],
+  [EN, 'I am so angry at him right now', 'yes', 'anger'],
+  [EN, 'I feel really lonely these days', 'yes', 'loneliness'],
+  [EN, 'my boyfriend and I are having problems', 'yes', 'relationship'],
+  [FA, 'همش استرس و اضطراب دارم', 'بله', 'anxiety'],
+  [FA, 'کار این روزها خیلی برام سخت شده', 'بله', 'work'],
+  [FA, 'هنوز دارم عزاداری می‌کنم', 'بله', 'grief'],
+  [FA, 'این روزا خیلی غمگینم', 'بله', 'sadness'],
+  [FA, 'خیلی عصبانیام از دستش', 'بله', 'anger'],
+  [FA, 'این روزا خیلی تنهام', 'بله', 'loneliness'],
+  [FA, 'دوست دخترم داره ازم فاصله می‌گیره', 'بله', 'relationship']
+];
+
+for (const [lang, opener, answer, topic] of chainCases) {
+  const langTag = lang.code.toUpperCase();
+  test(`${langTag} short answer continues the ${topic} thread`, () => {
+    const engine = engineWithPendingQuestion(lang, opener, topic);
+    const pendingTopic = engine.memory.pendingQuestions.find(
+      (q) => !q.answered
+    ).topic;
+    assert.equal(
+      pendingTopic,
+      topic,
+      `the opener should record a ${topic} question, got ${pendingTopic}`
+    );
+    const reply = engine.respond(answer);
+    const specific = lang.topicSpecificQuestions?.[topic] || [];
+    const affirm = lang.shortAnswerAffirmContext || [];
+    assert.ok(
+      specific.includes(reply) || affirm.includes(reply),
+      `${lang.code} ${answer}-answer should continue the ${topic} thread, got: ${reply}`
+    );
+    assert.ok(
+      engine.memory.pendingQuestions.some((q) => q.answered),
+      'the original pending question should be marked answered'
+    );
+  });
+}
+
+test('EN two consecutive short answers keep continuing the anxiety thread', () => {
+  // Parity with the sleep chaining test: a second short answer must keep
+  // continuing the same topic thread, because the follow-up question asked
+  // by the override is recorded as pending.
+  const engine = engineWithPendingQuestion(
+    EN,
+    'I am feeling so anxious about everything',
+    'anxiety'
+  );
+  const specific = EN.topicSpecificQuestions?.anxiety || [];
+  const affirm = EN.shortAnswerAffirmContext || [];
+  const first = engine.respond('yes');
+  assert.ok(
+    specific.includes(first) || affirm.includes(first),
+    `first yes should continue the anxiety thread, got: ${first}`
+  );
+  const second = engine.respond('yes');
+  assert.ok(
+    specific.includes(second) || affirm.includes(second),
+    `second yes should keep continuing the anxiety thread, got: ${second}`
+  );
+});
+
+test('FA two consecutive short answers keep continuing the loneliness thread', () => {
+  // Parity for the newly covered topics: a second short answer must keep
+  // continuing the same topic thread for loneliness too.
+  const engine = engineWithPendingQuestion(
+    FA,
+    'این روزا خیلی تنهام',
+    'loneliness'
+  );
+  const specific = FA.topicSpecificQuestions?.loneliness || [];
+  const affirm = FA.shortAnswerAffirmContext || [];
+  const first = engine.respond('بله');
+  assert.ok(
+    specific.includes(first) || affirm.includes(first),
+    `first بله should continue the loneliness thread, got: ${first}`
+  );
+  const second = engine.respond('بله');
+  assert.ok(
+    specific.includes(second) || affirm.includes(second),
+    `second بله should keep continuing the loneliness thread, got: ${second}`
+  );
+});
+
+// ============================================================================
+// Marketplace and app-store knowledge
+// ============================================================================
+
+test('knowledge: marketplace guidance answers where-to-buy questions', () => {
+  const kb = globalThis.DaryaKnowledge;
+  const fa = kb.lookup('کجا بخرمش', 'fa');
+  assert.ok(fa && fa.topic === 'buying_marketplaces');
+  assert.match(fa.text, /دیجی|دیوار|ترب/iu);
+  const en = kb.lookup('where to buy it', 'en');
+  assert.ok(en && en.topic === 'buying_marketplaces');
+  assert.match(en.text, /Digikala|Divar|Torob/i);
+});
+
+test('knowledge: marketplace guidance warns prices change quickly', () => {
+  const kb = globalThis.DaryaKnowledge;
+  const fa = kb.lookup('کجا قیمت گوشی رو مقایسه کنم', 'fa');
+  assert.ok(fa && fa.topic === 'buying_marketplaces');
+  assert.match(fa.text, /سریع تغییر/iu);
+  const en = kb.lookup('compare prices for a phone', 'en');
+  assert.ok(en && en.topic === 'buying_marketplaces');
+  assert.match(en.text, /change quickly/iu);
+});
+
+test('knowledge: app-store guidance covers Iranian stores', () => {
+  const kb = globalThis.DaryaKnowledge;
+  const fa = kb.lookup('اپ رو از کجا دانلود کنم', 'fa');
+  assert.ok(fa && fa.topic === 'app_stores_iran');
+  assert.match(fa.text, /کافه بازار|مایکت/iu);
+  const en = kb.lookup('which app store should I use in iran', 'en');
+  assert.ok(en && en.topic === 'app_stores_iran');
+  assert.match(en.text, /Cafe Bazaar|Myket/i);
+});
+
+test('knowledge: buying guide carries the price-volatility caveat', () => {
+  const kb = globalThis.DaryaKnowledge;
+  const fa = kb.lookup('راهنمای خرید', 'fa');
+  assert.ok(fa && fa.topic === 'buying_guide');
+  assert.match(fa.text, /قیمت‌ها در ایران سریع تغییر/iu);
+  const en = kb.lookup('buying guide', 'en');
+  assert.ok(en && en.topic === 'buying_guide');
+  assert.match(en.text, /Prices change quickly/i);
+});
+
+test('EN marketplace question routes through the engine to the fact', () => {
+  const reply = freshEngine(EN).respond('where to buy a phone in iran');
+  assert.match(reply, /Digikala|Torob|Divar|Sheypoor/i);
+});
+
+test('FA marketplace question routes through the engine to the fact', () => {
+  const reply = freshEngine(FA).respond('کجا بخرمش');
+  assert.match(reply, /دیجی|دیوار|ترب|شیپور/iu);
 });

@@ -1,287 +1,93 @@
 /**
- * Darya classic script.
+ * Darya - shared utilities (main file).
+ * Holds the conversation memory plus the constants re-export, and merges
+ * the text-processing helpers from utils-text.js into the public
+ * DaryaUtils object so every consumer sees one unchanged API.
  */
-
 (function (global) {
   'use strict';
 
-  // ========================================================================
-  // Constants
-  // ========================================================================
+  const {
+    MEMORY_SIZE,
+    MAX_CONSECUTIVE_SAME_RULE,
+    RECENT_BOT_MESSAGES_SIZE,
+    SENTIMENT_HISTORY_SIZE,
+    DISTRESS_STREAK_LENGTH,
+    QUOTED_CALLBACK_PROBABILITY,
+    PRONOUN_REFLECTION_PROBABILITY,
+    PRONOUN_REFLECTION_MAX_WORDS,
+    PRONOUN_REFLECTION_MIN_WORDS,
+    EXCERPT_MAX_LENGTH,
+    ENTITY_DECAY_PER_TURN,
+    ENTITY_CALLBACK_PROBABILITY,
+    CONSECUTIVE_QUESTION_LIMIT,
+    QUESTION_BUDGET_WINDOW,
+    QUESTION_BUDGET_LIMIT,
+    REPEATED_GREETING_THRESHOLD,
+    EXIT_SCAN_WINDOW,
+    EXIT_SCAN_TRIGGER_LENGTH,
+    SERIOUS_TURN_THRESHOLD,
+    MODERATE_SERIOUSNESS_THRESHOLD,
+    SERIOUSNESS_TOPIC_FLOOR,
+    SERIOUSNESS_WEIGHT,
+    SERIOUSNESS_CAP,
+    SERIOUSNESS_LIGHT_TOPIC,
+    ENTITY_CONFIDENCE_THRESHOLD,
+    BOREDOM_SKIP_CHANCE,
+    EMOTION_PREFIX_CHANCE,
+    HUMOR_CHANCE,
+    WARMTH_MIN_SERIOUSNESS,
+    WARMTH_MAX_SERIOUSNESS,
+    WARMTH_MIN_TURN_GAP,
+    WARMTH_CHANCE,
+    SMALLTALK_MIN_LIGHT_STREAK,
+    SMALLTALK_TURN_INTERVAL,
+    SMALLTALK_CHANCE,
+    HUMAN_TOUCH_INTERVAL,
+    ENTITY_RECENT_TURNS,
+    ENTITY_RECENT_CONFIDENCE,
+    ENTITY_STALE_CONFIDENCE,
+    OPENING_RETURNING_PRIMARY,
+    OPENING_RETURNING_SECONDARY,
+    OPENING_NEW_PRIMARY,
+    ENTITY_CONFIDENCE_DECAY_RECENT_BASE,
+    ENTITY_CONFIDENCE_DECAY_RECENT_RATE,
+    ENTITY_CONFIDENCE_DECAY_STALE_BASE,
+    ENTITY_CONFIDENCE_DECAY_STALE_RATE,
+    MIXED_LANGUAGE_REDIRECT_CHANCE,
+    TOPIC_RELEVANCE_RECENT_BONUS,
+    TOPIC_RELEVANCE_STALE_BASE,
+    ENTITY_CONTEXT_THRESHOLD,
+    RECENT_BOT_MESSAGE_PENALTY,
+    CONSECUTIVE_QUESTION_PENALTY,
+    LONG_RESPONSE_THRESHOLD,
+    LONG_RESPONSE_PENALTY,
+    FILLER_RESPONSE_PENALTY,
+    WORD_REPETITION_THRESHOLD,
+    SPAM_MIN_LENGTH,
+    SPAM_MAX_UNIQUE_RATIO,
+    ACKNOWLEDGEMENT_THRESHOLD,
+    TEST_INPUT_PATTERNS,
+    MIXED_SCRIPT_THRESHOLD,
+    SUBSTANTIVE_ANSWER_MIN_WORDS,
+    TEASING_MOCK_THRESHOLD,
+    WELLBEING_CHECK_TURNS,
+    BOREDOM_CHECK_INTERVAL,
+    BOREDOM_MIN_TURNS,
+    MINOR_ATTRACTION_PENDING_WINDOW,
+    PENDING_ANSWER_WINDOW,
+    MIXED_SCRIPT_FOREIGN_MIN,
+    MIXED_SCRIPT_FOREIGN_RATIO
+  } = global.DaryaUtilsConstants;
 
-  const MEMORY_SIZE = 8;
-  const MAX_CONSECUTIVE_SAME_RULE = 2;
-  const RECENT_BOT_MESSAGES_SIZE = 10;
-  const SENTIMENT_HISTORY_SIZE = 6;
-  const DISTRESS_STREAK_LENGTH = 3;
-  const QUOTED_CALLBACK_PROBABILITY = 0.3;
-  const PRONOUN_REFLECTION_PROBABILITY = 0.25;
-  const PRONOUN_REFLECTION_MAX_WORDS = 14;
-  const PRONOUN_REFLECTION_MIN_WORDS = 2;
-  const EXCERPT_MAX_LENGTH = 60;
-  const ENTITY_DECAY_PER_TURN = 0.18;
-  const ENTITY_CALLBACK_PROBABILITY = 0.55;
-  const CONSECUTIVE_QUESTION_LIMIT = 1;
-  const QUESTION_BUDGET_WINDOW = 3;
-  const QUESTION_BUDGET_LIMIT = 1;
-  const REPEATED_GREETING_THRESHOLD = 2;
-  const EXIT_SCAN_WINDOW = 5;
-  const EXIT_SCAN_TRIGGER_LENGTH = 5;
-  const SERIOUS_TURN_THRESHOLD = 0.5;
-  const MODERATE_SERIOUSNESS_THRESHOLD = 0.4;
-  const SERIOUSNESS_TOPIC_FLOOR = 0.45;
-  const SERIOUSNESS_WEIGHT = 0.35;
-  const SERIOUSNESS_CAP = 0.9;
-  const SERIOUSNESS_LIGHT_TOPIC = 0.25;
-  const ENTITY_CONFIDENCE_THRESHOLD = 0.6;
-  const BOREDOM_SKIP_CHANCE = 0.4;
-  const EMOTION_PREFIX_CHANCE = 0.4;
-  const HUMOR_CHANCE = 0.2;
-  const WARMTH_MIN_SERIOUSNESS = 0.3;
-  const WARMTH_MAX_SERIOUSNESS = 0.6;
-  const WARMTH_MIN_TURN_GAP = 3;
-  const WARMTH_CHANCE = 0.3;
-  const SMALLTALK_MIN_LIGHT_STREAK = 2;
-  const SMALLTALK_TURN_INTERVAL = 3;
-  const SMALLTALK_CHANCE = 0.35;
-  const HUMAN_TOUCH_INTERVAL = 7;
-  const ENTITY_RECENT_TURNS = 4;
-  const ENTITY_RECENT_CONFIDENCE = 0.72;
-  const ENTITY_STALE_CONFIDENCE = 0.45;
-  const OPENING_RETURNING_PRIMARY = 0.6;
-  const OPENING_RETURNING_SECONDARY = 0.85;
-  const OPENING_NEW_PRIMARY = 0.5;
-  const ENTITY_CONFIDENCE_DECAY_RECENT_BASE = 0.94;
-  const ENTITY_CONFIDENCE_DECAY_RECENT_RATE = 0.06;
-  const ENTITY_CONFIDENCE_DECAY_STALE_BASE = 0.76;
-  const ENTITY_CONFIDENCE_DECAY_STALE_RATE = 0.04;
-  const MIXED_LANGUAGE_REDIRECT_CHANCE = 0.6;
-  const TOPIC_RELEVANCE_RECENT_BONUS = 0.64;
-  const TOPIC_RELEVANCE_STALE_BASE = 0.22;
-  const ENTITY_CONTEXT_THRESHOLD = 0.6;
-  const RECENT_BOT_MESSAGE_PENALTY = 0.9;
-  const CONSECUTIVE_QUESTION_PENALTY = 0.25;
-  const LONG_RESPONSE_THRESHOLD = 220;
-  const LONG_RESPONSE_PENALTY = 0.08;
-  const FILLER_RESPONSE_PENALTY = 0.12;
-  const WORD_REPETITION_THRESHOLD = 4;
-  const SPAM_MIN_LENGTH = 2;
-  const SPAM_MAX_UNIQUE_RATIO = 0.3;
-  const ACKNOWLEDGEMENT_THRESHOLD = 2;
-  const TEST_INPUT_PATTERNS =
-    /^(?:test|testing|hello bot|can you hear|are you there|ping|pong|123|abc)$/iu;
-  const MIXED_SCRIPT_THRESHOLD = 0.35;
-  const SUBSTANTIVE_ANSWER_MIN_WORDS = 3;
-  const TEASING_MOCK_THRESHOLD = 2;
-  const WELLBEING_CHECK_TURNS = 2;
-  const BOREDOM_CHECK_INTERVAL = 5;
-  const BOREDOM_MIN_TURNS = 6;
-  const MIXED_SCRIPT_FOREIGN_MIN = 3;
-  const MIXED_SCRIPT_FOREIGN_RATIO = 0.05;
-
-  // ========================================================================
-  // Text helpers
-  // ========================================================================
-
-  /**
-   * Computes the fraction of alphabetic characters that fall within a
-   * language's expected script range.
-   * @param {string} text
-   * @param {RegExp} scriptRange - Regex matching a single in-script letter.
-   * @returns {number|null} Ratio in [0, 1], or null if there are no
-   *   alphabetic characters at all (nothing to judge).
-   */
-  function scriptRatio(text, scriptRange) {
-    const letters = [...String(text)].filter((ch) => /\p{L}/u.test(ch));
-    if (letters.length === 0) {
-      return null;
-    }
-    const inScript = letters.filter((ch) => scriptRange.test(ch));
-    return inScript.length / letters.length;
-  }
-
-  /**
-   * Determines whether `text` is predominantly written in the script the
-   * active language pack expects. Text with no alphabetic characters at
-   * all (numbers, punctuation, emoji) is treated as acceptable.
-   * @param {string} text
-   * @param {object} lang - The active language pack.
-   * @returns {boolean}
-   */
-  function isValidScript(text, lang) {
-    const ratio = scriptRatio(text, lang.scriptRange);
-    if (ratio === null) {
-      return true;
-    }
-    return ratio >= lang.minScriptRatio;
-  }
-
-  /**
-   * Truncates a long excerpt for use in a quoted callback, so we don't
-   * echo an entire paragraph back at someone.
-   * @param {string} text
-   * @param {number} maxLength
-   * @returns {string}
-   */
-  function truncateExcerpt(text, maxLength) {
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return `${text.slice(0, maxLength).trim()}...`;
-  }
-
-  /**
-   * Canonicalizes the raw input for rule matching. The original text is
-   * preserved unchanged in memory, while the return value is stripped of
-   * punctuation, zero-width characters (ZWNJ, ZWJ, etc.), and
-   * excessive whitespace. Persian progressive prefixes ("می"/"نمی")
-   * are further unified by removing the space after them, so "می شود",
-   * "می‌شود", and "میشود" all reach the same rule path. Other compound
-   * spellings ("خوش‌بین" vs "خوش بین") remain distinct and each
-   * needs a corresponding pattern alternative.
-   *
-   * Common Gen-Z and casual English abbreviations are also expanded here
-   * (not in the language pack's normalize) so that the expanded form is
-   * used only for rule/pattern matching and is never stored in the
-   * conversation memory; Darya will never quote the expanded form
-   * back to the user via the quoted-callback feature.
-   */
-  function normalizeForMatching(rawText, lang) {
-    let text = lang
-      .normalize(rawText)
-      .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
-      .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
-      .replace(/[ \t\r\n]+/gu, ' ')
-      .trim();
-    // Persian progressive-prefix binding runs after the half-space has
-    // become a regular space, so "می شود", "می‌شود", and "میشود" all
-    // collapse to the same matching token. Other languages have no hook.
-    if (lang.bindPrefixesForMatching) {
-      text = lang.bindPrefixesForMatching(text);
-    }
-    return (
-      text
-        // Expand abbreviations for matching only (not stored in memory):
-        .replace(/\bafaik\b/gi, 'as far as i know')
-        .replace(/\bafk\b/gi, 'away from keyboard')
-        .replace(/\bbrb\b/gi, 'be right back')
-        .replace(/\bbtw\b/gi, 'by the way')
-        .replace(/\bidk\b/gi, 'i do not know')
-        .replace(/\bikr\b/gi, 'i know right')
-        .replace(/\bimo\b/gi, 'in my opinion')
-        .replace(/\bimho\b/gi, 'in my humble opinion')
-        .replace(/\birl\b/gi, 'in real life')
-        .replace(/\bjk\b/gi, 'just kidding')
-        .replace(/\blmao\b/gi, 'laughing my ass off')
-        .replace(/\blol\b/gi, 'laughing out loud')
-        .replace(/\bngl\b/gi, 'not gonna lie')
-        .replace(/\bnp\b/gi, 'no problem')
-        .replace(/\bnvm\b/gi, 'never mind')
-        .replace(/\bofc\b/gi, 'of course')
-        .replace(/\bomg\b/gi, 'oh my god')
-        .replace(/\bsmh\b/gi, 'shaking my head')
-        .replace(/\btbf\b/gi, 'to be fair')
-        .replace(/\btbh\b/gi, 'to be honest')
-        .replace(/\bty\b/gi, 'thank you')
-        .replace(/\btyvm\b/gi, 'thank you very much')
-        .replace(/\bwth\b/gi, 'what the hell')
-        .replace(/\bwtf\b/gi, 'what the fuck')
-    );
-  }
-
-  /**
-   * Scores a normalized message using a simple keyword lexicon: +1 for
-   * each positive-lexicon word found, -1 for each negative-lexicon word
-   * found. Words are matched per token as the LONGEST prefix of the
-   * token, which tolerates attached Persian person suffixes ("ناراحتم"
-   * matches "ناراحت") while avoiding substring false positives ("راحت"
-   * inside "ناراحت", or "غم" inside "غمگین"). Negation words listed in
-   * the lexicon's optional `negations` array flip the polarity of an
-   * adjacent sentiment word ("خوب نیست" and "not happy" score
-   * negative). This is a lightweight heuristic consistent with the rest
-   * of the engine's keyword-driven design, not a real sentiment model.
-   * @param {string} normalizedText
-   * @param {{positive: string[], negative: string[], negations?: string[]}} lexicon
-   * @returns {number}
-   */
-  function scoreSentiment(normalizedText, lexicon) {
-    const tokens = normalizedText.split(/\s+/u).filter(Boolean);
-    const negations = new Set(lexicon.negations || []);
-    let score = 0;
-    for (let i = 0; i < tokens.length; i += 1) {
-      const token = tokens[i];
-      let contribution = 0;
-      let bestLength = 0;
-      for (const word of lexicon.negative) {
-        if (token.startsWith(word) && word.length > bestLength) {
-          bestLength = word.length;
-          contribution = -1;
-        }
-      }
-      for (const word of lexicon.positive) {
-        if (token.startsWith(word) && word.length > bestLength) {
-          bestLength = word.length;
-          contribution = 1;
-        }
-      }
-      if (contribution === 0) {
-        continue;
-      }
-      const negated =
-        (i > 0 && negations.has(tokens[i - 1])) ||
-        (i > 1 && negations.has(tokens[i - 2])) ||
-        (i < tokens.length - 1 && negations.has(tokens[i + 1]));
-      score += negated ? -contribution : contribution;
-    }
-    return score;
-  }
-
-  /**
-   * Attempts a careful ELIZA-style pronoun-swap reflection ("I feel tired"
-   * -> "you feel tired"). Only used when the language pack provides a
-   * `pronounMap`. Bounded by word-count guards and returns null (meaning
-   * "don't use this") whenever the result might look grammatically
-   * questionable, so a failed reflection silently falls through to a
-   * normal fallback instead of ever being shown.
-   * @param {string} text
-   * @param {Record<string, string>} pronounMap
-   * @returns {string|null}
-   */
-  function reflectPronouns(text, pronounMap) {
-    const words = text.trim().split(/\s+/);
-    if (
-      words.length < PRONOUN_REFLECTION_MIN_WORDS ||
-      words.length > PRONOUN_REFLECTION_MAX_WORDS
-    ) {
-      return null;
-    }
-
-    let swapped = false;
-    const result = words.map((token) => {
-      const match = token.match(/^([A-Za-z']+)([.,!?]*)$/);
-      if (!match) {
-        return token;
-      }
-      const [, word, punct] = match;
-      const lower = word.toLowerCase();
-      if (!Object.prototype.hasOwnProperty.call(pronounMap, lower)) {
-        return token;
-      }
-
-      swapped = true;
-      let replacement = pronounMap[lower];
-      if (word[0] === word[0].toUpperCase() && lower !== 'i') {
-        replacement =
-          replacement.charAt(0).toUpperCase() + replacement.slice(1);
-      }
-      return replacement + punct;
-    });
-
-    if (!swapped) {
-      return null;
-    }
-    return result.join(' ');
-  }
+  const {
+    scriptRatio,
+    isValidScript,
+    truncateExcerpt,
+    normalizeForMatching,
+    scoreSentiment,
+    reflectPronouns
+  } = global.DaryaUtilsText;
 
   // ========================================================================
   // Memory
@@ -635,6 +441,8 @@
     WELLBEING_CHECK_TURNS,
     BOREDOM_CHECK_INTERVAL,
     BOREDOM_MIN_TURNS,
+    MINOR_ATTRACTION_PENDING_WINDOW,
+    PENDING_ANSWER_WINDOW,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,
     scriptRatio,

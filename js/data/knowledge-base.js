@@ -1,391 +1,595 @@
 /**
- * Darya classic script.
+ * Darya - factual knowledge layer (assembly + lookup).
+ * Combines the shelf, fact chunks, and fun-fact pool registered by the
+ * knowledge-* part files, then exposes the lookup, genre, fragment, and
+ * fun-fact APIs. All content is offline; no network calls.
  */
-
 (function (global) {
   'use strict';
 
-  const SHELF = {
-    en: {
-      // ------------------------------------------------------------------
-      // Philosophy
-      // ------------------------------------------------------------------
-      philosophy: [
-        'One useful philosophical move is to ask what you mean by the word at the center of the problem. A clearer question often changes the shape of the answer.',
-        'A Stoic starting point is to separate what belongs to your actions from what belongs to the world outside your control. That distinction can make one next step easier to see.',
-        'Aristotle often treated balance as a practiced skill rather than a perfect midpoint. The useful question is what a balanced response would look like here, today.',
-        'A philosophical answer is rarely a command. It is usually a better question, a clearer distinction, or a view you can test against your own life.'
-      ],
+  const SHELF = global.DaryaKnowledgeShelf;
+  const FACTS = (global.DaryaFactChunks || []).reduce(
+    (acc, chunk) => acc.concat(chunk),
+    []
+  );
+  const FUN_FACTS = global.DaryaFunFacts;
+  const { parseListCount, trimListToCount } = global.DaryaKnowledgeLists;
 
-      // ------------------------------------------------------------------
-      // Thinkers / historical figures
-      // ------------------------------------------------------------------
-      thinkers: [
-        "Socrates is useful here as a model of careful inquiry: begin with the other person's meaning and ask one question that reveals what is still unclear.",
-        'Aristotle offers a practical idea of balance: a good response is not the strongest response, but the one that fits the situation.',
-        'Epictetus reminds us to separate events from our judgments about events. That distinction can create room without dismissing the feeling.',
-        'Marcus Aurelius models a brief return to the present task, especially when the mind is pulled in several directions.',
-        "Carl Jung's idea of individuation suggests that self-knowledge grows when a person can notice different parts of themselves without reducing everything to one label.",
-        'Nietzsche is a useful prompt toward self-authorship: question inherited expectations, but do not mistake rebellion for a complete answer.',
-        "Gandhi's nonviolence can be read as disciplined action without dehumanizing the other person. In conversation, that means clarity without escalation.",
-        'Nelson Mandela offers a reminder that dignity and reconciliation do not require forgetting what happened.',
-        'Churchill shows the power of precise, honest language under pressure. Short sentences can carry courage without pretending the situation is easy.',
-        'Zarathustra is associated with a strong emphasis on truth, ethical choice, and the ongoing work of becoming. It is an invitation to examine what values guide a decision.'
-      ],
+  const LOOKUP_MIN_SCORE = 6;
 
-      // ------------------------------------------------------------------
-      // Focus and concentration
-      // ------------------------------------------------------------------
-      focus: [
-        'Focus usually improves when the next action is small, visible, and specific. Open the document is easier to begin than fix everything.',
-        'Name the one task that would make the next hour feel less scattered, then give it a short protected window.',
-        'Attention is easier to protect when distractions have a place to go. Keep a small note for them instead of negotiating with each one.',
-        'If the task feels vague, define its finish line before trying to increase your motivation.'
-      ],
+  // Where-to-buy phrases boost the marketplace fact so it beats any
+  // item-specific buying guide ("where to buy a phone" wants stores).
+  const WHERE_TO_BUY_MARKERS = {
+    fa: /کجا بخرم|از کجا بخرم|کجا خرید کنم|کدوم سایت بخرم|کجا قیمت|مقایسه قیمت/u,
+    en: /where (?:to|can|should|do) (?:i )?buy|which site should i buy from|compare prices|price comparison|best price/i
+  };
+  const MARKETPLACE_MARKER_BONUS = 25;
 
-      // ------------------------------------------------------------------
-      // Learning and study
-      // ------------------------------------------------------------------
-      learning: [
-        'Learning becomes stronger when you retrieve an idea from memory instead of only rereading it. A short self-test can reveal what stayed.',
-        'A good study loop is attempt, notice the gap, check the source, then try again later. The gap is information, not a verdict.',
-        'Short sessions with spaced returns often beat one long anxious session. Consistency gives memory more than intensity alone.',
-        'When a subject feels opaque, explain one small part in your own words. The places where the explanation breaks show you where to look next.'
-      ],
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 
-      // ------------------------------------------------------------------
-      // Communication (originally from Rosenberg NVC)
-      // ------------------------------------------------------------------
-      communication: [
-        'A clear conversation often separates observation from interpretation, then names the need or request underneath it.',
-        'Before replying, identify whether the other person wants understanding, a decision, practical help, or a little space.',
-        'A specific request is easier to answer than a broad complaint. It gives the conversation somewhere kind and concrete to go.',
-        'Repair is part of good communication. A simple statement that you may have missed the point can be more useful than defending the first interpretation.'
-      ],
+  /** Whole-word presence check that works for Persian and Latin text. */
+  function wordInText(text, word) {
+    const escaped = escapeRegExp(word);
+    return new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, 'u').test(text);
+  }
 
-      // ------------------------------------------------------------------
-      // Creativity
-      // ------------------------------------------------------------------
-      creativity: [
-        'Creative work benefits from separating generation from judgment. Make a few imperfect options first, then decide what deserves refinement.',
-        'A constraint can be a handle rather than a cage. Limiting time, materials, or format can give an idea enough shape to appear.',
-        'When the blank page feels loud, borrow a structure from something you admire and change one important part of it.',
-        'A small finished experiment teaches more than a large idea that never gets tried.'
-      ],
+  // Framing words that mark a message as a knowledge question. Weak
+  // keywords only count when such framing is present (or a hint appears),
+  // so "مشتری" in "مشتری رو چطور جذب کنم" (a customer) never matches the
+  // Jupiter entry while "مشتری چیه" does.
+  const FRAMING = {
+    fa: [
+      'درباره',
+      'راجع به',
+      'توضیح',
+      'چیست',
+      'چیه',
+      'چطور',
+      'چگونه',
+      'یعنی',
+      'معنی',
+      'بگو',
+      'بگی',
+      'برام',
+      'تعریف',
+      'اسم',
+      'یاد بده',
+      'پیشنهاد',
+      'راه',
+      'روش',
+      'بهترین',
+      'کدام'
+    ],
+    en: [
+      'tell',
+      'explain',
+      'meaning',
+      'define',
+      'describe',
+      'what is',
+      'what are',
+      'what does',
+      'about',
+      'learn',
+      'teach',
+      'advice',
+      'tips',
+      'how to',
+      'recommend',
+      'suggest'
+    ]
+  };
 
-      // ------------------------------------------------------------------
-      // Mindfulness and meditation
-      // ------------------------------------------------------------------
-      mindfulness: [
-        'Mindfulness begins with a single breath noticed fully. Not a long session, just one inhalation and exhalation where you are actually present for it.',
-        'The five-senses exercise can gently anchor you: name one thing you see, one you hear, one you feel, one you smell, and one you taste. It is a way of returning to the present moment without needing to solve anything.',
-        'Thoughts during meditation are not failures. They are what minds do. The practice is not having no thoughts but noticing when you have wandered and returning without judgment.',
-        'A short pause before reacting can create enough space to choose a response instead of being pulled by the first impulse. That space is where mindfulness meets daily life.'
-      ],
+  /**
+   * Scores the normalized user input against the factual layer and
+   * returns the best confident match, or null when nothing qualifies.
+   *
+   * The caller (the engine) passes `matchingText`: already lowercased
+   * for Latin, punctuation stripped, and ZWNJ collapsed to spaces.
+   *
+   * @param {string} text - Normalized matching text
+   * @param {string} langCode - 'fa' or 'en'
+   * @returns {{topic: string, confidence: number, text: string}|null}
+   */
+  function lookup(text, langCode) {
+    if (!text || typeof text !== 'string') {
+      return null;
+    }
+    const isFa = langCode === 'fa';
+    const lower = text.toLowerCase().replace(/\s+/gu, ' ').trim();
+    if (!lower) {
+      return null;
+    }
+    const framing = FRAMING[isFa ? 'fa' : 'en'] || [];
+    const hasFraming = framing.some((word) => lower.includes(word));
 
-      // ------------------------------------------------------------------
-      // Stress management and burnout prevention
-      // ------------------------------------------------------------------
-      stress: [
-        'Stress is not a sign that you are failing. It is a sign that your nervous system is working the way it evolved to work. The useful step is to notice it early rather than push through until it sharpens.',
-        'A micro-break of sixty seconds where you look away from the task and breathe can reset your focus more effectively than pushing through another hour of diminishing returns.',
-        'Setting a boundary is not rejection. It is a statement about what you need to sustain your capacity. The people who matter will adjust; the ones who do not were not counting on your sustainability anyway.',
-        'Burnout often comes not from working hard but from working without recovery. A deliberate pause is not a luxury. It is maintenance for the only system you have to do any of this.'
-      ],
+    let best = null;
+    for (const fact of FACTS) {
+      let score = 0;
+      let exact = false;
+      let matchedAny = false;
 
-      // ------------------------------------------------------------------
-      // Self-compassion (based on Dr. Kristin Neff framework)
-      // ------------------------------------------------------------------
-      self_compassion: [
-        'Self-compassion has three parts: treating yourself with the same kindness you would offer a friend, remembering that struggle is part of shared human experience, and holding your pain with mindful awareness rather than over-identifying with it.',
-        'The inner critic is often trying to protect you from failure or rejection. Thanking it for its effort without letting it drive can loosen its grip without a fight.',
-        'You are not a problem to be fixed. You are a person in the middle of a life, and some parts of that life are hard. That does not mean you are broken.',
-        'Comparing your inside with other people outside is a shortcut to suffering. You see their curated results, not their ongoing process.'
-      ],
+      for (const kw of fact.keywords || []) {
+        const k = kw.toLowerCase();
+        if (lower === k) {
+          exact = true;
+        }
+        const hit = isFa
+          ? lower.includes(k)
+          : new RegExp(`\\b${escapeRegExp(k)}\\b`, 'iu').test(lower);
+        if (hit) {
+          score += k.length * 2;
+          matchedAny = true;
+        }
+      }
 
-      // ------------------------------------------------------------------
-      // Conflict resolution (Non-Violent Communication / NVC)
-      // ------------------------------------------------------------------
-      conflict: [
-        'In a tense conversation, naming the shared need underneath both positions can change the direction. The need is often something simple: to be heard, to be respected, or to find a way forward together.',
-        'Nonviolent Communication offers a clear sequence: observe without evaluating, name the feeling, identify the need, and make a specific request. Each step can be done in a single sentence.',
-        'Listening for what the other person is feeling and needing, even when you disagree with their conclusion, can lower the temperature without requiring you to concede anything.',
-        'Repair after a conflict is not about who was right. It is about restoring connection. A sincere attempt to understand the other perspective is often more effective than a perfectly argued defense of your own.'
-      ],
+      for (const kw of fact.weak || []) {
+        const k = kw.toLowerCase();
+        if (!wordInText(lower, k)) {
+          continue;
+        }
+        matchedAny = true;
+        if (lower === k) {
+          exact = true;
+          score += k.length * 2;
+          continue;
+        }
+        const hintHit = (fact.hints || []).some((hint) =>
+          lower.includes(hint.toLowerCase())
+        );
+        if (hasFraming && fact.weakSafe) {
+          // A framed question ("چطور", "what is") with a topic word is a
+          // solid signal even without a hint: "کنکور چطوریه" deserves the
+          // konkur answer. Full keyword weight so short topic words like
+          // "کنکور" or "مریخ" still clear the confidence floor.
+          score += k.length * 2;
+        } else if (hintHit) {
+          // Hint-confirmed weak words ("مریخ" + "سیاره") carry the same
+          // weight as a keyword: the hint proves the intended sense.
+          score += k.length * 2;
+        }
+      }
 
-      // ------------------------------------------------------------------
-      // Decision-making frameworks
-      // ------------------------------------------------------------------
-      decision_making: [
-        'A useful decision-making question is: if I chose this path, what would I want to have learned or become in a year? That shifts the frame from avoiding a wrong choice to growing toward something.',
-        'The ten-ten-ten test can create perspective: how will this decision feel in ten minutes, ten months, and ten years? The short-term discomfort often fades while long-term alignment matters more.',
-        'When a decision feels impossible, you may be looking for certainty that does not exist. A good enough choice made today can be adjusted tomorrow. Motion creates information.',
-        'Values-based decision-making asks: which option is more aligned with the kind of person I want to be? Not which option is safer, but which is more truthful to who you are becoming.'
-      ],
+      if (!matchedAny) {
+        continue;
+      }
+      if (exact) {
+        score += 12;
+      }
+      if (hasFraming) {
+        score += 3;
+      }
+      for (const hint of fact.hints || []) {
+        if (lower.includes(hint.toLowerCase())) {
+          score += 3;
+        }
+      }
+      if (
+        fact.id === 'buying_marketplaces' &&
+        WHERE_TO_BUY_MARKERS[isFa ? 'fa' : 'en'].test(lower)
+      ) {
+        score += MARKETPLACE_MARKER_BONUS;
+      }
+      if (score <= 0) {
+        continue;
+      }
+      if (!best || score > best.score) {
+        best = { fact, score };
+      }
+    }
 
-      // ------------------------------------------------------------------
-      // Grief and loss coping
-      // ------------------------------------------------------------------
-      grief: [
-        'Grief is not a linear process with neat stages. It is more like a landscape you move through, where some days are heavier and some are lighter, and both are part of the terrain.',
-        'Honoring someone you lost can take many forms: telling a story about them, doing something they loved, or simply sitting with the fact that they mattered. There is no wrong way to remember.',
-        'The weight of grief does not shrink over time, but your capacity to carry it can grow. What feels unbearable today may become something you can hold alongside joy later.',
-        'It is okay to feel okay sometimes. Grief does not require constant sadness. Moments of lightness or laughter are not betrayals. They are signs that you are still alive and still connected to life.'
-      ],
+    if (!best || best.score < LOOKUP_MIN_SCORE) {
+      return null;
+    }
+    const requested = parseListCount(lower, langCode);
+    return {
+      topic: best.fact.id,
+      confidence: Math.min(1, best.score / 40),
+      text: trimListToCount(
+        isFa ? best.fact.fa : best.fact.en,
+        requested,
+        langCode
+      )
+    };
+  }
 
-      // ------------------------------------------------------------------
-      // Resilience
-      // ------------------------------------------------------------------
-      resilience: [
-        'Resilience is not about never feeling the weight of difficulty, but about having ways to set it down when you need to, and to pick it up again only when you have the strength.',
-        'Recovery is not a detour from resilience; it is the very mechanism that makes resilience possible. Rest between efforts is not weakness, but the quiet work of repair.',
-        'Resilience is not a fixed trait you either have or lack. It is something you practice in small, ordinary moments: choosing to rest, asking for help, or simply continuing one more day.',
-        'A resilient life is not one without struggle, but one where the struggle does not erase the capacity for joy, connection, and hope. You can hold difficulty and goodness at the same time.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Forgiveness
-      // ------------------------------------------------------------------
-      forgiveness: [
-        'Forgiveness is not about condoning what happened or reconciling with someone who hurt you. It is about releasing the grip that resentment has on your own inner life, so you can move forward without carrying the full weight of the past.',
-        'Forgiveness is a process that unfolds in its own time, not a switch you can flip on demand. It often begins with a willingness to consider that you deserve freedom from the endless replay of the hurt.',
-        'Forgiving someone does not mean trusting them again. Trust must be rebuilt through action over time. Forgiveness is about what you release inside yourself, not about what you owe the other person.',
-        'Sometimes the person who needs your forgiveness most is yourself. Self-forgiveness is not an excuse; it is an acknowledgment that you are more than your worst moment, and that growth is still possible.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Purpose and meaning
-      // ------------------------------------------------------------------
-      purpose: [
-        'Meaning is not something you find fully formed, like a hidden object. It is something you build over time through attention to what matters to you, through the values you choose to live by, and through the way you show up for the people and activities that call on you.',
-        'A sense of purpose often reveals itself not in grand life decisions, but in the quiet consistency of small actions: showing up for a friend, doing work that feels useful, or caring for something beyond yourself.',
-        'Viktor Frankl observed that meaning can be found in every moment, even in suffering, when we choose our attitude toward what we cannot change. Purpose is not about having an easy life, but about having a life that feels like it matters.',
-        'Purpose does not have to be one single thing you were meant to do. It can shift across seasons of life. What matters is not a fixed destination, but the direction you are facing and the reasons that give your steps weight.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Relationship and connection
-      // ------------------------------------------------------------------
-      relationship: [
-        'A strong relationship is not one without conflict, but one where both people can return to each other after the conflict. Repair matters more than never having a disagreement.',
-        'Listening to understand, rather than to reply, is one of the most underrated skills in any relationship. When someone feels heard, the conversation itself changes.',
-        'Relationships ask for a balance between closeness and separateness. Being close does not mean losing yourself, and having your own space does not mean distance.',
-        'The health of a relationship often shows up in the small moments: a pause before reacting, a genuine question about the other persons day, or the willingness to say I was wrong.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Career and professional life
-      // ------------------------------------------------------------------
-      career: [
-        'Career decisions are rarely about finding the one perfect path. They are more about choosing a direction that aligns with your values, learning from each step, and adjusting as you grow.',
-        'Work satisfaction often comes less from the title or salary and more from feeling that your efforts matter, that you are learning, and that you are treated with respect.',
-        'A career change does not have to be a dramatic leap. Small experiments on the side - a project, a course, a conversation with someone in a different field - can reveal what fits without requiring a total reset.',
-        'Burnout in a career is rarely about the work itself. It is often about misalignment between your values and the demands placed on you, or between the effort you give and the meaning you get back.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Anxiety and worry
-      // ------------------------------------------------------------------
-      anxiety: [
-        'Anxiety is not a sign that something is wrong with you. It is your minds way of trying to protect you from a future it cannot control. The goal is not to eliminate it, but to relate to it differently.',
-        'When anxiety spirals, grounding yourself in the present moment through your senses can interrupt the loop: name five things you can see, four you can touch, three you can hear, two you can smell, and one you can taste.',
-        'Worry often masquerades as preparation. It can feel like thinking ahead, but endlessly replaying scenarios without action is not planning; it is rumination. A small concrete step breaks the cycle.',
-        'Anxiety shrinks when you stop fighting it and start listening to it. Beneath the worry there is often a need: to feel safe, prepared, or in control. Identifying that need points toward a real solution.'
-      ]
-    },
-
+  // Genre words per language for refining a movie request ("in horror
+  // genre please", "ترسناک"), mapped to the matching genre fact. Ordered
+  // most-specific-first: "dark comedy" contains "comedy" and "کمدی سیاه"
+  // contains "کمدی", so the specific list must be checked before the
+  // general one; short_comedy likewise precedes short_series and comedy.
+  const GENRE_WORDS = {
     fa: {
-      // ------------------------------------------------------------------
-      // Philosophy / فلسفه
-      // ------------------------------------------------------------------
-      philosophy: [
-        'یک حرکت فلسفی مفید این است که ببینیم واژه‌ی اصلی مسئله برایمان دقیقاً چه معنایی دارد. سؤال روشن‌تر گاهی شکل جواب را عوض می‌کند.',
-        'یک شروع رواقی می‌تواند جداکردن چیزهایی باشد که به عمل ما مربوط‌اند از چیزهایی که بیرون از کنترل ما هستند. این فرق گاهی قدم بعدی را روشن‌تر می‌کند.',
-        'ارسطو تعادل را بیشتر مهارتی تمرینی می‌دید تا نقطه‌ای بی‌نقص. سؤال مفید این است که امروز، در همین موقعیت، واکنش متعادل چه شکلی دارد.',
-        'جواب فلسفی معمولاً دستور نیست؛ یک سؤال بهتر، یک تمایز روشن‌تر یا نگاهی است که می‌توانی با زندگی خودت بسنجی.'
+      dark_comedy: ['کمدی سیاه'],
+      short_comedy: ['سریال کوتاه طنز', 'سریال طنز کوتاه', 'کمدی کوتاه'],
+      horror: ['ترسناک', 'وحشت'],
+      romantic: ['عاشقانه', 'رمانتیک'],
+      comedy: ['کمدی', 'طنز'],
+      fantasy: ['فانتزی'],
+      short_series: ['سریال کوتاه', 'مینی‌سریال', 'مینی سریال'],
+      true_story: ['بر اساس واقعیت', 'داستان واقعی'],
+      thriller: ['هیجانی', 'دلهره‌آور', 'دلهرهآور', 'دلهره آور'],
+      sci_fi: ['علمی تخیلی', 'علمی-تخیلی'],
+      documentary: ['مستند'],
+      animation: ['انیمیشن', 'انیمیشنی']
+    },
+    en: {
+      dark_comedy: ['dark comedy', 'black comedy'],
+      short_comedy: ['short comedy', 'comedy mini series', 'comedy miniseries'],
+      horror: ['horror', 'scary'],
+      romantic: ['romantic', 'romance'],
+      comedy: ['comedy', 'funny'],
+      fantasy: ['fantasy'],
+      short_series: [
+        'short series',
+        'mini series',
+        'miniseries',
+        'limited series'
       ],
-
-      // ------------------------------------------------------------------
-      // Thinkers / اندیشمندان
-      // ------------------------------------------------------------------
-      thinkers: [
-        'سقراط برای اینجا یادآور پرسش دقیق است: اول معنای طرف مقابل را بفهم و بعد فقط یک سؤال بپرس که ابهام باقی‌مانده را روشن کند.',
-        'ارسطو ایده‌ی کاربردی تعادل را پیش می‌گذارد: پاسخ خوب قوی‌ترین پاسخ نیست، بلکه پاسخی است که با موقعیت تناسب دارد.',
-        'اپیکتتوس یادآوری می‌کند که اتفاق‌ها را از قضاوت‌مان درباره‌ی آن‌ها جدا کنیم. این فرق می‌تواند فضا بسازد، بدون اینکه احساس را انکار کند.',
-        'مارکوس اورلیوس نمونه‌ای از برگشتن کوتاه به کار حاضر است، وقتی ذهن به چند طرف کشیده می‌شود.',
-        'ایده‌ی فردیت‌یابی در نگاه یونگ می‌گوید خودشناسی وقتی رشد می‌کند که آدم بتواند بخش‌های مختلف خودش را ببیند، بدون اینکه همه‌چیز را به یک برچسب تقلیل دهد.',
-        'نیچه دعوتی به خودنویسندگی است: انتظارات به‌ارث‌رسیده را بررسی کن، اما مخالفت را با جواب کامل اشتباه نگیر.',
-        'اندیشه‌ی نافرمانی مدنی و خشونت‌پرهیزی گاندی می‌تواند یادآور عمل قاطع بدون بی‌ارزش‌کردن طرف مقابل باشد.',
-        'ماندلا یادآور این است که عزت و آشتی لزوماً به معنی فراموش‌کردن اتفاق نیست.',
-        'چرچیل نشان می‌دهد زبان دقیق و صادقانه زیر فشار چه نیرویی دارد. جمله‌ی کوتاه می‌تواند شجاع باشد، بدون اینکه سختی را انکار کند.',
-        'زرتشت در سنت‌های فلسفی و دینی با حقیقت، انتخاب اخلاقی و کار مداوم برای شدن پیوند دارد؛ دعوتی برای دیدن ارزش‌هایی که راه تصمیم را می‌سازند.'
+      true_story: [
+        'true story',
+        'true events',
+        'based on real',
+        'based on a true'
       ],
-
-      // ------------------------------------------------------------------
-      // Focus / تمرکز
-      // ------------------------------------------------------------------
-      focus: [
-        'تمرکز وقتی آسان‌تر می‌شود که قدم بعدی کوچک، روشن و مشخص باشد. بازکردن فایل از درست‌کردن همه‌چیز شروع‌کردنی‌تر است.',
-        'ببین کدام کار، اگر در ساعت بعد جلو برود، ذهنت را کمتر پراکنده می‌کند و برایش یک زمان کوتاه کنار بگذار.',
-        'برای حواس‌پرتی‌ها یک جای کوچک در نظر بگیر و آن‌ها را یادداشت کن، به‌جای اینکه هر بار با آن‌ها مذاکره کنی.',
-        'اگر کار مبهم است، اول پایانش را تعریف کن؛ بعد سراغ انگیزه برو.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Learning / یادگیری
-      // ------------------------------------------------------------------
-      learning: [
-        'یادگیری وقتی محکم‌تر می‌شود که چیزی را از حافظه بیرون بکشی، نه فقط دوباره بخوانی. یک خودآزمایی کوتاه نشان می‌دهد چه چیزی مانده است.',
-        'چرخه‌ی خوبی برای یادگیری این است: تلاش، دیدن شکاف، بررسی منبع و امتحان دوباره در زمانی دیگر. شکاف اطلاعات است، نه حکم درباره‌ی تو.',
-        'جلسه‌های کوتاه و برگشتن‌های فاصله‌دار معمولاً از یک جلسه‌ی طولانی و مضطرب بهتر جواب می‌دهند.',
-        'وقتی موضوعی مبهم است، یک بخش کوچک را با کلمات خودت توضیح بده. جایی که توضیح می‌شکند، مسیر بعدی را نشان می‌دهد.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Communication / ارتباط
-      // ------------------------------------------------------------------
-      communication: [
-        'گفتگوی روشن معمولاً مشاهده را از برداشت جدا می‌کند و بعد نیاز یا درخواست پشت آن را نام می‌برد.',
-        'قبل از جواب‌دادن ببین طرف مقابل دنبال فهمیده‌شدن است، تصمیم، کمک عملی یا کمی فضا.',
-        'یک درخواست مشخص از یک گلایه‌ی کلی قابل‌پاسخ‌تر است و به گفتگو مسیر مهربانانه‌تری می‌دهد.',
-        'ترمیم بخشی از ارتباط خوب است. یک جمله درباره‌ی اینکه شاید منظور طرف مقابل را درست نگرفته‌ای، گاهی از دفاع‌کردن مفیدتر است.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Creativity / خلاقیت
-      // ------------------------------------------------------------------
-      creativity: [
-        'کار خلاقانه وقتی بهتر پیش می‌رود که تولید ایده را از قضاوت‌کردن جدا کنیم. اول چند گزینه‌ی ناقص بساز، بعد یکی را پرورش بده.',
-        'محدودیت می‌تواند دستگیره باشد، نه قفس. محدودکردن زمان یا قالب گاهی به ایده شکل می‌دهد.',
-        'وقتی صفحه‌ی خالی سنگین است، از ساختار چیزی که دوستش داری کمک بگیر و یک بخش مهمش را تغییر بده.',
-        'یک آزمایش کوچک که تمام شود، بیشتر از ایده‌ی بزرگی که امتحان نشده چیزی یاد می‌دهد.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Mindfulness / ذهن‌آگاهی
-      // ------------------------------------------------------------------
-      mindfulness: [
-        'ذهن‌آگاهی با یک نفس کامل شروع می‌شود. نه یک جلسه طولانی، فقط یک دم و بازدم که واقعاً در آن حضور داشته باشی.',
-        'تمرین پنج حس می‌تواند به آرامش کمک کند: یک چیزی که می‌بینی، یکی که می‌شنوی، یکی که حس می‌کنی، یکی که بو می‌کنی و یکی که می‌چشی. این راهی است برای برگشتن به لحظه‌ی حال بدون نیاز به حل کردن چیزی.',
-        'فکرکردن هنگام مدیتیشن شکست نیست. ذهن این کار را می‌کند. تمرین این نیست که فکر نکنی، بلکه این است که متوجه شوی پرت شده‌ای و بدون قضاوت برگردی.',
-        'یک مکث کوتاه قبل از واکنش می‌تواند فضای کافی برای انتخاب پاسخ ایجاد کند، به‌جای اینکه توسط اولین هیجان هدایت شوی. این فضا همان جایی است که ذهن‌آگاهی با زندگی روزمره پیوند می‌خورد.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Stress management / مدیریت استرس
-      // ------------------------------------------------------------------
-      stress: [
-        'استرس نشانه‌ی شکست تو نیست. نشانه‌ی این است که سیستم عصبی‌ات دارد همان کاری را می‌کند که برای آن تکامل یافته. قدم مفید این است که زودتر متوجه آن شوی، نه اینکه آنقدر ادامه دهی تا تیزتر شود.',
-        'یک مکث شصت ثانیه‌ای که در آن از کار فاصله بگیری و نفس بکشی، می‌تواند تمرکزت را بهتر از یک ساعت ادامه‌دادن با بازدهی کم برگرداند.',
-        'تعیین مرز، طردکردن نیست. بیانیه‌ای است درباره‌ی چیزی که برای حفظ توانت نیاز داری. آدم‌هایی که برایت مهم‌اند خود را تنظیم می‌کنند؛ آنهایی که اهمیت نمی‌دهند، به هر حال روی پایداری تو حساب نمی‌کردند.',
-        'فرسودگی شغلی معمولاً از سخت‌کارکردن نمی‌آید، از کارکردن بدون بازیابی انرژی می‌آید. یک توقف عمدی تجمل نیست، نگهداری از تنها سیستمی است که برای انجام هر کاری داری.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Self-compassion / خودشفقتی
-      // ------------------------------------------------------------------
-      self_compassion: [
-        'خودشفقتی سه بخش دارد: با خودت همان مهربانی را داشته باشی که با یک دوست داری، یادت باشد که رنج بخشی از تجربه‌ی مشترک انسانی است، و دردت را با آگاهی ذهن‌آگاهانه نگه داری بدون اینکه با آن یکی شوی.',
-        'منتقد درونی اغلب می‌خواهد از تو در برابر شکست یا طردشدن محافظت کند. تشکر از تلاشش بدون اینکه بگذاری رانندگی کند، می‌تواند بدون جنگ دامنگیرش را شل کند.',
-        'تو یک مشکل برای حل‌شدن نیستی. تو یک انسانی وسط زندگی هستی، و بعضی بخش‌های زندگی سخت‌اند. این به معنی این نیست که تو شکسته‌ای.',
-        'مقایسه‌ی درون خودت با بیرون دیگران میان‌بری است به رنج. تو نتیجه‌ی تنظیم‌شده‌ی آنها را می‌بینی، نه روند همیشگی‌شان را.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Conflict resolution / حل تعارض
-      // ------------------------------------------------------------------
-      conflict: [
-        'در یک گفتگوی پرتنش، نام‌بردن از نیاز مشترک پشت هر دو موضع می‌تواند مسیر را عوض کند. نیاز اغلب ساده است: شنیده‌شدن، احترام، یا پیدا کردن راهی مشترک به جلو.',
-        'ارتباط بدون خشونت یک مسیر روشن پیشنهاد می‌کند: مشاهده بدون قضاوت، نام‌بردن از احساس، شناسایی نیاز، و یک درخواست مشخص. هر قدم را می‌توان در یک جمله انجام داد.',
-        'گوش‌دادن به احساس و نیاز طرف مقابل، حتی وقتی با نتیجه‌گیری‌اش موافق نیستی، می‌تواند فضا را آرام‌تر کند بدون اینکه مجبور باشی چیزی را بپذیری.',
-        'ترمیم بعد از تعارض درباره‌ی حق‌به‌جانب نیست. درباره‌ی برگشتن ارتباط است. یک تلاش صادقانه برای فهمیدن دیدگاه دیگران اغلب مؤثرتر از یک دفاع کاملاً استدلالی از دیدگاه خودت است.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Decision-making / تصمیم‌گیری
-      // ------------------------------------------------------------------
-      decision_making: [
-        'یک سؤال مفید در تصمیم‌گیری این است: اگر این مسیر را انتخاب کنم، در یک سال چه چیزی یاد گرفته‌ام یا چه کسی شده‌ام؟ این قاب را از اجتناب از انتخاب اشتباه به رشد به سمت چیزی تغییر می‌دهد.',
-        'آزمون ده-ده-ده می‌تواند دید بدهد: این تصمیم در ده دقیقه، ده ماه و ده سال آینده چه حسی دارد؟ ناراحتی کوتاه‌مدت اغلب کم‌رنگ می‌شود، در حالی که هماهنگی بلندمدت مهم‌تر است.',
-        'وقتی تصمیم غیرممکن به نظر می‌رسد، ممکن است به دنبال یقینی باشی که وجود ندارد. یک انتخاب به‌اندازه‌ی کافی خوب که امروز گرفته شود می‌تواند فردا تنظیم شود. حرکت اطلاعات می‌سازد.',
-        'تصمیم‌گیری بر اساس ارزش‌ها می‌پرسد: کدام گزینه با نوع انسانی که می‌خواهی باشی هماهنگ‌تر است؟ نه کدام امن‌تر است، بلکه کدام به آنچه داری می‌شوی صادق‌تر است.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Grief and loss / سوگ و فقدان
-      // ------------------------------------------------------------------
-      grief: [
-        'سوگ یک روند خطی با مرحله‌های مرتب نیست. بیشتر شبیه یک منظره است که در آن حرکت می‌کنی، بعضی روزها سنگین‌ترند و بعضی سبک‌تر، و هر دو بخشی از این زمین هستند.',
-        'گرامیداشت کسی که از دست داده‌ای می‌تواند شکل‌های مختلفی داشته باشد: گفتن داستانی درباره‌اش، انجام کاری که دوست داشت، یا فقط نشستن با این واقعیت که او مهم بود. هیچ راه اشتباهی برای یادآوری وجود ندارد.',
-        'وزن سوگ با گذشت زمان کم‌تر نمی‌شود، اما ظرفیت تو برای حمل آن می‌تواند رشد کند. آنچه امروز غیرقابل‌تحمل به نظر می‌رسد ممکن است بعداً چیزی شود که بتوانی در کنار شادی نگهش داری.',
-        'اشکالی ندارد که گاهی حال خوبی داشته باشی. سوگ به غم همیشگی نیاز ندارد. لحظه‌های سبکی‌اش خیانت نیستند. نشانه‌ی این‌اند که هنوز زنده‌ای و هنوز به زندگی متصل هستی.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Resilience / تاب‌آوری
-      // ------------------------------------------------------------------
-      resilience: [
-        'تاب‌آوری به این معنا نیست که هیچ‌وقت سنگینی دشواری را حس نکنی، بلکه به این معناست که راهی داشته باشی برای زمین گذاشتن آن وقتی نیاز داری، و برداشتن دوباره‌اش فقط وقتی قدرت کافی داشته باشی.',
-        'بازیابی انرژی مسیر فرعی تاب‌آوری نیست؛ همان مکانیسمی است که تاب‌آوری را ممکن می‌کند. استراحت بین تلاش‌ها ضعف نیست، کار خاموش ترمیم است.',
-        'تاب‌آوری یک ویژگی ثابت نیست که یا داشته باشی یا نداشته باشی. چیزی است که در لحظه‌های کوچک و معمولی تمرینش می‌کنی: انتخاب استراحت، درخواست کمک، یا فقط یک روز دیگر ادامه دادن.',
-        'زندگی تاب‌آور زندگی بدون دشواری نیست، بلکه زندگی‌ای است که در آن دشواری توانایی تو برای شادی، ارتباط و امید را پاک نمی‌کند. می‌توانی سختی و خوبی را همزمان نگه داری.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Forgiveness / بخشش
-      // ------------------------------------------------------------------
-      forgiveness: [
-        'بخشش به معنی تأیید آنچه رخ داده یا آشتی با کسی که به تو آسیب زده نیست. بخشش رها کردن چنگالی است که کینه بر زندگی درونی تو دارد، تا بتوانی بدون حمل تمام وزن گذشته به جلو حرکت کنی.',
-        'بخشش فرایندی است که در زمان خودش آشکار می‌شود، نه کلیدی که بتوانی یکباره بچرخانی. اغلب با تمایل به این شروع می‌شود که بپذیری سزاوار آزادی از تکرار بی‌پایان درد هستی.',
-        'بخشیدن یک نفر به معنی اعتماد دوباره به او نیست. اعتماد باید با عمل و در طول زمان بازسازی شود. بخشش درباره‌ی چیزی است که در درون خودت رها می‌کنی، نه درباره‌ی چیزی که به طرف مقابل بدهکاری.',
-        'گاهی کسی که بیشتر از همه نیاز به بخشش تو دارد، خودت هستی. بخشش خود بهانه‌جویی نیست؛ پذیرشی است که تو بیشتر از بدترین لحظه‌ات هستی و رشد هنوز ممکن است.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Purpose and meaning / معنا و هدف
-      // ------------------------------------------------------------------
-      purpose: [
-        'معنا چیزی نیست که کامل و آماده پیدا کنی، مثل یک شیء پنهان. چیزی است که در طول زمان می‌سازی، از طریق توجه به آنچه برایت مهم است، ارزش‌هایی که انتخاب می‌کنی بر اساسشان زندگی کنی، و نحوه‌ای که برای آدم‌ها و فعالیت‌هایی که تو را می‌خوانند حضور پیدا می‌کنی.',
-        'حس هدف اغلب نه در تصمیم‌های بزرگ زندگی، بلکه در استمرار آرام کارهای کوچک آشکار می‌شود: بودن در کنار یک دوست، انجام کاری که مفید به نظر می‌رسد، یا مراقبت از چیزی فراتر از خودت.',
-        'ویکتور فرانکل مشاهده کرد که معنا را می‌توان در هر لحظه یافت، حتی در رنج، وقتی نگرش خود را نسبت به آنچه نمی‌توانیم تغییر دهیم انتخاب کنیم. هدف درباره‌ی زندگی آسان نیست، درباره‌ی زندگی‌ای است که حس می‌کند مهم است.',
-        'هدف لازم نیست یک چیز ثابت باشد که برای آن ساخته شده‌ای. می‌تواند در فصل‌های مختلف زندگی تغییر کند. آنچه اهمیت دارد یک مقصد ثابت نیست، بلکه جهتی است که در آن رو به جلو حرکت می‌کنی و دلایلی که به قدم‌هایت وزن می‌بخشد.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Relationship / روابط
-      // ------------------------------------------------------------------
-      relationship: [
-        'رابطه‌ی قوی رابطه‌ای نیست که در آن هیچ تعارضی نباشد، بلکه رابطه‌ای است که دو نفر بتوانند بعد از تعارض به هم برگردند. ترمیم از هرگز اختلاف نداشتن مهم‌تر است.',
-        'گوش‌دادن برای فهمیدن، نه برای جواب‌دادن، یکی از کم‌توجه‌ترین مهارت‌ها در هر رابطه‌ای است. وقتی کسی حس کند شنیده می‌شود، خود گفتگو تغییر می‌کند.',
-        'روابط به تعادلی بین نزدیکی و استقلال نیاز دارند. نزدیک بودن به معنی گم‌کردن خودت نیست و داشتن فضای شخصی به معنی فاصله نیست.',
-        'سلامت یک رابطه اغلب در لحظه‌های کوچک خودش را نشان می‌دهد: مکثی قبل از واکنش، یک سؤال واقعی از روز طرف مقابل، یا تمایل به گفتن اشتباه کردم.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Career / شغل و حرفه
-      // ------------------------------------------------------------------
-      career: [
-        'تصمیم‌های شغلی به ندرت درباره‌ی پیدا کردن یک مسیر کامل و بی‌نقص هستند. بیشتر درباره‌ی انتخاب جهتی هماهنگ با ارزش‌هایت، یادگرفتن از هر قدم، و تنظیم مسیر در حین رشد است.',
-        'رضایت شغلی اغلب کمتر از عنوان یا حقوق می‌آید و بیشتر از این حس که تلاشت مفید است، در حال یادگیری هستی، و با احترام رفتار می‌شوی.',
-        'تغییر شغل لزوماً یک جهش بزرگ نیست. آزمایش‌های کوچک در کنار کار اصلی - یک پروژه، یک دوره، گفتگو با کسی در حوزه‌ای دیگر - می‌تواند مسیر درست را نشان بدهد بدون نیاز به تغییر کامل.',
-        'فرسودگی شغلی به ندرت به خود کار مربوط است. بیشتر به ناهماهنگی بین ارزش‌هایت و خواسته‌هایی که از تو می‌شود مربوط است، یا بین تلاشی که می‌کنی و معنایی که پس می‌گیری.'
-      ],
-
-      // ------------------------------------------------------------------
-      // Anxiety / اضطراب
-      // ------------------------------------------------------------------
-      anxiety: [
-        'اضطراب نشانه‌ی این نیست که چیزی در تو اشکال دارد. این روش ذهن تو برای محافظت از تو در برابر آینده‌ای است که نمی‌تواند کنترلش کند. هدف از بین بردن آن نیست، بلکه تغییر رابطه با آن است.',
-        'وقتی اضطراب مارپیچی می‌شود، برگشتن به لحظه‌ی حال از طریق حواس می‌تواند چرخه را قطع کند: پنج چیزی که می‌بینی نام ببر، چهار چیزی که می‌توانی لمس کنی، سه چیزی که می‌شنوی، دو چیزی که بو می‌کنی و یک چیزی که می‌چشی.',
-        'نگرانی اغلب خود را به جای آمادگی می‌گذارد. ممکن است حس تفکر رو به جلو را بدهد، اما مرور بی‌پایان سناریوها بدون اقدام برنامه‌ریزی نیست؛ نشخوار فکری است. یک قدم کوچک عملی چرخه را می‌شکند.',
-        'اضطراب وقتی کوچک‌تر می‌شود که از جنگیدن با آن دست برداری و شروع به گوش‌دادن به آن کنی. زیر نگرانی اغلب یک نیاز نهفته است: نیاز به امنیت، آمادگی یا کنترل. شناسایی آن نیاز به سمت یک راه حل واقعی اشاره می‌کند.'
-      ]
+      thriller: ['thriller', 'suspense'],
+      sci_fi: ['sci fi', 'sci-fi', 'scifi', 'science fiction'],
+      documentary: ['documentary', 'documentaries'],
+      animation: ['animation', 'animated', 'cartoon']
     }
   };
+  const GENRE_FACT_IDS = {
+    horror: 'movies_horror',
+    romantic: 'movies_romantic',
+    comedy: 'movies_comedy',
+    dark_comedy: 'movies_dark_comedy',
+    short_comedy: 'movies_short_comedy_series',
+    fantasy: 'movies_fantasy',
+    short_series: 'movies_short_series',
+    true_story: 'movies_true_story',
+    thriller: 'movies_thriller',
+    sci_fi: 'movies_sci_fi',
+    documentary: 'movies_documentary',
+    animation: 'movies_animation'
+  };
+
+  /**
+   * Detects a genre word in a follow-up message and returns the matching
+   * genre fact, or null. Used for sequential refinement: "suggest me
+   * three movies" then "in horror genre please".
+   * @param {string} text - Normalized matching text
+   * @param {string} langCode - 'fa' or 'en'
+   * @returns {{topic: string, text: string}|null}
+   */
+  function lookupGenre(text, langCode) {
+    if (!text) {
+      return null;
+    }
+    const lower = text.toLowerCase();
+    const words = GENRE_WORDS[langCode === 'fa' ? 'fa' : 'en'];
+    for (const [genre, terms] of Object.entries(words)) {
+      if (terms.some((term) => lower.includes(term))) {
+        const fact = FACTS.find((f) => f.id === GENRE_FACT_IDS[genre]);
+        if (fact) {
+          const requested = parseListCount(lower, langCode);
+          const text = trimListToCount(
+            langCode === 'fa' ? fact.fa : fact.en,
+            requested,
+            langCode
+          );
+          return {
+            topic: fact.id,
+            text
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Topic words for refining a knowledge follow-up in any domain: after
+  // "tell me about Jupiter", a bare "and Saturn?" or "زحل چطور؟" has no
+  // framing of its own, so lookupFragment maps the topic word to its fact.
+  // The word lists use normalized (space-separated) Persian forms.
+  const FRAGMENT_WORDS = {
+    fa: {
+      mercury: ['عطارد'],
+      venus: ['زهره'],
+      mars: ['مریخ'],
+      jupiter: ['مشتری'],
+      saturn: ['زحل'],
+      uranus: ['اورانوس'],
+      neptune: ['نپتون'],
+      sun: ['خورشید'],
+      solar_system: ['منظومه شمسی'],
+      career_plan_tech: [
+        'برنامه نویس',
+        'توسعه دهنده',
+        'علم داده',
+        'دیتا ساینس',
+        'طراح یوآی'
+      ],
+      career_plan_common: [
+        'معلم',
+        'بازاریابی',
+        'کارآفرین',
+        'استارتاپ',
+        'بیزینس'
+      ],
+      games_classic: ['بازی کلاسیک', 'بازی قدیمی', 'بازی های قدیمی'],
+      games_modern: ['بازی جدید', 'بازی های جدید'],
+      games_mobile: ['بازی موبایل', 'بازی اندروید', 'بازی گوشی'],
+      games_by_genre: [
+        'بازی ترسناک',
+        'بازی ورزشی',
+        'بازی مسابقه',
+        'بازی نقش آفرینی',
+        'بازی معمایی',
+        'بازی استراتژی',
+        'بازی تیراندازی'
+      ],
+      cbt: ['سی بی تی', 'شناخت درمانی'],
+      neuroplasticity: ['نوروپلاستیسیتی', 'انعطاف پذیری مغز'],
+      sleep: ['خواب'],
+      football: ['فوتبال'],
+      olympics: ['المپیک'],
+      marathon: ['ماراتن'],
+      persian_empire: ['کوروش', 'هخامنشی'],
+      pyramids: ['اهرام'],
+      berlin_wall: ['برلین'],
+      persian_food: ['غذای ایرانی', 'چلو کباب', 'قرمه سبزی'],
+      saffron: ['زعفران'],
+      tea: ['چای'],
+      relationship_plan: ['رابطه سالم', 'رابطه خوب', 'برنامه رابطه', 'رابطه'],
+      sex_education: ['آموزش جنسی', 'رابطه جنسی', 'سکس', 'رضایت جنسی']
+    },
+    en: {
+      mercury: ['mercury'],
+      venus: ['venus'],
+      mars: ['mars'],
+      jupiter: ['jupiter'],
+      saturn: ['saturn'],
+      uranus: ['uranus'],
+      neptune: ['neptune'],
+      sun: ['sun'],
+      solar_system: ['solar system'],
+      career_plan_tech: [
+        'developer',
+        'programmer',
+        'data science',
+        'data scientist',
+        'ui design',
+        'ui designer'
+      ],
+      career_plan_common: [
+        'teacher',
+        'marketing',
+        'entrepreneur',
+        'startup',
+        'business'
+      ],
+      games_classic: ['classic games', 'retro games', 'old games'],
+      games_modern: ['modern games', 'new games'],
+      games_mobile: ['mobile games', 'android games', 'phone games'],
+      games_by_genre: [
+        'horror game',
+        'horror games',
+        'racing game',
+        'racing games',
+        'sports game',
+        'sports games',
+        'rpg game',
+        'rpg games',
+        'puzzle game',
+        'puzzle games',
+        'strategy game',
+        'strategy games',
+        'shooter game',
+        'shooter games'
+      ],
+      cbt: ['cbt', 'cognitive therapy'],
+      neuroplasticity: ['neuroplasticity', 'brain plasticity'],
+      sleep: ['sleep'],
+      football: ['football', 'soccer'],
+      olympics: ['olympics', 'olympic games'],
+      marathon: ['marathon'],
+      persian_empire: ['cyrus', 'persia'],
+      pyramids: ['pyramids', 'pyramid'],
+      berlin_wall: ['berlin wall'],
+      persian_food: ['persian food', 'persian cuisine'],
+      saffron: ['saffron'],
+      tea: ['tea'],
+      relationship_plan: [
+        'healthy relationship',
+        'relationship plan',
+        'relationship'
+      ],
+      sex_education: ['sex education', 'safe sex', 'consent', 'sexual health']
+    }
+  };
+  const FRAGMENT_FACT_IDS = {
+    mercury: 'mercury',
+    venus: 'venus',
+    mars: 'mars',
+    jupiter: 'jupiter',
+    saturn: 'saturn',
+    uranus: 'uranus',
+    neptune: 'neptune',
+    sun: 'sun',
+    solar_system: 'solar_system',
+    career_plan_tech: 'career_plan_tech',
+    career_plan_common: 'career_plan_common',
+    games_classic: 'games_classic',
+    games_modern: 'games_modern',
+    games_mobile: 'games_mobile',
+    games_by_genre: 'games_by_genre',
+    cbt: 'cbt',
+    neuroplasticity: 'neuroplasticity',
+    sleep: 'sleep',
+    football: 'football',
+    olympics: 'olympics',
+    marathon: 'marathon',
+    persian_empire: 'persian_empire',
+    pyramids: 'pyramids',
+    berlin_wall: 'berlin_wall',
+    persian_food: 'persian_food',
+    saffron: 'saffron',
+    tea: 'tea',
+    relationship_plan: 'relationship_plan',
+    sex_education: 'sex_education'
+  };
+  // Connective words allowed inside a follow-up fragment. Anything left
+  // over after removing the topic word and these connectives means the
+  // message is not a pure follow-up: "مشتری جذب کنم" (attract customers)
+  // must never be read as a request about the planet Jupiter.
+  const FRAGMENT_CONNECTIVES = {
+    fa: [
+      'و',
+      'چطور',
+      'چطوره',
+      'چطوریه',
+      'چیه',
+      'چی',
+      'چه شکلیه',
+      'چه شکلی',
+      'چه جوره',
+      'بگو',
+      'بگی',
+      'برام',
+      'براش',
+      'درباره',
+      'راجع به',
+      'در مورد',
+      'بیش تر',
+      'بیشتر',
+      'توضیح بده',
+      'سیاره',
+      'رو',
+      'یه',
+      'یک',
+      'هم',
+      'لطفا',
+      'لطفاً'
+    ],
+    en: [
+      'and',
+      'the',
+      'what about',
+      'how about',
+      'about',
+      'tell me about',
+      'more about',
+      'want to know about',
+      'wanna know about',
+      'can you tell me about',
+      'could you tell me about',
+      'what is',
+      'whats',
+      "what's",
+      'like',
+      'please'
+    ]
+  };
+
+  /**
+   * Detects a bare topic word in a short follow-up and returns the
+   * matching knowledge fact, or null. Used for sequential refinement in
+   * any domain: "tell me about Jupiter" then "and Saturn?", or "چطور
+   * پول دربیارم" then "بیزینس". Only fires when the fragment is a pure
+   * topic reference (topic word plus connectives, nothing else), so an
+   * unrelated sentence containing a topic word is never hijacked.
+   * @param {string} text - Normalized matching text
+   * @param {string} langCode - 'fa' or 'en'
+   * @returns {{topic: string, text: string}|null}
+   */
+  function lookupFragment(text, langCode) {
+    if (!text) {
+      return null;
+    }
+    const lower = text.toLowerCase();
+    const words = FRAGMENT_WORDS[langCode === 'fa' ? 'fa' : 'en'];
+    const connectives = FRAGMENT_CONNECTIVES[langCode === 'fa' ? 'fa' : 'en'];
+    let best = null;
+    for (const [key, terms] of Object.entries(words)) {
+      for (const term of terms) {
+        if (lower.includes(term) && (!best || term.length > best.term.length)) {
+          const fact = FACTS.find((f) => f.id === FRAGMENT_FACT_IDS[key]);
+          if (fact) {
+            best = { term, fact };
+          }
+        }
+      }
+    }
+    if (!best) {
+      return null;
+    }
+    // The fragment must be ONLY the topic reference: after removing the
+    // matched term and the connective words, nothing else may remain.
+    // All pieces are stripped in a single longest-first pass, so a
+    // connective letter embedded in another word (the Persian "و" inside
+    // "چطور") can never corrupt the residual.
+    const pieces = [best.term, ...connectives].sort(
+      (a, b) => b.length - a.length
+    );
+    const residual = lower
+      .replace(
+        new RegExp(pieces.map((p) => escapeRegExp(p)).join('|'), 'gu'),
+        ' '
+      )
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim();
+    if (residual) {
+      return null;
+    }
+    const requested = parseListCount(lower, langCode);
+    return {
+      topic: best.fact.id,
+      text: trimListToCount(
+        langCode === 'fa' ? best.fact.fa : best.fact.en,
+        requested,
+        langCode
+      )
+    };
+  }
+
   const domains = Object.keys(SHELF.en);
   function answer(language, domain) {
     return (SHELF[language]?.[domain] || []).slice();
   }
-  const DaryaKnowledge = { domains, answer };
+  /**
+   * Returns a random selection of fun facts in the requested language,
+   * optionally filtered to one category (science, space, animals, history,
+   * body, food, tech, life, social, relationship, sports, art, money).
+   * Used by the fact-request responder ("tell me 3 facts",
+   * "یک حقیقت عجیب بگو").
+   * @param {string} langCode - 'fa' or 'en'
+   * @param {number} count - How many facts to return (clamped to the pool)
+   * @param {string} [category] - Optional category filter
+   * @returns {Array<string>} The selected fact lines
+   */
+  function randomFacts(langCode, count, category) {
+    const isFa = langCode === 'fa';
+    const pool = FUN_FACTS[isFa ? 'fa' : 'en'] || {};
+    const sources = category && pool[category] ? pool[category] : [];
+    const all =
+      sources.length > 0
+        ? sources
+        : Object.values(pool).reduce((acc, list) => acc.concat(list), []);
+    const wanted = Math.max(1, Math.min(count || 3, all.length));
+    const shuffled = [...all].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, wanted);
+  }
+
+  const DaryaKnowledge = {
+    domains,
+    answer,
+    lookup,
+    lookupGenre,
+    lookupFragment,
+    randomFacts,
+    factsCount: FACTS.length
+  };
   global.DaryaKnowledge = DaryaKnowledge;
 })(typeof window !== 'undefined' ? window : globalThis);

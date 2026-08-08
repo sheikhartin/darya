@@ -1,5 +1,7 @@
 /**
- * Darya classic script.
+ * Darya - core UI state and shared elements.
+ * Owns the shared state object (st), element lookups, and UI helpers that
+ * the other ui modules and app controllers depend on. Classic script version.
  */
 
 (function (global) {
@@ -77,7 +79,16 @@
     /** @type {number} Message counter for unique DOM ids. */
     messageCount: 0,
     /** @type {string} Current page title. */
-    currentTitle: ''
+    currentTitle: '',
+    /** @type {boolean} True while the proactive idle opener is armed. */
+    idleOpenerPending: false,
+    /** @type {number|null} Handle for the pending idle-opener timer. */
+    idleOpenerTimer: null,
+    /** @type {boolean} True once the user has sent their first message.
+     * The idle opener only speaks while this is false; it never
+     * interrupts an engaged user. (messageCount cannot serve this
+     * purpose because it counts the greeting too.) */
+    userSpoke: false
   };
 
   // ========================================================================

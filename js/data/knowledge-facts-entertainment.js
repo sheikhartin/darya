@@ -1,0 +1,375 @@
+/**
+ * Darya - curated factual entries (entertainment domain).
+ * Loaded before knowledge-base.js; registers a global part.
+ */
+(function (global) {
+  'use strict';
+
+  global.DaryaFactChunks = global.DaryaFactChunks || [];
+  global.DaryaFactChunks.push([
+    {
+      id: 'movies_recommendations',
+      keywords: [
+        'فیلم خوب معرفی کن',
+        'فیلم پیشنهاد بده',
+        'سریال خوب معرفی کن',
+        'ده فیلم خوب',
+        'فیلم های خوب',
+        'recommend a good movie',
+        'suggest movies',
+        'good series to watch',
+        'best movies you recommend',
+        'what should i watch'
+      ],
+      weak: ['فیلم', 'سریال', 'سینما', 'movie', 'movies', 'series'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'معرفی',
+        'تماشا',
+        'recommend',
+        'watch',
+        'suggest',
+        'good'
+      ],
+      fa: 'چند پیشنهاد غیرتکراری، از سینمای ایران و جهان:\n۱. «نمای نزدیک» (کیارستمی، ۱۹۹۰): مرز میان واقعیت و فیلم را جابه‌جا می‌کند.\n۲. «طعم گیلاس» (کیارستمی، ۱۹۹۷): برنده‌ی نخل طلا؛ تأملی عمیق درباره‌ی ارزش زندگی.\n۳. «جدایی نادر از سیمین» (اصغر فرهادی، ۲۰۱۱): درام خانوادگی برنده‌ی اسکار.\n۴. «بچه‌های آسمان» (مجید مجیدی، ۱۹۹۷): یکی از محبوب‌ترین فیلم‌های کودکانه‌ی ایرانی.\n۵. «پاترسون» (جیم جارموش، ۲۰۱۶): شاعری آرام درباره‌ی زندگی روزمره.\n۶. «لویاتان» (آندری زویاگینتسف، ۲۰۱۴): درام پرتنش درباره‌ی قدرت و فساد.\n۷. «شلاق» یا Whiplash (دیمین شزل، ۲۰۱۴): درباره‌ی موسیقی و کمال‌گرایی؛ برای علاقه‌مندان به موسیقی.\n۸. «زندگی دیگران» (آلمان، ۲۰۰۶): درباره‌ی وجدان و اخلاق.\n۹. «خانواده‌ی دزدها» یا Shoplifters (ژاپن، ۲۰۱۸، ساخته‌ی هیروکازو کورئدا): درباره‌ی معنای خانواده.\n۱۰. سریال «آقای ربات» (Mr. Robot): نگاه واقعی به امنیت سایبری و فناوری.\n۱۱. سریال «خرس» یا The Bear: دنیای واقعی آشپزخانه‌های حرفه‌ای.\n۱۲. سریال «ایستگاه یازده» (Station Eleven): هنر و انسانیت پس از یک فاجعه.',
+      en: 'A few non-mainstream picks, from Iranian and world cinema:\n1. Close-Up (Kiarostami, 1990): blurs the line between reality and film.\n2. Taste of Cherry (Kiarostami, 1997): Palme d Or winner, a deep meditation on the value of life.\n3. A Separation (Asghar Farhadi, 2011): Oscar-winning family drama.\n4. Children of Heaven (Majid Majidi, 1997): one of the most beloved Iranian films.\n5. Paterson (Jim Jarmusch, 2016): a quiet ode to everyday life.\n6. Leviathan (Andrey Zvyagintsev, 2014): a tense drama about power and corruption.\n7. Whiplash (Damien Chazelle, 2014): about music and perfectionism; great for music lovers.\n8. The Lives of Others (Germany, 2006): about conscience and ethics.\n9. Shoplifters (Japan, 2018): about the meaning of family.\n10. Mr. Robot (series): a realistic look at cybersecurity and technology.\n11. The Bear (series): the real world of professional kitchens.\n12. Station Eleven (series): art and humanity after a catastrophe.'
+    },
+    {
+      id: 'movies_horror',
+      keywords: [
+        'فیلم ترسناک',
+        'سریال ترسناک',
+        'فیلم وحشت',
+        'horror movie',
+        'horror film',
+        'horror series',
+        'scary movie'
+      ],
+      weak: ['ترسناک', 'وحشت', 'horror', 'scary'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای ترسناک غیرتکراری:\n۱. «دختری شب‌ها تنها به خانه می‌رود» (آنا لیلی امیرپور، ۲۰۱۴): اولین «وسترن خون‌آشامی» ایرانی؛ سیاه‌وسفید و پر از تنهایی.\n۲. «زیر سایه» (بابک انوری، ۲۰۱۶): وحشت روان‌شناختی در تهرانِ دوران جنگ؛ جن و دلهره سیاسی کنار هم.\n۳. «ربان سفید» (میشائل هانکه، ۲۰۰۹): برنده نخل طلا؛ ریشه‌های سرد و جمعی شرارت.\n۴. «یک آواز تاریک» (لیام گوین، ۲۰۱۶): آیین‌های جادویی واقع‌گرایانه و طاقت‌فرسا.\n۵. «تام‌باد» (راهی آنیل باروه، ۲۰۱۸): افسانه‌ای هندی درباره طلای نفرین‌شده و موجودی کهنه.',
+      en: 'Non-obvious horror picks:\n1. A Girl Walks Home Alone at Night (Ana Lily Amirpour, 2014): the first Iranian vampire western; monochrome and lonely.\n2. Under the Shadow (Babak Anvari, 2016): psychological horror in war-era Tehran, fusing djinns with political dread.\n3. The White Ribbon (Michael Haneke, 2009): Palme d Or winner about the cold roots of collective evil.\n4. A Dark Song (Liam Gavin, 2016): a grueling, realistic occult ritual.\n5. Tumbbad (Rahi Anil Barve, 2018): an Indian folk-horror about cursed gold and an ancient creature.'
+    },
+    {
+      id: 'movies_romantic',
+      keywords: [
+        'فیلم عاشقانه',
+        'سریال عاشقانه',
+        'romantic movie',
+        'romance movie',
+        'romantic film'
+      ],
+      weak: ['عاشقانه', 'رمانتیک', 'romantic', 'romance'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای عاشقانه غیرتکراری:\n۱. «در حال و هوای عشق» (وانگ کار-وای، ۲۰۰۰): دلتنگی و اشتیاقِ مهارشده در نئون‌های هنگ‌کنگ.\n۲. «پیش از طلوع» (ریچارد لینکلیتر، ۱۹۹۵): جادوی یک شب گفتگو در وین.\n۳. «بدترین آدم دنیا» (یواخیم ترییر، ۲۰۲۱): روایتی انسانی از جستجوی عشق و هویت در سی‌سالگی.\n۴. «پرتره بانویی در آتش» (سلین سیاما، ۲۰۱۹): عشقی آرام و سوزان میان دو زن.\n۵. «زندگی‌های گذشته» (سلین سونگ، ۲۰۲۳): دو عشق در دو برهه از زندگی و پرسش «چه می‌شد اگر».',
+      en: 'Non-obvious romantic picks:\n1. In the Mood for Love (Wong Kar-wai, 2000): longing and restraint bathed in neon.\n2. Before Sunrise (Richard Linklater, 1995): the magic of one night of conversation in Vienna.\n3. The Worst Person in the World (Joachim Trier, 2021): a humane, messy search for love and identity.\n4. Portrait of a Lady on Fire (Celine Sciamma, 2019): a quiet, burning romance between two women.\n5. Past Lives (Celine Song, 2023): two loves across two lifetimes and the what-ifs between them.'
+    },
+    {
+      id: 'movies_comedy',
+      keywords: [
+        'فیلم کمدی',
+        'سریال کمدی',
+        'comedy movie',
+        'comedy film',
+        'comedy series'
+      ],
+      weak: ['کمدی', 'comedy', 'funny'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای کمدی غیرتکراری:\n۱. «ما در سایه چه می‌کنیم» (جیمین کلمنت و تایکا وایتیتی، ۲۰۱۴): مستندنمایی درباره سه خون‌آشامِ هم‌خانه.\n۲. «سفر» (مایکل وینترباتم، ۲۰۱۰): بداهه‌گویی‌های تیزبینانه استیو کوگان و راب برایدون سر شام.\n۳. «ارکستر» (ایران کولیرین، ۲۰۰۷): گروه موسیقی مصری که در شهری دورافتاده سرگردان می‌شوند؛ کمدیِ خشک و مهربان.\n۴. «تونی اردمن» (مارن آده، ۲۰۱۶): طنزِ شرم‌آور و گرم درباره پدر و دختری.\n۵. «مرگ استالین» (آرماندو یانوچی، ۲۰۱۷): کمدی سیاسی درباره جانشینی پوچ پس از مرگ دیکتاتور.',
+      en: 'Non-obvious comedy picks:\n1. What We Do in the Shadows (Clement and Waititi, 2014): a mockumentary about flat-sharing vampires.\n2. The Trip (Michael Winterbottom, 2010): razor-sharp improvised banter over fine dining.\n3. The Band Visit (Eran Kolirin, 2007): a deadpan, gentle comedy about a stranded Egyptian band.\n4. Toni Erdmann (Maren Ade, 2016): a warm, cringe-funny father-daughter story.\n5. The Death of Stalin (Armando Iannucci, 2017): a political farce about the absurd power scramble after a dictator dies.'
+    },
+    {
+      id: 'movies_dark_comedy',
+      keywords: ['کمدی سیاه', 'فیلم کمدی سیاه', 'dark comedy', 'black comedy'],
+      weak: ['کمدی سیاه', 'dark comedy', 'black comedy'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای کمدی سیاه:\n۱. «در بروژ» (مارتین مک‌دونا، ۲۰۰۸): دو آدم‌کش در شهری نقاشی‌وار؛ طنزی تلخ و وجودی.\n۲. «قصه‌های وحشی» (دامیان سیفرون، ۲۰۱۴): شش روایت خشم و انتقام، هرکدام خنده‌دارتر از قبلی.\n۳. «همستر» (یورگوس لانتیموس، ۲۰۱۵): طنز سورئال درباره اجبارِ عشق‌ورزی.\n۴. «چهار شیر» (کریس موریس، ۲۰۱۰): طنزی بی‌پروا درباره چهار تروریستِ ناشی.\n۵. «میدان» (روبن اوستلوند، ۲۰۱۷): نخل طلای کن؛ طنزی تلخ درباره دنیای هنر و رفتار انسانی.',
+      en: 'Non-obvious dark comedy picks:\n1. In Bruges (Martin McDonagh, 2008): two hitmen and pitch-black humor in a storybook town.\n2. Wild Tales (Damian Szifron, 2014): six vignettes of rage and revenge, each funnier than the last.\n3. The Lobster (Yorgos Lanthimos, 2015): a surreal satire on the pressure to couple up.\n4. Four Lions (Chris Morris, 2010): fearless comedy about four bumbling wannabe terrorists.\n5. The Square (Ruben Ostlund, 2017): Palme d Or winner; a biting satire on the art world and human behavior.'
+    },
+    {
+      id: 'movies_fantasy',
+      keywords: [
+        'فیلم فانتزی',
+        'سریال فانتزی',
+        'fantasy movie',
+        'fantasy film',
+        'fantasy series'
+      ],
+      weak: ['فانتزی', 'خیالی', 'fantasy', 'magical'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای فانتزی غیرتکراری:\n۱. «ماز پن» (گیرمو دل تورو، ۲۰۰۶): پل میان دنیای واقعی و افسانه‌ها، تاریک و خیره‌کننده.\n۲. «شهر بچه‌های گمشده» (ژان-پیر ژونه، ۱۹۹۵): کابوسی سورئال درباره دزدیدن خوابِ کودکان.\n۳. «پرسپولیس» (مرجان ساتراپی، ۲۰۰۷): انیمیشنی درباره انقلاب ایران با طعم جادوی واقع‌گرایی.\n۴. «قصه قصه‌ها» (ماتئو گارونه، ۲۰۱۵): افسانه‌های کهن ایتالیایی با جادوی بزرگ‌سالانه.\n۵. «شوالیه سبز» (دیوید لاوری، ۲۰۲۱): بازگویی اسطوره آرتوری با فضایی رویایی و پرسش‌برانگیز.',
+      en: 'Non-obvious fantasy picks:\n1. Pan Labyrinth (Guillermo del Toro, 2006): a dark, breathtaking bridge between reality and myth.\n2. The City of Lost Children (Jeunet and Caro, 1995): a surreal dream about stolen childhood.\n3. Persepolis (Marjane Satrapi, 2007): an animated memoir of the Iranian revolution, magical and real.\n4. Tale of Tales (Matteo Garrone, 2015): old Italian fairy tales with grown-up magic restored.\n5. The Green Knight (David Lowery, 2021): an Arthurian legend retold with a dreamlike, questioning tone.'
+    },
+    {
+      id: 'movies_short_comedy_series',
+      keywords: [
+        'سریال کوتاه طنز',
+        'سریال طنز کوتاه',
+        'سریال کمدی کوتاه',
+        'کمدی کوتاه',
+        'short comedy series',
+        'comedy mini series',
+        'funny short series'
+      ],
+      weak: [
+        'سریال کوتاه طنز',
+        'کمدی کوتاه',
+        'short comedy',
+        'funny short series'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'طنز',
+        'کمدی',
+        'پیشنهاد',
+        'معرفی',
+        'series',
+        'comedy',
+        'recommend',
+        'suggest'
+      ],
+      fa: 'سریال‌های کوتاه طنز غیرتکراری (غیرایرانی):\n۱. «فلیبگ» (Fleabag، ۲۰۱۶، ۱۲ قسمت): طنز تند و صادقانه درباره یک زن لندنی.\n۲. «آفیس» نسخه بریتانیایی (The Office UK، ۲۰۰۱، ۱۴ قسمت): مستندنمای خنده‌دار از یک اداره.\n۳. «پس از زندگی» (After Life، ۲۰۱۹، ۱۸ قسمت): طنز تلخ و مهربان ریکی جرویز.\n۴. «کرَشینگ» (Crashing، ۲۰۱۶، ۶ قسمت): سیتکام اولیه فوبی والر-بریج.\n۵. «استیجد» (Staged، ۲۰۲۰، ۶ قسمت): دیوید تننت و مایکل شین در یک زوم.\n۶. «اکسترا» (Extras، ۲۰۰۵، ۱۲ قسمت): کمدی ریکی جرویز درباره آدم‌های فرعی سینما.',
+      en: 'Non-obvious short comedy series (non-Iranian):\n1. Fleabag (2016, 12 episodes): sharp, honest comedy about a London woman.\n2. The Office UK (2001, 14 episodes): the hilarious mockumentary sitcom.\n3. After Life (2019, 18 episodes): Ricky Gervais dark, warm comedy about grief.\n4. Crashing (2016, 6 episodes): Phoebe Waller-Bridge early sitcom.\n5. Staged (2020, 6 episodes): David Tennant and Michael Sheen stuck on Zoom.\n6. Extras (2005, 12 episodes): Gervais comedy about background actors.'
+    },
+    {
+      id: 'movies_short_series',
+      keywords: [
+        'سریال کوتاه',
+        'مینی سریال',
+        'مینی‌سریال',
+        'short series',
+        'mini series',
+        'miniseries',
+        'limited series'
+      ],
+      weak: [
+        'سریال کوتاه',
+        'مینی‌سریال',
+        'short series',
+        'miniseries',
+        'limited series'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای سریال کوتاه (۵ تا ۱۰ قسمت):\n۱. «چرنوبیل» (۲۰۱۹، ۵ قسمت): بازسازی تکان‌دهنده فاجعه هسته‌ای و دروغ‌های نهادها.\n۲. «ایستگاه یازده» (۲۰۲۱، ۱۰ قسمت): هنر و انسانیت پس از فروپاشی جهان.\n۳. «زن طبل‌زن کوچک» (پارک چان-ووک، ۲۰۱۸، ۶ قسمت): اقتباسی چشم‌نواز از جاسوسی‌های جان لوکاره.\n۴. «صحنه‌هایی از یک ازدواج» (اینگمار برگمان، ۱۹۷۳، ۶ قسمت): کالبدشکافی عشق و جدایی.\n۵. «غیرارتدوکس» (۲۰۲۰، ۴ قسمت): زنی جوان از جامعه اولترا-ارتدوکس بروکلین به برلین می‌گریزد.',
+      en: 'Short-series picks (5-10 episodes):\n1. Chernobyl (2019, 5 episodes): a gripping dramatization of the nuclear disaster and institutional lies.\n2. Station Eleven (2021, 10 episodes): art and humanity after a pandemic collapse.\n3. The Little Drummer Girl (Park Chan-wook, 2018, 6 episodes): a hypnotic le Carre adaptation.\n4. Scenes from a Marriage (Ingmar Bergman, 1973, 6 episodes): the definitive anatomy of love and divorce.\n5. Unorthodox (2020, 4 episodes): a young woman flees her ultra-Orthodox Brooklyn community for Berlin.'
+    },
+    {
+      id: 'movies_true_story',
+      keywords: [
+        'بر اساس واقعیت',
+        'بر اساس داستان واقعی',
+        'فیلم بر اساس واقعیت',
+        'true story',
+        'based on true events',
+        'based on a true story',
+        'real story movie'
+      ],
+      weak: ['بر اساس واقعیت', 'داستان واقعی', 'true story', 'true events'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'true',
+        'real'
+      ],
+      fa: 'پیشنهادهای بر اساس داستان واقعی:\n۱. «منطقه مورد علاقه» (جاناتان گلیزر، ۲۰۲۳): زندگی روزمره فرمانده اردوگاه آشویتس و خانواده‌اش.\n۲. «آتش‌ها» (دنی ویلنوو، ۲۰۱۰): معمایی ویرانگر الهام‌گرفته از جنگ داخلی لبنان.\n۳. «پنهان» (میشائل هانکه، ۲۰۰۵): زخم تاریخی پنهان یک ملت از خلال یک خانواده پاریسی.\n۴. «عمل کشتن» (جاشوا اوپنهایمر، ۲۰۱۲): مستندی سورئال درباره جلادان اندونزی.\n۵. «زودیاک» (دیوید فینچر، ۲۰۰۷): تعقیب قاتل زنجیره‌ای واقعی و وسواس روزنامه‌نگاران.',
+      en: 'Picks based on true events:\n1. The Zone of Interest (Jonathan Glazer, 2023): the ordinary family life of an Auschwitz commandant.\n2. Incendies (Denis Villeneuve, 2010): a gut-wrenching mystery inspired by the Lebanese civil war.\n3. Caché (Michael Haneke, 2005): a nations hidden trauma seen through one Parisian family.\n4. The Act of Killing (Joshua Oppenheimer, 2012): a surreal documentary about Indonesian death-squad leaders.\n5. Zodiac (David Fincher, 2007): the real Zodiac killer case and the obsession of those who chased him.'
+    },
+    {
+      id: 'movies_thriller',
+      keywords: [
+        'فیلم هیجانی',
+        'فیلم دلهره‌آور',
+        'فیلم دلهرهآور',
+        'فیلم دلهره آور',
+        'فیلم تریلر',
+        'thriller movie',
+        'thriller film',
+        'psychological thriller'
+      ],
+      weak: [
+        'هیجانی',
+        'دلهره‌آور',
+        'دلهرهآور',
+        'دلهره آور',
+        'thriller',
+        'suspense'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای هیجانی غیرتکراری:\n۱. «خاطرات قتل» (بونگ جون‌هو، ۲۰۰۳): نخستین پرونده قتل‌های زنجیره‌ای کره جنوبی؛ ترکیب جنایی و طنز تلخ.\n۲. «اولدبوی» (پارک چان-ووک، ۲۰۰۳): انتقامی اسطوره‌ای که ذهن را درگیر می‌کند.\n۳. «زندانی‌ها» (دنی ویلنوو، ۲۰۱۳): معمای اخلاقی پدری که قانون را زیر پا می‌گذارد.\n۴. «راز چشم‌هایشان» (خوان خوزه کامپانلا، ۲۰۰۹): اسکار بهترین فیلم خارجی؛ عشق، خشونت و حافظه.\n۵. «شکارچی سر» (مورتن تیلدام، ۲۰۱۱): دزدی هنری در نروژ که به تعقیب‌وگریز تبدیل می‌شود.',
+      en: 'Non-obvious thriller picks:\n1. Memories of Murder (Bong Joon-ho, 2003): the first serial-killer case in South Korea, mixing crime with bitter humor.\n2. Oldboy (Park Chan-wook, 2003): a mythic revenge story that gets under your skin.\n3. Prisoners (Denis Villeneuve, 2013): a moral thriller about a father who crosses the line.\n4. The Secret in Their Eyes (Juan Jose Campanella, 2009): an Oscar-winning Argentine mix of love, violence, and memory.\n5. Headhunters (Morten Tyldum, 2011): a Norwegian art heist that turns into a manhunt.'
+    },
+    {
+      id: 'movies_sci_fi',
+      keywords: [
+        'فیلم علمی تخیلی',
+        'فیلم علمی-تخیلی',
+        'سریال علمی تخیلی',
+        'science fiction movie',
+        'sci fi movie',
+        'sci-fi film'
+      ],
+      weak: [
+        'علمی تخیلی',
+        'علمی-تخیلی',
+        'science fiction',
+        'sci fi',
+        'sci-fi',
+        'scifi'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای علمی-تخیلی هوشمند:\n۱. «ورود» (دنی ویلنوو، ۲۰۱۶): تماس با بیگانگان از دریچه زبان‌شناسی.\n۲. «اگزماشینا» (الکس گارلند، ۲۰۱۴): هوش مصنوعی در خانه‌ای شیشه‌ای.\n۳. «گاتاکا» (اندرو نیکول، ۱۹۹۷): آینده‌ای که در آن ژن‌ها سرنوشت را می‌سازند.\n۴. «ماه» (دانکن جونز، ۲۰۰۹): کارگری تنها در ایستگاه ماه و رازی درباره خودش.\n۵. «او» (اسپایک جونز، ۲۰۱۳): عشقی میان مردی تنها و سیستم‌عاملش.',
+      en: 'Smart sci-fi picks:\n1. Arrival (Denis Villeneuve, 2016): alien contact told through linguistics.\n2. Ex Machina (Alex Garland, 2014): artificial intelligence in a glass house.\n3. Gattaca (Andrew Niccol, 1997): a future where genes decide your fate.\n4. Moon (Duncan Jones, 2009): a lonely lunar worker uncovers a secret about himself.\n5. Her (Spike Jonze, 2013): a lonely man falls for his operating system.'
+    },
+    {
+      id: 'movies_documentary',
+      keywords: [
+        'فیلم مستند',
+        'مستند خوب',
+        'مستند ببینم',
+        'documentary movie',
+        'documentary film',
+        'watch a documentary'
+      ],
+      weak: ['مستند', 'documentary', 'documentaries'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای مستند ماندگار:\n۱. «برای ساما» (وعد الخاطب، ۲۰۱۹): زندگی در حلب جنگ‌زده از چشم یک مادر.\n۲. «معلم هشت‌پای من» (پیپا ارلیش، ۲۰۲۰): پیوندی غیرمنتظره میان یک غواص و هشت‌پا.\n۳. «بیست روز در ماریوپل» (مستیسلاو چرنوف، ۲۰۲۳): روزهای محاصره از درون اوکراین.\n۴. «فری سولو» (الیزابت چای واساره‌لی و جیمی چین، ۲۰۱۸): صعود بدون طناب از ال کاپیتان.\n۵. «والس با بشیر» (آری فولمن، ۲۰۰۸): انیمیشن مستند درباره جنگ و حافظه.',
+      en: 'Documentaries that stay with you:\n1. For Sama (Waad al-Kateab, 2019): a young mother filming war-torn Aleppo.\n2. My Octopus Teacher (Pippa Ehrlich, 2020): an unexpected bond between a diver and an octopus.\n3. 20 Days in Mariupol (Mstyslav Chernov, 2023): the siege of Mariupol from inside.\n4. Free Solo (Elizabeth Chai Vasarhelyi and Jimmy Chin, 2018): climbing El Capitan without a rope.\n5. Waltz with Bashir (Ari Folman, 2008): an animated documentary about war and memory.'
+    },
+    {
+      id: 'movies_animation',
+      keywords: [
+        'فیلم انیمیشن',
+        'انیمیشن خوب',
+        'انیمیشن ببینم',
+        'animated movie',
+        'animation movie',
+        'animated film',
+        'cartoon movie'
+      ],
+      weak: ['انیمیشن', 'انیمیشنی', 'animation', 'animated', 'cartoon'],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'پیشنهادهای انیمیشن فراتر از دیزنی:\n۱. «شهر اشباح» (هایائو میازاکی، ۲۰۰۱): اسکار بهترین انیمیشن؛ دختری در سرزمین ارواح.\n۲. «غول آهنی» (برد برد، ۱۹۹۹): رباتی مهربان در آمریکای دهه ۱۹۵۰.\n۳. «ترانه دریا» (تام مور، ۲۰۱۴): افسانه‌های سلتی و موسیقی چشم‌نواز.\n۴. «آنومالیسا» (چارلی کافمن، ۲۰۱۵): استاپ‌موشن بزرگ‌سالانه درباره تنهایی.\n۵. «آقای فاکس شگفت‌انگیز» (وس اندرسون، ۲۰۰۹): طنز خانوادگی بامزه با سبک خاص اندرسون.',
+      en: 'Animation beyond Disney:\n1. Spirited Away (Hayao Miyazaki, 2001): Oscar-winning journey of a girl in the spirit world.\n2. The Iron Giant (Brad Bird, 1999): a gentle robot in 1950s America.\n3. Song of the Sea (Tomm Moore, 2014): Celtic myth and breathtaking music.\n4. Anomalisa (Charlie Kaufman, 2015): an adult stop-motion film about loneliness.\n5. Fantastic Mr. Fox (Wes Anderson, 2009): signature Anderson charm in stop-motion in stop-motion.'
+    }
+  ]);
+})(typeof window !== 'undefined' ? window : globalThis);

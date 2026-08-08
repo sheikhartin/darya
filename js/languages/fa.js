@@ -1,5 +1,7 @@
 /**
- * Darya classic script.
+ * Darya - Persian (Farsi) language pack assembler.
+ * Combines patterns, vocabulary, lookups, rules, and response pools into
+ * one Persian pack object. Classic script version.
  */
 
 (function (global) {
@@ -75,1117 +77,28 @@
     );
   }
 
-  function rule(topic, priority, pattern, responses) {
-    return { topic, priority, pattern, responses };
-  }
-
-  // A curated set of common Persian pronominal/verb suffixes that attach
-  // directly to a keyword with no space, e.g. "غمگین" -> "غمگینم" ("I am
-  // sad"). Recognizing exactly these (rather than allowing *any* trailing
-  // character) keeps matching accurate for real inflected forms while
-  // still rejecting unrelated compounds, e.g. it correctly stops "پدر"
-  // ("father") from falsely matching inside "پدربزرگ" ("grandfather"),
-  // since "بزرگ" isn't one of these suffixes.
-  const SUFFIX = '(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?';
-
-  /**
-   * Builds a Persian-script-aware "whole word" pattern. `\b` doesn't work
-   * for Persian text in JavaScript regex (it's defined in terms of ASCII
-   * word characters), so this uses explicit lookaround instead: the
-   * keyword (plus an optional common suffix) must not be directly
-   * preceded or followed by another letter.
-   *
-   * The boundary check uses `p{L}` (Unicode "is this a letter at all")
-   * rather than a raw `[\u0600-\u06FF]` code-point range. That range
-   * looks like it should mean "a Persian/Arabic letter", but the same
-   * Unicode block also contains Arabic-script *punctuation*, notably
-   * "؟" (U+061F, the Persian question mark), so a raw range check
-   * would treat "حالت چطور؟" as if "چطور" were followed by another
-   * letter and incorrectly refuse to match. By the time this pattern
-   * runs, the message has already passed the engine's overall
-   * Persian-script check, so "any letter" is an accurate enough proxy
-   * for "a Persian letter" here.
-   * @param {string} alternatives - A `|`-joined list of keyword forms.
-   * @param {string} [tail] - Extra pattern appended after the boundary
-   *   check, e.g. `\s*(.*)` for rules that capture the rest of the
-   *   sentence.
-   * @returns {RegExp}
-   */
-  function pw(alternatives, tail) {
-    return new RegExp(
-      `(?<!\\p{L})(${alternatives})${SUFFIX}(?!\\p{L})${tail || ''}`,
-      'iu'
-    );
-  }
-
-  const rules = [
-    rule(
-      'safety',
-      100,
-      pw(
-        'خودکشی|خودزنی|آسیب زدن به خودم|دیگه نمیخوام زندگی کنم|دیگه نمی‌خوام زندگی کنم|دیگه نمی خوام زندگی کنم'
-      ),
-      R['ruleSafety']
-    ),
-
-    rule(
-      'grief',
-      55,
-      pw(
-        'فوت کرد|درگذشت|فقدان|از دست دادم|از دستش دادم|سوگ|داغداری|عزاداری|سوگواری'
-      ),
-      R['ruleGrief']
-    ),
-
-    rule(
-      'smalltalk_howareyou',
-      60,
-      // The whole utterance must be a how-are-you question. Anchoring
-      // prevents the bare word "خوبی" (goodness) from matching mid-sentence
-      // in phrases like "جمله خوبی گفتی" (you said a good sentence) and
-      // hijacking the turn with a how-are-you reply. The optional "است"
-      // tail keeps the formal "حال شما چطور است؟" working.
-      /^(?:سلام|درود|هی|خب|اوکی|باشه)?\s*(?:خوبی|تو خوبی|خوبی تو|حالت چطور|حالتون چطور|حال شما چطور|احوال شما چطور|چطوری|حالت خوبه)(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?(?:\s*است)?[!.؟]*$/iu,
-      R['ruleSmalltalkHowareyou']
-    ),
-
-    rule(
-      'smalltalk_identity',
-      60,
-      pw(
-        'تو کی هستی|تو چی هستی|اسمت چیه|تو ربات هستی|هوش مصنوعی هستی|تو واقعی هستی|انسان هستی'
-      ),
-      R['ruleSmalltalkIdentity']
-    ),
-
-    rule(
-      'smalltalk_capability',
-      60,
-      pw(
-        'چیکار می‌تونی بکنی|چیکار میتونی بکنی|چیکار می تونی بکنی|چه کمکی می‌تونی بکنی|چه کمکی میتونی بکنی|چه کمکی می تونی بکنی|چیکار میکنی|چه کاری بلدی|چطور میتونی کمکم کنی|چیکار می‌کنی|چیکار می کنی'
-      ),
-      R['ruleSmalltalkCapability']
-    ),
-
-    // Off-topic and non-serious questions ("Do you like pizza?", "How's the weather?")
-    // Playful response, then a gentle return to the main topic.
-    rule(
-      'smalltalk_silly',
-      55,
-      pw(
-        'دوست داری|نظرت در مورد|تا حالا|آیا تا به حال|می‌تونی بخوری|میتونی بخوری|می تونی بخوری|چند سالته|کجا زندگی می‌کنی|کجا زندگی میکنی|کجا زندگی می کنی|می‌خوابی|میخوابی|می خوابی|چیکار می‌کنی|چیکار میکنی|چیکار می کنی|چی کار می‌کنی|چی کار میکنی|چی کار می کنی'
-      ),
-      R['ruleSmalltalkSilly']
-    ),
-
-    // Greeting families mirror the user's greeting word back (درود ->
-    // درود-based reply, سلام -> سلام-based reply). Each family also
-    // accepts a short fixed tail (بر تو, بر شما, عزیز, دوست, جان, و درود)
-    // so "درود بر تو" and "سلام علیکم" get a warm greeting instead of a
-    // generic fallback. The tail is a fixed list, never free text, so
-    // "درود چطوری؟" still falls through to the how-are-you rule.
-    rule(
-      'greeting',
-      65,
-      /^(?:درود)(?:\s+(?:بر تو|بر شما|عزیز|دوست|جان))?[!.؟]*$/iu,
-      R['ruleGreetingDorud']
-    ),
-
-    rule(
-      'greeting',
-      65,
-      /^(?:سلام)(?:\s+(?:علیکم|بر تو|بر شما|عزیز|دوست|جان|و درود))?[!.؟]*$/iu,
-      R['ruleGreetingSalam']
-    ),
-
-    rule(
-      'greeting',
-      65,
-      /^(?:هی|یا|آقا|سلام سلام)(?:\s+(?:عزیز|دوست|جان))?$/iu,
-      R['ruleGreetingHey']
-    ),
-
-    rule(
-      'greeting',
-      65,
-      /^(?:سلام صبح بخیر|صبح بخیر)(?:\s+(?:عزیز|دوست|جان))?[!.؟]*$/iu,
-      R['ruleGreetingGoodMorning']
-    ),
-
-    rule(
-      'greeting',
-      65,
-      /^(?:شب بخیر)(?:\s+(?:عزیز|دوست|جان))?[!.؟]*$/iu,
-      R['ruleGreetingGoodEvening']
-    ),
-
-    rule(
-      'greeting',
-      65,
-      /^(?:عصر بخیر)(?:\s+(?:عزیز|دوست|جان))?[!.؟]*$/iu,
-      R['ruleGreetingGoodAfternoon']
-    ),
-
-    rule(
-      'family',
-      50,
-      pw('پدربزرگ|مادربزرگ|پدر|مادر|خانواده|والدین|خواهر|برادر', '\\s*(.*)'),
-      R['ruleFamily']
-    ),
-
-    rule(
-      'work',
-      50,
-      pw('کار|شغل|رئیس|همکار|استخدام|اخراج', '\\s*(.*)'),
-      R['ruleWork']
-    ),
-
-    rule(
-      'sleep',
-      50,
-      pw('خواب|بی‌خوابی|بیخوابی|بی خوابی|کابوس|بیدار شدن|شب بیدار'),
-      R['ruleSleep']
-    ),
-
-    rule(
-      'sadness',
-      40,
-      pw('غمگین|ناراحت|افسرده|دلم گرفته|گریه'),
-      R['ruleSadness']
-    ),
-
-    rule(
-      'anxiety',
-      40,
-      pw('نگران|اضطراب|استرس|ترس|ترسیدم|می‌ترسم|میترسم'),
-      R['ruleAnxiety']
-    ),
-
-    rule('anger', 40, pw('عصبانی|خشمگین|کفری|از دستش عصبانی'), R['ruleAnger']),
-
-    rule(
-      'joy',
-      35,
-      pw('خوشحال|شاد|هیجان‌زده|هیجانزده|هیجان زده'),
-      R['ruleJoy']
-    ),
-
-    rule(
-      'loneliness',
-      40,
-      pw('تنها|تنهایی|کسی رو ندارم|هیچ‌کس نیست|هیچکس نیست|هیچ کس نیست'),
-      R['ruleLoneliness']
-    ),
-
-    rule(
-      'self_esteem',
-      40,
-      pw(
-        'بی‌ارزش|بیارزش|بی ارزش|اعتماد به نفس ندارم|از خودم بدم میاد|به اندازه کافی خوب نیستم'
-      ),
-      R['ruleSelfEsteem']
-    ),
-
-    rule(
-      'motivation',
-      35,
-      pw(
-        'انگیزه ندارم|بی‌حوصله|بیحوصله|بی حوصله|بیحوصلگی|نمی‌تونم شروع کنم|نمیتونم شروع کنم|نمی تونم شروع کنم|تعلل می‌کنم|تعلل میکنم|تعلل می کنم'
-      ),
-      R['ruleMotivation']
-    ),
-
-    rule(
-      'relationship',
-      40,
-      pw(
-        'دوست پسر|دوست دختر|همسر|نامزد|بهم زدیم|جدا شدیم|رابطه‌ام|رابطهام|رابطه ام'
-      ),
-      R['ruleRelationship']
-    ),
-
-    rule(
-      'health',
-      35,
-      pw('مریض|بیمار|درد دارم|سلامتی|دکتر رفتم'),
-      R['ruleHealth']
-    ),
-
-    rule(
-      'mindfulness',
-      40,
-      pw(
-        'ذهن آگاهی|ذهنآگاهی|مدیتیشن|مراقبه|حضور در لحظه|نفس عمیق|نفس می کشم|نفس میکشم|تمرین تنفس|آرامش|زمین‌سازی|زمینسازی|زمین سازی|آگاه بودن|تمرکز روی نفس|نظاره‌گر افکار|نظارهگر افکار|نظاره گر افکار|بدون قضاوت|اینجا و اکنون|لحظه حال|آرام کردن ذهن'
-      ),
-      R['ruleMindfulness']
-    ),
-
-    rule(
-      'stress',
-      40,
-      pw(
-        'overwhelmed|فرسودگی|تحت فشار|فشار زیاد|ظرفم تموم شده|دیگه طاقت ندارم|کم آوردم|از پا افتاده|خسته از کار|استرس زیاد|فشار روحی|حالم بده|ظرفیت ندارم|نمی‌تونم ادامه بدم|نمیتونم ادامه بدم|نمی تونم ادامه بدم|خالی شدم|دیگه نمی‌کشم|دیگه نمیکشم|دیگه نمی کشم|آخر خط'
-      ),
-      R['ruleStress']
-    ),
-
-    // The user asks Darya to say something more simply or more briefly
-    // ("ساده‌تر بنویس", "کوتاه‌تر بگو"). Acknowledge warmly and commit to
-    // a plainer register instead of falling through to a generic line.
-    rule(
-      'simplify',
-      45,
-      pw(
-        'ساده‌تر بنویس|ساده تر بنویس|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگویی|ساده تر بگویی|ساده‌تر بگویید|ساده تر بگویید|ساده‌تر توضیح بده|ساده تر توضیح بده|ساده‌تر توضیح بدی|ساده تر توضیح بدی|ساده‌تر توضیح بدهی|ساده تر توضیح بدهی|ساده‌تر توضیح بدهید|ساده تر توضیح بدهید|کوتاه‌تر بنویس|کوتاه تر بنویس|کوتاه‌تر بنویسی|کوتاه تر بنویسی|کوتاه‌تر بنویسید|کوتاه تر بنویسید|کوتاه‌تر بگو|کوتاه تر بگو|کوتاه‌تر بگویی|کوتاه تر بگویی|کوتاه‌تر بگویید|کوتاه تر بگویید|کوتاه‌تر توضیح بده|کوتاه تر توضیح بده|زیاد طولانی|خیلی طولانی|پیچیده نکن|ساده و کوتاه|کوتاه و ساده|ساده بگو|ساده صحبت کن|ساده صحبت کنی|ساده حرف بزن|ساده حرف بزنی|قالب ساده|شکل ساده|به زبان ساده|با زبان ساده|روون‌تر بنویس|روان‌تر بنویس|روان تر بنویس|روون تر بنویس|ساده‌ترش کن|ساده ترش کن|پیچیده داری توضیح میدی|پیچیده داری توضیح می‌دی|پیچیده داری توضیح میدی؟|ساده‌تر بنویس|ساده تر بنویس|سادهتر بنویس|سادهتر بگو|سادهتر بگویی|سادهتر بگویید|سادهتر توضیح بده|سادهتر توضیح بدی|سادهتر توضیح بدهی|سادهتر توضیح بدهید|کوتاهتر بنویس|کوتاهتر بنویسی|کوتاهتر بنویسید|کوتاهتر بگو|کوتاهتر بگویی|کوتاهتر بگویید|کوتاهتر توضیح بده|روونتر بنویس|روانتر بنویس|روونتر بگو|سادهترش کن|روونترش کن'
-      ),
-      R['ruleSimplify']
-    ),
-
-    // App and website feedback ("تم ساحل این وب‌سایت رو مشکل‌دار می‌دونم",
-    // "the waves look too small"): acknowledge warmly and steer back to
-    // the conversation. The pattern is highly specific (UI/website words),
-    // so it outranks the generic feeling/reasoning rules but stays below
-    // knowledge so genuine emotional disclosures always win.
-    rule(
-      'app_feedback',
-      32,
-      pw(
-        'وب‌سایت|وبسایت|وب سایت|وب‌سایتم|وبسایتم|سایت|تم|پوسته|رابط کاربری|طراحی|دکمه|منو|فونت|آیکون|انیمیشن|موج|امواج|ساحل|موبایل|فرمت'
-      ),
-      R['ruleAppFeedback']
-    ),
-
-    rule(
-      'gratitude',
-      25,
-      // The optional spaces ( ? ) accept both the joined form ('دستت')
-      // and the half-space normalized form ('دست ت'), because the FA
-      // half-space normalizer turns a ZWNJ (U+200C) into a plain space
-      // in the matching text. 'دستت درد نکنه' is the most common Persian
-      // way to thank someone for their help.
-      pw(
-        'ممنون|ممنونم|متشکرم|مرسی|سپاسگزار|قدردان|سپاس|تشکر|خوشحالم که هستی|دمت گرم|دستت گرم|خسته نباشی|قربانت|لطف داری|ممنون ازت|دست ?ت ?درد ?نکنه|دست ?شما ?درد ?نکنه'
-      ),
-      R['ruleGratitude']
-    ),
-
-    rule('school', 35, pw('امتحان|کنکور|دانشگاه|نمره|استاد'), R['ruleSchool']),
-
-    rule(
-      'money',
-      35,
-      pw('پول ندارم|مشکل مالی|بدهکار|قسط|هزینه‌ها|هزینهها|هزینه ها'),
-      R['ruleMoney']
-    ),
-
-    rule(
-      'feeling',
-      30,
-      /(?<!\p{L})(?:احساس می‌کنم|احساس میکنم|احساس می کنم|حس می‌کنم|حس میکنم|حس می کنم|فکر می‌کنم|فکر میکنم|فکر می کنم)(?!\p{L})\s*(.*)/iu,
-      R['ruleFeeling']
-    ),
-
-    rule(
-      'reasoning',
-      25,
-      /(?<!\p{L})(?:چونکه|چون)(?!\p{L})\s*(.*)/iu,
-      R['ruleReasoning']
-    ),
-
-    rule(
-      'need',
-      25,
-      /(?<!\p{L})(?:نیاز دارم|می‌خواهم|میخواهم|میخوام|می خواهم|دلم می‌خواد|دلم میخواد|دلم می خواد)(?!\p{L})\s*(.*)/iu,
-      R['ruleNeed']
-    ),
-
-    // The user asks what a word or phrase means ("وداع کردن می‌دونی
-    // یعنی چی؟!"). Answer warmly without pretending to be a dictionary:
-    // name the word back and turn it into a conversation. "منظور..."
-    // ("what do you mean") is deliberately excluded - that asks Darya
-    // to clarify her own words, which needs a different response.
-    rule(
-      'word_meaning',
-      58,
-      /(?<!\p{L})(?!منظور(?:ت|تون| تو| شما)?|این|اون|آن|اینها|آنها)(.+?)\s*(?:می‌دونی|میدونی|می دونی|می‌دونید|میدونید|می دونید|می‌دانی|میدانی|می دانی|می‌دانید|میدانید|می دانید)?\s*(?:یعنی چی|یعنی چه|یعنی چیه|به چه معناست)[!?؟]*$/iu,
-      R['ruleWordMeaning']
-    ),
-
-    // The user asks Darya to ask them a question ("یک سوال از من بپرس",
-    // "سوال نمی‌پرسی؟!"). Darya complies with a real, gentle question.
-    rule(
-      'ask_me_question',
-      58,
-      pw(
-        'سوال نمی‌پرسی|سوال نمیپرسی|سوال نمی پرسی|چرا سوال نمی‌پرسی|چرا سوال نمیپرسی|چرا سوال نمی پرسی|سوال بپرس|بپرس ببینم|از من بپرس|ازم بپرس|یک سوال از من بپرس|یه سوال از من بپرس|بپرس از من|بپرس ازم|سوال بپرس از من'
-      ),
-      R['ruleAskMeQuestion']
-    ),
-
-    // The user tells Darya to improve herself ("خودت رو بهتر کن",
-    // "باهوش‌تر شو"). Acknowledge humbly instead of deflecting with
-    // humor or a generic line.
-    rule(
-      'self_improvement',
-      55,
-      pw(
-        'خودت رو بهتر|خودت را بهتر|خودتو بهتر|بهتر و عاقل|عاقل‌تر|عاقلتر|عاقل تر|هوشمندتر|باهوش‌تر بشی|باهوشتر بشی|باهوش تر بشی|باهوش‌تر شو|باهوشتر شو|باهوش تر شو|بهتر شو|بهتر بشو|ارتقا بده|ارتقا بدهی'
-      ),
-      R['ruleSelfImprovement']
-    ),
-
-    // "چی‌کار کنم؟!" (what should I do?) must answer the help-seeking
-    // intent instead of tripping the work rule, whose bare "کار" matches
-    // the normalized "چی کار کنم". This rule sits just above work so the
-    // general what-to-do request wins over the work-topic reading.
-    rule(
-      'what_do_i_do',
-      52,
-      pw(
-        'چی کار کنم|چیکار کنم|چه کار کنم|چی کار بکنم|چیکار بکنم|چه کاری بکنم|چی بکنم|چی کار باید بکنم|چیکار باید بکنم|چه کار باید بکنم|چه کاری باید بکنم|چه باید بکنم|راه‌حل نمی‌دی|راه حل نمی‌دی|راه حل نمیدی|راه‌حل نمیدی|راهحل نمیدی|راهکاری نداری|راهکار نمی‌دی|راهکار نمیدی|راهکارنمیدی'
-      ),
-      R['ruleWhatDoIDo']
-    ),
-
-    // The user answers "yes but I do not know which one" after Darya
-    // offered several topics. Gently help them pick instead of falling
-    // into the evasive deep-question pool.
-    rule(
-      'unsure_topic',
-      52,
-      pw(
-        'نمی‌دونم روی کدوم|نمیدونم روی کدوم|نمی دونم روی کدوم|نمی‌دونم کدوم|نمیدونم کدوم|نمی دونم کدوم|مطمئن نیستم کدوم|کدومش رو انتخاب کنم|کدومش را انتخاب کنم|کدومش رو بگم'
-      ),
-      R['ruleUnsureTopic']
-    ),
-
-    rule(
-      'knowledge',
-      55,
-      /(?<!\p{L})(?:سقراط|رواقی|رواقی‌گری|رواقی گری|رواقیگری|ارسطو|یونگ|نیچه|گاندی|ماندلا|چرچیل|زرتشت|فلسفه|تمرکز|تمرکز کنم|بهتر یاد بگیرم|بهتر درس بخوانم|ارتباط بهتر|خلاقیت|قفل خلاقیت|مدیریت استرس|استرس|فرسودگی|آرام‌شدن|آرام شدن|آرامشدن|خودشفقتی|مهربانی با خود|منتقد درونی|خودانتقادی|حل تعارض|اختلاف|ارتباط بدون خشونت|تصمیم‌گیری|تصمیم گیری|تصمیمگیری|تصمیم|انتخاب بین|تاب‌آوری|تاب آوری|تابآوری|بازگشت به زندگی|بازگشتن|بخشش|ببخشم|ببخش|بخشیدن|رها کردن|رها کنم|معنای زندگی|معنی زندگی|هدف در زندگی|پیدا کردن هدف|وجودی|معنادار|معنوی|روابط|رابطه|ارتباط عاطفی|شغل|حرفه|پیشرفت شغلی|رضایت شغلی|اضطراب|مدیریت اضطراب|نگرانی|فکر زیاد|ذهن\u200Cآگاهی|ذهن آگاهی|ذهنآگاهی|سوگ|فقدان)(?!\p{L})/iu,
-      R['ruleKnowledge']
-    ),
-
-    rule(
-      'professional_boundary',
-      90,
-      /(?<!\p{L})(?:مشاوره پزشکی|تشخیص|دارو|مشاوره حقوقی|وکیل|دادگاه|مشاوره مالی|سرمایه‌گذاری|سرمایهگذاری|مالیات|وام)(?!\p{L})/iu,
-      R['ruleProfessionalBoundary']
-    ),
-
-    rule(
-      'recap',
-      80,
-      /(?<!\p{L})(?:چی گفتم|چه چیزهایی گفتم|خلاصه کن|یادم نیست چی گفتم|مرور کن)(?!\p{L})/iu,
-      R['ruleRecap']
-    ),
-
-    // The user apologizes ("ببخشید", "عذر می‌خوام", "متاسفم"). A warm
-    // acceptance beats the "too short to understand" ambiguous-input
-    // fallback, so a bare "ببخشید" is never answered with "کمی بیشتر
-    // توضیح بده". The pool stays brief and moves on instead of dwelling
-    // on the apology.
-    rule(
-      'apology',
-      64,
-      pw(
-        'ببخشید|ببخش|عذر می‌خوام|عذر میخوام|عذر می خوام|معذرت می‌خوام|معذرت میخوام|معذرت می خوام|عذر می‌خواهم|عذر می‌خواهم|عذر میخواهم|معذرت می‌خواهم|معذرت میخواهم|پوزش می‌طلبم|پوزش میطلبم|متاسفم|متأسفم|شرمنده‌ام|شرمنده ام|شرمندهام|شرمند هام|خجالت می‌کشم|خجالت میکشم|ببخشین'
-      ),
-      R['ruleApology']
-    ),
-
-    // Feedback aimed at Darya herself: how she quotes words, how well she
-    // understands the message chain, how "smart" she is, requests for a
-    // swear-word dictionary, open-question style, and so on. These turns
-    // deserve a humble acknowledgement even when worded harshly, so this
-    // topic is also excluded from the frustration/harassment override in
-    // the engine.
-    rule(
-      'meta_feedback',
-      62,
-      /(?<!\p{L})(?:باید.{0,20}?(?:درک کنی|بفهمی|متوجه بشی|متوجه شی|باهوش.{0,4}تر|عاقل.{0,4}تر|بهتر)|متن ورودی|پیام ورودی|بازخورد|دیکشنری|نقل و قول|نقل‌وقول|نقل وقول|نقل قول|نقل‌قول|نقلوقول|کوت کردی|زنجیره.{0,10}(?:پیام|حرف)|پیام.{0,8}گذشته|مکالمه.{0,8}گذشته|ارتقا.{0,4}(?:بده|بدهی|شو)|مثل.{0,10}(?:طوطی|میمون)|تقلید.{0,4}(?:کنی|کردن)|سوال.{0,8}(?:باز|چالش)|نقطه.{0,4}می.{0,4}(?:ذاری|گذاری)|یعنی چی که|بررسی کن|هوشت|هوش تو|فهمیدی چی|نفهمیدی|درک نمی‌کنی|درک نمیکنی|درک نمیکنه|متوجه نمی‌شی)(?!\p{L})/iu,
-      R['ruleMetaFeedback']
-    ),
-
-    // The user asks who made Darya, or asks about her origin, ELIZA, or
-    // MIT. Darya answers with her own short, curiosity-engaging intro:
-    // built by Artin as a tribute to ELIZA, the first chatbot, from MIT.
-    // The high priority keeps "کار" inside a phrase like "چی کار می‌کرد؟"
-    // from being read as a work-topic disclosure.
-    rule(
-      'about_eliza',
-      66,
-      pw(
-        'تو رو کی|تو را کی|کی تو رو|کی تو را|کی ساخته|کی ساختت|کی ساختی|کی ساخته شدی|چطور ساخته شدی|چطوری ساخته شدی|سازنده تو|سازنده‌ات|سازنده دریا|آرتین|الیزا|ایلیزا|ام آی تی|اِم آی تی|دکتر وایزنبام|وایزنبام|هدف از ساخت|هدف از ساختن|چرا ساخته شدم'
-      ),
-      R['ruleAboutEliza']
-    ),
-
-    // The user compliments something Darya said or did ("قشنگ گفتی",
-    // "از این عبارت خوشم می‌آد"). Warm acknowledgement instead of a
-    // topic fallback. Kept below about_eliza so a compliment about
-    // Darya's self-introduction still routes to the origin story.
-    rule(
-      'compliment_darya',
-      58,
-      /(?<!\p{L})(?:خوشم (?:میاد|می‌آد|میآد|اومد|آمد)|قشنگ (?:گفتی|جواب دادی|بود|شد)|این (?:جمله|حرف|جواب|پاسخ|عبارت) (?:عالی|قشنگ|خوب|خوبه|عالیه) بود|جوابت.{0,8}(?:عالی|خوب)ه|خوب گفتی|حرف قشنگی زدی|این که گفتی (?:عالی|خوب|قشنگ) بود|حرفت به دلم نشست|این حرف خیلی به دلم نشست)(?!\p{L})/iu,
-      R['ruleComplimentDarya']
-    ),
-
-    // The user corrects Darya's misreading ("مگه من راجع به کار صحبت
-    // کردم؟!", "منظورم این نبود"). Acknowledge and invite a restated
-    // version instead of re-triggering the same topic rule.
-    rule(
-      'misread_correction',
-      56,
-      pw(
-        'مگه من راجع|مگه من درباره|مگه من گفتم|مگه من صحبت کردم|من گفتم درباره|من گفتم راجع|من صحبت نکردم|من نگفتم|منظورم نبود|منظور من نبود|منظورم این نبود|منظورم این نیست|کجای حرفم|کجای حرف من|بد فهمیدی|بدفهمیدی|اشتباه گرفتی|درست نفهمیدی'
-      ),
-      R['ruleMisreadCorrection']
-    ),
-
-    rule('affirmation', 15, /^(بله|آره|اره)\.?$/i, R['ruleAffirmation']),
-
-    rule('negation', 15, /^(نه|خیر)\.?$/i, R['ruleNegation'])
-  ];
-
-  const trivialCaptures = new Set([
-    'هستم',
-    'هستی',
-    'هست',
-    'هستیم',
-    'هستید',
-    'هستند',
-    'است',
-    'بود',
-    'بودم',
-    'بودی',
-    'بودیم',
-    'بودید',
-    'بودند',
-    'شد',
-    'شدم',
-    'شدی',
-    'ام'
-  ]);
-
-  // Vocabulary consumed by the language-neutral named-entity extractor.
-  // These are deliberately short, emotionally salient surfaces rather than
-  // an attempt to enumerate every Persian noun.
-  const familyTerms = [
-    'پدر',
-    'پدرم',
-    'مادر',
-    'مادرم',
-    'پدربزرگ',
-    'مادربزرگ',
-    'خواهر',
-    'خواهرم',
-    'برادر',
-    'برادرم',
-    'همسر',
-    'نامزد',
-    'دوست',
-    'خانواده',
-    'والدین',
-    'فرزند',
-    'دخترم',
-    'پسرم'
-  ];
-  const professionTerms = [
-    'کار',
-    'شغل',
-    'رئیس',
-    'همکار',
-    'دانشگاه',
-    'مدرسه',
-    'امتحان',
-    'کنکور',
-    'پروژه',
-    'جلسه',
-    'پزشک',
-    'دکتر',
-    'استاد',
-    'دانشجو'
-  ];
-  const placeWords = [
-    'خانه',
-    'اتاق',
-    'مدرسه',
-    'دانشگاه',
-    'محل کار',
-    'دفتر',
-    'تهران',
-    'شیراز',
-    'شهر',
-    'روستا',
-    'پارک',
-    'بیمارستان',
-    'اینجا',
-    'آنجا'
-  ];
-
-  const entityCallbackTemplates = {
-    person: [
-      'آن نخِ {surface} هنوز در گفتگومان هست و به این داستان شکل شخصی می‌دهد.'
-    ],
-    place: [
-      'آن مکان، یعنی {surface}، هنوز به این داستان شکل می‌دهد و بی‌دلیل در حرفت نیامده است.'
-    ],
-    time: [
-      'جزئیات زمانیِ {surface} به این موضوع شکل می‌دهد و لحظه را مشخص‌تر می‌کند.'
-    ],
-    activity: [
-      'بخشِ {surface} مهم به نظر می‌رسد و بهتر است از قاب حرف‌مان بیرون نماند.'
-    ],
-    object: [
-      'آن جزئیاتِ {surface} هنوز حاضر است و به داستانت بافت مشخصی می‌دهد.'
-    ]
-  };
-
-  // Periodic conversation check-ins: after several turns without a clear
-  // topic, Darya offers a light process check to help wrap up.
-
-  // Matches Persian question marks and the most common question words, so
-  // the engine can tell an interrogative sentence apart from a statement
-  // even when a specific rule doesn't cover what's being asked.
-  const questionPattern =
-    /[؟?]|(?<!\p{L})(چرا|چطور|چگونه|چیست|چیه|کجا|کیه|کیست|آیا|کدام|چقدر|چند)(?!\p{L})/u;
-
-  // A safe, language-agnostic-in-spirit callback: quoting the person's own
-  // earlier words back to them is a core reflective-listening technique
-  // and carries no grammar risk (their words are inserted verbatim).
-
-  // Gentle, optional coping offer shown when several consecutive messages
-  // read as emotionally heavy. Not a diagnosis, not a substitute for
-  // professional support, just a caring pause and a well-known,
-  // low-risk grounding technique (paced breathing).
-
-  // Pronoun-swap reflection is intentionally NOT enabled for Persian: verb
-  // conjugation carries person/number in the verb ending itself (not just
-  // a separate pronoun), so a naive word-swap would frequently produce
-  // ungrammatical sentences. English's simpler pronoun morphology makes
-  // that technique reliable there instead (see en.js).
-  const pronounMap = null;
-
-  const exitKeywords = [
-    'بدرود',
-    'خداحافظ',
-    'خدانگهدار',
-    'خدافظ',
-    'بای',
-    'بای بای',
-    'میخوام برم',
-    'می‌خوام برم',
-    'باید برم',
-    'باید بروم',
-    'باید برم دیگه',
-    'دیگه برم',
-    'الان برم',
-    'وقتشه برم',
-    'وقتشه خداحافظی کنم',
-    'وقت خداحافظیه',
-    'وداع',
-    'خداحافظی می‌کنم',
-    'خداحافظی میکنم',
-    'بعدا می‌بینمت',
-    'بعداً می‌بینمت',
-    'بعدا میبینمت',
-    'مرسی تا بعد',
-    'تا بعد',
-    'exit',
-    'quit'
-  ];
-
-  // Phase 1 (warm presence): Darya's first message opens with a calm,
-  // gentle invitation.
-
-  // Phase 2 (gentle direction): Darya's second message offers a light,
-  // low-pressure choice without going directly to deep emotions.
-
-  // Response to repeated greetings: R.greetings: when the user says hello several
-  // times in a row without answering the previous question, Darya gently
-  // breaks the loop and invites a fresh start.
-
-  // Response to word repetition: when the user repeats a word 4+ times
-  // across recent messages, Darya names that word directly rather than
-  // using a generic placeholder. {word} and {count} are substituted by
-  // the engine at response time.
-
-  // Response to frustration signals: when the user uses repeated
-  // exclamation marks ("!!!"), repeated question marks ("???"), or
-  // insulting language, Darya responds with extra calm.
-
-  // Response to spam or random input: for short, repetitive, meaningless
-  // text (e.g., "asdasd", "۱۲۳۴", "ffffff"), Darya replies gently and
-  // without judgment.
-
-  // Response to ambiguous input: for very short messages (1-2 words,
-  // under 10 characters) that don't match any rule and are insufficient
-  // for intent detection. These responses gently invite elaboration.
-
-  // Response to short acknowledgements: when the user responds to
-  // Darya's question with a brief, non-substantive answer (e.g.
-  // "باشه", "آره", "خب"), Darya gently rephrases or repeats the question.
-
-  // Response to mockery or sarcasm: when the user sends sarcastic
-  // praise ("چه باهوشی!!!"), mocking agreement ("باشه باشه تو بردی"),
-  // or dismissive signals, Darya responds with gentle understanding
-  // rather than taking the sarcasm literally.
-
-  const wellBeingPattern =
-    /^(?:سلام|درود|هی|خب|اوکی|باشه)?\s*(?:خوبی|تو خوبی|خوبی تو|حالت خوبه|چطوری|چه خبر|حالت چطور|حالتون چطور|حال شما چطور|احوال شما چطور|چیکار می‌کنی|چیکار میکنی|چیکار می کنی|چی کار می‌کنی|چی کار میکنی|چی کار می کنی|داری چیکار می‌کنی|داری چیکار میکنی|داری چیکار می کنی|چکار می‌کنی|چکار میکنی|چکار می کنی)(?:های|ها|یم|ام|ای|ند|ید|م|ی|ه)?(?:\s*است)?[!.؟]*$/iu;
-
-  const insultPattern =
-    /(?<!\p{L})(?:احمق|احمقی|کودن|کودنی|دیوونه|دیوونی|بی‌عقل|بیعقل|نادان|نادانم|نادانی|نادون|نادونی|خاک (?:به|تو|بر)?سر(?:ت)?|خاک تو سرت|خاک بر سرت|برو گمشو|برو بمیر|برو جهنم|برو به درک|مردک|حرومزاده|حرامزاده|فضول|چرت|چرتی|مزخرف|هذیان|گوه|کثافت|کثیف|بی‌شعور|بیشعور|بی‌شرف|بیشرف|بی‌ادب|بیادب|خار|کون|کونی|دهن|کیری|گایید|کص|کس|مادرت|مادرجنده|خواهرت|خفه|جاکش|احمقانه|نفهم|نفهمی|ابله|ابلهی|مسخره|مسخرهای|بی‌سواد|بیسواد|خر|گاو|سگ|خوک|الاغ|گور|پدرسوخته|جنده|قحبه|فاحشه|دیوث|ملعون|لعنتی|نامرد|بی‌غیرت|بیغیرت|ننگ)(?!\p{L})/iu;
-
-  // Date/time question patterns (Persian). Time queries: asking the
-  // current time. Date queries: asking the current date.
-  const dateTimeTimePattern =
-    /(?<!\p{L})(?:ساعت (?:چنده|چند|چقدره|چقدر)|الان ساعت (?:چنده|چند)|ساعت الان چند|time|ساعت را می‌گویی|ساعت رو بگو|وقت چنده)(?!\p{L})/iu;
-
-  const dateTimeDatePattern =
-    /(?<!\p{L})(?:تاریخ (?:امروز|چنده|چیست|رو بگو|رو می‌گی)|امروز (?:چندمه|چه روزیه|چه تاریخی|چند شنبه)|چند شنبه ایم|تاریخ شمسی|تاریخ ایرانی|تاریخ امروز چنده|what('?s| is) the date in iran|jalali date|persian date)(?!\p{L})/iu;
-
-  // Darya-targeted harassment (Persian): insults and bullying
-  // specifically directed at Darya.
-  const daryaHarassmentPattern =
-    /(?<!\p{L})(?:دریا (?:تو|)(?:\s+)(?:احمق|کودن|دیوونه|بی‌عرضه|بی‌خاصیت|چرتی|مسخره|کصکش|کونی|بی‌شعور|بی‌سواد|نفهم|ابله|بد|کثیف|چقدر بدی|چقدر بی مصرفی|به دردم نمیخوری)|تو (?:یک )?(?:ربات )?(?:احمق|کودن|کونی|کصکش|مسخره|بدبخت|چرتی|بی‌خاصیت|بی‌شعور|نفهم|بی‌سواد))(?!\p{L})/iu;
-
-  // Sexual or inappropriate comments (Persian). Only explicitly sexual
-  // terms are listed: everyday words like "ببینم" (let me see), "ببینمت"
-  // (see you), "داغ" (hot), "عشق" (love), "نشان بده" (show me), "بیا
-  // بیرون" (come out) and "بکنم" (I will do it) are far too common in
-  // innocent speech and must never trip the harassment gate.
-  const sexualHarassmentPattern =
-    /(?<!\p{L})(?:سکسی|بوس(?:یدن|ید)?|ببوس|بیا (?:بستر|تخت|پیشم|خونه)|بدنت(?:و| رو)|سینه(?: هات|ت)?|کون(?:ت)?|کس(?:ت)?|ساک(?: بزن| کن)|بکنمت|جنده|قحبه|بزن قدش|عریان|لخت|برهنه)(?!\p{L})/iu;
-
-  const stopWords = new Set([
-    // Persian verb prefixes
-    'می',
-    'نمی',
-    'مى',
-    'نمى',
-    // Comparative and superlative suffixes become separate tokens when
-    // ZWNJ is normalized to a space (ساده‌تر -> ساده تر) and would
-    // otherwise false-trigger word-repetition detection.
-    'تر',
-    'ترین',
-    // Pronouns and demonstratives
-    'تو',
-    'من',
-    'او',
-    'ما',
-    'شما',
-    'اون',
-    'ای',
-    'این',
-    'آن',
-    'ایشان',
-    'خود',
-    'خودم',
-    'خودت',
-    // Prepositions and conjunctions
-    'با',
-    'در',
-    'به',
-    'از',
-    'که',
-    'تا',
-    'برای',
-    'و',
-    'یا',
-    'نه',
-    'بله',
-    'آره',
-    'باشه',
-    'خب',
-    'خوب',
-    'نه',
-    'بعد',
-    'قبل',
-    'فقط',
-    'هم',
-    'بر',
-    'بدون',
-    'درباره',
-    'مثل',
-    'مانند',
-    'بین',
-    'زیر',
-    'روی',
-    // Object markers: formal (را), colloquial (رو, ر) mark the definite
-    // direct object and repeat constantly in everyday Persian; they must
-    // never count toward word-repetition detection.
-    'را',
-    'رو',
-    'ر',
-    'بالا',
-    'پایین',
-    'کنار',
-    'داخل',
-    'بیرون',
-    'جلوی',
-    'پشت',
-    'نزدیک',
-    'دور',
-    // Common verbs and auxiliaries
-    'هست',
-    'نیست',
-    'هستم',
-    'هستی',
-    'هستیم',
-    'هستید',
-    'هستند',
-    'نیستم',
-    'نیستی',
-    'است',
-    'نیست',
-    'بود',
-    'بودم',
-    'بودی',
-    'بودیم',
-    'بودید',
-    'بودند',
-    'دارد',
-    'دارم',
-    'داری',
-    'داریم',
-    'دارید',
-    'دارند',
-    'ندارم',
-    'نداری',
-    'ندارد',
-    // Persian verb suffixes and light verbs that commonly appear as separate words
-    'کن',
-    'کنم',
-    'کنی',
-    'کند',
-    'کنیم',
-    'کنید',
-    'کنند',
-    'کنه',
-    'کنی',
-    'کنم',
-    'کنند',
-    'کرد',
-    'کردم',
-    'کردی',
-    'کرده',
-    'کردند',
-    'ده',
-    'دم',
-    'دی',
-    'دهد',
-    'دهیم',
-    'دهید',
-    'دهند',
-    'گیر',
-    'گیرم',
-    'گیری',
-    'گیرد',
-    'گیریم',
-    'گیرید',
-    'گیرند',
-    'باش',
-    'باشم',
-    'باشی',
-    'باشد',
-    'باشیم',
-    'باشید',
-    'باشند',
-    'شو',
-    'شوم',
-    'شوی',
-    'شود',
-    'شویم',
-    'شوید',
-    'شوند',
-    'خور',
-    'خورم',
-    'خوری',
-    'خورد',
-    'خوریم',
-    'خورید',
-    'خورند',
-    'زن',
-    'زنم',
-    'زنی',
-    'زند',
-    'زنیم',
-    'زنید',
-    'زنند',
-    'بین',
-    'بینم',
-    'بینی',
-    'بیند',
-    'بینیم',
-    'بینید',
-    'بینند',
-    'گو',
-    'گویم',
-    'گویی',
-    'گوید',
-    'گوییم',
-    'گویید',
-    'گویند',
-    'دان',
-    'دانم',
-    'دانی',
-    'داند',
-    'دانیم',
-    'دانید',
-    'دانند',
-    'باید',
-    'شاید',
-    'حتما',
-    'حتماً',
-    'ممکن',
-    'می‌شود',
-    'میشه',
-    'خواهد',
-    'خواهم',
-    'خواهی',
-    'خواهیم',
-    'خواهید',
-    'خواهند',
-    'تواند',
-    'توانم',
-    'توانی',
-    'توانیم',
-    'توانید',
-    'توانند',
-    // Question words
-    'چرا',
-    'چطور',
-    'چگونه',
-    'چیست',
-    'چیه',
-    'کجا',
-    'کیه',
-    'کیست',
-    'آیا',
-    'کدام',
-    'چقدر',
-    'چند',
-    'چه',
-    'کی',
-    'کِی',
-    // Indefinite articles and demonstratives that appear constantly
-    'یک',
-    'یکی',
-    'یه',
-    'همین',
-    'همون',
-    'چی',
-    // Common adverbs
-    'الان',
-    'الآن',
-    'حالا',
-    'هنوز',
-    'دیگر',
-    'دیگه',
-    'باز',
-    'دوباره',
-    'خیلی',
-    'بسیار',
-    'کم',
-    'اندکی',
-    'تقریبا',
-    'حدود',
-    'همیشه',
-    'گاهی',
-    'بعضی',
-    'برخی',
-    'هیچ',
-    'حتماً',
-    'البتّه',
-    'البته',
-    'قطعاً',
-    'قطعا',
-    'واقعاً',
-    'واقعا',
-    // English function words (for mixed-language input)
-    'is',
-    'are',
-    'am',
-    'be',
-    'been',
-    'being',
-    'the',
-    'a',
-    'an',
-    'in',
-    'on',
-    'at',
-    'to',
-    'for',
-    'of',
-    'and',
-    'or',
-    'but',
-    'so',
-    'if',
-    'as',
-    'it',
-    'its',
-    'i',
-    'you',
-    'he',
-    'she',
-    'they',
-    'we',
-    'my',
-    'your',
-    'his',
-    'her',
-    'its',
-    'our',
-    'their',
-    'me',
-    'him',
-    'them',
-    'us',
-    'have',
-    'has',
-    'had',
-    'do',
-    'does',
-    'did',
-    'will',
-    'would',
-    'can',
-    'could',
-    'shall',
-    'should',
-    'may',
-    'might',
-    'must',
-    'not',
-    'no',
-    'nor',
-    'this',
-    'that',
-    'these',
-    'those',
-    'up',
-    'down',
-    'out',
-    'off',
-    'over',
-    'under',
-    'just',
-    'only',
-    'very',
-    'too',
-    'also',
-    'even',
-    'still'
-  ]);
-
-  // Response to conversation staleness: when the conversation has been
-  // shallow and superficial for several turns (e.g. short
-  // acknowledgements with no emotional depth), Darya gently invites a
-  // more substantive direction.
-
-  // Response to being asked how Darya is: when the user checks in on
-  // Darya after a heavy emotional conversation (e.g. "خوبی؟",
-  // "حالت چطوره؟"), these responses acknowledge the care behind the
-  // question and return attention to the user.
-
-  /**
-   * پاسخ جایگزینی که وقتی موتور گفتگو با خطای غیرمنتظره‌ای مواجه می‌شود
-   * (مثلاً خطای مرجع یا خطای منطقی) نمایش داده می‌شود. بر خلاف
-   * emptyInputReply: R.emptyInputReply، این پیام تأیید می‌کند که کاربر چیزی گفته اما دریا
-   * نتوانسته آن را پردازش کند و کاربر را به تکرار دعوت می‌کند.
-   */
-
-  function foreignLanguageRedirect() {
-    return `من ${BOT_NAME} هستم و تنها به زبان فارسی گفت‌وگو می‌کنم، تا بتوانم بهترین همراهی را داشته باشم. لطفاً پیام‌تان را به فارسی بنویسید تا ادامه دهیم.`;
-  }
-
-  const questionTopics = new Set([
-    'family',
-    'work',
-    'sleep',
-    'anxiety',
-    'stress',
-    'sadness',
-    'anger',
-    'joy',
-    'loneliness',
-    'self_esteem',
-    'grief',
-    'motivation',
-    'mindfulness',
-    'resilience',
-    'forgiveness',
-    'purpose',
-    'relationship',
-    'health',
-    'school',
-    'money',
-    'feeling',
-    'reasoning',
-    'need'
-  ]);
-
-  const topicSeriousness = {
-    safety: 1,
-    professional_boundary: 0.9,
-    grief: 0.9,
-    health: 0.85,
-    anxiety: 0.8,
-    stress: 0.8,
-    sadness: 0.8,
-    anger: 0.75,
-    loneliness: 0.75,
-    family: 0.7,
-    relationship: 0.7,
-    sleep: 0.65,
-    work: 0.65,
-    money: 0.7,
-    school: 0.6,
-    self_esteem: 0.8,
-    motivation: 0.6,
-    mindfulness: 0.4,
-    resilience: 0.7,
-    forgiveness: 0.7,
-    purpose: 0.65,
-    feeling: 0.65,
-    reasoning: 0.55,
-    need: 0.55,
-    joy: 0.25,
-    gratitude: 0.2,
-    greeting: 0.15,
-    smalltalk_howareyou: 0.2,
-    smalltalk_identity: 0.25,
-    smalltalk_capability: 0.25,
-    app_feedback: 0.15,
-    recap: 0.35,
-    knowledge: 0.25,
-    word_meaning: 0.2,
-    ask_me_question: 0.2,
-    self_improvement: 0.2,
-    what_do_i_do: 0.45,
-    unsure_topic: 0.25,
-    apology: 0.2,
-    meta_feedback: 0.15,
-    about_eliza: 0.25,
-    compliment_darya: 0.15,
-    misread_correction: 0.3
-  };
-
-  const selfAwareness = {
-    approach:
-      'من از الگوهای گفتگو، زمینه‌ی کوتاه‌مدت و انتخاب سنجیده‌ی پاسخ استفاده می‌کنم.',
-    boundaries:
-      'من از واقعیت‌های روز خبر ندارم مگر اینکه در قفسه‌ی آفلاینم باشند و به‌جای متخصص تصمیم حرفه‌ای نمی‌گیرم.',
-    memory:
-      'فقط در همین برگه جزئیات منتخب را به خاطر می‌سپارم و اگر اصلاحم کنی آن را تغییر می‌دهم.'
-  };
-
-  // Assemble the language pack object from top-level variables.
+  const {
+    trivialCaptures,
+    familyTerms,
+    professionTerms,
+    placeWords,
+    entityCallbackTemplates,
+    questionPattern,
+    pronounMap,
+    exitKeywords,
+    wellBeingPattern,
+    insultPattern,
+    dateTimeTimePattern,
+    dateTimeDatePattern,
+    daryaHarassmentPattern,
+    sexualHarassmentPattern,
+    stopWords,
+    questionTopics,
+    topicSeriousness,
+    selfAwareness,
+    foreignLanguageRedirect
+  } = global.DaryaFaData;
+  const rules = global.DaryaFaRules;
 
   const fa = {
     code: 'fa',
@@ -1204,6 +117,7 @@
     questionPattern,
     questionFallbacks: R.questionFallbacks,
     questionAcknowledgements: R.questionAcknowledgements,
+    sourceSuggestions: R.sourceSuggestions,
     topicCallbacks: R.topicCallbacks,
     quotedCallbackTemplates: R.quotedCallbackTemplates,
     distressNudges: R.distressNudges,
@@ -1215,6 +129,55 @@
     entityCallbackTemplates,
     topicSpecificQuestions: R.topicSpecificQuestions,
     questionTopics,
+    // Signals for detecting an adult disclosing sexual or romantic
+    // attraction toward a minor. All three must align (adult context,
+    // attraction vocabulary, minor-age marker) before the protected
+    // minor-attraction reply is delivered, so a teenager's normal peer
+    // crush never triggers it. `selfAge` and `adultIdentity` establish
+    // the adult context; `strongSexual` allows a clearly sexual phrasing
+    // to fire even without an explicit age. `familial` blocks the
+    // ambiguous attraction words when the text is plainly about a
+    // relative ("دخترم را دوست دارم").
+    minorAttractionSignals: {
+      selfAge:
+        /(?<!\p{L})(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{2,3})\s*(?:سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{2,3})\s*سال(?:ه|م|مه)?(?!\p{L})/iu,
+      adultIdentity:
+        /(?<!\p{L})(?:من\s+)?(?:یک\s+)?(?:بزرگسال|آدم بزرگ)(?:م| هستم|هستم)?(?!\p{L})/iu,
+      attraction:
+        /(?<!\p{L})(?:جذبش|بهش|به اون|به او)\s+(?:شدم|دارم)|عاشق(?:ش)?(?:م| هستم| شدم)?|دوستش دارم|دلم می‌خواد باهاش|دلم میخواد باهاش|دلم می خواد باهاش|کراش دارم|علاقه دارم(?: بهش| به اون| به او)?|دوست دارمش|دوسش دارم(?!\p{L})/iu,
+      strongSexual:
+        /(?<!\p{L})(?:میل جنسی|احساس جنسی|جذب جنسی|از نظر جنسی|تحریک جنسی)(?!\p{L})/iu,
+      minor:
+        /(?<!\p{L})(?:نوجوان|نوجوون|کودک|دختر\s*بچه|پسر\s*بچه|زیر\s*(?:۱۸|18)|(?<![۰-۹0-9])(?:[1-9]|1[0-7]|[۱-۹]|۱[۰-۷])\s*سال(?:ه|م|مه)?)(?!\p{L})/iu,
+      familial:
+        /(?<!\p{L})(?:دخترم|پسرم|فرزندم|بچه‌ام|بچه‌هام|نوه‌ام|خواهرزاده|برادرزاده|فرزند من|بچه من)(?!\p{L})/iu
+    },
+    minorAttractionResponses: R['ruleMinorAttraction'],
+    // Neutral probe used for the first half of a split-turn minor
+    // attraction disclosure, before the speaker's own age is known.
+    minorAttractionProbe: R.minorAttractionProbe,
+    // The user wants each list item on its own line ("بهتر نیست هر
+    // کدوم رو در یک خط جداگانه بنویسی؟"). Matches the format-feedback
+    // override, which re-emits the last knowledge list line by line.
+    formatFeedbackPattern:
+      /(?:هر کدوم.{0,14}(?:خط|بنویس|بنویسی)|هر کدام.{0,14}(?:خط|بنویس|بنویسی)|تک تک.{0,10}(?:خط|بنویس)|یکی یکی.{0,10}(?:خط|بنویس)|جدا بنویس|جداگانه بنویس|در یک خط جدا|خط به خط|خط جداگانه)/u,
+    formatFeedbackResponses: R['ruleFormatFeedback'],
+    // Near-peer young-adult crush detection: an 18-20 year old with
+    // romantic feelings for a 16-17 year old gets warm practical guidance
+    // (pace, respect, consent, local laws) instead of the adult-minor
+    // protection reply, which is reserved for mature adults or larger
+    // gaps. Reuses the attraction/familial patterns and the selfAge
+    // capture, adding a target-age marker for 16-17.
+    nearPeerLoveSignals: {
+      selfAge:
+        /(?<!\p{L})(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{2,3})\s*(?:سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{2,3})\s*سال(?:ه|م|مه)?(?!\p{L})/iu,
+      attraction:
+        /(?<!\p{L})(?:جذبش|بهش|به اون|به او)\s+(?:شدم|دارم)|عاشق(?:ش)?(?:م| هستم| شدم)?|دوستش دارم|دلم می‌خواد باهاش|دلم میخواد باهاش|دلم می خواد باهاش|کراش دارم|علاقه دارم(?: بهش| به اون| به او)?|دوست دارمش|دوسش دارم(?!\p{L})/iu,
+      targetAge: /(?<!\p{L})(?:1[6-7]|۱۶|۱۷)\s*سال(?:ه|م)?(?!\p{L})/iu,
+      familial:
+        /(?<!\p{L})(?:دخترم|پسرم|فرزندم|بچه‌ام|بچه‌هام|نوه‌ام|خواهرزاده|برادرزاده|فرزند من|بچه من)(?!\p{L})/iu
+    },
+    nearPeerLoveResponses: R['ruleNearPeerLove'],
     blendResponses: R.blendResponses,
     topicSeriousness,
     humor: R.humor,
@@ -1235,6 +198,7 @@
     greetingsOpen: R.greetingsOpen,
     greetingsInviting: R.greetingsInviting,
     greetingsReturning: R.greetingsReturning,
+    idleOpeners: R.idleOpeners,
     // Keep the historical misspelling as a read-only compatibility alias;
     // old callers used greentings* before the pools were made explicit.
     greentingsOpen: R.greetingsOpen,
@@ -1276,6 +240,17 @@
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
+    ruleTellJoke: R.ruleTellJoke,
+    ruleShoppingHelp: R.ruleShoppingHelp,
+    // Short yes/no/maybe answers to a question Darya just asked continue
+    // the pending thread contextually (see _resolveShortAnswerContext).
+    shortAnswerAffirmContext: R.shortAnswerAffirmContext,
+    shortAnswerNegateContext: R.shortAnswerNegateContext,
+    shortAnswerMaybeContext: R.shortAnswerMaybeContext,
+    rulePrivacyBoundary: R.rulePrivacyBoundary,
+    ruleSmalltalkCapability: R.ruleSmalltalkCapability,
+    ruleAgeGap: R.ruleAgeGap,
+    ruleDepression: R.ruleDepression,
     emotionCalibration: R.emotionCalibration,
     ui: {
       appTitle: 'دریا · همراه گفتگوی آرام',

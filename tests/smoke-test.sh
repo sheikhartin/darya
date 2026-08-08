@@ -62,27 +62,76 @@ section "File structure"
 required_files=(
   "index.html"
   "css/style.css"
-  "js/app.js"
+  "js/app/index.js"
+  "js/app/composer.js"
+  "js/app/language.js"
+  "js/app/conversation.js"
+  "js/app/menu.js"
+  "js/app/sound.js"
   "js/engine/index.js"
+  "js/engine/utils-constants.js"
+  "js/engine/utils-text.js"
   "js/engine/utils.js"
+  "js/engine/factual-math.js"
+  "js/engine/factual-datetime.js"
+  "js/engine/factual-fun-facts.js"
   "js/engine/factual.js"
   "js/engine/recap.js"
   "js/engine/responder.js"
+  "js/engine/responder-public.js"
+  "js/engine/responder-detect.js"
+  "js/engine/responder-safety.js"
+  "js/engine/responder-emotion.js"
+  "js/engine/responder-phase.js"
+  "js/engine/responder-rules.js"
+  "js/engine/responder-entity.js"
+  "js/engine/responder-overrides.js"
   "js/engine/time-utils.js"
   "js/ui/core.js"
-  "js/ui/ambient.js"
+  "js/ui/ambient-visuals.js"
+  "js/ui/ambient-sound-data.js"
+  "js/ui/ambient-sound-helpers.js"
+  "js/ui/ambient-sound-playback.js"
   "js/ui/ambient-sound.js"
   "js/ui/export.js"
   "js/ui/logger.js"
+  "js/ui/overlays-breathe.js"
+  "js/ui/overlays-confirm.js"
+  "js/ui/overlays-notify.js"
   "js/ui/overlays.js"
+  "js/data/knowledge-reflections.js"
+  "js/data/knowledge-facts-science.js"
+  "js/data/knowledge-facts-tech.js"
+  "js/data/knowledge-facts-culture.js"
+  "js/data/knowledge-facts-life.js"
+  "js/data/knowledge-facts-education.js"
+  "js/data/knowledge-facts-entertainment.js"
+  "js/data/knowledge-facts-project.js"
+  "js/data/knowledge-facts-domains.js"
+  "js/data/knowledge-fun-facts.js"
+  "js/data/knowledge-lists.js"
   "js/data/knowledge-base.js"
   "js/languages/index.js"
   "js/languages/fa.js"
-  "js/languages/en.js"
+  "js/languages/fa-lookups.js"
+  "js/languages/fa-data.js"
+  "js/languages/fa-rules.js"
+  "js/languages/fa-responses-pools-c.js"
+  "js/languages/fa-responses-pools-b.js"
+  "js/languages/fa-responses-pools-a.js"
   "js/languages/fa-responses.js"
+  "js/languages/en.js"
+  "js/languages/en-lookups.js"
+  "js/languages/en-data.js"
+  "js/languages/en-rules.js"
+  "js/languages/en-responses-pools-c.js"
+  "js/languages/en-responses-pools-b.js"
+  "js/languages/en-responses-pools-a.js"
   "js/languages/en-responses.js"
-  "js/languages/halfspace.js"
-  "js/languages/entity-extractor.js"
+  "js/text/halfspace-data.js"
+  "js/text/halfspace.js"
+  "js/text/entity-extractor-data.js"
+  "js/text/entity-extractor.js"
   "assets/favicon.ico"
   "manifest.json"
   "sw.js"
@@ -110,7 +159,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app.js js/engine/index.js js/engine/utils.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/time-utils.js js/ui/core.js js/ui/ambient.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/en.js js/languages/fa-responses.js js/languages/en-responses.js js/languages/halfspace.js js/languages/entity-extractor.js; do
+  for f in js/app/index.js js/app/composer.js js/app/language.js js/app/conversation.js js/app/menu.js js/app/sound.js js/engine/index.js js/engine/utils-constants.js js/engine/utils-text.js js/engine/utils.js js/engine/factual-math.js js/engine/factual-datetime.js js/engine/factual-fun-facts.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/responder-public.js js/engine/responder-detect.js js/engine/responder-safety.js js/engine/responder-emotion.js js/engine/responder-phase.js js/engine/responder-rules.js js/engine/responder-entity.js js/engine/responder-overrides.js js/engine/time-utils.js js/ui/core.js js/ui/ambient-visuals.js js/ui/ambient-sound-data.js js/ui/ambient-sound-helpers.js js/ui/ambient-sound-playback.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays-breathe.js js/ui/overlays-confirm.js js/ui/overlays-notify.js js/ui/overlays.js js/data/knowledge-reflections.js js/data/knowledge-facts-science.js js/data/knowledge-facts-tech.js js/data/knowledge-facts-culture.js js/data/knowledge-facts-life.js js/data/knowledge-facts-education.js js/data/knowledge-facts-entertainment.js js/data/knowledge-facts-project.js js/data/knowledge-facts-domains.js js/data/knowledge-fun-facts.js js/data/knowledge-lists.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/fa-lookups.js js/languages/fa-data.js js/languages/fa-rules.js js/languages/fa-responses-pools-c.js js/languages/fa-responses-pools-b.js js/languages/fa-responses-pools-a.js js/languages/fa-responses.js js/languages/en.js js/languages/en-lookups.js js/languages/en-data.js js/languages/en-rules.js js/languages/en-responses-pools-c.js js/languages/en-responses-pools-b.js js/languages/en-responses-pools-a.js js/languages/en-responses.js js/text/halfspace-data.js js/text/halfspace.js js/text/entity-extractor-data.js js/text/entity-extractor.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -156,10 +205,15 @@ fi
 # The sound-cookie init-order bug: the cookie-name constant must be
 # declared before the module-state initializer that reads it. A hoisted
 # `var` made the cookie regex look for "undefined=" and silently dropped
-# the saved sound preference on every page load.
-sound_cookie_line=$(grep -n "SOUND_COOKIE_NAME = " js/ui/ambient-sound.js | head -1 | cut -d: -f1)
-sound_enabled_line=$(grep -n "var isEnabled = getSavedState" js/ui/ambient-sound.js | head -1 | cut -d: -f1)
-if [[ -n "$sound_cookie_line" && -n "$sound_enabled_line" && "$sound_cookie_line" -lt "$sound_enabled_line" ]]; then
+# the saved sound preference on every page load. After the module split,
+# the constant lives in the data part file that loads before the main
+# module (which holds the state initializer), preserving the ordering.
+sound_cookie_file=js/ui/ambient-sound-data.js
+sound_cookie_line=$(grep -n "SOUND_COOKIE_NAME = " "$sound_cookie_file" | head -1 | cut -d: -f1)
+sound_enabled_line=$(grep -n "isEnabled: getSavedState" js/ui/ambient-sound.js | head -1 | cut -d: -f1)
+sound_main_line=$(grep -n "js/ui/ambient-sound.js" index.html | head -1 | cut -d: -f1)
+sound_data_line=$(grep -n "js/ui/ambient-sound-data.js" index.html | head -1 | cut -d: -f1)
+if [[ -n "$sound_cookie_line" && -n "$sound_enabled_line" && -n "$sound_main_line" && -n "$sound_data_line" && "$sound_data_line" -lt "$sound_main_line" ]]; then
   ok "sound cookie constant is declared before the module state initializer"
 else
   fail "sound cookie constant ordering regressed; saved preference would be lost on every visit"
@@ -167,10 +221,12 @@ fi
 
 # The Persian word-boundary bug: \b does not work on Persian script in JS
 # regex, and a plain [\u0600-\u06FF] range wrongly includes punctuation.
-if grep -q '\\\\p{L}' js/languages/fa.js; then
-  ok "fa.js uses \\p{L} for word-boundary checks (not a raw Unicode range)"
+# fa.js was split into part files; the boundary builder lives in
+# fa-rules.js, so the check spans every fa part file.
+if grep -q '\\\\p{L}' js/languages/fa*.js; then
+  ok "fa language files use \\p{L} for word-boundary checks (not a raw Unicode range)"
 else
-  fail "fa.js does not appear to use \\p{L} boundary checks; word-boundary bug may have regressed"
+  fail "fa language files do not appear to use \\p{L} boundary checks; word-boundary bug may have regressed"
 fi
 
 # The menu popover overflow bug: it must grow toward the center
@@ -313,6 +369,7 @@ sw = pathlib.Path('sw.js').read_text()
 entries = set(re.findall(r"['\"](\./[^'\"]+)['\"]", sw))
 required = {'./index.html'}
 required.update('./js/languages/' + p.name for p in pathlib.Path('js/languages').glob('*.js'))
+required.update('./js/text/' + p.name for p in pathlib.Path('js/text').glob('*.js'))
 required.update('./fonts/' + p.name for p in pathlib.Path('fonts').glob('*.woff2'))
 raise SystemExit(0 if required <= entries else 1)
 PY2
@@ -337,7 +394,7 @@ else
   fail "ocean depth breath regression detected"
 fi
 
-if grep -q 'const count = 8' js/ui/ambient.js && grep -q 'randomBetween(14, 22)' js/ui/ambient.js && grep -q 'randomBetween(-12, 12)' js/ui/ambient.js; then
+if grep -q 'const count = 8' js/ui/ambient-visuals.js && grep -q 'randomBetween(14, 22)' js/ui/ambient-visuals.js && grep -q 'randomBetween(-12, 12)' js/ui/ambient-visuals.js; then
   ok "ocean bubble parameters are randomized in the calm range"
 else
   fail "ocean bubble randomization regression detected"
@@ -360,7 +417,7 @@ fi
 # Mixed-script detection: the engine must detect when the user mixes
 # scripts (e.g. Persian with English) so it can respond appropriately
 # instead of treating it as a pure-language input.
-if grep -q '_isMixedLanguage' js/engine/responder.js && grep -q 'MIXED_SCRIPT_FOREIGN_MIN' js/engine/utils.js; then
+if grep -q '_isMixedLanguage' js/engine/responder-*.js && grep -q 'MIXED_SCRIPT_FOREIGN_MIN' js/engine/utils.js; then
   ok "mixed-script detection is wired in the engine"
 else
   fail "mixed-script detection missing; bilingual input may be mishandled"
@@ -393,13 +450,13 @@ else
   fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"
 fi
 
-if grep -q 'topicSpecificQuestions' js/engine/responder.js js/languages/en.js js/languages/fa.js && (grep -q 'blend_sleep_anxiety' js/languages/en.js js/languages/fa.js || grep -q 'blend_sleep_anxiety' js/languages/en-responses.js js/languages/fa-responses.js) && (grep -q 'recap:' js/languages/en-responses.js || grep -q 'recap:' js/languages/fa-responses.js); then
+if grep -q 'topicSpecificQuestions' js/engine/responder-*.js js/languages/en.js js/languages/fa.js && grep -q 'blend_sleep_anxiety' js/languages/en-responses*.js js/languages/fa-responses*.js && grep -q 'recap:' js/languages/en-responses*.js js/languages/fa-responses*.js; then
   ok "topic-specific questions, blends, and recap rules are wired"
 else
   fail "intelligence topic-depth wiring is incomplete"
 fi
 
-if grep -q 'contextTopics' js/engine/responder.js && grep -q 'contextTopics' js/engine/utils.js; then
+if grep -q 'contextTopics' js/engine/responder-*.js && grep -q 'contextTopics' js/engine/utils.js; then
   ok "entity callbacks carry topic context confidence"
 else
   fail "entity context confidence guard is missing"
@@ -411,7 +468,7 @@ else
   fail "single-export layout or Persian theme wording is wrong"
 fi
 
-if grep -q 'initBeachWaveVariation' js/app.js && grep -q -e '--wave-duration' js/ui/ambient.js && grep -q -e '--wave-delay' js/ui/ambient.js && ! grep -Eq 'beach-wave-drift[^}]*translate3d' css/style.css; then
+if grep -q 'initBeachWaveVariation' js/app/index.js && grep -q -e '--wave-duration' js/ui/ambient-visuals.js && grep -q -e '--wave-delay' js/ui/ambient-visuals.js && ! grep -Eq 'beach-wave-drift[^}]*translate3d' css/style.css; then
   ok "beach waves have randomized horizontal-only timing"
 else
   fail "beach wave variation regression detected"
@@ -508,15 +565,17 @@ else
   fail "debug artifacts found in source: $(cat /tmp/darya-debug-artifacts.log | tr '\n' '; ')"
 fi
 
-if grep -q 'selectResponseStrategy' js/engine/responder.js && grep -q 'responseStrategies' js/engine/utils.js; then
+if grep -q 'selectResponseStrategy' js/engine/responder-*.js && grep -q 'responseStrategies' js/engine/utils.js; then
   ok "response strategy decisions are tracked"
 else
   fail "response strategy tracking is missing"
 fi
 
 # Bare math detection regression marker: Persian '۲+۵' must produce
-# a math answer directly, not a generic fallback.
-if grep -q 'handleFactualQuestion' js/engine/factual.js && grep -q 'bareMath' js/engine/factual.js; then
+# a math answer directly, not a generic fallback. The factual module was
+# split; bareMath lives in factual-math.js and the assembler re-exports
+# handleFactualQuestion.
+if grep -q 'bareMath' js/engine/factual-math.js && grep -q 'handleFactualQuestion' js/engine/factual.js; then
   ok "handleFactualQuestion with bare math detection present"
 else
   fail "bare math detection missing; users get no answer for '2+5'"
@@ -533,14 +592,14 @@ fi
 # Half-space normalization for Persian: must be loaded as a separate
 # classic script before the language packs and attach the DaryaHalfspace
 # global that the language packs consume.
-if grep -q 'global.DaryaHalfspace' js/languages/halfspace.js; then
+if grep -q 'global.DaryaHalfspace' js/text/halfspace.js; then
   ok "halfspace classic script attaches DaryaHalfspace global"
 else
   fail "halfspace classic script missing DaryaHalfspace global"
 fi
 
 # Ambient scene module exports for bubbles and birds.
-if grep -q 'DaryaAmbient' js/ui/ambient.js && grep -q 'initBubbles' js/ui/ambient.js; then
+if grep -q 'DaryaAmbient' js/ui/ambient-visuals.js && grep -q 'initBubbles' js/ui/ambient-visuals.js; then
   ok "ambient module exports bubble/bird initialization"
 else
   fail "ambient module missing required exports"
@@ -562,13 +621,13 @@ fi
 # RTL/LTR direction fix: applyLanguage must set dir and lang on the
 # document root element so the full page layout mirrors correctly when
 # English is selected. Without this, the entire UI stays RTL in English.
-if grep -q 'el\.htmlRoot\.setAttribute.*dir.*chosenLang\.dir' js/app.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*chosenLang\.code' js/app.js; then
+if grep -q 'el\.htmlRoot\.setAttribute.*dir.*chosenLang\.dir' js/app/language.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*chosenLang\.code' js/app/language.js; then
   ok "applyLanguage sets dir and lang on document root for correct RTL/LTR switching"
 else
   fail "applyLanguage does not update dir/lang on document root; English UI will be RTL"
 fi
 
-if grep -q 'el\.htmlRoot\.setAttribute.*dir.*rtl' js/app.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*fa' js/app.js; then
+if grep -q 'el\.htmlRoot\.setAttribute.*dir.*rtl' js/app/language.js && grep -q 'el\.htmlRoot\.setAttribute.*lang.*fa' js/app/language.js; then
   ok "showPicker resets dir/lang to RTL defaults so the picker renders correctly"
 else
   fail "showPicker does not reset dir/lang to defaults; picker may render in LTR"
@@ -609,24 +668,59 @@ else
 
     check_status "/" "200"
     check_status "/css/style.css" "200"
-    check_status "/js/app.js" "200"
+    check_status "/js/app/index.js" "200"
+    check_status "/js/app/composer.js" "200"
+    check_status "/js/app/language.js" "200"
+    check_status "/js/app/conversation.js" "200"
+    check_status "/js/app/menu.js" "200"
+    check_status "/js/app/sound.js" "200"
     check_status "/js/engine/index.js" "200"
+    check_status "/js/engine/utils-constants.js" "200"
     check_status "/js/engine/utils.js" "200"
+    check_status "/js/engine/factual-math.js" "200"
+    check_status "/js/engine/factual-datetime.js" "200"
+    check_status "/js/engine/factual-fun-facts.js" "200"
     check_status "/js/engine/factual.js" "200"
     check_status "/js/engine/recap.js" "200"
     check_status "/js/engine/responder.js" "200"
+    check_status "/js/engine/responder-public.js" "200"
+    check_status "/js/engine/responder-detect.js" "200"
+    check_status "/js/engine/responder-safety.js" "200"
+    check_status "/js/engine/responder-emotion.js" "200"
+    check_status "/js/engine/responder-phase.js" "200"
+    check_status "/js/engine/responder-rules.js" "200"
+    check_status "/js/engine/responder-entity.js" "200"
+    check_status "/js/engine/responder-overrides.js" "200"
     check_status "/js/engine/time-utils.js" "200"
     check_status "/js/ui/core.js" "200"
-    check_status "/js/ui/ambient.js" "200"
+    check_status "/js/ui/ambient-visuals.js" "200"
+    check_status "/js/ui/ambient-sound-data.js" "200"
+    check_status "/js/ui/ambient-sound-helpers.js" "200"
+    check_status "/js/ui/ambient-sound-playback.js" "200"
     check_status "/js/ui/ambient-sound.js" "200"
     check_status "/js/ui/export.js" "200"
     check_status "/js/ui/logger.js" "200"
+    check_status "/js/ui/overlays-breathe.js" "200"
+    check_status "/js/ui/overlays-confirm.js" "200"
+    check_status "/js/ui/overlays-notify.js" "200"
     check_status "/js/ui/overlays.js" "200"
     check_status "/js/data/knowledge-base.js" "200"
     check_status "/js/languages/index.js" "200"
     check_status "/js/languages/fa.js" "200"
-    check_status "/js/languages/en.js" "200"
+    check_status "/js/languages/fa-lookups.js" "200"
+    check_status "/js/languages/fa-data.js" "200"
+    check_status "/js/languages/fa-rules.js" "200"
+    check_status "/js/languages/fa-responses-pools-c.js" "200"
+    check_status "/js/languages/fa-responses-pools-b.js" "200"
+    check_status "/js/languages/fa-responses-pools-a.js" "200"
     check_status "/js/languages/fa-responses.js" "200"
+    check_status "/js/languages/en.js" "200"
+    check_status "/js/languages/en-lookups.js" "200"
+    check_status "/js/languages/en-data.js" "200"
+    check_status "/js/languages/en-rules.js" "200"
+    check_status "/js/languages/en-responses-pools-c.js" "200"
+    check_status "/js/languages/en-responses-pools-b.js" "200"
+    check_status "/js/languages/en-responses-pools-a.js" "200"
     check_status "/js/languages/en-responses.js" "200"
     check_status "/assets/favicon.ico" "200"
     check_status "/manifest.json" "200"
@@ -641,21 +735,27 @@ else
 
     # Content sanity: the page should mention both language options and
     # not contain leftover template placeholders or obvious breakage.
-    # Fetched with one short retry, since a fresh local connection can
-    # occasionally hiccup on the very first request.
-    homepage=$(curl -s "${BASE_URL}/")
-    if [[ -z "$homepage" ]]; then
-      sleep 0.5
+    # Retried up to three times, since a fresh local connection can
+    # occasionally hiccup on the very first request. Matching uses bash
+    # [[ ]] globs instead of grep in a pipe: grep -q closes the pipe as
+    # soon as it matches, which under `set -o pipefail` can turn the
+    # writer's SIGPIPE into a spurious non-zero status on large bodies.
+    homepage=""
+    for attempt in 1 2 3; do
       homepage=$(curl -s "${BASE_URL}/")
-    fi
+      if [[ "$homepage" == *picker-fa* && "$homepage" == *picker-en* ]]; then
+        break
+      fi
+      sleep 0.5
+    done
 
-    if echo "$homepage" | grep -q 'picker-fa' && echo "$homepage" | grep -q 'picker-en'; then
+    if [[ "$homepage" == *picker-fa* && "$homepage" == *picker-en* ]]; then
       ok "homepage includes both language picker options"
     else
       fail "homepage is missing one or both language picker options"
     fi
 
-    if echo "$homepage" | grep -qi 'undefined\|\[object Object\]'; then
+    if [[ "$homepage" == *undefined* || "$homepage" == *'[object Object]'* ]]; then
       fail "homepage contains a literal 'undefined' or '[object Object]'; likely a templating bug"
     else
       ok "no obvious templating artifacts in homepage HTML"

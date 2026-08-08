@@ -17,11 +17,12 @@
       "text": "دلم مثل یک سنگ سنگینه",
       "dialogueAct": "statement",
       "intent": "open_statement"
-    },  {
-   "text": "به نظرت بارون می‌فهمه؟",
-   "dialogueAct": "question",
-   "intent": "question"
-  }
+    },
+    {
+      "text": "به نظرت بارون می‌فهمه؟",
+      "dialogueAct": "question",
+      "intent": "question"
+    }
   ],
   "expected": {
     "finalTurn": "موتور باید زبان استعاری را بدون نیاز به تفسیر تحت‌اللفظی مدیریت کند. به حس عاطفی پاسخ می‌دهد نه معنای ظاهری. سؤال آخر به جای تشخیص سؤال، به عنوان statement پردازش می‌شود.",

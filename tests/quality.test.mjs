@@ -1464,7 +1464,7 @@ test('quality fixture: all application shell files exist', () => {
   for (const file of [
     'index.html',
     'css/style.css',
-    'js/app.js',
+    'js/app/index.js',
     'js/engine/utils.js',
     'js/engine/responder.js',
     'sw.js',
@@ -1485,6 +1485,59 @@ function scriptSrcs(html) {
   return [...html.matchAll(/<script[^>]*src="([^"]+)"/gu)].map(
     (match) => match[1]
   );
+}
+
+/**
+ * Concatenated source of the overlay module (main file plus its three
+ * feature part files), so content pins keep working as the module is
+ * split into focused files.
+ * @returns {string}
+ */
+function readOverlays() {
+  return [
+    'js/ui/overlays-breathe.js',
+    'js/ui/overlays-confirm.js',
+    'js/ui/overlays-notify.js',
+    'js/ui/overlays.js'
+  ]
+    .map((file) => read(file))
+    .join('\n');
+}
+
+/**
+ * Concatenated source of the ambient-sound module (data, helpers,
+ * playback, and main files, in load order), so content pins keep working
+ * as the module is split into focused files.
+ * @returns {string}
+ */
+function readAmbientSound() {
+  return [
+    'js/ui/ambient-sound-data.js',
+    'js/ui/ambient-sound-helpers.js',
+    'js/ui/ambient-sound-playback.js',
+    'js/ui/ambient-sound.js'
+  ]
+    .map((file) => read(file))
+    .join('\n');
+}
+
+/**
+ * Concatenated source of the front-end controller (main file plus its
+ * five feature part files), so content pins keep working as the module
+ * is split into focused files.
+ * @returns {string}
+ */
+function readApp() {
+  return [
+    'js/app/composer.js',
+    'js/app/language.js',
+    'js/app/conversation.js',
+    'js/app/menu.js',
+    'js/app/sound.js',
+    'js/app/index.js'
+  ]
+    .map((file) => read(file))
+    .join('\n');
 }
 
 test('app loads from file:// without a server: no ES modules, scripts all exist', () => {
@@ -1909,7 +1962,7 @@ test('question budget constants remain bounded', () => {
 
 test('chat menu exposes a complete keyboard navigation contract', () => {
   const html = read('index.html');
-  const app = read('js/app.js');
+  const app = readApp();
   assert.match(html, /menu-trigger[^>]*aria-controls="menu-popover"/u);
   assert.match(app, /menuFocusIndex/);
   assert.match(app, /ArrowDown/);
@@ -1922,8 +1975,8 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
 });
 
 test('modal surfaces move focus in, contain it, and restore it', () => {
-  const overlays = read('js/ui/overlays.js');
-  const app = read('js/app.js');
+  const overlays = readOverlays();
+  const app = readApp();
   // The breathing exercise is a true modal dialog: focus enters through
   // the dismiss control, Escape closes it, and Tab stays inside so the
   // background stays inert.
@@ -1943,9 +1996,9 @@ test('modal surfaces move focus in, contain it, and restore it', () => {
 });
 
 test('notifications are bilingual and the picker sound toggle draws attention', () => {
-  const overlays = read('js/ui/overlays.js');
+  const overlays = readOverlays();
   const css = read('css/style.css');
-  const app = read('js/app.js');
+  const app = readApp();
 
   // Notifications render the severity type in both languages with a dot
   // separator (FA · EN), mirroring the picker intro pairing.
@@ -1967,7 +2020,7 @@ test('notifications are bilingual and the picker sound toggle draws attention', 
   // enabled but silent (autoplay needs a gesture): a delayed attention
   // class with a smooth fade/ring animation and a reduced-motion
   // fallback.
-  assert.match(app, /SOUND_ATTENTION_DELAY_MS = 3000/u);
+  assert.match(app, /SOUND_ATTENTION_DELAY_MS: 3000/u);
   assert.match(app, /armSoundAttention/u);
   assert.match(app, /clearSoundAttention/u);
   assert.match(app, /picker__sound-toggle--attention/u);
@@ -2276,7 +2329,7 @@ test('beach composer scrim is warm and restrained rather than a black shadow', (
 });
 
 test('ocean theme has calm bubbles, glows, and a reduced-motion depth breath', () => {
-  const ambient = read('js/ui/ambient.js');
+  const ambient = read('js/ui/ambient-visuals.js');
   const css = read('css/style.css');
   assert.match(ambient, /const count = 8/u);
   assert.match(ambient, /randomBetween\(4, 14\)/u);
@@ -2423,8 +2476,9 @@ test('ambient sound starts playback within the user gesture, not after buffering
   // so Chrome's transient user activation expired and play() rejected
   // with NotAllowedError. The fix calls play() immediately and preloads
   // the manifest at module load. These static guards make the bug
-  // regression-proof without requiring a browser audio stack.
-  const ambient = read('js/ui/ambient-sound.js');
+  // regression-proof without requiring a browser audio stack. The module
+  // is split across four part files; playback lives in the playback part.
+  const ambient = readAmbientSound();
 
   // The 15s buffering gate and its helper must not exist anymore.
   assert.doesNotMatch(ambient, /waitForCanPlayThrough/u);
@@ -2456,74 +2510,60 @@ test('ambient sound cookie constants stay above the state initializer', () => {
   // visit. This structural test locks the source order; the smoke-test
   // marker gives the same guard in the bash-only runner, and the final
   // assertions keep the two engines' anchors in sync.
-  const ambient = read('js/ui/ambient-sound.js');
-  const lines = ambient.split('\n');
+  // After the module split, the cookie constants live in the data part
+  // file and the state initializer lives in the main file, which loads
+  // after it. The hoisting hazard is now a load-order hazard: if the
+  // data part ever loads after the main file, getSavedState reads an
+  // undefined constant again and the saved preference is lost.
+  const data = read('js/ui/ambient-sound-data.js');
+  const main = read('js/ui/ambient-sound.js');
+  const dataLines = data.split('\n');
+  const mainLines = main.split('\n');
 
-  const cookieNameLine = lines.findIndex((line) =>
+  // The constants must exist in the data part file, as const.
+  const cookieNameLine = dataLines.findIndex((line) =>
     /^\s*const SOUND_COOKIE_NAME = /u.test(line)
   );
-  const cookieAgeLine = lines.findIndex((line) =>
+  const cookieAgeLine = dataLines.findIndex((line) =>
     /^\s*const SOUND_COOKIE_MAX_AGE_DAYS = /u.test(line)
   );
-  const initializerLine = lines.findIndex((line) =>
-    /var isEnabled = getSavedState\(\) === true/u.test(line)
-  );
-  const internalStateHeader = lines.findIndex((line) =>
-    /^  \/\/ Internal state$/u.test(line)
-  );
-
-  // Every anchor must exist; a missing match (-1) must fail loudly
-  // instead of making the ordering comparisons below vacuously pass.
   assert.ok(cookieNameLine >= 0, 'SOUND_COOKIE_NAME declaration not found');
   assert.ok(cookieAgeLine >= 0, 'SOUND_COOKIE_MAX_AGE_DAYS not found');
+  assert.match(
+    dataLines[cookieNameLine],
+    /^\s*const SOUND_COOKIE_/u,
+    'SOUND_COOKIE_NAME must stay a const declaration'
+  );
+  assert.match(
+    dataLines[cookieAgeLine],
+    /^\s*const SOUND_COOKIE_/u,
+    'SOUND_COOKIE_MAX_AGE_DAYS must stay a const declaration'
+  );
+
+  // The main file's state initializer reads getSavedState at load time.
+  const initializerLine = mainLines.findIndex((line) =>
+    /isEnabled: getSavedState\(\) === true/u.test(line)
+  );
   assert.ok(initializerLine >= 0, 'isEnabled initializer not found');
-  assert.ok(
-    internalStateHeader >= 0,
-    'Internal state section header not found'
-  );
 
-  // The initializer must live inside the Internal state section, and
-  // every cookie constant must be declared strictly before it.
-  assert.ok(
-    initializerLine > internalStateHeader,
-    'isEnabled initializer must sit inside the Internal state section'
-  );
-  for (const [label, line] of [
-    ['SOUND_COOKIE_NAME', cookieNameLine],
-    ['SOUND_COOKIE_MAX_AGE_DAYS', cookieAgeLine]
-  ]) {
-    assert.ok(
-      line < initializerLine,
-      `${label} must be declared before the isEnabled initializer`
-    );
-    // A var/let redeclaration would reintroduce the hoisting hazard even
-    // in the correct position, so the declaration must stay a const.
-    assert.match(
-      lines[line],
-      /^\s*const SOUND_COOKIE_/u,
-      `${label} must stay a const declaration`
-    );
-  }
+  // getSavedState must keep reading the cookie constant via the data
+  // global (a rename that desyncs the binding would silently disable
+  // every guard above).
+  assert.match(main, /function getSavedState\(\)[\s\S]*D\.SOUND_COOKIE_NAME/u);
 
-  // getSavedState must keep reading SOUND_COOKIE_NAME. A rename that
-  // desyncs the binding would silently disable every guard above. Guard
-  // the slice bounds so a function reorder or rename fails here with a
-  // clear message instead of an empty slice.
-  const savedStateIndex = ambient.indexOf('function getSavedState');
-  const themeChangeIndex = ambient.indexOf('function onThemeChange');
-  assert.ok(
-    savedStateIndex >= 0 && themeChangeIndex > savedStateIndex,
-    'getSavedState must be defined before onThemeChange'
-  );
-  const savedStateBody = ambient.slice(savedStateIndex, themeChangeIndex);
-  assert.match(savedStateBody, /SOUND_COOKIE_NAME/u);
+  // The data part file must load before the main file in index.html;
+  // otherwise the constant is undefined when the initializer runs.
+  const html = read('index.html');
+  const dataSrc = html.indexOf('js/ui/ambient-sound-data.js');
+  const mainSrc = html.indexOf('js/ui/ambient-sound.js');
+  assert.ok(dataSrc >= 0 && mainSrc > dataSrc, 'data part must load first');
 
   // The bash smoke marker must keep matching the same anchors; if the
   // source patterns drift, the marker would go quiet and lose its
   // coverage in the smoke runner.
   const smoke = read('tests/smoke-test.sh');
   assert.match(smoke, /grep -n "SOUND_COOKIE_NAME = "/u);
-  assert.match(smoke, /grep -n "var isEnabled = getSavedState"/u);
+  assert.match(smoke, /grep -n "isEnabled: getSavedState"/u);
 });
 
 test('semantic theme tokens are defined for reusable component roles', () => {
@@ -3036,7 +3076,7 @@ test('modal dialogs trap focus and restore it on dismiss', () => {
      A real-browser audit found the new-chat confirm dialog let Tab
      escape into the page behind it and dropped focus on <body> when
      dismissed. These pins guard the two fixes. */
-  const overlays = read('js/ui/overlays.js');
+  const overlays = readOverlays();
   // The confirm overlay handles Tab by cycling between its two buttons.
   assert.match(
     overlays,
@@ -3067,17 +3107,17 @@ test('service worker derives a versioned cache name and precaches the classic sh
   for (const entry of [
     './index.html',
     './css/style.css',
-    './js/app.js',
+    './js/app/index.js',
     './js/engine/index.js',
     './js/engine/utils.js',
     './js/engine/responder.js',
     './js/ui/core.js',
-    './js/ui/ambient.js',
+    './js/ui/ambient-visuals.js',
     './js/ui/export.js',
     './js/ui/overlays.js',
     './js/data/knowledge-base.js',
-    './js/languages/halfspace.js',
-    './js/languages/entity-extractor.js',
+    './js/text/halfspace.js',
+    './js/text/entity-extractor.js',
     './js/languages/fa.js',
     './js/languages/en.js'
   ]) {
@@ -3089,7 +3129,7 @@ test('application text contains no em dash or identity claims', () => {
   const files = [
     'index.html',
     'css/style.css',
-    'js/app.js',
+    'js/app/index.js',
     'js/engine/utils.js',
     'js/engine/responder.js',
     'js/languages/en.js',
@@ -3218,7 +3258,7 @@ test('application keeps the numeric release and cache key out of user-facing sou
   for (const file of [
     'index.html',
     'css/style.css',
-    'js/app.js',
+    'js/app/index.js',
     'js/engine/utils.js',
     'js/engine/responder.js',
     'js/languages/en.js',
@@ -3234,7 +3274,7 @@ test('application keeps the numeric release and cache key out of user-facing sou
 });
 
 test('applyLanguage sets dir and lang on the document root for correct page layout', () => {
-  const app = read('js/app.js');
+  const app = readApp();
   // When a language is selected, the document-level dir and lang must be
   // updated so the full page layout (header, menu, composer, fonts) mirrors
   // to match. Without this, English conversations render in RTL.
@@ -3251,7 +3291,7 @@ test('applyLanguage sets dir and lang on the document root for correct page layo
 });
 
 test('showPicker resets dir and lang to RTL defaults so the picker renders correctly', () => {
-  const app = read('js/app.js');
+  const app = readApp();
   // The language picker is always shown in Persian first; when it is
   // re-shown (e.g. "New Chat"), dir and lang must reset to RTL defaults.
   assert.match(
@@ -3338,7 +3378,7 @@ test('beach picker muted text sits on a light pill over the animated waves', () 
 
 test('picker sound toggle gets a localized accessible name from JS', () => {
   const html = read('index.html');
-  const app = read('js/app.js');
+  const app = readApp();
   // The static markup must not ship an English-only name for the picker
   // toggle: the runtime must replace it with the active language's label.
   assert.doesNotMatch(
@@ -3363,4 +3403,57 @@ test('picker sound toggle gets a localized accessible name from JS', () => {
     /el\.pickerSoundToggle\.setAttribute\(\s*['"]title['"]\s*,\s*label\s*\)/u,
     'syncSoundToggleUI must set the localized title on the picker toggle'
   );
+});
+
+test('proactive idle opener is armed, guarded by userSpoke, and cancellable', () => {
+  const app = readApp();
+  // The opener must exist and arm after the greeting.
+  assert.match(
+    app,
+    /ctrl\.armIdleOpener\(generation\)/u,
+    'startConversation must arm the idle opener after the greeting'
+  );
+  // The delivery guard must key off userSpoke (a dedicated flag), never
+  // off messageCount: messageCount counts the greeting itself, so a
+  // messageCount-based guard would make the opener dead code.
+  assert.match(
+    app,
+    /st\.userSpoke/u,
+    'idle-opener guard must use the userSpoke flag'
+  );
+  assert.doesNotMatch(
+    app,
+    /idleOpener[\s\S]{0,200}messageCount\s*[><]=?\s*0/u,
+    'idle-opener guard must not key off messageCount'
+  );
+  // Typing cancels it, and a fresh conversation resets the flag.
+  assert.match(
+    app,
+    /ctrl\.clearIdleOpener\(\)/u,
+    'user input must cancel the idle opener'
+  );
+  assert.match(
+    app,
+    /st\.userSpoke\s*=\s*false/u,
+    'startConversation must reset userSpoke'
+  );
+  // The delay is randomized within the configured range.
+  assert.match(
+    app,
+    /IDLE_OPENER_MIN_MS/u,
+    'controller must define IDLE_OPENER_MIN_MS'
+  );
+  assert.match(
+    app,
+    /IDLE_OPENER_MAX_MS/u,
+    'controller must define IDLE_OPENER_MAX_MS'
+  );
+  // Both language packs must expose the pool.
+  assert.match(read('js/languages/en.js'), /idleOpeners: R\.idleOpeners/u);
+  assert.match(read('js/languages/fa.js'), /idleOpeners: R\.idleOpeners/u);
+  // State fields live in core.js.
+  const core = read('js/ui/core.js');
+  assert.match(core, /idleOpenerPending/u);
+  assert.match(core, /idleOpenerTimer/u);
+  assert.match(core, /userSpoke/u);
 });

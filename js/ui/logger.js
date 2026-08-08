@@ -1,5 +1,7 @@
 /**
- * Darya classic script.
+ * Darya - chat logger.
+ * Records the conversation to localStorage so it survives reloads.
+ * Classic script version.
  */
 
 (function (global) {

@@ -490,7 +490,7 @@ test('identity replies avoid unsupported professional or model claims', () => {
 test('new UI copy contains no em dash characters in files', () => {
   for (const file of [
     'index.html',
-    'js/app.js',
+    'js/app/index.js',
     'js/languages/fa.js',
     'js/languages/en.js',
     'README.md'

@@ -1354,6 +1354,9 @@ html[dir='ltr'] .bubble-row--bot {
   line-height: 1.85;
   box-shadow: var(--shadow-soft);
   overflow-wrap: break-word;
+  /* Numbered lists (movie/game picks) are newline-separated in the reply
+     text; preserve those line breaks instead of collapsing them. */
+  white-space: pre-wrap;
 }
 
 .bubble--user {

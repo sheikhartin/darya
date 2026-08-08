@@ -1,5 +1,7 @@
 /**
- * Darya classic script.
+ * Darya - conversation exporter.
+ * Downloads the current chat as a text file for the user to keep.
+ * Classic script version.
  */
 
 (function (global) {
