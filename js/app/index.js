@@ -1,5 +1,16 @@
 /**
- * Darya - front-end chat controller (classic script entry point).
+ * Darya - front-end chat controller (classic script entry point, main file).
+ *
+ * Creates the shared controller object (ctrl) that carries the module
+ * dependencies and mutable state, assembles the five feature part files
+ * onto it, wires the DOM events, and runs the boot sequence.
+ *
+ * Part files (load before this file, in order):
+ *   - composer.js:     typing indicator, hints, send-button state
+ *   - language.js:     applyLanguage, selectLanguage, showPicker
+ *   - conversation.js: startConversation, exit flow, sendMessage
+ *   - menu.js:         menu popover keyboard/pointer behavior
+ *   - sound.js:        sound toggle sync, attention nudge, autoplay
  */
 (function (global) {
   'use strict';
@@ -17,586 +28,60 @@
   const el = UI.elements;
   const st = UI.state;
 
-  var MIN_REPLY_DELAY_MS = 1500;
-  var MAX_REPLY_DELAY_MS = 2300;
+  // Shared controller object: every part file binds its functions to this
+  // object, so cross-part calls resolve through ctrl at call time.
+  const ctrl = {
+    UI,
+    el,
+    st,
+    DaryaResponseEngine,
+    DaryaOverlays,
+    DaryaExport,
+    DaryaLogger,
+    DaryaAmbient,
+    DaryaAmbientSound,
+    DaryaLang,
 
-  /** Delay before the picker sound toggle draws attention (ms). */
-  var SOUND_ATTENTION_DELAY_MS = 3000;
+    MIN_REPLY_DELAY_MS: 1500,
+    MAX_REPLY_DELAY_MS: 2300,
 
-  /** @type {number|null} Handle for the pending sound-attention timer. */
-  var soundAttentionTimer = null;
+    /** Delay before the picker sound toggle draws attention (ms). */
+    SOUND_ATTENTION_DELAY_MS: 3000,
 
-  var menuFocusIndex = 0;
+    /** Proactive idle opener delay range (ms): Darya speaks first after
+     * the greeting if the user stays silent. Randomized per conversation
+     * so it never feels scripted. */
+    IDLE_OPENER_MIN_MS: 8000,
+    IDLE_OPENER_MAX_MS: 20000,
 
-  // ========================================================================
-  // Composer / Reply state
-  // ========================================================================
+    /** @type {number|null} Handle for the pending sound-attention timer. */
+    soundAttentionTimer: null,
 
-  /**
-   * Shows or hides the typing indicator (three animated dots).
-   * Automatically scrolls to bottom when the indicator becomes visible.
-   * @param {boolean} visible
-   */
-  function setTypingVisible(visible) {
-    if (el.typingRow) {
-      el.typingRow.hidden = !visible;
-    }
-    if (visible) {
-      UI.utils.scrollToBottom();
-    }
-  }
+    /** @type {number} Index of the focused menu item in the popover. */
+    menuFocusIndex: 0,
 
-  /**
-   * Sets the composer hint message (validation warning). An empty or
-   * undefined message hides the hint.
-   * @param {string|null|undefined} message
-   */
-  function setHint(message) {
-    if (!message) {
-      if (el.hint) {
-        el.hint.hidden = true;
-        el.hint.textContent = '';
-      }
-      return;
-    }
-    el.hint.textContent = message;
-    el.hint.hidden = false;
-  }
+    /** True once a blocked-autoplay toast has been shown this session. */
+    soundBlockedToastShown: false
+  };
 
-  /**
-   * Refreshes the composer send button state based on the current input
-   * value: enables the button when there is valid text, disables when
-   * empty or when a conversation is ended or a reply is pending.
-   * Also checks for foreign script input and shows a hint if detected.
-   */
-  function refreshComposerState() {
-    el.input.style.height = 'auto';
-    el.input.style.height = el.input.scrollHeight + 'px';
-
-    var text = el.input.value.trim();
-
-    if (text && UI.utils.hasForeignLetters(text)) {
-      setHint(st.lang.ui.foreignScriptHint);
-      el.sendButton.disabled = true;
-      return;
-    }
-
-    setHint('');
-    el.sendButton.disabled =
-      st.conversationEnded || st.waitingForReply || text.length === 0;
-  }
-
-  // Expose for overlays module to call after dismissing the exit bar
-  UI.refreshComposerState = refreshComposerState;
-
-  /**
-   * Sets the composer busy state, disabling input during reply generation.
-   * @param {boolean} busy
-   */
-  function setComposerBusy(busy) {
-    st.waitingForReply = busy;
-    el.input.disabled = busy || st.conversationEnded;
-    refreshComposerState();
-  }
-
-  /**
-   * Returns a random delay within the configured reply range.
-   * @returns {number} Milliseconds
-   */
-  function randomReplyDelay() {
-    return (
-      MIN_REPLY_DELAY_MS +
-      Math.random() * (MAX_REPLY_DELAY_MS - MIN_REPLY_DELAY_MS)
-    );
-  }
-
-  /**
-   * Shows the typing indicator, waits for a delay proportional to response
-   * length, then appends the bot's reply. Returns true if the reply was
-   * delivered, false if the conversation generation changed (stale reply).
-   * @param {string} replyText
-   * @param {number} generation
-   * @returns {Promise<boolean>}
-   */
-  async function deliverReply(replyText, generation) {
-    setTypingVisible(true);
-    var baseDelay = randomReplyDelay();
-    var extraDelay = Math.min(replyText.length * 2, 600);
-    await new Promise(function (resolve) {
-      return setTimeout(resolve, baseDelay + extraDelay);
-    });
-    setTypingVisible(false);
-    if (generation !== st.conversationGeneration) {
-      return false;
-    }
-    UI.utils.appendMessage('bot', replyText);
-    return true;
-  }
-
-  // ========================================================================
-  // Language selection
-  // ========================================================================
-
-  /**
-   * Applies the chosen language to the entire UI: sets dir/lang attributes,
-   * updates all text labels, and configures the engine.
-   * @param {object} chosenLang - Language pack (DaryaLang.en or DaryaLang.fa)
-   */
-  function applyLanguage(chosenLang) {
-    st.lang = chosenLang;
-
-    // Sync the document-level dir and lang so the full page layout (header,
-    // menu, composer, disclaimer) mirrors to match the active language.
-    // Individual chat bubbles and the composer input also get per-element
-    // dir/lang set later in this function and in core.js.
-    el.htmlRoot.setAttribute('dir', chosenLang.dir);
-    el.htmlRoot.setAttribute('lang', chosenLang.code);
-
-    el.pageTitle.textContent = chosenLang.ui.appTitle;
-    el.pageDescription.setAttribute('content', chosenLang.ui.appDescription);
-
-    el.headerTitle.textContent = chosenLang.botName;
-    el.input.setAttribute('placeholder', chosenLang.ui.placeholderDefault);
-    el.input.setAttribute('aria-label', chosenLang.ui.ariaInputLabel);
-    el.input.setAttribute('dir', chosenLang.dir);
-    el.input.setAttribute('lang', chosenLang.code);
-    el.sendButton.setAttribute('aria-label', chosenLang.ui.sendButtonTitle);
-    el.sendButton.setAttribute('title', chosenLang.ui.sendButtonTitle);
-    el.menuTrigger.setAttribute('aria-label', chosenLang.ui.menuTriggerTitle);
-    el.menuTrigger.setAttribute('title', chosenLang.ui.menuTriggerTitle);
-    el.pickerFa.setAttribute('aria-label', chosenLang.ui.pickerFaTitle);
-    el.pickerFa.setAttribute('title', chosenLang.ui.pickerFaTitle);
-    el.pickerEn.setAttribute('aria-label', chosenLang.ui.pickerEnTitle);
-    el.pickerEn.setAttribute('title', chosenLang.ui.pickerEnTitle);
-    el.themeToggleButtons.forEach(function (button) {
-      var title =
-        button.dataset.themeChoice === 'ocean'
-          ? chosenLang.ui.themeOceanTitle
-          : chosenLang.ui.themeBeachTitle;
-      button.setAttribute('aria-label', title);
-      button.setAttribute('title', title);
-    });
-    el.menuNewChat.setAttribute('aria-label', chosenLang.ui.newChatTitle);
-    el.menuNewChat.setAttribute('title', chosenLang.ui.newChatTitle);
-    el.menuExportTxt.setAttribute('aria-label', chosenLang.ui.menuExportTitle);
-    el.menuExportTxt.setAttribute('title', chosenLang.ui.menuExportTitle);
-    el.themePicker.setAttribute('aria-label', chosenLang.ui.themeGroupLabel);
-    el.typingStatus.setAttribute('aria-label', chosenLang.ui.typingLabel);
-    el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
-    el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
-    el.disclaimer.textContent = chosenLang.ui.disclaimer;
-    UI.theme.updateThemeMenuItem();
-
-    if (el.breatheTrigger) {
-      el.breatheTrigger.setAttribute('aria-label', chosenLang.ui.breatheTitle);
-      el.breatheTrigger.setAttribute('title', chosenLang.ui.breatheTitle);
-      var breathSvg = el.breatheTrigger.querySelector('svg');
-      if (breathSvg) {
-        breathSvg.setAttribute('aria-label', chosenLang.ui.breatheTitle);
-      }
-    }
-
-    // Initialize the sound toggle from the ACTUAL playback state. Audio
-    // cannot start before a user gesture, so this shows "off" until the
-    // autoplay attempt (started right after this call) settles and
-    // re-syncs the toggle from the real result.
-    if (typeof DaryaAmbientSound !== 'undefined') {
-      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
-    }
-
-    if (el.pickerLangLock) {
-      var faSpan = el.pickerLangLock.querySelector('.picker__lang-lock-fa');
-      var enSpan = el.pickerLangLock.querySelector('.picker__lang-lock-en');
-      if (chosenLang.code === 'fa') {
-        if (faSpan) {
-          faSpan.hidden = false;
-        }
-        if (enSpan) {
-          enSpan.hidden = true;
-        }
-      } else {
-        if (faSpan) {
-          faSpan.hidden = true;
-        }
-        if (enSpan) {
-          enSpan.hidden = false;
-        }
-      }
-    }
-  }
-
-  /**
-   * Selects a language and starts the conversation, hiding the picker.
-   * @param {object} chosenLang
-   */
-  function selectLanguage(chosenLang) {
-    applyLanguage(chosenLang);
-    el.picker.hidden = true;
-    el.app.hidden = false;
-    st.chatActive = true;
-    // Leaving the picker stops any sound-attention nudge: the language
-    // click is itself a gesture that can start the sound.
-    clearSoundAttention();
-    startConversation();
-
-    // Auto-play ambient sound if the user previously opted in, syncing
-    // the toggle to the ACTUAL result: if the browser blocks the
-    // automatic start, the toggle rolls back to "off" and a brief toast
-    // points to the menu toggle for a gesture-based start.
-    if (typeof DaryaAmbientSound !== 'undefined') {
-      var soundIntentOn = DaryaAmbientSound.getSavedState() === true;
-      DaryaAmbientSound.autoplayIfEnabled().then(function () {
-        // Sync from the ACTUAL playback state: an autoplay attempt can
-        // keep the user's intent (a transient policy rejection) without
-        // any audio running, and the toggle must never claim sound is
-        // playing when it is not.
-        var actuallyPlaying = DaryaAmbientSound.isPlaying();
-        syncSoundToggleUI(actuallyPlaying);
-        if (!actuallyPlaying && soundIntentOn) {
-          notifySoundAutoplayBlocked();
-        }
-      });
-    }
-  }
-
-  /**
-   * Returns to the language picker, resetting all conversation state.
-   * Preserves the theme selection across sessions.
-   */
-  function showPicker() {
-    st.conversationGeneration += 1;
-    setTypingVisible(false);
-    DaryaOverlays.dismissBreathe();
-    DaryaOverlays.hideExitConfirmBar();
-    st.pendingExit = false;
-    st.exitConfirmBusy = false;
-    el.app.hidden = true;
-    el.picker.hidden = false;
-    closeMenu();
-    st.lang = null;
-    // Restore document-level defaults so the picker always renders in its
-    // native RTL layout; the next applyLanguage() call will set the real
-    // dir/lang when the user picks a language.
-    el.htmlRoot.setAttribute('dir', 'rtl');
-    el.htmlRoot.setAttribute('lang', 'fa');
-    st.engine = null;
-    st.conversationEnded = false;
-    st.chatActive = false;
-    st.transcript = [];
-    if (el.chat) {
-      el.chat.replaceChildren();
-    }
-    st.messageCount = 0;
-    st.currentTitle = '';
-    // Sync the picker sound toggle with the actual playback state so the
-    // toggle shows correctly when returning to the picker, then arm the
-    // attention nudge for the saved-but-silent case.
-    if (typeof DaryaAmbientSound !== 'undefined') {
-      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
-    }
-    armSoundAttention();
-    if (el.pickerLangLock) {
-      var faSpan = el.pickerLangLock.querySelector('.picker__lang-lock-fa');
-      var enSpan = el.pickerLangLock.querySelector('.picker__lang-lock-en');
-      if (faSpan) {
-        faSpan.hidden = false;
-      }
-      if (enSpan) {
-        enSpan.hidden = false;
-      }
-    }
-    window.scrollTo(0, 0);
-    try {
-      sessionStorage.removeItem(UI.constants.SESSION_KEY);
-    } catch (e) {
-      /* ignore */
-    }
-    // Move focus to the first language option so keyboard users land on
-    // a sensible control after choosing "New chat".
-    if (el.pickerFa) {
-      el.pickerFa.focus();
-    }
-  }
-
-  // ========================================================================
-  // Conversation flow
-  // ========================================================================
-
-  /**
-   * Starts a new conversation: increments generation, creates a new engine
-   * instance, and delivers the opening greeting after a brief typing delay.
-   * Wave timings stay fixed for the page session; re-randomizing them here
-   * would restart the running CSS animations and cause visible jumps.
-   */
-  async function startConversation() {
-    var generation = ++st.conversationGeneration;
-    st.engine = new DaryaResponseEngine(st.lang);
-    st.conversationEnded = false;
-    st.transcript = [];
-    if (el.chat) {
-      el.chat.replaceChildren();
-    }
-    st.messageCount = 0;
-    st.currentTitle = '';
-    setHint('');
-    el.input.setAttribute('placeholder', st.lang.ui.placeholderDefault);
-    setComposerBusy(true);
-    hideBreatheTrigger();
-
-    var delivered = await deliverReply(st.engine.greeting(), generation);
-    if (!delivered || generation !== st.conversationGeneration) {
-      return;
-    }
-
-    setComposerBusy(false);
-    if (el.chat && el.chat.children.length > 0) {
-      UI.utils.restoreScrollPosition();
-    }
-    UI.utils.focusInputUnlessTouch();
-  }
-
-  /**
-   * Shows the breathe trigger button (available after emotionally heavy
-   * conversational moments).
-   */
-  function showBreatheTrigger() {
-    if (el.breatheTrigger) {
-      el.breatheTrigger.hidden = false;
-    }
-  }
-
-  /**
-   * Hides the breathe trigger button.
-   */
-  function hideBreatheTrigger() {
-    if (el.breatheTrigger) {
-      el.breatheTrigger.hidden = true;
-    }
-  }
-
-  /**
-   * Confirms exit: sends the farewell message and marks the conversation
-   * as ended. Guards against double-triggering via exitConfirmBusy.
-   */
-  function confirmExitYes() {
-    if (st.exitConfirmBusy || !st.engine) {
-      return;
-    }
-    st.exitConfirmBusy = true;
-    DaryaOverlays.hideExitConfirmBar();
-    var generation = st.conversationGeneration;
-    var replyText = st.engine.farewell();
-    setComposerBusy(true);
-    deliverReply(replyText, generation).then(function (delivered) {
-      if (!delivered || generation !== st.conversationGeneration) {
-        return;
-      }
-      st.conversationEnded = true;
-      st.pendingExit = false;
-      el.input.setAttribute('placeholder', st.lang.ui.placeholderEnded);
-      hideBreatheTrigger();
-      setComposerBusy(false);
-      st.exitConfirmBusy = false;
-    });
-  }
-
-  /**
-   * Cancels the pending exit and re-enables the composer.
-   */
-  function confirmExitNo() {
-    st.pendingExit = false;
-    DaryaOverlays.hideExitConfirmBar();
-    UI.utils.focusInputUnlessTouch();
-  }
-
-  /**
-   * Sends the user's message, processes the response, and updates the UI.
-   * @param {string} text - The user's message
-   */
-  async function sendMessage(text) {
-    var generation = st.conversationGeneration;
-    UI.utils.appendMessage('user', text);
-    el.input.value = '';
-    setComposerBusy(true);
-
-    var isExit = st.engine.isExitCommand(text);
-
-    if (isExit && st.pendingExit) {
-      var replyText = st.engine.farewell();
-      var delivered = await deliverReply(replyText, generation);
-      if (!delivered || generation !== st.conversationGeneration) {
-        return;
-      }
-      st.conversationEnded = true;
-      st.pendingExit = false;
-      el.input.setAttribute('placeholder', st.lang.ui.placeholderEnded);
-      hideBreatheTrigger();
-      setComposerBusy(false);
-      return;
-    }
-
-    if (isExit && !st.pendingExit) {
-      replyText = st.engine.exitConfirmation();
-      delivered = await deliverReply(replyText, generation);
-      if (!delivered || generation !== st.conversationGeneration) {
-        return;
-      }
-      st.pendingExit = true;
-      setComposerBusy(false);
-      DaryaOverlays.showExitConfirmBar();
-      return;
-    }
-
-    st.pendingExit = false;
-    DaryaOverlays.hideExitConfirmBar();
-
-    // Defensive guard: wrap the engine respond call to catch unexpected
-    // errors that could crash the conversation flow. If the engine throws,
-    // show a user-friendly notification and recover gracefully.
-    // replyText is already declared in the enclosing function scope.
-    try {
-      replyText = st.engine.respond(text);
-    } catch (error) {
-      var errorMsg = error && error.message ? error.message : String(error);
-      if (typeof DaryaLogger !== 'undefined') {
-        DaryaLogger.error('Engine respond failed:', errorMsg);
-      } else {
-        console.error('Darya engine error:', errorMsg);
-      }
-      // Fall back to a localized safe response so the conversation continues.
-      // Uses engineErrorReply (semantically correct for processing errors)
-      // rather than emptyInputReply (which implies the user stopped typing).
-      replyText =
-        st.lang && st.lang.engineErrorReply
-          ? st.lang.engineErrorReply
-          : 'I need a moment to process. Could you repeat that?';
-      // Surface a bilingual notification to the user about the issue
-      if (
-        typeof DaryaOverlays !== 'undefined' &&
-        typeof DaryaOverlays.showNotification === 'function'
-      ) {
-        var warnMsg = getBilingualUiText(
-          'engineErrorHint',
-          'A minor issue occurred. The conversation can continue.'
-        );
-        DaryaOverlays.showNotification('warn', warnMsg, 4000);
-      }
-    }
-
-    delivered = await deliverReply(replyText, generation);
-    if (!delivered || generation !== st.conversationGeneration) {
-      return;
-    }
-
-    setComposerBusy(false);
-
-    if (st.engine && st.engine.lastTurnNeedsCare) {
-      showBreatheTrigger();
-    } else {
-      hideBreatheTrigger();
-    }
-    UI.utils.focusInputUnlessTouch();
-  }
-
-  // ========================================================================
-  // Menu
-  // ========================================================================
-
-  /**
-   * Opens the menu popover and focuses the first menu item.
-   */
-  function openMenu() {
-    el.menuPopover.hidden = false;
-    el.menuTrigger.setAttribute('aria-expanded', 'true');
-    // Reflect the honest sound state when the menu opens so a rare
-    // silent failure can never leave a stale "on" icon.
-    if (typeof DaryaAmbientSound !== 'undefined') {
-      syncSoundToggleUI(DaryaAmbientSound.isPlaying());
-    }
-    menuFocusIndex = 0;
-    var items = [...el.menuPopover.querySelectorAll('[role="menuitem"]')];
-    requestAnimationFrame(function () {
-      if (items[menuFocusIndex]) {
-        items[menuFocusIndex].focus();
-      }
-    });
-  }
-
-  /**
-   * Closes the menu popover, optionally restoring focus to the trigger.
-   * @param {boolean} restoreFocus
-   */
-  function closeMenu(restoreFocus) {
-    el.menuPopover.hidden = true;
-    el.menuTrigger.setAttribute('aria-expanded', 'false');
-    if (restoreFocus) {
-      el.menuTrigger.focus();
-    }
-  }
-
-  /**
-   * Moves the menu focus by a given step (1 = next, -1 = previous).
-   * Wraps around at the first and last items.
-   * @param {number} step
-   */
-  function moveMenuFocus(step) {
-    var items = [...el.menuPopover.querySelectorAll('[role="menuitem"]')];
-    if (items.length === 0) {
-      return;
-    }
-    menuFocusIndex = (menuFocusIndex + step + items.length) % items.length;
-    if (items[menuFocusIndex]) {
-      items[menuFocusIndex].focus();
-    }
-  }
-
-  /**
-   * Toggles menu visibility.
-   */
-  function toggleMenu() {
-    if (el.menuPopover.hidden) {
-      openMenu();
-    } else {
-      closeMenu();
-    }
-  }
-
-  /**
-   * Moves focus to the visible focusable element before or after the menu
-   * trigger. Used when Tab closes the open menu: the popover is hidden by
-   * then, so this resolves the document tab order cleanly and hands focus
-   * to the next real control instead of dropping it on <body>.
-   * @param {number} step - 1 for next, -1 for previous
-   */
-  function focusMenuTriggerSibling(step) {
-    var focusables = [
-      ...document.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )
-    ].filter(function (node) {
-      // Keep only visible elements; hidden picker/menu items are
-      // excluded via offsetParent being null.
-      return node.offsetParent !== null;
-    });
-    var index = focusables.indexOf(el.menuTrigger);
-    if (index === -1) {
-      return;
-    }
-    var target = focusables[index + step];
-    if (target) {
-      target.focus();
-    }
-  }
+  Object.assign(
+    ctrl,
+    global.DaryaAppComposer.create(ctrl),
+    global.DaryaAppLanguage.create(ctrl),
+    global.DaryaAppConversation.create(ctrl),
+    global.DaryaAppMenu.create(ctrl),
+    global.DaryaAppSound.create(ctrl)
+  );
 
   // ========================================================================
   // Event wiring
   // ========================================================================
 
   el.pickerFa.addEventListener('click', function () {
-    selectLanguage(DaryaLang.fa);
+    ctrl.selectLanguage(DaryaLang.fa);
   });
   el.pickerEn.addEventListener('click', function () {
-    selectLanguage(DaryaLang.en);
+    ctrl.selectLanguage(DaryaLang.en);
   });
 
   el.themeToggleButtons.forEach(function (button) {
@@ -616,7 +101,7 @@
     ) {
       return;
     }
-    sendMessage(text);
+    ctrl.sendMessage(text);
   });
 
   el.input.addEventListener('keydown', function (event) {
@@ -626,7 +111,12 @@
     }
   });
 
-  el.input.addEventListener('input', refreshComposerState);
+  el.input.addEventListener('input', function () {
+    // Typing counts as engagement: the proactive idle opener no longer
+    // needs to break the silence.
+    ctrl.clearIdleOpener();
+    ctrl.refreshComposerState();
+  });
   el.input.addEventListener('focus', function () {
     UI.utils.scrollToBottom();
   });
@@ -639,19 +129,19 @@
 
   el.menuTrigger.addEventListener('click', function (event) {
     event.stopPropagation();
-    toggleMenu();
+    ctrl.toggleMenu();
   });
 
   el.menuPopover.addEventListener('keydown', function (event) {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      moveMenuFocus(1);
+      ctrl.moveMenuFocus(1);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      moveMenuFocus(-1);
+      ctrl.moveMenuFocus(-1);
     } else if (event.key === 'Home') {
       event.preventDefault();
-      menuFocusIndex = 0;
+      ctrl.menuFocusIndex = 0;
       var items = [...el.menuPopover.querySelectorAll('[role="menuitem"]')];
       if (items[0]) {
         items[0].focus();
@@ -659,7 +149,7 @@
     } else if (event.key === 'End') {
       event.preventDefault();
       items = [...el.menuPopover.querySelectorAll('[role="menuitem"]')];
-      menuFocusIndex = items.length - 1;
+      ctrl.menuFocusIndex = items.length - 1;
       var lastItem = items[items.length - 1];
       if (lastItem) {
         lastItem.focus();
@@ -668,11 +158,11 @@
       // WAI-ARIA menu-button pattern: Tab leaves the menu, closes it,
       // and continues the page tab order from just after the trigger.
       event.preventDefault();
-      closeMenu();
-      focusMenuTriggerSibling(event.shiftKey ? -1 : 1);
+      ctrl.closeMenu();
+      ctrl.focusMenuTriggerSibling(event.shiftKey ? -1 : 1);
     } else if (event.key === 'Escape') {
       event.preventDefault();
-      closeMenu(true);
+      ctrl.closeMenu(true);
     }
   });
 
@@ -682,23 +172,23 @@
       !el.menuPopover.contains(event.target) &&
       event.target !== el.menuTrigger
     ) {
-      closeMenu();
+      ctrl.closeMenu();
     }
   });
 
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && !el.menuPopover.hidden) {
-      closeMenu(true);
+      ctrl.closeMenu(true);
     }
   });
 
   el.menuNewChat.addEventListener('click', function () {
-    closeMenu();
+    ctrl.closeMenu();
     if (st.chatActive) {
-      DaryaOverlays.showNewChatConfirm(showPicker);
+      DaryaOverlays.showNewChatConfirm(ctrl.showPicker);
     } else {
       DaryaOverlays.dismissNewChatConfirm();
-      showPicker();
+      ctrl.showPicker();
     }
   });
 
@@ -706,12 +196,12 @@
     DaryaExport.exportPlainText();
     // Return focus to the trigger (WAI-ARIA menu-button pattern); the
     // download itself needs no focus target of its own.
-    closeMenu(true);
+    ctrl.closeMenu(true);
   });
 
   el.menuThemeToggle.addEventListener('click', function () {
     UI.theme.applyTheme(el.menuThemeToggle.dataset.themeChoice);
-    closeMenu(true);
+    ctrl.closeMenu(true);
   });
 
   if (el.breatheTrigger) {
@@ -721,20 +211,20 @@
   }
 
   if (el.exitConfirmYes) {
-    el.exitConfirmYes.addEventListener('click', confirmExitYes);
+    el.exitConfirmYes.addEventListener('click', ctrl.confirmExitYes);
     el.exitConfirmYes.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        confirmExitYes();
+        ctrl.confirmExitYes();
       }
     });
   }
   if (el.exitConfirmNo) {
-    el.exitConfirmNo.addEventListener('click', confirmExitNo);
+    el.exitConfirmNo.addEventListener('click', ctrl.confirmExitNo);
     el.exitConfirmNo.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        confirmExitNo();
+        ctrl.confirmExitNo();
       }
     });
   }
@@ -743,7 +233,7 @@
     el.exitConfirmBar.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         e.preventDefault();
-        confirmExitNo();
+        ctrl.confirmExitNo();
       }
     });
   }
@@ -768,8 +258,8 @@
         // Settle the toggle to the state the audio system actually
         // reached: a blocked or failed start shows "off", never a
         // silent "on".
-        syncSoundToggleUI(DaryaAmbientSound.isPlaying());
-        closeMenu(true);
+        ctrl.syncSoundToggleUI(DaryaAmbientSound.isPlaying());
+        ctrl.closeMenu(true);
       });
     });
   }
@@ -777,102 +267,11 @@
   if (el.pickerSoundToggle) {
     el.pickerSoundToggle.addEventListener('click', function () {
       // The tap is the gesture that starts the sound: stop the nudge.
-      clearSoundAttention();
+      ctrl.clearSoundAttention();
       DaryaAmbientSound.toggle().then(function () {
-        syncSoundToggleUI(DaryaAmbientSound.isPlaying());
+        ctrl.syncSoundToggleUI(DaryaAmbientSound.isPlaying());
       });
     });
-  }
-
-  /**
-   * Syncs both the menu and picker sound toggles' visible state with the
-   * ACTUAL ambient playback state, so neither icon ever shows "on" while
-   * silence plays. Falls back to hardcoded Persian when no language pack
-   * is active yet (the app shell defaults to Persian).
-   * @param {boolean} enabled - True when ambient sound is really playing.
-   */
-  function syncSoundToggleUI(enabled) {
-    // Sound is genuinely playing now; the picker nudge has served its
-    // purpose and must not keep pulsing.
-    if (enabled) {
-      clearSoundAttention();
-    }
-    if (el.menuSoundToggle) {
-      var onLabel = st.lang
-        ? st.lang.ui.soundOnTitle
-        : '\u067e\u062e\u0634 \u0635\u062f\u0627\u06cc \u062d\u0636\u0648\u0637\u06cc: \u0631\u0648\u0634\u0646';
-      var offLabel = st.lang
-        ? st.lang.ui.soundOffTitle
-        : '\u067e\u062e\u0634 \u0635\u062f\u0627\u06cc \u062d\u0636\u0648\u0637\u06cc: \u062e\u0627\u0645\u0648\u0634';
-      var label = enabled ? onLabel : offLabel;
-      el.menuSoundToggle.setAttribute('aria-pressed', String(enabled));
-      el.menuSoundToggle.setAttribute('title', label);
-      if (el.menuSoundLabel) {
-        el.menuSoundLabel.textContent = label;
-      }
-    }
-    if (el.pickerSoundToggle) {
-      el.pickerSoundToggle.setAttribute('aria-pressed', String(enabled));
-      // The picker toggle used to show only a static English title, so its
-      // accessible name stayed English even in Farsi. Reuse the same
-      // localized label the menu item shows. `label` is computed in the
-      // menu branch above; guard in case that element ever goes missing.
-      if (typeof label !== 'undefined') {
-        el.pickerSoundToggle.setAttribute('aria-label', label);
-        el.pickerSoundToggle.setAttribute('title', label);
-      }
-    }
-  }
-
-  /** True once a blocked-autoplay toast has been shown this session. */
-  var soundBlockedToastShown = false;
-
-  /**
-   * Draws attention to the picker (welcome screen) sound toggle a few
-   * seconds after it appears when the user's saved preference wants
-   * sound but nothing is actually playing yet (browsers block autoplay
-   * until a user gesture). A smooth fade/pulse invites the user to tap
-   * the toggle, and that tap is the gesture that starts the sound.
-   *
-   * The effect is armed only while the picker is visible and the intent
-   * is "on" but silent; it is cleared by the first real interaction
-   * (toggling, selecting a language, or sound starting).
-   */
-  function armSoundAttention() {
-    clearSoundAttention();
-    if (
-      el.picker.hidden ||
-      typeof DaryaAmbientSound === 'undefined' ||
-      DaryaAmbientSound.getSavedState() !== true ||
-      DaryaAmbientSound.isPlaying()
-    ) {
-      return;
-    }
-    soundAttentionTimer = setTimeout(function () {
-      soundAttentionTimer = null;
-      // Re-check at fire time: the user may have started sound or
-      // navigated away while the timer was pending.
-      if (
-        el.picker.hidden ||
-        typeof DaryaAmbientSound === 'undefined' ||
-        DaryaAmbientSound.isPlaying()
-      ) {
-        return;
-      }
-      el.pickerSoundToggle.classList.add('picker__sound-toggle--attention');
-    }, SOUND_ATTENTION_DELAY_MS);
-  } /**
-   * Cancels any pending sound-attention timer and removes the attention
-   * styling from the picker sound toggle.
-   */
-  function clearSoundAttention() {
-    if (soundAttentionTimer !== null) {
-      clearTimeout(soundAttentionTimer);
-      soundAttentionTimer = null;
-    }
-    if (el.pickerSoundToggle) {
-      el.pickerSoundToggle.classList.remove('picker__sound-toggle--attention');
-    }
   }
 
   // When the tab returns to the foreground, the ambient-sound module may
@@ -885,55 +284,9 @@
       typeof DaryaAmbientSound !== 'undefined' &&
       DaryaAmbientSound.isPlaying()
     ) {
-      clearSoundAttention();
+      ctrl.clearSoundAttention();
     }
   });
-
-  /**
-   * Returns the UI string for the given key from both language packs as
-   * a bilingual pair { fa, en }. Notifications always show Persian on
-   * top and English below, so both strings are needed regardless of the
-   * active conversation language. Falls back to the English fallback
-   * text when a pack is missing.
-   * @param {string} key - UI string key (e.g. 'soundAutoplayBlockedMsg')
-   * @param {string} fallbackEn - English fallback text
-   * @returns {{fa: string, en: string}}
-   */
-  function getBilingualUiText(key, fallbackEn) {
-    var faText = fallbackEn;
-    var enText = fallbackEn;
-    if (DaryaLang && DaryaLang.fa && DaryaLang.fa.ui && DaryaLang.fa.ui[key]) {
-      faText = DaryaLang.fa.ui[key];
-    } else if (st.lang && st.lang.ui && st.lang.ui[key]) {
-      faText = st.lang.ui[key];
-    }
-    if (DaryaLang && DaryaLang.en && DaryaLang.en.ui && DaryaLang.en.ui[key]) {
-      enText = DaryaLang.en.ui[key];
-    } else if (st.lang && st.lang.ui && st.lang.ui[key]) {
-      enText = st.lang.ui[key];
-    }
-    return { fa: faText, en: enText };
-  }
-
-  /**
-   * Explains, once per session, that ambient sound could not start
-   * automatically and points to the menu toggle. Called by both autoplay
-   * paths - the language picker and the global first-gesture listener -
-   * with a one-shot flag so a single click that triggers both never
-   * shows the toast twice. The message is bilingual (FA on top, EN
-   * below) because the notification system renders both languages.
-   */
-  function notifySoundAutoplayBlocked() {
-    if (soundBlockedToastShown) {
-      return;
-    }
-    soundBlockedToastShown = true;
-    var blockedMsg = getBilingualUiText(
-      'soundAutoplayBlockedMsg',
-      'Ambient sound could not start automatically.'
-    );
-    DaryaOverlays.showNotification('warn', blockedMsg, 6000);
-  }
 
   // ========================================================================
   // Refresh / close guard
@@ -968,58 +321,6 @@
   }
 
   // ========================================================================
-  /**
-   * Initializes a one-time global user gesture listener. The very first
-   * interaction anywhere on the screen (click, tap, or key) will trigger
-   * ambient sound playback if the user has it enabled in their settings.
-   */
-  function initAutoplayGesture() {
-    /**
-     * Detaches the one-time first-gesture listeners.
-     */
-    function disarmStartSound() {
-      document.removeEventListener('click', startSound);
-      document.removeEventListener('keydown', startSound);
-      document.removeEventListener('touchstart', startSound);
-      document.removeEventListener('pointerdown', startSound);
-    }
-
-    var startSound = function (event) {
-      // If the first interaction lands on one of the sound toggles
-      // themselves, the toggle's own click handler owns that gesture: it
-      // starts or stops playback based on its visible state. Firing the
-      // first-gesture autoplay here as well would start the sound and
-      // then let the toggle's toggle() flip it right back off (the
-      // reported "turns on for a second and turns off" bug). Consume
-      // the gesture either way so a later click cannot double-start.
-      if (
-        event.target &&
-        typeof event.target.closest === 'function' &&
-        event.target.closest('#picker-sound-toggle, #menu-sound-toggle')
-      ) {
-        disarmStartSound();
-        return;
-      }
-      if (
-        typeof DaryaAmbientSound !== 'undefined' &&
-        DaryaAmbientSound.getSavedState() === true
-      ) {
-        DaryaAmbientSound.autoplayIfEnabled().then(function () {
-          var actuallyPlaying = DaryaAmbientSound.isPlaying();
-          syncSoundToggleUI(actuallyPlaying);
-          if (!actuallyPlaying) {
-            notifySoundAutoplayBlocked();
-          }
-        });
-      }
-      disarmStartSound();
-    };
-    document.addEventListener('click', startSound, { passive: true });
-    document.addEventListener('keydown', startSound, { passive: true });
-    document.addEventListener('touchstart', startSound, { passive: true });
-    document.addEventListener('pointerdown', startSound, { passive: true });
-  }
-
   // Boot
   // ========================================================================
 
@@ -1045,15 +346,15 @@
   // is still honored by the first-gesture autoplay retry and by the
   // picker attention nudge, which invites the tap that starts it.
   if (el.pickerSoundToggle && typeof DaryaAmbientSound !== 'undefined') {
-    syncSoundToggleUI(DaryaAmbientSound.isPlaying());
+    ctrl.syncSoundToggleUI(DaryaAmbientSound.isPlaying());
   }
 
   // The welcome screen is shown first: if the saved preference wants
   // sound but the browser has not allowed autoplay yet, nudge the user
   // toward the toggle after a short delay.
-  armSoundAttention();
+  ctrl.armSoundAttention();
 
-  initAutoplayGesture();
+  ctrl.initAutoplayGesture();
 
   // The menu sound toggle starts honest: the HTML default is "off" and
   // nothing is playing yet (browsers require a user gesture before audio

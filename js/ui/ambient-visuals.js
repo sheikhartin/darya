@@ -1,5 +1,7 @@
 /**
- * Darya classic script.
+ * Darya - ambient background visuals (wave drift, hue variation, and
+ * calm scene effects). Distinct from ambient-sound.js (audio).
+ * Classic script version.
  */
 
 (function (global) {
