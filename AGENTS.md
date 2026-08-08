@@ -13,6 +13,15 @@
 - Organize code by domain, not by layer. Keep files focused and
   reasonably sized. Compose over inherit; favor explicit data flow and
   visible dependencies. Match the existing style of the codebase.
+- Keep source files under 600 lines. When a file approaches the limit,
+  split it into part files (see the Darya engine's `responder-*.js`,
+  `app-*.js`, and `*-pools-*.js` pattern) rather than growing it.
+  Data and response-pool files are part of the source tree too.
+- No magic numbers or magic strings: every literal beyond 0, 1, or
+  empty string becomes a named constant, ideally grouped in a
+  dedicated constants file (see `js/engine/utils-constants.js`) or a
+  shared object on the module. This applies to timing values,
+  thresholds, probabilities, and message limits alike.
 - Fail fast at boundaries: validate inputs, throw early, catch late,
   never swallow errors.
 - New projects default to TypeScript strict mode. Plain JavaScript is
@@ -119,7 +128,12 @@
   decorative icons are needed in UI markup, use inline SVG and mark
   them `aria-hidden`.
 - Comments explain why, not what. Keep them up to date. Delete
-  commented-out code. Write comments in English.
+  commented-out code. Write comments in English; Farsi/Persian may
+  appear inside a comment only as a short quoted phrase or example
+  (e.g. the Persian pool line being explained). Farsi must never be
+  the main language of a comment, even in `js/languages/fa-*.js`.
+  No other languages, including Chinese, are allowed in comments or
+  docs. Darya's codebase is English and Farsi only.
 
 ## 10. Commits and Docs
 - Use Conventional Commits: `type(scope): description` with types like

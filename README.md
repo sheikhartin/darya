@@ -1,4 +1,4 @@
-# Darya (دریا)
+# Darya
 
 _A calm conversation companion._
 
@@ -14,7 +14,12 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **Real conversation flow.** Darya recognizes a wide range of topics (family, work, sleep, anxiety, joy, grief, and more), asks thoughtful questions, and keeps track of what matters to you.
 - **Emotional awareness.** When the conversation feels heavy, Darya may offer a gentle breathing exercise or a grounding pause.
 - **Time and calendar answers.** Ask for the current time or date and Darya replies in your language and calendar, with both Jalali and Gregorian dates for Persian.
+- **Quick facts and math.** Darya answers arithmetic, percentages, square roots, random numbers, primality checks, and even coin flips ("flip a coin", "شیر یا خط") in your language.
 - **Professional handling of hostility.** Insults, bullying, and inappropriate comments aimed at Darya are met with calm, boundary-setting responses, never with an argument.
+- **A joke when you need one.** Ask for a joke or a laugh ("tell me a joke", "بخندون من") and Darya shares clean, kind humor in your language.
+- **Help starting the conversation.** Not sure how to begin? Say "how do I start?" or "نمیدونم چی بگم" and Darya offers easy, low-pressure openers. If you stay silent after the greeting, she gently breaks the ice herself with a light question.
+- **Honest shopping guidance.** Darya cannot make purchases, and says so plainly, then helps you think the purchase through: needs, budget, and how to compare options.
+- **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
 - **Offline and private.** Everything runs in your browser. No network requests are made at any time. Conversation data is kept only in your browser tab.
 - **Conversation export.** Download your chat as plain text whenever you like.
 
@@ -85,6 +90,17 @@ Each turn follows a deterministic pipeline:
      you?" triggers a thoughtful check-in.
    - **Boredom detection**: After a streak of very brief replies,
      Darya may invite the user to share more.
+   - **Depression support**: Prolonged low mood, hopelessness, and
+     emptiness are acknowledged with empathy and a gentle, real nudge
+     toward professional support, never a diagnosis.
+   - **Child-safety protection**: An adult disclosing sexual or romantic
+     attraction toward a minor always receives a calm, non-shaming
+     reply that is clear about the legal and real harm, separates
+     thoughts from actions, and points to confidential specialist help
+     (Stop It Now and mental health professionals). The detection
+     requires adult context, attraction phrasing, and a minor-age
+     marker together, so a teenager's own peer crush or ordinary family
+     affection never triggers it, and no later override can replace it.
 
 7. **Emotional calibration**: The engine detects primary emotions (sad,
    anxious, angry, grieving, overwhelmed, excited, etc.) through keyword
@@ -115,16 +131,72 @@ pack provides:
 - A sentiment lexicon for lightweight positive/negative scoring
 - Entity callback templates for recalling named entities
 
-### Knowledge Shelf
+### Knowledge Shelf and Factual Layer
 
-Darya carries an offline knowledge shelf with 18 knowledge domains:
-philosophy, thinkers, focus, learning, communication, creativity,
-mindfulness, stress, self-compassion, conflict, decision-making, grief,
-resilience, forgiveness, purpose, relationship, career, and anxiety.
-Each domain has 4 entries in both English and Persian (thinkers has 10
-curated entries, one per historical figure). When the user asks for
-guidance on these topics, Darya draws from this shelf rather than
-fabricating advice.
+Darya carries two offline knowledge layers, both fully offline with no
+network calls.
+
+**Reflective shelf (18 domains):** philosophy, thinkers, focus, learning,
+communication, creativity, mindfulness, stress, self-compassion, conflict,
+decision-making, grief, resilience, forgiveness, purpose, relationship,
+career, and anxiety. Each domain has 4 entries in both English and Persian
+(thinkers has 10 curated entries, one per historical figure). When the
+user asks for guidance on these emotional and growth topics, Darya draws
+from this shelf rather than fabricating advice.
+
+**Factual layer (world knowledge, 2020s culture, careers):** a keyword-
+scored fact base that answers concrete questions directly: science (the
+Sun and every planet from Mercury to Neptune, Jupiter, quantum physics,
+black holes, the solar system), technology (2026 tech stacks, AI, how to
+start programming, backend vs frontend, the Internet of Things),
+careers and money (freelancing, remote work, portfolios, the Iranian job
+market), education (choosing a college major, preparing for the Iranian
+konkur, career paths for teenagers), professions (carpentry, mechanical
+engineering, sculpture, music and singing, acting, mathematics degrees,
+diving, firefighting), culture and entertainment (a curated list of
+non-mainstream movies and series from Iranian and world cinema, plus
+per-genre lists for horror, romantic, comedy, dark comedy, fantasy,
+thriller, sci-fi, documentary, animation, short series, and stories
+based on true events), life decisions
+(marriage and children, respectful guidance on religion), modern
+culture (Gen-Z slang like rizz and brain rot, TikTok and the internet,
+ghosting and dating culture, quiet quitting), Persian language
+(half-space rules, ezafe, tanvin, common insults), relationships (crush
+confessions, breakup healing), practical advice (sleep, study
+techniques, quick stress relief, imposter syndrome), video games
+(classic consoles from the PlayStation 1 era, modern consoles, mobile
+picks, and per-genre lists), concrete career plans for common paths
+(software development, data science, design, teaching, marketing,
+entrepreneurship), psychology and health basics (CBT, neuroplasticity,
+sleep needs), sports (football rules, the Olympics, the marathon),
+history (the Achaemenid Empire and Cyrus the Great, the Egyptian
+pyramids, the Berlin Wall), cooking and food (Persian cuisine, saffron,
+tea culture), relationships (healthy relationship plans and respectful,
+shame-free sex education covering consent and boundaries), and the
+project itself (Darya can point to its own open-source repository).
+Knowledge talk is sequential: after any
+factual answer, a short follow-up naming a topic refines the
+conversation in place ("in horror genre please" after movie
+suggestions, "and Saturn?" after Jupiter, "بیزینس" after career
+advice, "and consent?" after relationship talk); ambiguous fragments
+such as "مشتری جذب کنم" are never
+hijacked. The lookup
+scores keywords against the normalized input, requires question framing
+for ambiguous terms (so "مشتری" as a customer never triggers the Jupiter
+entry), and only fires on confident matches. Factual questions are
+answered directly in both languages; emotional disclosures are never
+hijacked by the factual layer. A separate curated fun-fact pool (89 verified facts per language across
+13 categories: science, space, animals, history, the human body, food,
+technology, life skills, social connection, relationships, sports, art
+and music, and money and finance) answers "tell me 3 facts", "give me
+just one shocking fact", "حداقل سه تا حقیقت بگو", and topic-filtered
+requests like "facts about space". When a question falls outside the
+offline
+knowledge base, Darya says so honestly and can point to reliable sources
+(Wikipedia, reputable educational channels, qualified experts) instead
+of fabricating an answer. Crisis language (suicidal thoughts,
+hopelessness, self-harm) always routes to a supportive safety response
+with professional help resources.
 
 ### Entity Memory
 
