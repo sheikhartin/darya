@@ -12,17 +12,20 @@ right status code and the homepage renders sane content. Requires `bash`,
 `curl`, and `python3` (used only to serve the static files); `node` is
 used opportunistically if present.
 
-**`node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs`** - pure Node.js, using only the
-built-in `node:test` and `node:assert` modules (Node 18+, nothing to
-`npm install`). Exercises the conversation engine and both language packs
-directly, no browser involved: normalization, script validation, rule
-matching, exit detection, repetition avoidance, the sentiment-based
-distress nudge (including that it never overrides the safety rule),
-question detection, and bilingual parity between the Persian and English
-packs. Several tests are named regressions for specific bugs (e.g. the
-Persian word-boundary and punctuation-as-letter issues) and were verified
-against the actual broken code before being fixed, not just written to
-pass.
+**`npm test`** - pure Node.js, using only the built-in `node:test` and
+`node:assert` modules (Node 18+, nothing to `npm install`). Runs the
+unit suites (engine, language, quality, time-utils, ambient-sound) plus
+two browser e2e suites (keyboard and sound-attention) that auto-skip
+when no Chrome/Chromium binary is available. The unit suites exercise
+the conversation engine and both language packs directly, no browser
+involved: normalization, script validation, rule matching, exit
+detection, repetition avoidance, the sentiment-based distress nudge
+(including that it never overrides the safety rule), question
+detection, short-answer context chaining, and bilingual parity between
+the Persian and English packs. Several tests are named regressions for
+specific bugs (e.g. the Persian word-boundary and punctuation-as-letter
+issues) and were verified against the actual broken code before being
+fixed, not just written to pass.
 
 Both suites were stress-run dozens of times during development to shake
 out flaky assertions (a few were found and fixed - tests that only

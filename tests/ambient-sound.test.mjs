@@ -22,13 +22,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SCRIPT = fs.readFileSync(
-  path.join(ROOT, 'js/ui/ambient-sound.js'),
-  'utf8'
-);
+
+// The ambient-sound module was split into part files that share one
+// global namespace: constants/stateless utils (data), audio helpers
+// (helpers), stateful playback bound to the shared state (playback),
+// and the main module that owns the state and public API. They must
+// load in this order.
+const SCRIPTS = [
+  'js/ui/ambient-sound-data.js',
+  'js/ui/ambient-sound-helpers.js',
+  'js/ui/ambient-sound-playback.js',
+  'js/ui/ambient-sound.js'
+].map((relative) => ({
+  filename: relative,
+  code: fs.readFileSync(path.join(ROOT, relative), 'utf8')
+}));
 
 /**
- * Loads the ambient-sound script into the shared global with a fake
+ * Loads the ambient-sound scripts into the shared global with a fake
  * document whose cookie contains the given value.
  * @param {string} cookie - The document.cookie string to expose
  */
@@ -49,7 +60,9 @@ function loadWithCookie(cookie) {
         json: () =>
           Promise.resolve({ beach: ['beach.mp3'], ocean: ['ocean.mp3'] })
       });
-    vm.runInThisContext(SCRIPT, { filename: 'js/ui/ambient-sound.js' });
+    for (const { filename, code } of SCRIPTS) {
+      vm.runInThisContext(code, { filename });
+    }
   } finally {
     globalThis.document = originalDocument;
     globalThis.fetch = originalFetch;
@@ -119,7 +132,9 @@ test('concurrent autoplay callers share one in-flight audio start', async () => 
           Promise.resolve({ beach: ['beach.mp3'], ocean: ['ocean.mp3'] })
       });
     globalThis.Audio = FakeAudio;
-    vm.runInThisContext(SCRIPT, { filename: 'js/ui/ambient-sound.js' });
+    for (const { filename, code } of SCRIPTS) {
+      vm.runInThisContext(code, { filename });
+    }
 
     const ambient = globalThis.DaryaAmbientSound;
     const first = ambient.autoplayIfEnabled();
@@ -192,7 +207,9 @@ function loadSandbox(cookie, play) {
         Promise.resolve({ beach: ['beach.mp3'], ocean: ['ocean.mp3'] })
     });
   globalThis.Audio = FakeAudio;
-  vm.runInThisContext(SCRIPT, { filename: 'js/ui/ambient-sound.js' });
+  for (const { filename, code } of SCRIPTS) {
+    vm.runInThisContext(code, { filename });
+  }
   return {
     ambient: globalThis.DaryaAmbientSound,
     instances,
