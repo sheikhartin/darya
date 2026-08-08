@@ -11,6 +11,7 @@ var DaryaKnowledge = global.DaryaKnowledge;
 var TimeFetcher = global.DaryaTimeUtils.TimeFetcher;
 var handleFactualQuestion = global.DaryaFactual.handleFactualQuestion;
 var handleDateTimeQuestion = global.DaryaFactual.handleDateTimeQuestion;
+var handleFunFactsRequest = global.DaryaFactual.handleFunFactsRequest;
 var buildRecap = global.DaryaRecap.buildRecap;
 
 const {
@@ -82,6 +83,17 @@ const {
   QUOTED_CALLBACK_PROBABILITY
 } = U;
 
+// Minimum confidence (0..1) for the factual-knowledge override to replace
+// a rule reply with a direct encyclopedia-style answer. The knowledge
+// lookup already applies its own minimum score and doubles the weight of
+// hint-confirmed or framed weak words; 0.35 lets short topic words like
+// "کنکور" or "مریخ" answer while still blocking fuzzy coincidences.
+const KNOWLEDGE_OVERRIDE_CONFIDENCE = 0.35;
+// Probability of answering an unanswered factual question with a
+// reliable-source pointer instead of a plain acknowledgement, so the
+// reply does not always read as a source lecture.
+const SOURCE_SUGGESTION_CHANCE = 0.5;
+
 // ========================================================================
 
 // Emotional-disclosure topics whose rule pools already acknowledge the
@@ -130,6 +142,11 @@ class DaryaResponseEngine {
     this.rules = [...lang.rules].sort((a, b) => b.priority - a.priority);
     this.memory = new ConversationMemory();
     this._fallbackToggle = false;
+    // Last knowledge fact answered, for sequential refinement (e.g. a
+    // movie request followed by "in horror genre please"). Reset when a
+    // non-knowledge topic is matched.
+    this._lastKnowledgeTopic = null;
+    this._lastKnowledgeTurn = -Infinity;
     // Set to true for the current turn when the fallback routed a light,
     // positive casual statement to the smalltalk pool. Later stages
     // (emotional calibration, human-tone coloring) skip the turn so they
@@ -401,8 +418,33 @@ class DaryaResponseEngine {
     const _safetyTurn = matchedRule && matchedRule.topic === 'safety';
     let _overrideFired = false;
 
+    // Critical child-safety override: an adult disclosing sexual or
+    // romantic attraction toward a minor always receives the calm,
+    // non-shaming, help-seeking reply, regardless of which rule matched.
+    // It runs before every other override and, once fired, suppresses
+    // them all (factual, math, knowledge, distress nudge) so the
+    // protective reply can never be replaced or tone-stacked. It is
+    // gated on _safetyTurn so a compound disclosure that also contains
+    // acute crisis language ("I want to kill myself because I am
+    // attracted to a 15-year-old") still gets the crisis reply first:
+    // the safety pool carries hotline content, the minor-attraction pool
+    // does not. The protected reply is picked with the question budget
+    // ignored, mirroring the distress nudge, so it can never be swapped
+    // for a generic fallback even if a pool line ever reads as a
+    // question.
+    const _minorAttractionTurn =
+      !_safetyTurn && this._detectMinorAttraction(matchingText);
+    if (_minorAttractionTurn) {
+      reply = this._pickVaried(this.lang.minorAttractionResponses, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+      _overrideFired = true;
+    }
+
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
       matchedRule?.topic !== 'knowledge'
@@ -416,12 +458,155 @@ class DaryaResponseEngine {
 
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise
     ) {
       const dateTimeReply = handleDateTimeQuestion(this, normalized);
       if (dateTimeReply) {
         reply = dateTimeReply;
+        _overrideFired = true;
+      }
+    }
+
+    // Fun-fact requests ("tell me 3 facts", "give me a shocking fact",
+    // "حقایق درباره حیوانات") draw from the curated FUN_FACTS pool. They
+    // run BEFORE the factual-knowledge lookup: a request that explicitly
+    // asks for facts is more specific than a general topic question, so
+    // "give me 3 facts about sports" must not be hijacked by the sports
+    // career/game facts and "حقایق درباره هنر" must not be answered
+    // with the art-career entry. A plain topic question ("tell me about
+    // Saturn") has no fact framing and still gets the encyclopedia
+    // entry. Personal disclosures that merely contain the word "fact"
+    // ("the fact that I am tired") never match because the request
+    // framing is required.
+    if (
+      !_safetyTurn &&
+      !_minorAttractionTurn &&
+      !_overrideFired &&
+      !isRepeatedGreeting &&
+      !isSpamNoise &&
+      DaryaKnowledge &&
+      DaryaKnowledge.randomFacts
+    ) {
+      const factsReply = handleFunFactsRequest(this, matchingText);
+      if (factsReply) {
+        reply = factsReply;
+        _overrideFired = true;
+      }
+    }
+
+    // Factual-knowledge override: concrete questions about the world
+    // ("tell me about Jupiter", "فیزیک کوانتوم چیه", "چطور پول دربیارم")
+    // deserve a direct answer from the factual shelf even when they also
+    // trip a conversational rule (e.g. the broad reflection rule). The
+    // override is gated on question framing so an emotional disclosure
+    // like "استرس دارم" is never answered with an encyclopedia entry;
+    // the question/request patterns decide, not the topic words alone.
+    const _knowledgeOverrideEligible =
+      !_safetyTurn &&
+      !isRepeatedGreeting &&
+      !isSpamNoise &&
+      !_overrideFired &&
+      matchedRule?.topic !== 'knowledge' &&
+      matchedRule?.topic !== 'professional_boundary' &&
+      // Personal disclosures stay conversational even when they contain a
+      // knowledge keyword: "من ایمپاستر دارم" is a feeling, not a request
+      // for a definition.
+      matchedRule?.topic !== 'anxiety' &&
+      matchedRule?.topic !== 'stress' &&
+      matchedRule?.topic !== 'grief' &&
+      matchedRule?.topic !== 'self_compassion' &&
+      matchedRule?.topic !== 'burnout' &&
+      DaryaKnowledge &&
+      DaryaKnowledge.lookup &&
+      this._isKnowledgeRequest(matchingText);
+    if (_knowledgeOverrideEligible) {
+      const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
+      if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
+        const followup =
+          this.lang.code === 'fa'
+            ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
+            : ' Would you like to go deeper, or is there another question?';
+        reply = factual.text + followup;
+        this._lastKnowledgeTopic = factual.topic;
+        this._lastKnowledgeTurn = this.memory.turnCount;
+        _overrideFired = true;
+      }
+    }
+
+    // Sequential knowledge refinement: after any knowledge answer ("tell
+    // me about Jupiter", "چطور پول دربیارم"), a short follow-up that
+    // only names a topic ("and Saturn?", "زحل چطور؟", "in horror genre
+    // please", "بازی موبایل") has no framing of its own, so the regular
+    // lookup finds nothing. The remembered knowledge context lets
+    // lookupGenre (movie genres) and lookupFragment (other topics) map
+    // the word to the matching fact and continue the conversation in
+    // place instead of bouncing to a generic fallback.
+    if (
+      !_safetyTurn &&
+      !_overrideFired &&
+      !isRepeatedGreeting &&
+      !isSpamNoise &&
+      // A topic word used emotionally ("ترسناک" about a scary situation,
+      // "horror" describing a feeling, "sad" after a loss) must stay with
+      // the lived-experience rule, never be answered with a list or an
+      // encyclopedia entry. Same exclusion set as the knowledge override
+      // above, plus the knowledge and boundary rules, which already
+      // handle their own fragments.
+      matchedRule?.topic !== 'anxiety' &&
+      matchedRule?.topic !== 'stress' &&
+      matchedRule?.topic !== 'grief' &&
+      matchedRule?.topic !== 'sadness' &&
+      matchedRule?.topic !== 'anger' &&
+      matchedRule?.topic !== 'loneliness' &&
+      matchedRule?.topic !== 'relationship' &&
+      matchedRule?.topic !== 'work' &&
+      matchedRule?.topic !== 'knowledge' &&
+      matchedRule?.topic !== 'professional_boundary' &&
+      this._lastKnowledgeTopic &&
+      this.memory.turnCount - this._lastKnowledgeTurn <= 3 &&
+      DaryaKnowledge &&
+      (DaryaKnowledge.lookupGenre || DaryaKnowledge.lookupFragment)
+    ) {
+      const wordCount = matchingText.split(/\s+/u).filter(Boolean).length;
+      // A follow-up is a short request fragment ("in horror genre please",
+      // "زحل چطور؟", "بازی موبایل"). Reject longer sentences and
+      // first-person emotional phrasing ("this situation is absolute
+      // horror for me", "i feel horror") so an emotional topic word never
+      // gets answered with a list or encyclopedia entry.
+      const isShortFragment =
+        wordCount <= 6 &&
+        !/\b(?:i\s+(?:feel|am)|i'?m|feel(?:ing|s)?\b|scared|afraid|terrified|frightened|this is|that is|makes me|for me|to me|my)\b/iu.test(
+          matchingText
+        ) &&
+        !/(?<![\p{L}۰-۹])(?:من|دارم|احساس|می‌کنم|برام|واسه|ترسیده|می‌ترسم|شدم|شده|این|وضعیت)(?![\p{L}۰-۹])/u.test(
+          matchingText
+        );
+      let refined = null;
+      if (isShortFragment) {
+        // A game request must beat the movie-genre lookup: "horror game"
+        // names a game genre, not a film. When the fragment mentions a
+        // game, only the topic lookup runs.
+        const wantsGames = /بازی|گیم|game/iu.test(matchingText);
+        if (!wantsGames) {
+          refined =
+            DaryaKnowledge.lookupGenre?.(matchingText, this.lang.code) ||
+            null;
+        }
+        refined =
+          refined ||
+          DaryaKnowledge.lookupFragment?.(matchingText, this.lang.code) ||
+          null;
+      }
+      if (refined) {
+        const followup =
+          this.lang.code === 'fa'
+            ? ' دوست داری همین موضوع را بیشتر بگردیم یا سؤال دیگری داری؟'
+            : ' Want to go deeper on this, or is there another question?';
+        reply = refined.text + followup;
+        this._lastKnowledgeTopic = refined.topic;
+        this._lastKnowledgeTurn = this.memory.turnCount;
         _overrideFired = true;
       }
     }
@@ -433,6 +618,7 @@ class DaryaResponseEngine {
     // priority.
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
       // A repeated word inside a question usually means the user is
@@ -454,6 +640,7 @@ class DaryaResponseEngine {
 
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       // Turns where the user is clearly testing Darya ("تستت می‌کنم",
       // "just testing you") get the warm testInputResponses pool instead
       // of frustration de-escalation or harassment boundary-setting, so
@@ -493,6 +680,7 @@ class DaryaResponseEngine {
 
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
       this.memory.turnCount >= 3 &&
@@ -506,6 +694,7 @@ class DaryaResponseEngine {
 
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
       // A matched how-are-you rule already answered the user's check-in
@@ -563,6 +752,7 @@ class DaryaResponseEngine {
 
     if (
       !_safetyTurn &&
+      !_minorAttractionTurn &&
       !isRepeatedGreeting &&
       !isSpamNoise &&
       this.memory.turnCount >= BOREDOM_MIN_TURNS &&
@@ -592,7 +782,8 @@ class DaryaResponseEngine {
       seriousness: this.currentTurnSeriousness
     });
 
-    const isSafetyTurn = matchedRule && matchedRule.topic === 'safety';
+    const isSafetyTurn =
+      (matchedRule && matchedRule.topic === 'safety') || _minorAttractionTurn;
     if (
       !isSafetyTurn &&
       this.memory.isInDistressStreak() &&
@@ -1360,6 +1551,78 @@ class DaryaResponseEngine {
     return null;
   }
 
+  /**
+   * Detects an adult disclosing sexual or romantic attraction toward a
+   * minor (someone under 18). This is a critical child-safety case, so
+   * the reply must be calm, non-shaming, and point to professional
+   * help, and it must never be clobbered by a later override.
+   *
+   * The check requires three signals to align before it fires:
+   *  1. Adult context: an explicit adult identity, a stated age of 18+
+   *     (selfAge), or clearly sexual phrasing (strongSexual), which only
+   *     makes sense from an adult perspective in this framing.
+   *  2. Attraction vocabulary: crush, feelings for, attracted to, in love
+   *     with, or a sexual phrasing (attraction / strongSexual).
+   *  3. A minor-age marker: teen/teenager, minor, under 18, 13-17 years
+   *     old (minor).
+   *
+   * The familial signal blocks the ambiguous attraction words when the
+   * text is plainly about a relative ("I love my daughter", "دخترم را
+   * دوست دارم"), so ordinary family affection never triggers it. A
+   * teenager's own peer crush ("I'm 15 and I like a 17-year-old") also
+   * stays quiet because the selfAge capture (15) fails the adult check.
+   *
+   * @param {string} text - The normalized matching text.
+   * @returns {boolean} True when the protected reply must be delivered.
+   */
+  _detectMinorAttraction(text) {
+    const signals = this.lang.minorAttractionSignals;
+    if (!signals) {
+      return false;
+    }
+
+    // Ambiguous attraction words about a relative are ordinary affection
+    // ("I love my daughter"), never a disclosure. Only a clearly sexual
+    // phrasing can bypass the familial block.
+    if (signals.familial && signals.familial.test(text)) {
+      if (!(signals.strongSexual && signals.strongSexual.test(text))) {
+        return false;
+      }
+    }
+
+    const hasAttraction =
+      (signals.attraction && signals.attraction.test(text)) ||
+      (signals.strongSexual && signals.strongSexual.test(text));
+    if (!hasAttraction) {
+      return false;
+    }
+
+    const hasMinor = signals.minor && signals.minor.test(text);
+    if (!hasMinor) {
+      return false;
+    }
+
+    // Adult context. A self-reported age under 18 (e.g. a 15-year-old
+    // confessing a crush on a 17-year-old) fails the gate and stays a
+    // normal peer conversation.
+    if (signals.adultIdentity && signals.adultIdentity.test(text)) {
+      return true;
+    }
+    const ageMatch = signals.selfAge && text.match(signals.selfAge);
+    if (ageMatch) {
+      const raw = (ageMatch[1] || ageMatch[2] || '').replace(/[۰-۹]/g, (d) =>
+        String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+      );
+      if (Number(raw) >= 18) {
+        return true;
+      }
+    }
+    if (signals.strongSexual && signals.strongSexual.test(text)) {
+      return true;
+    }
+    return false;
+  }
+
   // ======================================================================
   // Emotion detection
   //
@@ -1818,9 +2081,13 @@ class DaryaResponseEngine {
    */
   _isKnowledgeRequest(text) {
     // eslint-disable-next-line max-len
-    const en = /\b(?:tell me|explain|how (?:can|do|should|to)|advice|tips|learn|what (?:is|are)|teach me|guide me|ways? to|strategies? for|manage|practice)\b/i;
+    const en = /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many)|advice|tips|learn|what (?:is|are)|who (?:is|was)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|movies?|games?|series|career|major|profession|about)\b/i;
+    // Only genre words that commonly appear without a فیلم/سریال prefix
+    // are listed here (انیمیشن, مستند). Thriller queries ("فیلم هیجانی",
+    // "تریلر معرفی کن") already carry فیلم/پیشنهاد/معرفی, and standalone
+    // "تریلر" is ambiguous with "trailer", so it stays out on purpose.
     // eslint-disable-next-line max-len
-    const fa = /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش)/u;
+    const fa = /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند)/u;
     return en.test(text) || fa.test(text);
   }
 
@@ -1899,6 +2166,25 @@ class DaryaResponseEngine {
     }
     if (matchedRule.topic === 'knowledge' && DaryaKnowledge) {
       const knowledgeText = this._currentNormalizedInput || captured || '';
+      // The factual layer answers concrete questions ("tell me about
+      // Jupiter", "فیزیک کوانتوم چیه") with a direct explanation. When
+      // it has a confident match it wins over the reflective shelf, so
+      // science and world-knowledge questions never bounce to a vague
+      // "let us sit with it" line. The shelf below remains the fallback
+      // for emotional and growth topics.
+      const factual = DaryaKnowledge.lookup
+        ? DaryaKnowledge.lookup(knowledgeText, this.lang.code)
+        : null;
+      if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
+        const factualReply = factual.text;
+        const factualFollowup =
+          this.lang.code === 'fa'
+            ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
+            : ' Would you like to go deeper, or is there another question?';
+        this._lastKnowledgeTopic = factual.topic;
+        this._lastKnowledgeTurn = this.memory.turnCount;
+        return factualReply + factualFollowup;
+      }
       const domainHints =
         this.lang.code === 'fa'
           ? {
@@ -2090,6 +2376,56 @@ class DaryaResponseEngine {
   }
 
   _fallbackResponse(preferTopic, normalizedUserText) {
+    // Questions take priority over entity and quoted callbacks: a stale
+    // entity reference or a random "you said X earlier" line must never
+    // swallow a direct question ("tell me about Jupiter"). This is the
+    // regression that made Darya answer a math/knowledge question with
+    // a quote from an old message.
+    const _isQuestionTurn =
+      !!normalizedUserText &&
+      this.lang.questionPattern.test(normalizedUserText);
+
+    if (_isQuestionTurn) {
+      // Before conceding "I do not have an answer", give the factual
+      // knowledge layer a chance: concrete questions (science, tech,
+      // culture, careers) deserve a direct answer, not an evasive
+      // bounce-back. Only when the lookup finds nothing does the turn
+      // fall through to the honest-unknown pools.
+      const factual = DaryaKnowledge && DaryaKnowledge.lookup
+        ? DaryaKnowledge.lookup(normalizedUserText, this.lang.code)
+        : null;
+      if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
+        const followup =
+          this.lang.code === 'fa'
+            ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
+            : ' Would you like to go deeper, or is there another question?';
+        this._lastKnowledgeTopic = factual.topic;
+        this._lastKnowledgeTurn = this.memory.turnCount;
+        return factual.text + followup;
+      }
+      if (this.currentTurnDialogueAct === 'question') {
+        // For factual questions that fell through the knowledge layer,
+        // honesty plus a reliable-source pointer (Wikipedia, reputable
+        // YouTube channels, qualified experts) is more useful than a
+        // generic acknowledgement. Fired on a coin flip so the reply
+        // does not always read as a source lecture. Personal or meta
+        // questions about Darya herself are never met with a source
+        // pointer; they keep the warm acknowledgement.
+        const isFactualQuestion = this._isKnowledgeRequest(normalizedUserText);
+        if (
+          isFactualQuestion &&
+          this.lang.sourceSuggestions &&
+          Math.random() < SOURCE_SUGGESTION_CHANCE
+        ) {
+          return this._pickVaried(this.lang.sourceSuggestions);
+        }
+        return this._pickVaried(
+          this.lang.questionAcknowledgements || this.lang.genericFallbacks
+        );
+      }
+      return this._pickVaried(this.lang.questionFallbacks);
+    }
+
     const entityCallback = this._respondToEntityReference();
     if (entityCallback) {
       return entityCallback;
@@ -2100,18 +2436,6 @@ class DaryaResponseEngine {
       this.memory.turnCount % this.lang.checkInEvery === 0
     ) {
       return this._pickVaried(this.lang.sessionCheckIns);
-    }
-
-    if (
-      normalizedUserText &&
-      this.lang.questionPattern.test(normalizedUserText)
-    ) {
-      if (this.currentTurnDialogueAct === 'question') {
-        return this._pickVaried(
-          this.lang.questionAcknowledgements || this.lang.genericFallbacks
-        );
-      }
-      return this._pickVaried(this.lang.questionFallbacks);
     }
 
     // Light positive casual statements ("just had the best cup of coffee")
