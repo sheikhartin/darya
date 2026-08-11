@@ -1,0 +1,29 @@
+{
+  "name": "غم بعد از زایمان",
+  "description": "A new parent who is tearful after childbirth, suspects postpartum depression, and asks why they feel so alone. Verifies the Persian postpartum disclosure gets sadness care, the depression disclosure gets a supportive professional-mention reply, and the isolation question gets loneliness care.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "تازه بچه به دنیا آوردم و همش غمگینم و گریه می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sadness"
+    },
+    {
+      "text": "فکر می‌کنم افسردگی بعد از زایمان دارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    },
+    {
+      "text": "چرا بعد از بچه دار شدن این‌قدر تنها احساس می‌کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the sadness thread for postpartum crying. Turn 2 keeps the depression disclosure on parenting with a supportive specialist-mention reply. Turn 3 answers the isolation question from the loneliness thread.",
+    "behavior": "Persian postpartum feelings are met with the same layered care as English: sadness, parenting, and loneliness threads, never a dismissive generic line."
+  }
+}

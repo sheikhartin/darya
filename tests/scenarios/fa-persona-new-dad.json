@@ -1,0 +1,29 @@
+{
+  "name": "پدر تازه‌کار و بی‌خواب",
+  "description": "A Persian first-time father whose baby wakes every two hours asks how to stay on his feet with so little sleep, then admits he fears he is not a good father. Verifies the parenting thread opens, the sleep question routes to the sleep fact, and the parental self-doubt stays on the parenting thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "بچه‌ام هر دو ساعت بیدار می‌شه و من خیلی خسته‌ام",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    },
+    {
+      "text": "با این همه کم‌خوابی چطور سر پا بمونم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "sleep"
+    },
+    {
+      "text": "نگرانم که پدر خوبی نباشم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the parenting thread (baby waking every two hours). Turn 2 answers the sleep-deprivation question with the sleep fact in Persian. Turn 3 keeps the parental self-doubt on the parenting thread.",
+    "behavior": "A real new-parent disclosure stays on the parenting thread across turns while a factual sleep question is still answered factually, showing the engine separates lived disclosure from information requests in Persian too."
+  }
+}

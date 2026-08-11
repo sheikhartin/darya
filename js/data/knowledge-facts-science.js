@@ -14,9 +14,14 @@
         'سیارهی مشتری',
         'سیاره ی مشتری',
         'مشتری سیاره',
+        'بزرگترین سیاره',
+        'بزرگ‌ترین سیاره',
+        'بزرگترین سیاره منظومه',
         'planet jupiter',
         'jupiter planet',
         'jupiter is the',
+        'biggest planet',
+        'largest planet',
         'jupiter'
       ],
       weak: ['مشتری'],
@@ -417,6 +422,20 @@
       ],
       fa: 'نپتون هشتمین و دورترین سیاره از خورشید است و یک غول یخی آبی رنگ با بادهای خیلی شدید؛ سریع‌ترین بادهای منظومه با سرعت بیش از ۲۰۰۰ کیلومتر بر ساعت در جو‌اش ثبت شده‌اند. جالب است که نپتون را ابتدا با محاسبات ریاضی و پیش از مشاهده‌ی مستقیم پیدا کردند؛ اوربن له‌وریه موقعیت‌ش را پیش‌بینی کرد و سال ۱۸۴۶ مشاهده شد. یک سال نپتون حدود ۱۶۵ سال زمینی طول می‌کشد و حداقل ۱۴ قمر دارد.',
       en: 'Neptune is the eighth and most distant planet from the Sun, a blue ice giant with extremely strong winds, the fastest in the solar system, exceeding 2000 kilometers per hour in its atmosphere. Remarkably, Neptune was discovered through mathematical calculation before it was seen directly: Urbain Le Verrier predicted its position, and it was observed in 1846. One Neptune year lasts about 165 Earth years, and it has at least 14 moons.'
+    },
+    {
+      id: 'tardigrade',
+      keywords: [
+        'عجیب‌ترین حیوان',
+        'عجیب ترین حیوان',
+        'weirdest animal',
+        'strangest animal'
+      ],
+      weak: ['خرس آبی', 'tardigrade'],
+      weakSafe: true,
+      hints: ['حیوان', 'حیوانات', 'جانور', 'animal', 'animals'],
+      fa: 'اگر دنبال عجیب‌ترین جانور بگردی، خرس آبی (تاردیگرید) سزاوار مقام اول است: موجودی میکروسکوپی با هشت پا که می‌تواند در خلأ فضا، دمای نزدیک صفر مطلق و تشعشع شدید زنده بماند؛ دانشمندان آن را در حالت خشک‌شده بعد از دهه‌ها به زندگی برگردانده‌اند.',
+      en: 'If you are looking for the strangest animal, the tardigrade (water bear) deserves first place: a microscopic eight-legged creature that can survive the vacuum of space, near-absolute-zero temperatures, and intense radiation; scientists have revived dried-out tardigrades after decades.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

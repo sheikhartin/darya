@@ -1,0 +1,28 @@
+{
+  "name": "loneliness and making friends as an adult",
+  "description": "A lonely person with no friends shares their state, asks how to make friends as an adult, and wonders why they have none. Verifies the friendship_lonely fact (micro interactions, shared-interest spaces, parallel play, patience) and that the disclosure itself routes to the loneliness topic with empathy.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I have no friends and I feel lonely",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "How do I make friends as an adult?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "Why do I have no friends?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the lonely disclosure routes to the loneliness/feeling topics with a caring question. Turn 2: the how-to-make-friends question returns the friendship_lonely fact with small concrete steps. Turn 3: the why-do-I-have-none question stays on the loneliness thread.",
+    "behavior": "Loneliness is validated as common and unlinked to being unlovable. The fact offers low-pressure first steps (hellos, shared-interest groups, parallel activities) and points to a counselor when the feeling is heavy and long-lasting."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "پرستار شیفت شب با چرخه خواب به‌هم‌ریخته",
+  "description": "A Persian hospital nurse works night shifts with a broken sleep cycle, asks what to do to sleep during the day, and reports her body getting sick from the schedule. Verifies the sleep thread opens, the day-sleeping question is answered, and the health toll stays on the health thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "شیفت شب کار می‌کنم و چرخه خوابم به هم ریخته",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    },
+    {
+      "text": "برای خوابیدن روز چیکار کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "what_do_i_do"
+    },
+    {
+      "text": "از این برنامه بدنم مریض می‌شه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the sleep thread (night shifts, broken cycle). Turn 2 answers the day-sleeping question in Persian. Turn 3 keeps the physical toll on the health thread.",
+    "behavior": "A shift-worker sleep complaint is handled as lived experience with a real answer to the practical day-sleeping question, and the health worry is met with care rather than a canned fallback."
+  }
+}

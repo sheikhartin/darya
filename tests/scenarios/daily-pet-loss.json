@@ -1,0 +1,29 @@
+{
+  "name": "pet loss grief",
+  "description": "Someone grieving a dead dog, then an empty house after losing a cat, then being told it was just a pet. Verifies all three stay on the pet_loss/grief threads with real acknowledgment instead of a dismissive or generic reply.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "My dog died and I cannot stop crying",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "pet_loss"
+    },
+    {
+      "text": "I lost my cat last week and the house feels empty",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "pet_loss"
+    },
+    {
+      "text": "People say it was just a pet but I am grieving hard",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the pet_loss thread for a dog's death. Turn 2 stays on pet_loss for the empty house. Turn 3 keeps the dismissal-fighting grief on pet_loss.",
+    "behavior": "Losing a pet is treated as real grief: the engine never dismisses it as 'just a pet' and never falls to a generic fallback."
+  }
+}

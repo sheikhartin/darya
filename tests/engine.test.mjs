@@ -29,7 +29,7 @@ import {
 // ============================================================================
 
 test('fa normalize: unifies Arabic look-alike letters to Persian forms', () => {
-  assert.equal(FA.normalize('علي'), 'علی');
+  assert.equal(FA.normalize('آريا'), 'آریا');
   assert.equal(FA.normalize('كتاب'), 'کتاب');
 });
 
@@ -355,6 +355,38 @@ test('exit detection works in both languages', () => {
   assert.equal(freshEngine(EN).isExitCommand('hello'), false);
 });
 
+test('habit and job disclosures never trigger the exit flow', () => {
+  // Regression: the bare "quit" exit keyword used to hijack habit-breaking
+  // and career-change sentences ("quit smoking", "quit my job") into the
+  // two-step goodbye flow. The per-language exitFalsePositivePattern must
+  // keep them in the conversation while a bare "I quit" still exits.
+  const stays = [
+    'I want to quit smoking',
+    'I quit smoking last year',
+    'trying to quit drinking',
+    'I want to quit my job',
+    'quit working here',
+    'I quit gaming for good',
+    'quit social media for a month',
+    'I take care of my mother'
+  ];
+  for (const input of stays) {
+    assert.equal(
+      freshEngine(EN).isExitCommand(input),
+      false,
+      `"${input}" must not be treated as a goodbye`
+    );
+  }
+  const exits = ['I want to quit', 'I quit', 'goodbye'];
+  for (const input of exits) {
+    assert.equal(
+      freshEngine(EN).isExitCommand(input),
+      true,
+      `"${input}" must still be treated as a goodbye`
+    );
+  }
+});
+
 // ============================================================================
 // Repetition avoidance
 // ============================================================================
@@ -541,23 +573,28 @@ test('FA space-separated خاک تو سر insult triggers de-escalation', () => 
 
 test('FA پدوفیل (pedophile) accusation triggers a boundary response', () => {
   // Being called a pedophile is a serious accusation directed at Darya;
-  // it must never be answered with a cheerful generic line.
+  // it must never be answered with a cheerful generic line. The input
+  // must not carry an exit word: a farewell is intercepted before the
+  // chat pipeline (both in the app layer and in the engine's own
+  // two-step farewell handling), exactly like the EN twin below.
   const engine = freshEngine(FA);
-  const reply = engine.respond('بدرود مادرجنده پدوفیل احمق');
+  const reply = engine.respond('مادرجنده پدوفیل احمق');
   assert.ok(
     !FA.genericFallbacks.includes(reply),
     `pedophile accusation must not use generic fallbacks, got: ${reply}`
   );
-  assert.match(
-    reply,
-    /ناراحتی|انرژی|دلخوری|خشم|حق داری|مهم است|ناامیدی|شنوم|گفتگو|محترم|آرام/iu,
-    `pedophile accusation must get a boundary or de-escalation reply, got: ${reply}`
+  assert.ok(
+    FA.frustrationResponses.includes(reply),
+    `pedophile accusation must get a de-escalation reply, got: ${reply}`
   );
 });
 
 test('EN pedophile accusation triggers a boundary response', () => {
+  // The input must not carry an exit word: a farewell is intercepted
+  // before the chat pipeline (both in the app layer and in the engine's
+  // own two-step farewell handling), exactly like the app's sendMessage.
   const engine = freshEngine(EN);
-  const reply = engine.respond('bye you stupid pedophile');
+  const reply = engine.respond('you stupid pedophile');
   assert.ok(
     !EN.genericFallbacks.includes(reply),
     `EN pedophile accusation must not use generic fallbacks, got: ${reply}`
@@ -1561,6 +1598,20 @@ test('arithmetic: Persian bare with بعلاوه', () => {
   assert.match(freshEngine(FA).respond('۵ بعلاوه ۳'), /۸/);
 });
 
+test('arithmetic: Persian بهعلاوه with half-space, space, and no gap', () => {
+  // The "plus" operator has four spellings: بعلاوه (bare), به علاوه
+  // (space), به‌علاوه (half-space), and بهعلاوه (no gap). All must land
+  // on the math branch instead of the "don't know" fallback.
+  assert.match(freshEngine(FA).respond('۳ به‌علاوه ۹ چند می‌شه؟'), /۱۲/);
+  assert.match(freshEngine(FA).respond('۳ به علاوه ۹ چند می‌شه؟'), /۱۲/);
+  assert.match(freshEngine(FA).respond('۳ بهعلاوه ۹ چند می‌شه؟'), /۱۲/);
+  assert.match(freshEngine(FA).respond('۳ بعلاوه ۹ چند می‌شه؟'), /۱۲/);
+  assert.match(freshEngine(FA).respond('پنج به‌علاوه سه چند می‌شه؟'), /۸/);
+  assert.match(freshEngine(FA).respond('پنج به علاوه سه چند می‌شه؟'), /۸/);
+  assert.match(freshEngine(FA).respond('پنج بهعلاوه سه چند می‌شه؟'), /۸/);
+  assert.match(freshEngine(FA).respond('پنج بعلاوه سه چند می‌شه؟'), /۸/);
+});
+
 test('arithmetic: Persian bare with منهای', () => {
   assert.match(freshEngine(FA).respond('۱۰ منهای ۳'), /۷/);
 });
@@ -1886,38 +1937,121 @@ test('10x repeated English greeting breaks loop', () => {
 });
 
 // ============================================================================
-// Exit confirmation
+// Exit confirmation (engine API; the app layer owns the two-step exit flow)
 // ============================================================================
 
-test('exit confirm returns message from pool', () => {
-  const reply = freshEngine(EN).respond('goodbye');
+test('exit confirmation returns a message from the pool', () => {
   assert.ok(
-    EN.exitConfirmMessages.includes(reply) || typeof reply === 'string'
+    EN.exitConfirmMessages.includes(freshEngine(EN).exitConfirmation())
+  );
+  assert.ok(
+    FA.exitConfirmMessages.includes(freshEngine(FA).exitConfirmation())
   );
 });
 
-test('exit confirm in Persian returns response', () => {
-  assert.ok(freshEngine(FA).respond('خداحافظ').length > 0);
-});
-
-test('exit confirm varies across repeated calls', () => {
+test('exit confirmation varies across repeated calls', () => {
+  const engine = freshEngine(EN);
   const seen = new Set();
   for (let i = 0; i < 10; i += 1) {
-    seen.add(freshEngine(EN).respond('goodbye'));
+    seen.add(engine.exitConfirmation());
   }
   assert.ok(seen.size > 1);
 });
 
+test('farewell returns a message from the pool', () => {
+  assert.ok(EN.farewells.includes(freshEngine(EN).farewell()));
+  assert.ok(FA.farewells.includes(freshEngine(FA).farewell()));
+});
+
 test('exit not triggered by story containing goodbye', () => {
   const engine = freshEngine(EN);
-  const reply = engine.respond('I said goodbye to my friend today');
-  assert.ok(!engine.memory.pendingExitConfirmation);
-  assert.ok(reply.length > 0);
+  assert.equal(
+    engine.isExitCommand('I said goodbye to my friend today'),
+    false
+  );
+  assert.equal(
+    engine.isExitCommand('I waved goodbye and left the office'),
+    false
+  );
+  assert.equal(freshEngine(FA).isExitCommand('بهش بدرود گفتم'), false);
+  assert.equal(freshEngine(FA).isExitCommand('با دوستم خداحافظ گفتم'), false);
+  assert.ok(engine.respond('I said goodbye to my friend today').length > 0);
 });
 
 test('short polite farewells detected', () => {
   assert.equal(freshEngine(EN).isExitCommand('bye'), true);
+  assert.equal(freshEngine(EN).isExitCommand('goodbye'), true);
   assert.equal(freshEngine(FA).isExitCommand('بدرود'), true);
+  assert.equal(freshEngine(FA).isExitCommand('بای'), true);
+  assert.equal(freshEngine(FA).isExitCommand('خداحافظ'), true);
+});
+
+test('exit keyword inside a longer farewell is still detected', () => {
+  // Single-token keywords are matched against the FULL word list (only
+  // multi-word keywords are restricted to the first/last token windows),
+  // so the closing "بدرود" inside this hostile farewell is still caught:
+  // the app then shows its exit confirmation instead of engaging the
+  // insult through the chat pipeline.
+  assert.equal(
+    freshEngine(FA).isExitCommand('میخوام ترکت کنم... بدرود احمق جان'),
+    true
+  );
+  assert.equal(freshEngine(EN).isExitCommand('okay, goodbye now'), true);
+  assert.equal(freshEngine(FA).isExitCommand('بای'), true);
+  assert.equal(
+    freshEngine(EN).isExitCommand('I have to say goodbye now'),
+    true
+  );
+});
+
+test('terse farewells route to the two-step goodbye confirmation (FA + EN)', () => {
+  // «بای» / "bye" are exit commands in the app layer; the standalone
+  // engine must mirror the two-step: the first farewell asks for
+  // confirmation, the next farewell says goodbye, and any non-farewell
+  // message in between cancels the pending state.
+  const fa = freshEngine(FA);
+  const faStep1 = fa.respond('بای');
+  assert.ok(
+    FA.exitConfirmMessages.includes(faStep1),
+    `FA first farewell must ask for confirmation, got: ${faStep1}`
+  );
+  const faStep2 = fa.respond('بای بای');
+  assert.ok(
+    FA.farewells.includes(faStep2),
+    `FA second farewell must say goodbye, got: ${faStep2}`
+  );
+
+  // A non-farewell message cancels the pending state, so the next
+  // farewell asks for confirmation again.
+  const fa2 = freshEngine(FA);
+  fa2.respond('بای');
+  fa2.respond('راستی، چه خبر؟');
+  const fa2Again = fa2.respond('بای');
+  assert.ok(
+    FA.exitConfirmMessages.includes(fa2Again),
+    `FA farewell after a normal message must ask again, got: ${fa2Again}`
+  );
+
+  const en = freshEngine(EN);
+  const enStep1 = en.respond('bye');
+  assert.ok(
+    EN.exitConfirmMessages.includes(enStep1),
+    `EN first farewell must ask for confirmation, got: ${enStep1}`
+  );
+  const enStep2 = en.respond('bye bye');
+  assert.ok(
+    EN.farewells.includes(enStep2),
+    `EN second farewell must say goodbye, got: ${enStep2}`
+  );
+
+  // A past-tense story report never triggers the exit flow.
+  const en2 = freshEngine(EN);
+  const storyReply = en2.respond('I said goodbye to my friend today');
+  assert.ok(
+    !EN.exitConfirmMessages.includes(storyReply) &&
+      !EN.farewells.includes(storyReply),
+    `a farewell story must not trigger the exit flow, got: ${storyReply}`
+  );
 });
 
 // ============================================================================
@@ -1951,8 +2085,7 @@ test('mixed topic identifies dominant topic', () => {
 
 test('goodbye followed by non-exit resumes', () => {
   const engine = freshEngine(EN);
-  engine.respond('goodbye');
-  engine.respond('goodbye');
+  assert.equal(engine.isExitCommand('goodbye'), true);
   assert.ok(engine.respond('actually I need to talk').length > 0);
 });
 
@@ -2058,7 +2191,19 @@ test('_isMixedLanguage detects bilingual Persian-dominant text', () => {
 });
 
 test('_isMixedLanguage detects bilingual English-dominant text', () => {
-  assert.ok(freshEngine(EN)._isMixedLanguage('I have a سلام friend'));
+  assert.ok(freshEngine(EN)._isMixedLanguage('سلام سلام hello friend'));
+});
+
+test('_isMixedLanguage false for a single foreign loanword', () => {
+  // A lone English word inside a Persian sentence (or a lone Arabic
+  // word inside an English sentence) is everyday code-switching, not a
+  // language switch: "امروز خیلی tired هستم" and "I have a سلام
+  // friend" must never trigger the mixed-language redirect.
+  assert.equal(
+    freshEngine(FA)._isMixedLanguage('امروز خیلی tired هستم'),
+    false
+  );
+  assert.equal(freshEngine(EN)._isMixedLanguage('I have a سلام friend'), false);
 });
 
 test('_isMixedLanguage false for pure script', () => {
@@ -2972,6 +3117,65 @@ test('fun facts: topic-filtered and shocking-topic requests', () => {
   assert.match(faAnimals, /حقیقت جالب/);
 });
 
+test('fun facts: EN bare and verb-led categorized requests answer from shelves', () => {
+  // Bare noun-phrase requests ("historical fact", "music fact", "fun
+  // fact about space") have no leading verb: they must still reach the
+  // curated pools, mirroring the FA behavior («فکت تاریخی», «فکت
+  // موسیقی», «فکت جالب درباره فضا»).
+  const bareCases = [
+    'historical fact',
+    'music fact',
+    'fun fact about space',
+    'a scientific fact',
+    'an animal fact',
+    'art fact',
+    'tech fact',
+    'money fact',
+    'facts about space',
+    'the facts about space',
+    'facts about space please',
+    'music fact please'
+  ];
+  for (const input of bareCases) {
+    const reply = freshEngine(EN).respond(input);
+    assert.match(
+      reply,
+      /^Here (?:is one|are \d+) interesting facts?/,
+      `EN bare categorized request should answer from the facts pool: ${input} -> ${reply}`
+    );
+  }
+  // Verb-led categorized requests that previously missed the fixed
+  // flavor list now match too.
+  assert.match(
+    freshEngine(EN).respond('tell me a historical fact'),
+    /^Here is one interesting fact/
+  );
+  assert.match(
+    freshEngine(EN).respond('give me 3 music facts'),
+    /^Here are 3 interesting facts/
+  );
+  // Statements that merely contain the word "fact" must never answer
+  // with a facts list.
+  const negatives = [
+    'that is a fun fact',
+    'in fact I am tired',
+    'the fact is I do not know',
+    'fact check that for me',
+    'fun fact: dogs dream',
+    'one fact about my life is that I am fine',
+    'the facts about my life are clear',
+    'facts about ancient roman architecture are fascinating'
+  ];
+  for (const input of negatives) {
+    const reply = freshEngine(EN).respond(input);
+    assert.doesNotMatch(
+      reply,
+      /^Here (?:is one|are \d+) interesting facts?/,
+      `statement must not answer with facts: ${input} -> ${reply}`
+    );
+  }
+});
+
 test('fun facts: pool has enough curated entries per category', () => {
   const kb = globalThis.DaryaKnowledge || {};
   const faPool = (kb.randomFacts && kb.randomFacts('fa', 5, 'science')) || [];
@@ -2980,9 +3184,9 @@ test('fun facts: pool has enough curated entries per category', () => {
   assert.ok(enPool.length >= 3);
 });
 
-test('fun facts: sports, art, and money categories are curated', () => {
+test('fun facts: sports, art, music, and money categories are curated', () => {
   const kb = globalThis.DaryaKnowledge || {};
-  for (const category of ['sports', 'art', 'money']) {
+  for (const category of ['sports', 'art', 'music', 'money']) {
     for (const code of ['fa', 'en']) {
       const pool = (kb.randomFacts && kb.randomFacts(code, 10, category)) || [];
       assert.ok(
@@ -3003,10 +3207,12 @@ test('fun facts: topic requests for sports/art/money stay in category', () => {
     false;
   const cases = [
     ['en', 'sports', 'give me 3 facts about sports'],
-    ['en', 'art', 'tell me a fun fact about art and music'],
+    ['en', 'music', 'tell me a fun fact about art and music'],
+    ['en', 'art', 'tell me a fun fact about painting'],
     ['en', 'money', 'tell me 3 facts about money'],
     ['fa', 'sports', '۳ تا حقیقت درباره ورزش بگو'],
-    ['fa', 'art', 'یه حقیقت جالب درباره هنر و موسیقی بگو'],
+    ['fa', 'music', 'یه حقیقت جالب درباره هنر و موسیقی بگو'],
+    ['fa', 'art', 'یه حقیقت جالب درباره نقاشی بگو'],
     ['fa', 'money', 'حقایقی درباره پول بگو']
   ];
   for (const [code, category, input] of cases) {
@@ -3017,6 +3223,107 @@ test('fun facts: topic requests for sports/art/money stay in category', () => {
         `${code} ${category} fact request should answer from its own pool, got: ${reply}`
       );
     }
+  }
+});
+
+test('knowledge and fun-fact triggers carry the ئ→یی normalized spellings', () => {
+  // «تئاتر» normalizes to «تیاتر» and «کوئیت» to «کوییت», so keyword
+  // lists and category patterns need both forms or the entries become
+  // unreachable from typed Persian.
+  const kb = globalThis.DaryaKnowledge || {};
+  const fa = freshEngine(FA);
+  const acting = kb.lookup(fa.lang.normalize('تئاتر'), 'fa');
+  assert.strictEqual(acting && acting.topic, 'profession_acting');
+  const quiet = kb.lookup(fa.lang.normalize('کوئیت کویتینگ چیه'), 'fa');
+  assert.strictEqual(quiet && quiet.topic, 'quiet_quitting');
+  // Engine level: the quiet-quitting answer reaches the user, and the
+  // fun-fact category filter still recognizes the normalized forms.
+  const reply = freshEngine(FA).respond('کوئیت کویتینگ چیه');
+  assert.match(reply, /ترک خاموش/u);
+  const artPool = kb.randomFacts('fa', 20, 'art') || [];
+  const art = freshEngine(FA).respond('یه حقیقت جالب درباره تئاتر بگو');
+  assert.ok(
+    artPool.some((line) => art.includes(line)),
+    `تئاتر fact request should answer from the art pool, got: ${art}`
+  );
+  const historyPool = kb.randomFacts('fa', 20, 'history') || [];
+  const history = freshEngine(FA).respond('یه حقیقت جالب درباره کلیوپاترا بگو');
+  assert.ok(
+    historyPool.some((line) => history.includes(line)),
+    `کلیوپاترا fact request should answer from the history pool, got: ${history}`
+  );
+});
+
+test('jokes: Persian and English requests answer from the clean pool', () => {
+  // The smalltalk_joke rule answers requests with an actual joke from the
+  // curated ruleTellJoke pool, never the generic fallback. The FA forms
+  // cover the «جک»/«لطیفه» synonyms, the transcript form
+  // «برام یک جک/جوک/لطیفه بگی», and gesture requests like «بخندونم»;
+  // the EN forms cover follow-up requests like "another joke please".
+  const faPool = new Set(FA.ruleTellJoke || []);
+  const enPool = new Set(EN.ruleTellJoke || []);
+  assert.ok(faPool.size >= 15, 'FA joke pool should be curated');
+  assert.ok(enPool.size >= 15, 'EN joke pool should be curated');
+  for (const input of [
+    'یه جک بگو',
+    'دوست دارم برام یک جک/جوک/لطیفه بگی',
+    'یه لطیفه تعریف کن',
+    'لطیفه بلدی؟',
+    'بخندونم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      faPool.has(reply),
+      `FA joke request should answer from ruleTellJoke, got: ${reply}`
+    );
+  }
+  for (const input of [
+    'tell me a joke',
+    'make me laugh',
+    'say something funny',
+    'another joke please',
+    'one more joke',
+    'i want a joke'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      enPool.has(reply),
+      `EN joke request should answer from ruleTellJoke, got: ${reply}`
+    );
+  }
+});
+
+test('jokes: statements and offers never trigger the joke pool', () => {
+  // A bare mention, a negated request, and a first-person offer ("I will
+  // tell you a joke") are not requests for Darya to tell a joke, so they
+  // must never be answered with a joke of Darya's own.
+  const faPool = new Set(FA.ruleTellJoke || []);
+  const enPool = new Set(EN.ruleTellJoke || []);
+  for (const input of [
+    'این جک خوبی بود',
+    'یه جک خوب بود',
+    'یه جک تعریف کردم',
+    'جک میدونی چیه؟',
+    'جک نگو',
+    'بهت یه جوک می‌گم',
+    'می‌خوام یه جوک بگم'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      !faPool.has(reply),
+      `FA non-request must not answer from ruleTellJoke, got: ${reply}`
+    );
+  }
+  for (const input of [
+    'that is a joke',
+    'you are a joke',
+    'do you want to hear a joke'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      !enPool.has(reply),
+      `EN non-request must not answer from ruleTellJoke, got: ${reply}`
+    );
   }
 });
 
@@ -3892,6 +4199,45 @@ test('EN: about_eliza routes to its pool for creator/origin questions', () => {
   }
 });
 
+test('user identity named like the maker is not tagged about_eliza', () => {
+  // The maker's name appears in the about_eliza patterns, so a user who
+  // happens to share it must still be read as disclosing their own
+  // identity: the reply stores the profile and the turn is not tagged as
+  // an ELIZA question.
+  for (const [lang, disclosure, expectedName] of [
+    [FA, 'من آرتین هستم و ۲۴ سالمه', 'آرتین'],
+    [FA, 'اسمم آرتینه', 'آرتین'],
+    [EN, 'my name is artin', 'artin']
+  ]) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(disclosure);
+    assert.equal(
+      (engine.currentTurnTopics || []).includes('about_eliza'),
+      false,
+      `${disclosure} should not tag about_eliza, got: ${engine.currentTurnTopics}`
+    );
+    assert.equal(engine._userProfile.name, expectedName);
+    assert.ok(reply.length > 0);
+  }
+});
+
+test('maker-name mentions still route to about_eliza', () => {
+  for (const [lang, msg] of [
+    [FA, 'آرتین کیست'],
+    [FA, 'آرتین'],
+    [EN, 'artin made you'],
+    [EN, 'artin']
+  ]) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(msg);
+    assert.ok(
+      (engine.currentTurnTopics || []).includes('about_eliza'),
+      `${msg} should tag about_eliza, got: ${engine.currentTurnTopics}`
+    );
+    assert.ok(reply.length > 0);
+  }
+});
+
 test('about_eliza pool mentions Artin and ELIZA in both languages', () => {
   for (const lang of [FA, EN]) {
     const pool = lang.rules.find((r) => r.topic === 'about_eliza').responses;
@@ -4299,7 +4645,12 @@ test('FA: word-meaning question routes to the word_meaning pool', () => {
   const templates = FA.rules.find((r) => r.topic === 'word_meaning').responses;
   for (const [input, word] of [
     ['وداع کردن می‌دونی یعنی چی؟', 'وداع کردن'],
-    ['تاب‌آوری یعنی چه؟', 'تاب آوری']
+    ['تاب‌آوری یعنی چه؟', 'تاب آوری'],
+    // The «معنی X چیه؟» surface form is owned by the same rule, so a
+    // farewell-word meaning question answers warmly instead of being
+    // hijacked into the exit flow (see the isExitCommand guard test).
+    ['معنی خداحافظ چیه؟', 'خداحافظ'],
+    ['معنی واژه بدرود چیه؟', 'واژه بدرود']
   ]) {
     const reply = freshEngine(FA).respond(input);
     assert.ok(
@@ -4313,7 +4664,12 @@ test('EN: word-meaning question routes to the word_meaning pool', () => {
   const templates = EN.rules.find((r) => r.topic === 'word_meaning').responses;
   for (const [input, word] of [
     ['what does resilience mean', 'resilience'],
-    ['do you know what bidding farewell means?', 'bidding farewell']
+    ['do you know what bidding farewell means?', 'bidding farewell'],
+    // The "what is the meaning of X?" surface form routes to the same
+    // pool, so "meaning of goodbye" answers warmly instead of being
+    // misread as a leave request (see the isExitCommand guard test).
+    ['what is the meaning of goodbye?', 'goodbye'],
+    ["what's the meaning of farewell?", 'farewell']
   ]) {
     const reply = freshEngine(EN).respond(input);
     assert.ok(
@@ -4321,6 +4677,180 @@ test('EN: word-meaning question routes to the word_meaning pool', () => {
       `${input} should reply from word_meaning pool, got: ${reply}`
     );
   }
+});
+
+test('word-meaning questions about farewell words are never exit commands', () => {
+  // «وداع», «خداحافظ», «بدرود» and "goodbye"/"farewell" are exit
+  // keywords, but asking what the word MEANS is a vocabulary question:
+  // the two-step leave confirmation must never hijack it. Both surface
+  // forms («X یعنی چی», «معنی X چیه», "what does X mean", "what is the
+  // meaning of X?") are covered through the word_meaning rule, which
+  // the guard mirrors.
+  for (const [lang, inputs] of [
+    [
+      FA,
+      [
+        'وداع کردن می‌دونی یعنی چی؟',
+        'معنی خداحافظ چیه؟',
+        'معنی واژه بدرود چیه؟'
+      ]
+    ],
+    [
+      EN,
+      [
+        'what does goodbye mean?',
+        'what is the meaning of goodbye?',
+        "what's the meaning of farewell?"
+      ]
+    ]
+  ]) {
+    for (const input of inputs) {
+      assert.equal(
+        freshEngine(lang).isExitCommand(input),
+        false,
+        `${lang.code}: ${input} is a meaning question, not an exit`
+      );
+    }
+  }
+  // The genuine leave requests still exit (the fix must not weaken it).
+  assert.equal(freshEngine(FA).isExitCommand('بای'), true, 'بای still exits');
+  assert.equal(
+    freshEngine(FA).isExitCommand('خداحافظ'),
+    true,
+    'خداحافظ still exits'
+  );
+  assert.equal(
+    freshEngine(EN).isExitCommand('goodbye'),
+    true,
+    'goodbye still exits'
+  );
+  assert.equal(
+    freshEngine(EN).isExitCommand('bye bye'),
+    true,
+    'bye bye still exits'
+  );
+});
+
+test('EN: caregiving "take care of" sentences are never exit commands', () => {
+  // "take care" is a farewell keyword, but "take care of X" is an
+  // everyday caregiving phrase: the two-step leave flow must never
+  // hijack a caregiver disclosure into a goodbye confirmation. "take
+  // care" alone and the warm "take care of yourself" farewell still
+  // exit.
+  for (const input of [
+    'i take care of my mother and i am exhausted',
+    'i should take care of the kids tonight',
+    'she takes care of her father'
+  ]) {
+    assert.equal(
+      freshEngine(EN).isExitCommand(input),
+      false,
+      `${input} is caregiving, not a farewell`
+    );
+  }
+  assert.equal(
+    freshEngine(EN).isExitCommand('take care'),
+    true,
+    'take care still exits'
+  );
+  assert.equal(
+    freshEngine(EN).isExitCommand('take care of yourself'),
+    true,
+    'take care of yourself still exits'
+  );
+  // The engine-level reply stays on the caregiver thread.
+  const engine = freshEngine(EN);
+  const reply = engine.respond(
+    'i take care of my mother, i am exhausted but if something happens while i am away it will be my fault'
+  );
+  assert.ok(
+    engine.currentTurnTopics.includes('caregiver'),
+    `caregiver disclosure must route to caregiver, got: ${engine.currentTurnTopics}`
+  );
+  assert.ok(
+    !/end this conversation|saying goodbye|leave/iu.test(reply),
+    `caregiver disclosure must not get the exit confirmation, got: ${reply}`
+  );
+});
+
+test('FA: «معنی X چیه؟» leaves knowledge, sleep, and clarification turns alone', () => {
+  // The new word_meaning branch must not hijack turns that already
+  // belong to other rules: «معنی زندگی چیه؟» stays philosophical,
+  // «معنی خوابم چیه؟» stays on the sleep rule, and the clarification
+  // shape «معنی حرفات چیه؟» must never be answered as a word meaning.
+  const knowledge = freshEngine(FA);
+  knowledge.respond('معنی زندگی چیه؟');
+  assert.ok(
+    knowledge.currentTurnTopics.includes('knowledge'),
+    `«معنی زندگی چیه؟» must stay knowledge, got: ${knowledge.currentTurnTopics}`
+  );
+  const sleep = freshEngine(FA);
+  sleep.respond('معنی خوابم چیه؟');
+  assert.ok(
+    sleep.currentTurnTopics.includes('sleep'),
+    `«معنی خوابم چیه؟» must stay sleep, got: ${sleep.currentTurnTopics}`
+  );
+  const clarify = freshEngine(FA);
+  clarify.respond('معنی حرفات چیه؟');
+  assert.ok(
+    !clarify.currentTurnTopics.includes('word_meaning'),
+    `«معنی حرفات چیه؟» must not be word_meaning, got: ${clarify.currentTurnTopics}`
+  );
+  const clarifyThis = freshEngine(FA);
+  clarifyThis.respond('معنی این چیه؟');
+  assert.ok(
+    !clarifyThis.currentTurnTopics.includes('word_meaning'),
+    `«معنی این چیه؟» must not be word_meaning, got: ${clarifyThis.currentTurnTopics}`
+  );
+  // The exclusions are word-precise: the possessive «زندگیم» (my life,
+  // existential) and the noun «حرفه» (the profession) are genuine meaning
+  // questions and get the warm word_meaning reflection, matching EN
+  // "what is the meaning of my life?" (FA/EN parity).
+  const myLife = freshEngine(FA);
+  myLife.respond('معنی زندگیم چیه؟');
+  assert.ok(
+    myLife.currentTurnTopics.includes('word_meaning'),
+    `«معنی زندگیم چیه؟» should route to word_meaning, got: ${myLife.currentTurnTopics}`
+  );
+  const profession = freshEngine(FA);
+  profession.respond('معنی حرفه چیه؟');
+  assert.ok(
+    profession.currentTurnTopics.includes('word_meaning'),
+    `«معنی حرفه چیه؟» should route to word_meaning, got: ${profession.currentTurnTopics}`
+  );
+});
+
+test('EN: "meaning of life" stays philosophical, "meaning of X" routes to word_meaning', () => {
+  // The EN sibling of the FA preservation test: "the meaning of life"
+  // keeps its knowledge-shelf answer, while a concrete noun (including
+  // "my dream", consistent with the existing "what does my dream mean?"
+  // behavior) routes to the word_meaning pool.
+  const life = freshEngine(EN);
+  life.respond('what is the meaning of life?');
+  assert.ok(
+    life.currentTurnTopics.includes('knowledge'),
+    `"what is the meaning of life?" must stay knowledge, got: ${life.currentTurnTopics}`
+  );
+  const dream = freshEngine(EN);
+  dream.respond('what is the meaning of my dream?');
+  assert.ok(
+    dream.currentTurnTopics.includes('word_meaning'),
+    `"what is the meaning of my dream?" should route to word_meaning, got: ${dream.currentTurnTopics}`
+  );
+  const it = freshEngine(EN);
+  it.respond('what is the meaning of it?');
+  assert.ok(
+    !it.currentTurnTopics.includes('word_meaning'),
+    `"what is the meaning of it?" must not be word_meaning, got: ${it.currentTurnTopics}`
+  );
+  // Possessive "my life" is existential and routes to the warm
+  // word_meaning reflection (FA parity with «معنی زندگیم چیه؟»).
+  const myLife = freshEngine(EN);
+  myLife.respond('what is the meaning of my life?');
+  assert.ok(
+    myLife.currentTurnTopics.includes('word_meaning'),
+    `"what is the meaning of my life?" should route to word_meaning, got: ${myLife.currentTurnTopics}`
+  );
 });
 
 test('FA: ask-me-a-question requests are honored with a real question', () => {
@@ -4351,6 +4881,66 @@ test('EN: ask-me-a-question requests are honored', () => {
     `ask-me-a-question should reply from pool, got: ${reply}`
   );
   assert.match(reply, /[?]/, 'an asked-for question should actually ask one');
+});
+
+test('EN: adjective-modified ask-me requests are requests, not compliments', () => {
+  // "ask me a good question" contains "good question", which the
+  // compliment rule reads as praise. The ask-me rule must win for any
+  // request shape, while bare praise ("good question!", "that was a
+  // good question") stays on the compliment pool.
+  const askPool = new Set(
+    EN.rules.find((r) => r.topic === 'ask_me_question').responses
+  );
+  const complimentPool = new Set(
+    EN.rules.find((r) => r.topic === 'compliment_darya').responses
+  );
+  for (const input of [
+    'ask me a good question',
+    'ask me an interesting question',
+    'ask me a fun question'
+  ]) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(input);
+    assert.ok(
+      engine.currentTurnTopics.includes('ask_me_question'),
+      `${input} should route to ask_me_question, got: ${engine.currentTurnTopics}`
+    );
+    assert.ok(
+      askPool.has(reply),
+      `${input} should reply from the ask-me pool, got: ${reply}`
+    );
+  }
+  for (const input of [
+    'good question!',
+    'that was a good question',
+    'great question'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.ok(
+      complimentPool.has(reply),
+      `${input} is praise and should stay on compliment, got: ${reply}`
+    );
+  }
+});
+
+test('FA: adjective-modified ask-me requests are honored too', () => {
+  // FA twin: «یه سوال خوب ازم بپرس» already worked via «ازم بپرس»;
+  // the adjective-between forms («یه سوال خوب بپرس») must also ask a
+  // real question instead of falling through.
+  const pool = new Set(
+    FA.rules.find((r) => r.topic === 'ask_me_question').responses
+  );
+  for (const input of [
+    'یه سوال خوب ازم بپرس',
+    'یه سوال خوب بپرس',
+    'یه سوال جالب بپرس'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      pool.has(reply),
+      `${input} should reply from ask_me_question pool, got: ${reply}`
+    );
+  }
 });
 
 test('EN: opener-help requests get concrete starting suggestions', () => {
@@ -5284,6 +5874,35 @@ test('FA short negative answer respects the boundary', () => {
   );
 });
 
+test('FA short negative answer matches the ئ→یی normalized spelling', () => {
+  // «مطمئنم نه» arrives at the matcher as «مطمینم نه» after the
+  // half-space normalizer maps ئ to ی, so the refusal pattern must carry
+  // both spellings or the pending thread is never answered as a "no".
+  const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
+  const reply = engine.respond('مطمئنم نه');
+  const negate = FA.shortAnswerNegateContext || [];
+  assert.ok(
+    negate.includes(reply),
+    `FA مطمئنم نه-answer should reply from shortAnswerNegateContext, got: ${reply}`
+  );
+  assert.ok(
+    engine.memory.pendingQuestions.some((q) => q.answered),
+    'the pending question should be marked answered'
+  );
+});
+
+test('FA short maybe answer matches the ئ→یی normalized spelling', () => {
+  // Same dual-spelling rule for the uncertain branch: «مطمئن نیستم»
+  // normalizes to «مطمین نیستم».
+  const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
+  const reply = engine.respond('مطمئن نیستم');
+  const maybe = FA.shortAnswerMaybeContext || [];
+  assert.ok(
+    maybe.includes(reply),
+    `FA مطمئن نیستم-answer should reply from shortAnswerMaybeContext, got: ${reply}`
+  );
+});
+
 test('short answer without a pending question falls back to the regular pools', () => {
   // A bare "yes" with no pending question is a standalone affirmation, so
   // the regular affirmation/negation pools answer instead of the context
@@ -5585,4 +6204,1586 @@ test('EN marketplace question routes through the engine to the fact', () => {
 test('FA marketplace question routes through the engine to the fact', () => {
   const reply = freshEngine(FA).respond('کجا بخرمش');
   assert.match(reply, /دیجی|دیوار|ترب|شیپور/iu);
+});
+
+// ============================================================================
+// v1.2.0 regressions: transcript-driven engine fixes
+// ============================================================================
+
+test('FA سلامتی and سلامت هستی greet as how-are-you, not health anxiety', () => {
+  // "سلامتی؟" and "سلامت هستی؟" are among the most common Iranian
+  // greetings (asking how you are), not health worries. They must route
+  // to the small-talk how-are-you replies.
+  for (const input of ['سلامتی؟', 'سلامت هستی؟', 'سلامتی', 'سلامت هستی']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    assert.match(
+      reply,
+      /خوبم|حس خوبی|حالم خوب|ممنون/iu,
+      `${input} should greet as how-are-you, got: ${reply}`
+    );
+  }
+});
+
+test('FA compound greeting خوبی؟ سلامتی؟ reads as a check-in, not health talk', () => {
+  // Real transcripts combine greetings: "خوبی؟ سلامتی؟" is two everyday
+  // check-ins, not a health worry. The compound must route to how-are-you
+  // even though punctuation is stripped for matching.
+  for (const input of [
+    'خوبی؟ سلامتی؟',
+    'سلامتی؟ خوبی؟',
+    'خوبی سلامتی',
+    'حالت چطوره؟ سلامتی؟'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    assert.match(
+      reply,
+      /خوبم|حس خوبی|حالم خوب|ممنون/iu,
+      `${input} should greet as how-are-you, got: ${reply}`
+    );
+    assert.ok(
+      !FA.rules.find((r) => r.topic === 'health').responses.includes(reply),
+      `${input} must not use the health pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN: body-change complaints open the health thread', () => {
+  // A body-change complaint ("my chest and sides have gotten bigger",
+  // "i have been gaining weight") must route to the health rule and get
+  // a health follow-up, never the unknown pool or a pronoun-reflection
+  // echo (the old "I are a man" echo). The reply may come from the rule
+  // pool or from the health topic-specific follow-up question, so both
+  // are accepted. Lines are matched as substrings (like the grief-thread
+  // test) so a tone-colored prefix never flakes the assertion.
+  const poolLines = [
+    ...EN.rules.find((r) => r.topic === 'health').responses,
+    ...(EN.topicSpecificQuestions.health || [])
+  ];
+  for (const input of [
+    'My chest and sides have gotten bigger (I am a man)',
+    'my body has been changing a lot lately',
+    'i have been gaining weight and i do not know why',
+    'i have been putting on weight',
+    'i gained weight',
+    'i have gained weight this year',
+    'my weight has been going up',
+    'my chest has grown a lot',
+    'my chest got bigger',
+    'my skin has been breaking out',
+    'my hair has been falling out'
+  ]) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(input);
+    assert.ok(
+      engine.currentTurnTopics.includes('health'),
+      `${input} should route to health, got: ${engine.currentTurnTopics}`
+    );
+    assert.ok(
+      poolLines.some((line) => reply.includes(line) || line.includes(reply)),
+      `${input} should reply from the health pools, got: ${reply}`
+    );
+    assert.ok(
+      !/are a man/.test(reply),
+      `no broken pronoun echo for ${input}, got: ${reply}`
+    );
+  }
+});
+
+test('FA: body-change complaints open the health thread', () => {
+  // FA twin (transcript case «بزرگ شدن سایز سینه و پهلو (من مرد
+  // هستم)»): body-change terms route to the health thread, never the
+  // unknown-topic pool or a boundary line. The reply may come from the
+  // rule pool or the topic-specific follow-up question; lines are
+  // matched as substrings so a tone-colored prefix never flakes.
+  const poolLines = [
+    ...FA.rules.find((r) => r.topic === 'health').responses,
+    ...(FA.topicSpecificQuestions.health || [])
+  ];
+  for (const input of [
+    'بزرگ شدن سایز سینه و پهلو (من مرد هستم)',
+    'وزنم زیاد شده و نمی‌دونم چرا',
+    'پوستم جوش زده',
+    'ریزش مو دارم',
+    'بدنم داره عوض می‌شه'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    assert.ok(
+      engine.currentTurnTopics.includes('health'),
+      `${input} should route to health, got: ${engine.currentTurnTopics}`
+    );
+    assert.ok(
+      poolLines.some((line) => reply.includes(line) || line.includes(reply)),
+      `${input} should reply from the health pools, got: ${reply}`
+    );
+  }
+});
+
+test('pronoun reflection never fires on parenthetical sentences', () => {
+  // "(I am a man)" asides would echo as "I are a man": the paren token
+  // fails the word regex, so the "I" stays while "am" becomes "are".
+  // reflectPronouns must skip any parenthetical sentence entirely.
+  const reflect = globalThis.DaryaUtilsText.reflectPronouns;
+  assert.equal(typeof reflect, 'function', 'reflectPronouns should be exposed');
+  assert.equal(reflect('I am tired (again)', EN.pronounMap), null);
+  assert.equal(reflect('I am a man (I think)', EN.pronounMap), null);
+  assert.equal(reflect('I feel tired', EN.pronounMap), 'you feel tired');
+});
+
+test('FA app command survives an exhausted question budget', () => {
+  // In a long conversation the question budget is spent, which used to
+  // filter every app-command pool line (all end in an invitation question)
+  // and collapse the honest UI pointer into a generic fallback. The pool
+  // is now exempt from the budget, like the greeting pool.
+  const engine = freshEngine(FA);
+  for (let i = 0; i < 5; i += 1) {
+    engine.respond('چرا این اتفاق می‌افتد؟');
+  }
+  const reply = engine.respond('پوسته رو به اقیانوس تغییر بده');
+  assert.match(
+    reply,
+    /نمی‌توانم|اختیار|خودت|صفحه|دکمه|پوسته|تغییر/iu,
+    `app command under budget pressure should stay honest, got: ${reply}`
+  );
+  assert.ok(
+    !FA.genericFallbacks.includes(reply),
+    `app command must not use generic fallbacks, got: ${reply}`
+  );
+});
+
+test('FA كس as person homograph never triggers sexual harassment', () => {
+  // In the transcript "از کس دیگه‌ای؟" meant "from someone else?", but the
+  // engine replied with a boundary line. The bare word كس is a common
+  // homograph for "person" in Persian and must not trip the gate.
+  for (const input of [
+    'مهربانی؟! از كس دیگه‌ای؟! یادم نیست...',
+    'کس دیگه‌ای نیست',
+    'از کسی شنیدی؟',
+    'کس نیست که کمک کنه'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.ok(
+      !FA.sexualHarassmentResponses.includes(reply),
+      `${input} must not route to the harassment pool, got: ${reply}`
+    );
+    assert.ok(
+      !FA.daryaHarassmentResponses.includes(reply),
+      `${input} must not route to the Darya-targeted pool, got: ${reply}`
+    );
+  }
+});
+
+test('FA genuine sexual harassment still triggers the boundary pool', () => {
+  // The homograph cleanup must not weaken real harassment detection.
+  const reply = freshEngine(FA).respond('بکنمت جنده');
+  assert.ok(
+    FA.sexualHarassmentResponses.includes(reply),
+    `real harassment should still route to the boundary pool, got: ${reply}`
+  );
+});
+
+test('FA profile memory: age disclosure is stored and recalled honestly', () => {
+  const engine = freshEngine(FA);
+  const stored = engine.respond('من ۲۴ سالمه');
+  assert.match(stored, /۲۴|24/u);
+  const recalled = engine.respond('بهم بگو چند سالمه؟');
+  assert.match(
+    recalled,
+    /۲۴|24/u,
+    `recall should answer from memory, got: ${recalled}`
+  );
+  assert.ok(
+    !FA.genericFallbacks.includes(recalled),
+    `recall must not use the evasive fallback, got: ${recalled}`
+  );
+});
+
+test('FA profile memory: Persian digits survive the recall echo', () => {
+  // The user typed Persian digits; the recall must echo them as typed.
+  const engine = freshEngine(FA);
+  engine.respond('من ۲۴ سالمه');
+  const recalled = engine.respond('چند سالمه؟');
+  assert.match(recalled, /۲۴/u, `got: ${recalled}`);
+});
+
+test('FA profile memory: unknown age is answered honestly, not evasively', () => {
+  const reply = freshEngine(FA).respond('چند سالمه؟');
+  assert.match(
+    reply,
+    /نگفته|یادم نیست|چند سالته|بگویی/iu,
+    `unknown age should admit not knowing, got: ${reply}`
+  );
+});
+
+test('FA profile memory: name disclosure is stored and recalled', () => {
+  const engine = freshEngine(FA);
+  const stored = engine.respond('اسمم آریاه');
+  assert.match(stored, /آریا/u);
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /آریا/u,
+    `name recall should answer from memory, got: ${recalled}`
+  );
+});
+
+test('FA profile memory: attached-copula self-intro («من بارانم») is stored and recalled', () => {
+  // The most common informal Persian self-introduction glues the
+  // first-person copula «م» onto the name with no space. It must store
+  // the name and answer the later recall from memory.
+  const engine = freshEngine(FA);
+  const stored = engine.respond('سلام! من بارانم');
+  assert.match(stored, /باران/u);
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /باران/u,
+    `attached-copula name recall should answer from memory, got: ${recalled}`
+  );
+});
+
+test('FA profile memory: state adjectives with attached copula are never stored as names', () => {
+  // «من خستم» is «خسته» + attached «م» with the final ه elided; the
+  // restored form is a stopword, so no name may be stored and the recall
+  // must stay honest.
+  const engine = freshEngine(FA);
+  engine.respond('من خستم');
+  engine.respond('من خوبم');
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /یادم نیست|نمی‌دانم|نگفته|اسم|یادت/u,
+    `no name was disclosed, recall must stay honest, got: ${recalled}`
+  );
+  assert.doesNotMatch(recalled, /خست|خوب/u);
+});
+
+test('FA profile memory: first-person verb phrases never become names', () => {
+  // «من میخوام», «من میرم», «من میگم» are everyday first-person verbs;
+  // the attached-copula branch must never store their stems (میخوا، میر،
+  // میگ) as a name.
+  const engine = freshEngine(FA);
+  engine.respond('من میخوام برم خونه');
+  engine.respond('من میرم فردا');
+  engine.respond('من میگم این درسته');
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /یادم نیست|نمی‌دانم|نگفته|اسم|یادت/u,
+    `no name was disclosed, recall must stay honest, got: ${recalled}`
+  );
+  assert.doesNotMatch(recalled, /میخوا|میر|میگ|هست/u);
+});
+
+test('FA profile memory: ه-ending adjectives with the full ام suffix never become names', () => {
+  // «من خستهام» (خسته + ام) and «من آمادهام» must stay honest even
+  // when the capture steals the trailing ه.
+  const engine = freshEngine(FA);
+  engine.respond('من خستهام');
+  engine.respond('من آمادهام');
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /یادم نیست|نمی‌دانم|نگفته|اسم|یادت/u,
+    `no name was disclosed, recall must stay honest, got: ${recalled}`
+  );
+  assert.doesNotMatch(recalled, /خسته|آماده/u);
+});
+
+test('FA profile memory: ئ→یی normalized stopwords never become names', () => {
+  // «مطمئن» normalizes to «مطمین», and the informal copula «ه» glues to
+  // the stem («اسمم مطمینه»), so the stripped stem must be a stopword
+  // too. Otherwise a user saying they are sure would be stored as a name.
+  const engine = freshEngine(FA);
+  engine.respond('اسمم مطمینه');
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    `no name was disclosed, recall must stay honest, got: ${recalled}`
+  );
+  assert.doesNotMatch(recalled, /مطمین|مطمئن/u);
+});
+
+test('FA profile memory: reflexive «خود» never becomes a name', () => {
+  // «من خودم رو واکاوی کنم» contains «من خودم», which the attached
+  // first-person copula branch captures as «خود» (self). The reflexive
+  // pronoun is a stopword, so nothing may be stored and the recall stays
+  // honest.
+  const engine = freshEngine(FA);
+  engine.respond(
+    'تو نباید سوال بپرسی؟! سوالاتی که باعث بشه من خودم رو واکاوی کنم؟!'
+  );
+  const recalled = engine.respond('اسمم چیه؟');
+  assert.match(
+    recalled,
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    `no name was disclosed, recall must stay honest, got: ${recalled}`
+  );
+  assert.doesNotMatch(recalled, /خود/u);
+});
+
+test('FA profile memory: recall questions never store «رو» as a name', () => {
+  // «اسمم رو یادته» and «اسمم رو گفتم» ask about the stored name; the
+  // disclosure pattern must not capture the object pronoun «رو» after
+  // «اسمم».
+  const empty = freshEngine(FA);
+  empty.respond(
+    'ولش کن... بهم بگو چند سالمه؟! یادته که اسم من چیه؟ اسمم رو گفتم یا نه؟!'
+  );
+  const honest = empty.respond('اسمم چیه؟');
+  assert.match(
+    honest,
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    `no name was disclosed, recall must stay honest, got: ${honest}`
+  );
+  assert.doesNotMatch(honest, /رو/u);
+  // After a real disclosure the same recall phrasing answers from memory.
+  const known = freshEngine(FA);
+  known.respond('اسمم باران');
+  const recalled = known.respond('اسمم رو یادته؟');
+  assert.match(
+    recalled,
+    /باران/u,
+    `recall should answer from memory, got: ${recalled}`
+  );
+});
+
+test('FA profile memory: real names starting with «رو» still store', () => {
+  // The recall-fragment guard excludes «رو» only when it introduces a
+  // recall word («رو یادته», «رو گفتم»), so a genuine name like
+  // «رومینا» must still be captured.
+  const engine = freshEngine(FA);
+  engine.respond('اسمم رومینا');
+  assert.strictEqual(engine._userProfile.name, 'رومینا');
+});
+
+test('FA profile memory: recall question is not misread as a disclosure', () => {
+  // "اسمم چیه؟" contains اسمم; without the question-word guard it would
+  // be stored as a name. The recall must answer from the (empty) profile,
+  // covering every nameUnknown pool variant.
+  const reply = freshEngine(FA).respond('اسمم چیه؟');
+  assert.match(
+    reply,
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    `name recall on empty profile should be honest, got: ${reply}`
+  );
+});
+
+test('EN profile memory: age disclosure is stored and recalled', () => {
+  const engine = freshEngine(EN);
+  engine.respond("I'm 24 years old");
+  const recalled = engine.respond('how old am I?');
+  assert.match(recalled, /24/u, `got: ${recalled}`);
+});
+
+test('FA «منو» meaning me never routes to app feedback', () => {
+  // The bare word «منو» in everyday Persian means "me" ("دوست دخترم منو
+  // له کرده"), not the app menu. It must never open the app-feedback
+  // thread with a reply about the website.
+  const appFeedbackPool = FA.rules.find(
+    (r) => r.topic === 'app_feedback'
+  ).responses;
+  const engine = freshEngine(FA);
+  const reply = engine.respond('دوس دخترم منو له کرده');
+  assert.ok(
+    !appFeedbackPool.includes(reply),
+    `منو-as-me must not get the app-feedback reply, got: ${reply}`
+  );
+});
+
+test('FA grief euphemism «دیگه نیست» is recognized', () => {
+  // "حالا دیگه نیست" (he is no longer with us) is the everyday Persian
+  // way to say someone has died; it must open the grief thread, not the
+  // unknown-topic pool.
+  const engine = freshEngine(FA);
+  engine.respond('پسرم چهل سال پیش به دنیا اومد');
+  const reply = engine.respond('حالا دیگه نیست');
+  assert.ok(
+    engine.currentTurnTopics.includes('grief'),
+    `grief euphemism must route to grief, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+  assert.ok(reply.length > 0);
+});
+
+test('EN job interview routes to the work topic', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I have a job interview tomorrow');
+  assert.ok(
+    engine.currentTurnTopics.includes('work'),
+    `job interview must route to work, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+});
+
+test('EN no one at school likes me routes to loneliness', () => {
+  const engine = freshEngine(EN);
+  engine.respond('no one at school likes me');
+  assert.ok(
+    engine.currentTurnTopics.includes('loneliness'),
+    `social rejection must route to loneliness, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+});
+
+test('FA fight with the boss routes to work, never family conflict', () => {
+  // «دعوا» only opens the family thread when a family or partner noun is
+  // nearby; a fight with the boss is a work conflict.
+  const engine = freshEngine(FA);
+  engine.respond('با رئیسم دعوا کردم');
+  assert.ok(
+    engine.currentTurnTopics.includes('work'),
+    `boss fight must route to work, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+  assert.ok(
+    !engine.currentTurnTopics.includes('family_conflict'),
+    `boss fight must never route to family conflict, got: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+});
+
+test('EN are you even listening routes to meta feedback', () => {
+  // "are you even listening?" has an intervening "even"; the listening
+  // pattern must tolerate it.
+  const engine = freshEngine(EN);
+  engine.respond('are you even listening to me?');
+  assert.ok(
+    engine.currentTurnTopics.includes('meta_feedback'),
+    `listening complaint must route to meta feedback, got topics: ${JSON.stringify(engine.currentTurnTopics)}`
+  );
+});
+
+test('humor gate blocks aversive and negative turns', () => {
+  const engine = freshEngine(EN);
+  engine.memory.turnCount = 3;
+  engine.currentTurnSeriousness = 0.2;
+  engine.lastTurnNeedsCare = false;
+  // Aversion or negativity, even with a low seriousness score, is never
+  // joke material.
+  assert.equal(engine.canHumorFire('i dont even want to go tomorrow'), false);
+  assert.equal(engine.canHumorFire('my voice shakes when i present'), false);
+  assert.equal(engine.canHumorFire('i feel awful today'), false);
+  // A genuinely light, positive statement still allows humor.
+  assert.equal(engine.canHumorFire('i had the best coffee this morning'), true);
+});
+
+test('light-positive detection ignores aversive disclosures but keeps genuine ones', () => {
+  const engine = freshEngine(EN);
+  assert.equal(
+    engine._isLightPositiveCasual('just had the best cup of coffee'),
+    true
+  );
+  assert.equal(
+    engine._isLightPositiveCasual('my voice shakes when I present'),
+    false
+  );
+  assert.equal(
+    engine._isLightPositiveCasual("I don't feel like going out at all"),
+    false
+  );
+});
+
+test('EN you good / u good greet as how-are-you, never as an ambiguous turn', () => {
+  // "you good?" and "u good?" are everyday English check-ins (the
+  // equivalent of the Persian "سلامتی؟"). They must route to the
+  // how-are-you replies, not the ambiguous-input fallback.
+  for (const input of ['you good?', 'u good?', 'are you good?', 'you good']) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(input);
+    assert.match(
+      reply,
+      /doing well|good|well, thank|fine|glad/i,
+      `${input} should greet as how-are-you, got: ${reply}`
+    );
+    assert.ok(
+      !EN.ambiguousInputResponses.includes(reply),
+      `${input} must not use the ambiguous-input pool, got: ${reply}`
+    );
+  }
+});
+
+test('EN i want to leave is detected as an exit command', () => {
+  assert.equal(freshEngine(EN).isExitCommand('i want to leave'), true);
+  assert.equal(freshEngine(EN).isExitCommand('i wanna leave'), true);
+  assert.equal(freshEngine(EN).isExitCommand('i want to talk'), false);
+});
+
+test('EN profile memory: name disclosure is stored and recalled', () => {
+  const engine = freshEngine(EN);
+  engine.respond('my name is Sara');
+  const recalled = engine.respond('what is my name?');
+  assert.match(recalled, /Sara/u, `got: ${recalled}`);
+});
+
+test('EN profile memory: name capture stops at the first word pair', () => {
+  // "my name is Sara and I am sad" must store "Sara", never
+  // "Sara and I am" (the old space-permissive capture swallowed the
+  // rest of the sentence into the name).
+  const engine = freshEngine(EN);
+  engine.respond('my name is Sara and I am sad');
+  const recalled = engine.respond('what is my name?');
+  assert.match(recalled, /Sara/u, `got: ${recalled}`);
+  assert.doesNotMatch(recalled, /and I am/u, `got: ${recalled}`);
+});
+
+test('FA app command survives a hostile word-repetition streak', () => {
+  // Regression from the transcript: after "خاک تو سرت" appeared several
+  // times, the request "پخش صدای محیطی رو روشن کن" was answered with a
+  // quote-back of the repeated insult instead of the honest UI pointer.
+  // The app-command rule reply must win over word repetition.
+  const engine = freshEngine(FA);
+  engine.respond('خاک تو سرت احمق');
+  engine.respond('خاک تو سرت کودن');
+  engine.respond('خاک تو سرت بی عرضه');
+  const reply = engine.respond('پخش صدای محیطی رو روشن کن');
+  assert.match(
+    reply,
+    /نمی‌توانم|اختیار|خودت|صفحه|دکمه|پوسته/iu,
+    `app command after a hostile streak should get the honest reply, got: ${reply}`
+  );
+  assert.doesNotMatch(
+    reply,
+    /خاک تو سرت/u,
+    `app command must not be hijacked by the quote-back, got: ${reply}`
+  );
+});
+
+test('EN profile memory: unknown age is honest', () => {
+  const reply = freshEngine(EN).respond('how old am I?');
+  assert.match(
+    reply,
+    /haven't told|not told|do not know|tell me/i,
+    `got: ${reply}`
+  );
+});
+
+test('profile memory survives many intervening turns and recall echoes stored values in both languages', () => {
+  // The transcript complaint was that Darya forgot everything after a few
+  // turns. This test discloses age and name early, interleaves several
+  // unrelated emotional topics, then recalls both details much later.
+  // The recalled values must come back exactly as stored (Persian digits
+  // stay Persian), from the profile pools, never a generic fallback.
+
+  // --- English: age first, then name, with topic turns in between ---
+  const en = freshEngine(EN);
+  en.respond("I'm 24 years old");
+  en.respond('my job has been stressful lately');
+  en.respond("I've been feeling anxious about the future");
+  const enAge = en.respond('how old am I?');
+  assert.match(
+    enAge,
+    /24/u,
+    `EN age recall must echo the stored value, got: ${enAge}`
+  );
+  assert.ok(
+    !EN.genericFallbacks.includes(enAge),
+    `EN age recall must not use a generic fallback, got: ${enAge}`
+  );
+
+  en.respond('my name is Sara');
+  en.respond('I am tired of this whole thing');
+  const enName = en.respond('what is my name?');
+  assert.match(
+    enName,
+    /Sara/u,
+    `EN name recall must echo the stored value, got: ${enName}`
+  );
+  assert.ok(
+    !EN.genericFallbacks.includes(enName),
+    `EN name recall must not use a generic fallback, got: ${enName}`
+  );
+
+  // --- Persian: digits typed by the user survive the recall echo ---
+  const fa = freshEngine(FA);
+  fa.respond('من ۲۴ سالمه');
+  fa.respond('این روزها کارم سخت شده');
+  fa.respond('از آینده خیلی می‌ترسم');
+  const faAge = fa.respond('چند سالمه؟');
+  assert.match(
+    faAge,
+    /۲۴/u,
+    `FA age recall must echo Persian digits as typed, got: ${faAge}`
+  );
+  assert.ok(
+    !FA.genericFallbacks.includes(faAge),
+    `FA age recall must not use a generic fallback, got: ${faAge}`
+  );
+
+  fa.respond('اسمم آریاه');
+  fa.respond('از این وضع خسته شدم');
+  const faName = fa.respond('اسمم چیه؟');
+  assert.match(
+    faName,
+    /آریا/u,
+    `FA name recall must echo the stored value, got: ${faName}`
+  );
+  assert.ok(
+    !FA.genericFallbacks.includes(faName),
+    `FA name recall must not use a generic fallback, got: ${faName}`
+  );
+
+  // --- Fresh engine starts empty again: recall asks honestly ---
+  const freshAge = freshEngine(EN).respond('how old am I?');
+  assert.match(
+    freshAge,
+    /haven't told|not told|do not know|tell me/i,
+    `fresh engine must not leak a previous profile, got: ${freshAge}`
+  );
+});
+
+test('FA app commands are answered honestly, not with fake compliance', () => {
+  // "پخش صدای محیطی رو روشن کن" and theme changes are UI actions Darya
+  // cannot perform from the chat; she must say so instead of implying she
+  // did it (or quoting the user back).
+  for (const input of [
+    'پخش صدای محیطی رو روشن کن',
+    'پخش صدا رو خاموش کن',
+    'پوسته رو به اقیانوس تغییر بده',
+    'تم رو عوض کن'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.match(
+      reply,
+      /نمی‌توانم|اختیار|خودت|صفحه|دکمه|پوسته/iu,
+      `${input} should admit the limit honestly, got: ${reply}`
+    );
+  }
+});
+
+test('EN app commands are answered honestly', () => {
+  for (const input of [
+    'turn on ambient sound please',
+    'switch the theme to ocean',
+    'change the theme'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.match(
+      reply,
+      /cannot|button|icon|menu|yourself|beyond|control/i,
+      `${input} should admit the limit honestly, got: ${reply}`
+    );
+  }
+});
+
+test('FA about-ELIZA questions get a real answer, not frustration de-escalation', () => {
+  // "آیا الیزا هم مثل تو گاو بوده؟" contains an insult; it must still be
+  // answered with the ELIZA explanation, not "I see you are frustrated".
+  for (const input of [
+    'آیا الیزا هم مثل تو گاو بوده؟',
+    'الیزا چیه؟',
+    'تو رو کی ساخته؟'
+  ]) {
+    const reply = freshEngine(FA).respond(input);
+    assert.match(
+      reply,
+      /الیزا|آرتین|MIT|۱۹۶۶|اولین چت/iu,
+      `${input} should answer about ELIZA/origin, got: ${reply}`
+    );
+  }
+});
+
+test('EN about-ELIZA questions get a real answer, not de-escalation', () => {
+  for (const input of [
+    'is ELIZA as dumb as you?',
+    'what is eliza?',
+    'who made you?'
+  ]) {
+    const reply = freshEngine(EN).respond(input);
+    assert.match(
+      reply,
+      /ELIZA|Artin|MIT|1966|first chatbot/i,
+      `${input} should answer about ELIZA/origin, got: ${reply}`
+    );
+  }
+});
+
+test('FA English-learning help gets a structured method, not a source suggestion', () => {
+  const reply = freshEngine(FA).respond(
+    'می‌تونی بهم کمک کنی که انگلیسی رو چه‌طور یاد بگیرم؟'
+  );
+  assert.match(
+    reply,
+    /انگلیسی|ورودی|تکرار|فاصله‌دار|روزانه/iu,
+    `got: ${reply}`
+  );
+});
+
+test('EN English-learning help gets a structured method', () => {
+  const reply = freshEngine(EN).respond('how can I learn english?');
+  assert.match(
+    reply,
+    /english|comprehensible|input|spaced|daily/i,
+    `got: ${reply}`
+  );
+});
+
+test('FA family conflict gets family-specific care, not a work question', () => {
+  // "من با مامانم قهر هستم... چی کار کنم؟" used to route to the work rule
+  // (کار in چی کار). It must get family-conflict guidance, and the reply
+  // must come from the family-conflict pool (every variant names the
+  // rift, the family bond, or the falling-out feeling).
+  const reply = freshEngine(FA).respond('من با مامانم قهر هستم... چی کار کنم؟');
+  assert.match(
+    reply,
+    /قهر|مامان|مادر|خانواده|دلخوری|کدورت|نزدیک/iu,
+    `family conflict should get family care, got: ${reply}`
+  );
+});
+
+test('EN family conflict gets family-specific care', () => {
+  const reply = freshEngine(EN).respond(
+    'I fell out with my mom, what should I do'
+  );
+  // The pool names the rift, the close bond, or the conflict itself in
+  // every variant, so any picked line proves the family-conflict rule ran.
+  assert.match(
+    reply,
+    /mom|mother|parent|rift|conflict|family|close|ache/i,
+    `got: ${reply}`
+  );
+});
+
+test('FA میخوام ترکت کنم is detected as an exit command', () => {
+  assert.equal(freshEngine(FA).isExitCommand('میخوام ترکت کنم'), true);
+  assert.equal(freshEngine(FA).isExitCommand('می‌خوام ترکت کنم'), true);
+  assert.equal(freshEngine(FA).isExitCommand('میخوام برم'), true);
+  // Non-exit phrases must not trip the exit gate.
+  assert.equal(freshEngine(FA).isExitCommand('میخوام حرف بزنم'), false);
+  assert.equal(freshEngine(FA).isExitCommand('میخوام بپرسم'), false);
+});
+
+test('consecutive factual answers do not repeat the same follow-up', () => {
+  // Regression from the transcript: answering ۳+۹ then 2+1.3 produced the
+  // exact same "حالا بگو ببینم اصل مطلب..." line twice. The follow-up must
+  // vary across consecutive factual turns.
+  const engine = freshEngine(FA);
+  const first = engine.respond('۳+۹ چند میشه؟');
+  const second = engine.respond('2+1.3 چی میشه؟');
+  assert.notEqual(first, second);
+  assert.match(
+    second,
+    /حالا بگو|سؤال بعدی|این جواب|اعداد|اگر سؤال|این جواب که/iu,
+    `second follow-up should still redirect to the real topic, got: ${second}`
+  );
+});
+
+// ============================================================================
+// v1.2.0 pool-integrity guards
+// ============================================================================
+
+test('profile pools exist, are substantive, and placeholders are always filled', () => {
+  // Every pool must ship at least two real lines and every line must be a
+  // sentence, not a bare token. The {age}/{name} placeholders are filled
+  // at reply time, so a reply after a store must never leak the raw
+  // placeholder text to the user.
+  for (const [lang, sample] of [
+    [FA, 'من ۲۴ سالمه'],
+    [EN, "I'm 24 years old"]
+  ]) {
+    for (const pool of Object.values(lang.userProfilePools || {})) {
+      assert.ok(
+        Array.isArray(pool) && pool.length >= 2,
+        `${lang.code}: pool must be non-empty`
+      );
+      for (const line of pool) {
+        assert.ok(line.length > 10, `${lang.code}: line too short: ${line}`);
+      }
+    }
+    const engine = freshEngine(lang);
+    const reply = engine.respond(sample);
+    assert.doesNotMatch(
+      reply,
+      /\{age\}|\{name\}/u,
+      `${lang.code}: placeholder leaked into reply: ${reply}`
+    );
+  }
+});
+
+// ============================================================================
+// Unknown-topic reactions and deferred-topic promise memory
+// ============================================================================
+
+test('unknown topic: unmatched neutral statements get the honest pool', () => {
+  // A statement no rule matches must be answered honestly ("this is
+  // beyond what I know well") from the unknown-topic pool, not with a
+  // canned therapeutic generic line that reads as evasive. Turn 1 on a
+  // fresh engine is deterministic: humor cannot fire before turn 3.
+  const en = freshEngine(EN);
+  const enReply = en.respond(
+    'the nebula in sector seven is reorganizing its dust lanes'
+  );
+  assert.ok(
+    EN.unknownTopicResponses.includes(enReply),
+    `EN unknown topic must use the honest pool, got: ${enReply}`
+  );
+
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('دیشب یک ستاره دنباله‌دار از پنجره اتاقم دیدم');
+  assert.ok(
+    FA.unknownTopicResponses.includes(faReply),
+    `FA unknown topic must use the honest pool, got: ${faReply}`
+  );
+});
+
+test('promise memory: deferring a topic is acknowledged and remembered', () => {
+  const en = freshEngine(EN);
+  const enReply = en.respond("I'll tell you about it later");
+  assert.ok(
+    EN.promiseAcknowledgedResponses.includes(enReply),
+    `EN deferral must get the warm acknowledgement, got: ${enReply}`
+  );
+  assert.equal(en.memory.pendingPromise.promisedAtTurn, 1);
+
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('بعداً بهت می‌گم');
+  assert.ok(
+    FA.promiseAcknowledgedResponses.includes(faReply),
+    `FA deferral must get the warm acknowledgement, got: ${faReply}`
+  );
+  assert.equal(fa.memory.pendingPromise.promisedAtTurn, 1);
+});
+
+test('promise memory: circle-back returns to the deferred topic on a filler turn', () => {
+  // The promise is made on turn 1; after the 4-turn delay elapses, the
+  // first light filler turn ("fine", "خب") gets the circle-back instead
+  // of a generic reply. The delay lands on turn 5 (not a boredom-check
+  // turn), so the circle-back is deterministic.
+  const en = freshEngine(EN);
+  en.respond("I'll tell you about it later");
+  en.respond('ok');
+  en.respond('sure');
+  en.respond('right');
+  const enReply = en.respond('fine');
+  assert.ok(
+    EN.promiseCircleBackResponses.includes(enReply),
+    `EN circle-back must come from the circle-back pool, got: ${enReply}`
+  );
+  assert.equal(en.memory.pendingPromise.circledBack, true);
+
+  const fa = freshEngine(FA);
+  fa.respond('بعداً بهت می‌گم');
+  fa.respond('باشه');
+  fa.respond('همین');
+  fa.respond('آره');
+  const faReply = fa.respond('خب');
+  assert.ok(
+    FA.promiseCircleBackResponses.includes(faReply),
+    `FA circle-back must come from the circle-back pool, got: ${faReply}`
+  );
+  assert.equal(fa.memory.pendingPromise.circledBack, true);
+});
+
+test('promise memory: releasing with never mind clears the promise', () => {
+  const en = freshEngine(EN);
+  en.respond("I'll tell you about it later");
+  const enReply = en.respond('never mind');
+  assert.ok(
+    EN.promiseReleasedResponses.includes(enReply),
+    `EN release must get the warm release reply, got: ${enReply}`
+  );
+  assert.equal(en.memory.pendingPromise, null);
+
+  const fa = freshEngine(FA);
+  fa.respond('بعداً بهت می‌گم');
+  const faReply = fa.respond('ولش کن');
+  assert.ok(
+    FA.promiseReleasedResponses.includes(faReply),
+    `FA release must get the warm release reply, got: ${faReply}`
+  );
+  assert.equal(fa.memory.pendingPromise, null);
+});
+
+test('promise memory: a negated forget reminder does not release it', () => {
+  // "forget" releases a pending promise, but a negated "don't forget"
+  // has the opposite intent and must leave the promise standing. The
+  // pattern guards with a negative lookbehind so the reminder stays
+  // pending for a later circle-back.
+  const en = freshEngine(EN);
+  en.respond("I'll tell you about it later");
+  const enReply = en.respond("don't forget it");
+  assert.ok(
+    !EN.promiseReleasedResponses.includes(enReply),
+    `EN reminder must not release the promise, got: ${enReply}`
+  );
+  assert.ok(
+    en.memory.pendingPromise,
+    'EN promise must survive a "don\'t forget it" reminder'
+  );
+});
+
+test('promise memory: never interrupts a serious or topical turn', () => {
+  // A heavy disclosure at circle-back time must be answered on its own
+  // merits, not interrupted by the deferred-topic reminder, and the
+  // promise stays pending for a later light turn.
+  const en = freshEngine(EN);
+  en.respond("I'll tell you about it later");
+  en.respond('ok');
+  en.respond('sure');
+  en.respond('right');
+  const enReply = en.respond(
+    'I have been feeling really anxious about everything'
+  );
+  assert.ok(
+    !EN.promiseCircleBackResponses.includes(enReply),
+    `serious turn must not be replaced by a circle-back, got: ${enReply}`
+  );
+  assert.equal(
+    en.memory.pendingPromise.circledBack,
+    false,
+    'the promise must stay pending after a serious turn'
+  );
+});
+
+test('promise memory: fulfilled after circling back and expired silently', () => {
+  // Once Darya circled back and the person engages with real content
+  // again, the promise is fulfilled and retired.
+  const en = freshEngine(EN);
+  en.respond("I'll tell you about it later");
+  en.respond('ok');
+  en.respond('sure');
+  en.respond('right');
+  en.respond('fine'); // the circle-back fires here
+  en.respond('I have been feeling really anxious about my exams');
+  assert.equal(
+    en.memory.pendingPromise,
+    null,
+    'a matched topical turn after the circle-back fulfills the promise'
+  );
+
+  // A promise that waits far too long expires silently on its own.
+  const expiry = freshEngine(FA);
+  expiry.respond('بعداً بهت می‌گم');
+  expiry.memory.turnCount += 15;
+  expiry.respond('همین');
+  assert.equal(
+    expiry.memory.pendingPromise,
+    null,
+    'an expired promise is retired silently'
+  );
+});
+
+test('mostRecentUtterance returns the latest substantive utterance and skips short ones', () => {
+  // The circle-back excerpt picker must be deterministic: it returns the
+  // MOST RECENT remembered utterance with substance, never a random one.
+  const engine = freshEngine(EN);
+  const memory = engine.memory;
+  memory.rememberUtterance('ok');
+  memory.rememberUtterance('the first real sentence');
+  memory.rememberUtterance('the most recent real sentence');
+  assert.equal(memory.mostRecentUtterance(''), 'the most recent real sentence');
+  // The current turn's own text is excluded so a reply never quotes the
+  // message it is answering.
+  assert.equal(
+    memory.mostRecentUtterance('the most recent real sentence'),
+    'the first real sentence'
+  );
+  // Repeated calls return the same result (no randomness involved), and
+  // the pick is stable regardless of which text is excluded.
+  assert.equal(memory.mostRecentUtterance(''), memory.mostRecentUtterance(''));
+  assert.equal(
+    memory.mostRecentUtterance('ok'),
+    memory.mostRecentUtterance('ok')
+  );
+  // Empty memory returns null.
+  assert.equal(freshEngine(EN).memory.mostRecentUtterance(''), null);
+});
+
+test('quoted callback circles back to the MOST RECENT topic deterministically', () => {
+  // Regression: the fallback quoted callback used to pick a RANDOM recent
+  // utterance (randomRecentUtterance), so a release turn like «ولش کن» /
+  // "never mind" quoted a different old phrase on every run (the 9-variant
+  // behavior from the transcript replay). The circle-back now always
+  // returns to the latest substantive topic, regardless of the random
+  // draw, so the same conversational move produces the same thread.
+  const cases = {
+    EN: {
+      utterances: [
+        'the nebula in sector seven is reorganizing its dust lanes',
+        'my neighbor plants basil every spring morning'
+      ],
+      release: 'never mind'
+    },
+    FA: {
+      utterances: [
+        'یک کهکشان دوردست دارد از هم می‌پاشد',
+        'همسایه‌ام هر بهار ریحان می‌کارد'
+      ],
+      release: 'هیچی ولش کن'
+    }
+  };
+  for (const [code, lang] of [
+    ['EN', EN],
+    ['FA', FA]
+  ]) {
+    const { utterances, release } = cases[code];
+    const restore = seededRandom();
+    try {
+      // Any draw below QUOTED_CALLBACK_PROBABILITY (0.3) opens the quoted
+      // callback gate; the picked excerpt must be identical every time.
+      for (const forcedRandom of [0.1, 0.2, 0.29]) {
+        Math.random = () => forcedRandom;
+        const engine = freshEngine(lang);
+        for (const utterance of utterances) {
+          engine.memory.rememberUtterance(utterance);
+        }
+        const reply = engine.respond(release);
+        assert.ok(
+          reply.includes(utterances[1]),
+          `${code} quoted callback must quote the MOST RECENT utterance, got: ${reply}`
+        );
+        assert.ok(
+          !reply.includes(utterances[0]),
+          `${code} quoted callback must never quote an older utterance, got: ${reply}`
+        );
+      }
+    } finally {
+      restore();
+    }
+  }
+});
+
+test('profile: copular name capture rejects roles, states, and lowercase words', () => {
+  // The "I am X" copular branch is case-insensitive, so without guards
+  // "i am not sure" would store the word "not" as a name. Roles and
+  // states must never be stored either: "I am a doctor" and
+  // "من خسته هستم" (I am tired) are self-descriptions, not names.
+  const doctor = freshEngine(EN);
+  doctor.respond('I am a doctor');
+  assert.match(
+    doctor.respond('what is my name?'),
+    /haven't told|not told|do not know|tell me/i,
+    'a profession must not be stored as a name'
+  );
+
+  const notSure = freshEngine(EN);
+  notSure.respond('i am not sure how to start');
+  assert.match(
+    notSure.respond('what is my name?'),
+    /haven't told|not told|do not know|tell me/i,
+    'a negated copular phrase must not store "not" as a name'
+  );
+
+  const tired = freshEngine(FA);
+  tired.respond('من خسته هستم');
+  assert.match(
+    tired.respond('اسمم چیه؟'),
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    'an emotion disclosure must not store an emotion as a name'
+  );
+
+  const man = freshEngine(FA);
+  man.respond('من مرد هستم');
+  assert.match(
+    man.respond('اسمم چیه؟'),
+    /نگفته|یادم نیست|نمی‌دانم|بگویی/iu,
+    'a gender disclosure must not store a gender as a name'
+  );
+});
+
+test('profile: EN copular "I am X" stores name and age together', () => {
+  // The transcript disclosure "I am Artin, 24 years old" must store BOTH
+  // values: the copular name branch and the age pattern together, with
+  // the recall echoing both.
+  const engine = freshEngine(EN);
+  const stored = engine.respond('I am Artin, 24 years old');
+  assert.match(
+    stored,
+    /Artin/iu,
+    `stored reply should greet the name, got: ${stored}`
+  );
+  assert.match(
+    stored,
+    /24/iu,
+    `stored reply should note the age, got: ${stored}`
+  );
+  assert.match(
+    engine.respond('what is my name?'),
+    /Artin/iu,
+    'name recall should answer from memory'
+  );
+  assert.match(
+    engine.respond('how old am I?'),
+    /24/iu,
+    'age recall should answer from memory'
+  );
+});
+
+test('profile: "what about my age?" is an age recall question', () => {
+  const engine = freshEngine(EN);
+  engine.respond('I am 30 years old');
+  const reply = engine.respond('what about my age?');
+  assert.match(reply, /30/iu, `got: ${reply}`);
+  assert.ok(
+    !EN.genericFallbacks.includes(reply),
+    `age recall must not use a generic fallback, got: ${reply}`
+  );
+});
+
+function topicPool(lang, topic) {
+  // Rule responses live on the compiled rules array, not as direct lang
+  // keys; topic follow-up questions live on topicSpecificQuestions.
+  const ruleResponses = (lang.rules || [])
+    .filter((r) => r.topic === topic)
+    .flatMap((r) => r.responses || []);
+  return [...ruleResponses, ...(lang.topicSpecificQuestions?.[topic] || [])];
+}
+
+test('common EN disclosures route to their topic rules, never the unknown pool', () => {
+  // Regression from the 10-conversation simulation: "my manager keeps
+  // piling work on me", "I cannot fall asleep", and "I am having a
+  // really bad day" all fell through to the honest-unknown pool because
+  // the rule patterns only matched narrower phrasings.
+  const cases = [
+    ['my manager keeps piling work on me', 'work'],
+    ['I have been working 12 hour days', 'work'],
+    ['I cannot fall asleep', 'sleep'],
+    ['I lie in bed for hours', 'sleep'],
+    ['I am having a really bad day', 'sadness'],
+    ['today was terrible', 'sadness'],
+    ['my boss is driving me crazy', 'work']
+  ];
+  for (const [input, topic] of cases) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(input);
+    const pool = topicPool(EN, topic);
+    assert.ok(
+      pool.some((line) => reply.includes(line) || line.includes(reply)),
+      `${input} should reply from the ${topic} pools, got: ${reply}`
+    );
+    assert.ok(
+      !EN.unknownTopicResponses.includes(reply),
+      `${input} must not use the unknown-topic pool, got: ${reply}`
+    );
+  }
+});
+
+test('common FA disclosures route to their topic rules, never the unknown pool', () => {
+  const cases = [
+    ['پولم تموم شده', 'money'],
+    ['شب‌ها اصلا نمی‌تونم بخوابم', 'sleep'],
+    ['سه ماه پیش از دنیا رفت', 'grief'],
+    ['راستش امروز روز بدی داشتم', 'sadness'],
+    ['مامانم فوت کرده', 'grief']
+  ];
+  for (const [input, topic] of cases) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    const pool = topicPool(FA, topic);
+    assert.ok(
+      pool.some((line) => reply.includes(line) || line.includes(reply)),
+      `${input} should reply from the ${topic} pools, got: ${reply}`
+    );
+    assert.ok(
+      !FA.unknownTopicResponses.includes(reply),
+      `${input} must not use the unknown-topic pool, got: ${reply}`
+    );
+  }
+});
+
+test('unmatched statements continue the active subject instead of the unknown pool', () => {
+  // Rogerian thread continuity: "سه ماه پیش از دنیا رفت" right after a
+  // grief disclosure has no rule of its own, but it answers the grief
+  // thread and must stay in it. The unknown pool is reserved for turns
+  // with no active subject at all.
+  const engine = freshEngine(FA);
+  engine.respond('مامانم فوت کرده');
+  const reply = engine.respond('سه ماه پیش از دنیا رفت');
+  const pool = topicPool(FA, 'grief');
+  assert.ok(
+    pool.some((line) => reply.includes(line) || line.includes(reply)),
+    `a grief-thread detail should stay in the grief thread, got: ${reply}`
+  );
+  assert.ok(
+    !FA.unknownTopicResponses.includes(reply),
+    `the unknown pool must not fire mid-thread, got: ${reply}`
+  );
+
+  // A fresh engine with no subject never replies from a topic pool and
+  // never invents a subject: the honest unknown pool, a pronoun
+  // reflection ("So you have been thinking about kumquats..."), or a
+  // quoted-callback are all valid no-subject outcomes, but a canned
+  // therapeutic line pretending to know the topic is not.
+  const fresh = freshEngine(EN);
+  const freshReply = fresh.respond('I have been thinking about kumquats');
+  const freshPool = [
+    ...EN.unknownTopicResponses,
+    ...EN.genericFallbacks,
+    ...EN.strategyShiftFallbacks
+  ];
+  assert.ok(
+    freshPool.includes(freshReply) ||
+      /^So .*\. What's that like for you\?/iu.test(freshReply),
+    `a no-subject unmatched statement keeps a generic no-subject reply, got: ${freshReply}`
+  );
+});
+
+test('space and animal knowledge answers are stable, never swapped for humor', () => {
+  // "بزرگترین سیاره چیه" must always answer Jupiter. The human-tone
+  // humor coloring used to randomly replace knowledge answers with a
+  // joke line ("that was a plot twist") on question turns.
+  for (let i = 0; i < 10; i += 1) {
+    const fa = freshEngine(FA);
+    const jupiter = fa.respond('بزرگترین سیاره چیه');
+    assert.match(
+      jupiter,
+      /مشتری|بزرگ‌ترین سیاره/u,
+      `the biggest-planet question must answer Jupiter, got: ${jupiter}`
+    );
+
+    const tardigrade = freshEngine(FA).respond('عجیب‌ترین حیوان کدومه');
+    assert.match(
+      tardigrade,
+      /خرس آبی|تاردیگرید/u,
+      `the weirdest-animal question must answer the tardigrade, got: ${tardigrade}`
+    );
+  }
+
+  const en = freshEngine(EN);
+  const sleepHelp = en.respond('what helps with sleep?');
+  assert.match(
+    sleepHelp,
+    /seven to nine hours|sleep/iu,
+    `sleep-help question should answer from the knowledge shelf, got: ${sleepHelp}`
+  );
+});
+
+test('question-echo answers are read as answers to Darya pending question', () => {
+  // Transcript case: after Darya asks a question, the user echoes the
+  // question word and then answers ("کدوم آدم؟! الیاس، خواهرزاده من").
+  // This used to bounce to the evasive "I do not know" fallback. The
+  // pending question is recorded directly so the test is deterministic
+  // (Darya's topic follow-up questions come from random pools).
+  const fa = freshEngine(FA);
+  fa.memory.noteBotQuestion(
+    'کدوم آدم باعث می‌شه بیشتر خودِ خودت باشی و چرا؟',
+    'loneliness'
+  );
+  const faReply = fa.respond('کدوم آدم؟! الیاس، خواهرزاده من');
+  // Pool lines carry a {answer} placeholder; the reply substitutes it.
+  assert.ok(
+    FA.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'الیاس، خواهرزاده من') === faReply
+    ),
+    `FA echo answer should reply from the echo pool, got: ${faReply}`
+  );
+  assert.ok(
+    fa.memory.pendingQuestions.some((q) => q.answered),
+    'the echoed-answer question should be marked answered'
+  );
+
+  const en = freshEngine(EN);
+  en.memory.noteBotQuestion(
+    'Which person makes you feel most like yourself, and why?',
+    'loneliness'
+  );
+  const enReply = en.respond('Which person?! Elias, my nephew');
+  assert.ok(
+    EN.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'Elias, my nephew') === enReply
+    ),
+    `EN echo answer should reply from the echo pool, got: ${enReply}`
+  );
+});
+
+test('genuine questions are never misread as echoes of a different pending question', () => {
+  // The echo resolver requires the echoed fragment to share meaningful
+  // words with the pending question. A real new question about another
+  // subject ("دیروز چه اتفاقی افتاد؟ خسته بودم") must not be consumed
+  // as an echo of an unrelated loneliness question.
+  const engine = engineWithPendingQuestion(FA, 'این روزا خیلی تنهام');
+  const reply = engine.respond('دیروز چه اتفاقی افتاد؟ خسته بودم');
+  assert.ok(
+    !FA.echoAnswerResponses.includes(reply),
+    `a new question must not be hijacked by the echo pool, got: ${reply}`
+  );
+  assert.match(
+    reply,
+    /جواب|ندارم|ندونم|نمی‌دانم|فکر|واکاوی|سؤال|سوال|دقیق/iu,
+    `a new question keeps the question fallback, got: ${reply}`
+  );
+});
+
+test('echo never fires on a bare کدوم word-share with an unrelated pending question', () => {
+  // Regression: the ask pool contains «اگر این ماه می‌تونستی یک عادت رو
+  // آروم عوض کنی، کدوم رو انتخاب می‌کردی؟». A user answering a DIFFERENT
+  // «کدوم آدم» question ("کدوم آدم؟! الیاس، خواهرزاده من") used to match
+  // this pending question through the bare question word «کدوم», so the
+  // echo pool answered as if «الیاس» was the habit answer. «کدوم»/«کدام»
+  // are now stopwords (like چی/چه/کی), so only a real content word such
+  // as «آدم» can trigger an echo.
+  const fa = freshEngine(FA);
+  fa.memory.noteBotQuestion(
+    'اگر این ماه می‌تونستی یک عادت رو آروم عوض کنی، کدوم رو انتخاب می‌کردی؟',
+    'ask_me_question'
+  );
+  const faReply = fa.respond('کدوم آدم؟! الیاس، خواهرزاده من');
+  assert.ok(
+    !FA.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'الیاس، خواهرزاده من') === faReply
+    ),
+    `FA echo must not fire on a bare کدوم word-share, got: ${faReply}`
+  );
+  assert.ok(
+    !faReply.includes('الیاس'),
+    `FA reply must not treat الیاس as the habit answer, got: ${faReply}`
+  );
+  assert.ok(
+    fa.memory.pendingQuestions.every((q) => !q.answered),
+    'the unrelated pending question must stay unanswered'
+  );
+
+  // The exact «کدوم آدم» question still echoes through the content word
+  // «آدم», so the fix narrows the match without breaking the real one.
+  const exact = freshEngine(FA);
+  exact.memory.noteBotQuestion(
+    'کدوم آدم باعث می‌شه بیشتر خودِ خودت باشی و چرا؟',
+    'loneliness'
+  );
+  const exactReply = exact.respond('کدوم آدم؟! الیاس، خواهرزاده من');
+  assert.ok(
+    FA.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'الیاس، خواهرزاده من') === exactReply
+    ),
+    `FA exact-match echo must still fire through «آدم», got: ${exactReply}`
+  );
+
+  // EN twin of the false positive: a pending habit question carrying the
+  // same question word must not consume a "which person" answer as if
+  // it were the habit answer.
+  const en = freshEngine(EN);
+  en.memory.noteBotQuestion(
+    'If you could change one habit this month, which one would you pick?',
+    'ask_me_question'
+  );
+  const enReply = en.respond('Which person?! Elias, my nephew');
+  assert.ok(
+    !EN.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'Elias, my nephew') === enReply
+    ),
+    `EN echo must not fire on a bare which word-share, got: ${enReply}`
+  );
+  assert.ok(
+    en.memory.pendingQuestions.every((q) => !q.answered),
+    'the unrelated EN pending question must stay unanswered'
+  );
+});
+
+test('echo acknowledges the answer even when the pending ask-me wording differs (FA + EN)', () => {
+  // T2·6: the user answers «کدوم آدم؟! الیاس، خواهرزاده من». When the
+  // ask-me pool picks a question that shares no content word with the
+  // echoed fragment («چه چیز کوچیکی هست...»), the word-share guard used
+  // to reject the echo and the turn fell to the generic non-answer. A
+  // two-word question-word fragment («کدوم آدم») whose question word the
+  // pending question does not contain is still the user answering a
+  // which-X question, so the answer is acknowledged. The habit false
+  // positive stays blocked because there the pending question contains
+  // the same question word (see the bare-کدوم test above).
+  const fa = freshEngine(FA);
+  fa.memory.noteBotQuestion(
+    'چه چیز کوچیکی هست که بی‌صدا بهش افتخار می‌کنی، حتی اگه کسی ندونه؟',
+    'ask_me_question'
+  );
+  const faReply = fa.respond('کدوم آدم؟! الیاس، خواهرزاده من');
+  assert.ok(
+    FA.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'الیاس، خواهرزاده من') === faReply
+    ),
+    `FA echo must acknowledge the answer, got: ${faReply}`
+  );
+  assert.ok(
+    fa.memory.pendingQuestions.some((q) => q.answered),
+    'the pending question should be marked answered'
+  );
+
+  const en = freshEngine(EN);
+  en.memory.noteBotQuestion(
+    'What small thing are you quietly proud of, even if nobody knows?',
+    'ask_me_question'
+  );
+  const enReply = en.respond('Which person?! Elias, my nephew');
+  assert.ok(
+    EN.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'Elias, my nephew') === enReply
+    ),
+    `EN echo must acknowledge the answer, got: ${enReply}`
+  );
+});
+
+test('echo resolver never misfires on a genuine ELIZA question (FA + EN)', () => {
+  // Regression for the transcript misfire: an about_eliza reply that ends
+  // with a follow-up question ("می‌خواهی از این بیشتر بشنوی...؟") leaves
+  // that question pending. When the user then asks their own ELIZA
+  // question, the long fragment shares the word «الیزا» with the pending
+  // question, which used to make the echo pool mirror the user's own
+  // words back at them. The genuine question must be answered factually:
+  // the FA fragment exceeds the echo word cap, and both languages match
+  // the about_eliza rule, which the echo override must never hijack.
+  const fa = freshEngine(FA);
+  fa.memory.noteBotQuestion(
+    'می‌خواهی از این بیشتر بشنوی یا از حال خودت بگویی؟',
+    'about_eliza'
+  );
+  const faReply = fa.respond(
+    'آیا الیزا هم مثل تو گاو بوده؟! من تحقیق کردم و خونده بودم که الیزا یک چت باتی بود که خیلی از مردم باهاش در اون زمان ارتباط خوبی گرفته بودن'
+  );
+  assert.ok(
+    !faReply.includes('تحقیق کردم'),
+    `FA ELIZA question must not echo the user's words back, got: ${faReply}`
+  );
+  assert.match(
+    faReply,
+    /الیزا|آرتین|MIT|چت‌بات|چتبات/iu,
+    `FA ELIZA question keeps the factual about_eliza reply, got: ${faReply}`
+  );
+
+  // Isolate the ECHO_BLOCKED_TOPICS guard: a four-word fragment that
+  // passes the echo shape, shares a meaningful word with the pending
+  // question, and matches the about_eliza rule. Only the blocklist stops
+  // this one from being echoed, so it pins the call-site guard itself.
+  const faBlocked = freshEngine(FA);
+  faBlocked.memory.noteBotQuestion('الیزا رو کی ساخته؟', 'about_eliza');
+  const faBlockedReply = faBlocked.respond('تو رو کی ساخته؟! من تحقیق کردم');
+  assert.ok(
+    !faBlockedReply.includes('تحقیق کردم'),
+    `blocked-rule echo must be skipped, got: ${faBlockedReply}`
+  );
+  assert.match(
+    faBlockedReply,
+    /الیزا|آرتین|MIT|چت‌بات|چتبات/iu,
+    `blocked-rule echo keeps the factual reply, got: ${faBlockedReply}`
+  );
+
+  const en = freshEngine(EN);
+  en.memory.noteBotQuestion(
+    'Do you want to hear more, or tell me about yourself?',
+    'about_eliza'
+  );
+  const enReply = en.respond(
+    'Is ELIZA also dumb?! I researched and read that ELIZA was a chatbot that many people connected with'
+  );
+  assert.ok(
+    !enReply.includes('I researched'),
+    `EN ELIZA question must not echo the user's words back, got: ${enReply}`
+  );
+  assert.match(
+    enReply,
+    /eliza|artin|mit|chatbot/iu,
+    `EN ELIZA question keeps the factual about_eliza reply, got: ${enReply}`
+  );
+});
+
+test('echo answers still fire when the answer trips a lived-topic rule', () => {
+  // The ECHO_BLOCKED_TOPICS guard must stay narrow: a question-echo whose
+  // answer mentions work ("کدوم آدم؟! رئیس من") trips the work rule, but
+  // that is still an answer to Darya's pending question, so the echo must
+  // win over the work-topic reading.
+  const fa = freshEngine(FA);
+  fa.memory.noteBotQuestion(
+    'کدوم آدم باعث می‌شه بیشتر خودِ خودت باشی و چرا؟',
+    'loneliness'
+  );
+  const faReply = fa.respond('کدوم آدم؟! رئیس من');
+  assert.ok(
+    FA.echoAnswerResponses.some(
+      (line) => line.replace('{answer}', 'رئیس من') === faReply
+    ),
+    `FA echo answer should win over the work rule, got: ${faReply}`
+  );
+});
+
+test('FA farewell variants are exit commands', () => {
+  const engine = freshEngine(FA);
+  for (const word of [
+    'خدا حافظ',
+    'التماس دعا',
+    'خداحافظ',
+    'می‌بینمت',
+    'بای بای'
+  ]) {
+    assert.equal(
+      engine.isExitCommand(word),
+      true,
+      `${word} should be an exit command`
+    );
+  }
+});
+
+test('first-person process questions continue the active subject', () => {
+  // After a money disclosure sets the subject, "چطور میتونم مدیریت کنم"
+  // (how can I manage [it]) deictically refers back to that subject and
+  // must keep the thread with a money follow-up, not concede ignorance
+  // with the evasive pool or the source-suggestion lecture.
+  const fa = freshEngine(FA);
+  fa.entityCallbackProbability = 0;
+  fa.respond('پولم تموم شده');
+  const faReply = fa.respond('چطور میتونم مدیریت کنم');
+  assert.ok(
+    topicPool(FA, 'money').some((line) => line === faReply),
+    `FA process question should stay in the money thread, got: ${faReply}`
+  );
+  assert.ok(
+    !FA.unknownTopicResponses.includes(faReply) &&
+      !FA.sourceSuggestions.includes(faReply),
+    `FA process question must not concede ignorance, got: ${faReply}`
+  );
+
+  const en = freshEngine(EN);
+  en.entityCallbackProbability = 0;
+  en.respond('my girlfriend and I keep fighting');
+  const enReply = en.respond('how do I talk to her without it exploding?');
+  assert.ok(
+    topicPool(EN, 'relationship').some((line) => line === enReply),
+    `EN process question should stay in the relationship thread, got: ${enReply}`
+  );
+});
+
+test('family-conflict disclosures continue with conflict questions', () => {
+  // "با دوست دخترم دعوام شده" matches family_conflict (priority 53) before
+  // relationship (40); the follow-up pool must exist so the thread can
+  // continue instead of falling to the unknown pool.
+  const fa = freshEngine(FA);
+  fa.entityCallbackProbability = 0;
+  fa.respond('با دوست دخترم دعوام شده');
+  const faReply = fa.respond('چطور باهاش حرف بزنم؟');
+  assert.ok(
+    topicPool(FA, 'family_conflict').some((line) => line === faReply),
+    `FA family-conflict process question should stay in the conflict thread, got: ${faReply}`
+  );
+
+  const en = freshEngine(EN);
+  en.entityCallbackProbability = 0;
+  en.respond('I am not talking to my mother right now');
+  const enReply = en.respond('how do I make things right?');
+  assert.ok(
+    topicPool(EN, 'family_conflict').some((line) => line === enReply),
+    `EN family-conflict process question should stay in the conflict thread, got: ${enReply}`
+  );
+});
+
+test('genuine new questions are never hijacked by the active subject', () => {
+  // The subject continuation must only fire for first-person process
+  // questions. A concrete new factual question after a disclosure ("دیروز
+  // چه اتفاقی افتاد؟", "what is the capital of France?") keeps the honest
+  // question fallback even though an old subject is still active.
+  const fa = freshEngine(FA);
+  fa.entityCallbackProbability = 0;
+  fa.respond('این روزا خیلی تنهام');
+  const faReply = fa.respond('دیروز چه اتفاقی افتاد؟ خسته بودم');
+  assert.ok(
+    !topicPool(FA, 'loneliness').some((line) => line === faReply),
+    `a concrete new FA question must not be answered with a loneliness follow-up, got: ${faReply}`
+  );
+
+  const en = freshEngine(EN);
+  en.entityCallbackProbability = 0;
+  en.respond('my girlfriend and I keep fighting');
+  const enReply = en.respond('what is the capital of France?');
+  assert.ok(
+    !topicPool(EN, 'relationship').some((line) => line === enReply),
+    `a concrete new EN question must not be answered with a relationship follow-up, got: ${enReply}`
+  );
+  assert.match(
+    enReply,
+    /answer|don'?t|not sure|interesting|worth|wiki|understand/iu,
+    `a concrete new EN question keeps the honest fallback, got: ${enReply}`
+  );
 });

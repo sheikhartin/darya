@@ -1,9 +1,9 @@
 /**
  * Darya - ambient sound integration (part file).
- * Provides the sound toggle UI sync, the picker attention nudge, the
- * blocked-autoplay toast, and the one-time first-gesture autoplay
- * listener as a factory bound to the shared controller object created
- * by index.js.
+ * Provides the sound toggle UI sync and bilingual UI text lookup as a
+ * factory bound to the shared controller object created by index.js.
+ * Ambient sound is strictly opt-in: it starts silent and only ever
+ * plays after the user clicks a toggle button.
  */
 (function (global) {
   'use strict';
@@ -24,11 +24,6 @@
      * @param {boolean} enabled - True when ambient sound is really playing.
      */
     function syncSoundToggleUI(enabled) {
-      // Sound is genuinely playing now; the picker nudge has served its
-      // purpose and must not keep pulsing.
-      if (enabled) {
-        clearSoundAttention();
-      }
       if (el.menuSoundToggle) {
         var onLabel = st.lang
           ? st.lang.ui.soundOnTitle
@@ -57,64 +52,12 @@
     }
 
     /**
-     * Draws attention to the picker (welcome screen) sound toggle a few
-     * seconds after it appears when the user's saved preference wants
-     * sound but nothing is actually playing yet (browsers block autoplay
-     * until a user gesture). A smooth fade/pulse invites the user to tap
-     * the toggle, and that tap is the gesture that starts the sound.
-     *
-     * The effect is armed only while the picker is visible and the intent
-     * is "on" but silent; it is cleared by the first real interaction
-     * (toggling, selecting a language, or sound starting).
-     */
-    function armSoundAttention() {
-      clearSoundAttention();
-      if (
-        el.picker.hidden ||
-        typeof ctrl.DaryaAmbientSound === 'undefined' ||
-        ctrl.DaryaAmbientSound.getSavedState() !== true ||
-        ctrl.DaryaAmbientSound.isPlaying()
-      ) {
-        return;
-      }
-      ctrl.soundAttentionTimer = setTimeout(function () {
-        ctrl.soundAttentionTimer = null;
-        // Re-check at fire time: the user may have started sound or
-        // navigated away while the timer was pending.
-        if (
-          el.picker.hidden ||
-          typeof ctrl.DaryaAmbientSound === 'undefined' ||
-          ctrl.DaryaAmbientSound.isPlaying()
-        ) {
-          return;
-        }
-        el.pickerSoundToggle.classList.add('picker__sound-toggle--attention');
-      }, ctrl.SOUND_ATTENTION_DELAY_MS);
-    }
-
-    /**
-     * Cancels any pending sound-attention timer and removes the attention
-     * styling from the picker sound toggle.
-     */
-    function clearSoundAttention() {
-      if (ctrl.soundAttentionTimer !== null) {
-        clearTimeout(ctrl.soundAttentionTimer);
-        ctrl.soundAttentionTimer = null;
-      }
-      if (el.pickerSoundToggle) {
-        el.pickerSoundToggle.classList.remove(
-          'picker__sound-toggle--attention'
-        );
-      }
-    }
-
-    /**
      * Returns the UI string for the given key from both language packs as
      * a bilingual pair { fa, en }. Notifications always show Persian on
      * top and English below, so both strings are needed regardless of the
      * active conversation language. Falls back to the English fallback
      * text when a pack is missing.
-     * @param {string} key - UI string key (e.g. 'soundAutoplayBlockedMsg')
+     * @param {string} key - UI string key (e.g. 'engineErrorHint')
      * @param {string} fallbackEn - English fallback text
      * @returns {{fa: string, en: string}}
      */
@@ -144,85 +87,9 @@
       return { fa: faText, en: enText };
     }
 
-    /**
-     * Explains, once per session, that ambient sound could not start
-     * automatically and points to the menu toggle. Called by both autoplay
-     * paths - the language picker and the global first-gesture listener -
-     * with a one-shot flag so a single click that triggers both never
-     * shows the toast twice. The message is bilingual (FA on top, EN
-     * below) because the notification system renders both languages.
-     */
-    function notifySoundAutoplayBlocked() {
-      if (ctrl.soundBlockedToastShown) {
-        return;
-      }
-      ctrl.soundBlockedToastShown = true;
-      var blockedMsg = ctrl.getBilingualUiText(
-        'soundAutoplayBlockedMsg',
-        'Ambient sound could not start automatically.'
-      );
-      ctrl.DaryaOverlays.showNotification('warn', blockedMsg, 6000);
-    }
-
-    /**
-     * Initializes a one-time global user gesture listener. The very first
-     * interaction anywhere on the screen (click, tap, or key) will trigger
-     * ambient sound playback if the user has it enabled in their settings.
-     */
-    function initAutoplayGesture() {
-      /**
-       * Detaches the one-time first-gesture listeners.
-       */
-      function disarmStartSound() {
-        document.removeEventListener('click', startSound);
-        document.removeEventListener('keydown', startSound);
-        document.removeEventListener('touchstart', startSound);
-        document.removeEventListener('pointerdown', startSound);
-      }
-
-      var startSound = function (event) {
-        // If the first interaction lands on one of the sound toggles
-        // themselves, the toggle's own click handler owns that gesture: it
-        // starts or stops playback based on its visible state. Firing the
-        // first-gesture autoplay here as well would start the sound and
-        // then let the toggle's toggle() flip it right back off (the
-        // reported "turns on for a second and turns off" bug). Consume
-        // the gesture either way so a later click cannot double-start.
-        if (
-          event.target &&
-          typeof event.target.closest === 'function' &&
-          event.target.closest('#picker-sound-toggle, #menu-sound-toggle')
-        ) {
-          disarmStartSound();
-          return;
-        }
-        if (
-          typeof ctrl.DaryaAmbientSound !== 'undefined' &&
-          ctrl.DaryaAmbientSound.getSavedState() === true
-        ) {
-          ctrl.DaryaAmbientSound.autoplayIfEnabled().then(function () {
-            var actuallyPlaying = ctrl.DaryaAmbientSound.isPlaying();
-            ctrl.syncSoundToggleUI(actuallyPlaying);
-            if (!actuallyPlaying) {
-              ctrl.notifySoundAutoplayBlocked();
-            }
-          });
-        }
-        disarmStartSound();
-      };
-      document.addEventListener('click', startSound, { passive: true });
-      document.addEventListener('keydown', startSound, { passive: true });
-      document.addEventListener('touchstart', startSound, { passive: true });
-      document.addEventListener('pointerdown', startSound, { passive: true });
-    }
-
     return {
       syncSoundToggleUI,
-      armSoundAttention,
-      clearSoundAttention,
-      getBilingualUiText,
-      notifySoundAutoplayBlocked,
-      initAutoplayGesture
+      getBilingualUiText
     };
   }
 

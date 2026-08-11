@@ -11,7 +11,9 @@
       id: 'crush_confession',
       keywords: [
         'کراش چیه',
-        'کراش چيست',
+        // Persian ی here (not Arabic ي): user input is normalized to the
+        // Persian letter, so the Arabic form would never match.
+        'کراش چیست',
         'کراش یعنی',
         'کراش',
         'اعتراف به علاقه',
@@ -120,7 +122,10 @@
         'مدیریت مالی',
         'بودجه بندی',
         'پس انداز',
+        'مدیریت پول',
         'money management',
+        'manage my money',
+        'manage money',
         'how to budget',
         'how to save money'
       ],

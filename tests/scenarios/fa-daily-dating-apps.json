@@ -1,0 +1,29 @@
+{
+  "name": "خستگی از اپ‌های دوست‌یابی",
+  "description": "Someone exhausted by dating apps who asks for profile help (with the ZWNJ spelling «دوست‌یابی») and admits online dating makes them feel worse. Verifies the dating_apps rule catches the spaced/ZWNJ spelling so the profile question never falls to the generic culture fact.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "اپ‌های دوست‌یابی خسته‌کننده‌ان و هیچ‌کس رو پیدا نمی‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "dating_apps"
+    },
+    {
+      "text": "چطور پروفایل خوبی تو اپ دوست‌یابی بنویسم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "dating_apps"
+    },
+    {
+      "text": "آشنایی آنلاین باعث می‌شه حس بدی به خودم داشته باشم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "dating_apps"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the dating_apps thread for swipe fatigue. Turn 2 answers the ZWNJ-spelled profile question from the same pool. Turn 3 keeps the self-worth disclosure on dating_apps.",
+    "behavior": "The FA profile question with «دوست‌یابی» (ZWNJ) must match the dating_apps rule after normalizeForMatching turns the ZWNJ into a space, never the encyclopedia culture fact."
+  }
+}

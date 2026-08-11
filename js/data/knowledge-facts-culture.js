@@ -91,6 +91,10 @@
         'اپ دوستیابی',
         'دوست یابی اینترنتی',
         'قرعه کشی عشق',
+        // Profile-writing questions are owned by the dating_apps rule
+        // pool ("how do I write a good dating profile?" gets a warm
+        // reflective reply, not an encyclopedia entry), so the generic
+        // culture fact keeps only the app-fatigue phrasings.
         'dating apps',
         'online dating',
         'why is dating so hard'
@@ -105,7 +109,9 @@
       id: 'quiet_quitting',
       keywords: [
         'ترک خاموش',
+        // Dual spelling: the normalizer maps «کوئیت» to «کوییت».
         'کوئیت کویتینگ',
+        'کوییت کویتینگ',
         'quiet quitting',
         'lazy girl job'
       ],

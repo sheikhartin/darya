@@ -1,0 +1,28 @@
+{
+  "name": "night-shift nurse with a broken sleep cycle",
+  "description": "A hospital nurse works night shifts and cannot fix her sleep schedule, asks for day-sleeping tips, and reports her body getting sick from the routine. Verifies the sleep thread opens, the day-sleep question routes to the sleep fact, and the health toll stays on the health thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I work night shifts and I cannot fix my sleep schedule",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    },
+    {
+      "text": "Any tips for sleeping during the day?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "I keep feeling sick because of the schedule",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the sleep thread (night shifts, broken schedule). Turn 2 answers the day-sleeping question from the sleep knowledge fact. Turn 3 keeps the physical toll on the health thread without drifting to a generic reply.",
+    "behavior": "A shift-worker sleep complaint is handled as lived experience with a real answer to the practical question, and the follow-up health worry is met with care rather than a canned fallback."
+  }
+}

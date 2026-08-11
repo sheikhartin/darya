@@ -1,0 +1,28 @@
+{
+  "name": "building good habits",
+  "description": "A user wants to build better habits: how to start, practical tips, and a concrete intention to exercise each morning. Verifies the habits_building fact (tiny starts, habit stacking, environment design, identity framing) and that a stated intention gets a supportive conversation reply.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "How do I build good habits?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "learning_advice"
+    },
+    {
+      "text": "Give me tips for building a habit",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "I want to start exercising every morning",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "need"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"how do I build good habits\" matches the habits_building fact. Turn 2: the tips request also returns the fact. Turn 3: \"I want to start exercising\" routes to the need rule with a gentle, actionable question.",
+    "behavior": "Habit guidance comes from the knowledge layer with concrete methods, while a personal intention statement is answered with a caring need-rule reply, showing the engine separates factual advice from lived disclosure."
+  }
+}

@@ -22,8 +22,173 @@
     LONG_RESPONSE_THRESHOLD,
     LONG_RESPONSE_PENALTY,
     FILLER_RESPONSE_PENALTY,
-    PENDING_ANSWER_WINDOW
+    PENDING_ANSWER_WINDOW,
+    parseEchoShape
   } = global.DaryaUtils;
+
+  /**
+   * Function words ignored when checking whether an echoed question
+   * fragment shares meaningful content with Darya's pending question.
+   * Built once at module load, not per call (the check runs on every
+   * unmatched statement turn, so a per-call Set would churn the GC).
+   */
+  const ECHO_STOPWORDS = new Set([
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'of',
+    'to',
+    'in',
+    'on',
+    'at',
+    'for',
+    'with',
+    'is',
+    'are',
+    'am',
+    'was',
+    'were',
+    'be',
+    'been',
+    'do',
+    'does',
+    'did',
+    'you',
+    'your',
+    'yours',
+    'it',
+    'its',
+    'what',
+    'which',
+    'why',
+    'how',
+    'when',
+    'where',
+    'who',
+    'that',
+    'this',
+    'these',
+    'those',
+    'have',
+    'has',
+    'had',
+    'not',
+    'no',
+    'so',
+    'but',
+    'as',
+    'by',
+    'from',
+    'out',
+    'about',
+    'into',
+    'over',
+    'after',
+    'before',
+    'چی',
+    'چه',
+    'کی',
+    'کجا',
+    'چرا',
+    'چطور',
+    'چگونه',
+    'چقدر',
+    // «کدوم»/«کدام» are question words like the others above: a bare
+    // «کدوم» shared with an unrelated pending question must never count
+    // as an echo (the habit-question false positive). The fragment
+    // «کدوم آدم» still matches the exact «کدوم آدم باعث می‌شه...»
+    // question through «آدم». The joined enclitic/compound forms
+    // («کدومش», «کدومیک», «کدومتون»...) stay single tokens after the
+    // letter/number split, so they are stopped explicitly too. Accepted
+    // trade-off: a bare «کدوم؟! X» answer to a «کدوم»-only pending
+    // question is intentionally not consumed as an echo, since a single
+    // question word is weak evidence the user is echoing THIS question;
+    // the turn falls back gracefully instead.
+    'کدوم',
+    'کدام',
+    'کدومش',
+    'کدامش',
+    'کدومیک',
+    'کدامیک',
+    'کدومتون',
+    'کدامتون',
+    'هست',
+    'است',
+    'هستم',
+    'هستی',
+    'هستید',
+    'که',
+    'از',
+    'به',
+    'با',
+    'در',
+    'را',
+    'و',
+    'یا',
+    'این',
+    'آن',
+    'تو',
+    'من',
+    'ما',
+    'شما',
+    'او',
+    'برای',
+    'بعد',
+    'قبل',
+    'هم',
+    'نیز',
+    'آیا',
+    'فقط',
+    'حتی',
+    'خیلی',
+    'الان',
+    'امروز',
+    'دیروز',
+    'میشه',
+    'می‌شه'
+  ]);
+
+  /**
+   * Question words that can open a short two-word echo fragment
+   * («کدوم آدم», "which person"). The user answers Darya's pending
+   * question by repeating its opening phrase and then giving the answer;
+   * the echoed noun is the cue ("I am answering the which-X question").
+   * This secondary acceptance only applies when the pending question
+   * does NOT contain the fragment's question word: if it does, the
+   * fragment could be echoing that pending question's own wording, and
+   * a bare question-word overlap is exactly the habit-question false
+   * positive the stopword list above blocks (see «کدوم»). A one-word
+   * fragment («کدوم؟! X») stays rejected: one word is too weak to prove
+   * the user is echoing this question.
+   */
+  const ECHO_QUESTION_WORDS = new Set([
+    'کدوم',
+    'کدام',
+    'کجا',
+    'کی',
+    'کیه',
+    'چی',
+    'چیه',
+    'چه',
+    'چطور',
+    'چرا',
+    'چگونه',
+    'چقدر',
+    'چند',
+    'چیست',
+    'کجاست',
+    'which',
+    'what',
+    'where',
+    'who',
+    'whom',
+    'whose',
+    'how',
+    'why',
+    'when'
+  ]);
 
   Object.assign(global.DaryaResponseEngine.prototype, {
     // ======================================================================
@@ -269,6 +434,134 @@
       );
     },
 
+    /**
+     * Resolves a question-echo answer: the user repeats Darya's own
+     * question word and then gives the answer ("کدوم آدم؟! الیاس،
+     * خواهرزاده من", "which person?! Elias, my nephew"). This is a
+     * natural Persian and English answering pattern that must be read as
+     * an answer to the pending question, not as a fresh question (which
+     * used to produce the evasive "I don't know" fallback, a top
+     * complaint from real transcripts). Marks the pending question
+     * answered and returns a warm acknowledgment that engages the answer
+     * content. Returns null when there is no pending question, no echo
+     * (the ؟ is mid-sentence or absent), the echoed fragment is not
+     * short (see parseEchoShape), or the tail is itself a fresh question.
+     * @param {string} matchingText - Normalized matching text
+     * @param {string} rawText - Raw (unnormalized) user input; the echo
+     * structure (؟/؟! separating question from answer) only survives here
+     * because the normalizer strips punctuation.
+     * @returns {string|null}
+     */
+    _resolveEchoAnswer(matchingText, rawText) {
+      const pending = this._latestUnansweredQuestion();
+      if (!pending) {
+        return null;
+      }
+      if (this.memory.turnCount - pending.askedAtTurn > PENDING_ANSWER_WINDOW) {
+        return null;
+      }
+      // A genuinely short question fragment ending in ؟/؟! followed by an
+      // answer of at least two words. parseEchoShape bounds the fragment
+      // (chars and words) so a full-length question of the user's own
+      // ("آیا الیزا هم مثل تو گاو بوده؟! من تحقیق کردم...") is never
+      // consumed as an echo, even when it shares a word with the pending
+      // question (the ELIZA follow-up misfire). The fragment must also
+      // share meaningful words with the pending question (see below),
+      // which keeps genuine new questions ("دیروز چه اتفاقی افتاد؟
+      // خسته‌ام") from being misread as echoes. A short two-word
+      // question-word fragment («کدوم آدم») whose question word the
+      // pending question does not contain is accepted as well: the user
+      // is answering a which-X question even when the ask-me pool picked
+      // different wording (see _isShortQuestionEcho).
+      const echo = parseEchoShape(rawText || matchingText);
+      if (!echo) {
+        return null;
+      }
+      if (
+        !this._echoSharesPendingQuestion(echo.fragment, pending.question) &&
+        !this._isShortQuestionEcho(echo.fragment, pending.question)
+      ) {
+        return null;
+      }
+      this.memory.markLatestQuestionAnswered(
+        this._currentNormalizedInput || matchingText,
+        this.memory.turnCount
+      );
+      const pool = this.lang.echoAnswerResponses;
+      if (!pool || pool.length === 0) {
+        return null;
+      }
+      const reply = this._pickVaried(pool, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+      return reply.replace(/\{answer\}/gu, echo.answerPart);
+    },
+
+    /**
+     * True when the echoed question fragment shares at least one
+     * meaningful word with the pending question Darya asked. Function
+     * words (articles, pronouns, question particles) are ignored so a
+     * bare "چی بود؟!" does not count as an echo of an unrelated
+     * question. This is the guard that stops a genuine new question
+     * followed by its own answer ("دیروز چه اتفاقی افتاد؟ خسته‌ام")
+     * from being misread as an echo of a different pending question.
+     * @param {string} fragment - The question fragment before ؟/?
+     * @param {string} pendingQuestion - The recorded bot question
+     * @returns {boolean}
+     */
+    _echoSharesPendingQuestion(fragment, pendingQuestion) {
+      if (!fragment || !pendingQuestion) {
+        return false;
+      }
+      const words = (text) =>
+        text
+          .toLowerCase()
+          .split(/[^\p{L}\p{N}]+/u)
+          .filter((w) => w.length >= 3 && !ECHO_STOPWORDS.has(w));
+      const questionWords = new Set(words(pendingQuestion));
+      return words(fragment).some((w) => questionWords.has(w));
+    },
+
+    /**
+     * True when the echoed fragment is a short two-word question opener
+     * (a question word plus one content word, e.g. «کدوم آدم», "which
+     * person") and the pending question does not itself contain that
+     * question word. The user answering Darya's open question echoes the
+     * opening and then answers; when the ask-me pool picked different
+     * wording, the word-share guard alone would reject the echo and the
+     * turn fell to the generic non-answer. Requiring the question word
+     * to be ABSENT from the pending question preserves the habit false
+     * positive: there the pending question carries the same question
+     * word («...کدوم رو انتخاب می‌کردی؟»), so the overlap is exactly
+     * the bare-word case the stopword list blocks.
+     * @param {string} fragment - The question fragment before ؟/؟
+     * @param {string} pendingQuestion - The recorded bot question
+     * @returns {boolean}
+     */
+    _isShortQuestionEcho(fragment, pendingQuestion) {
+      if (!fragment || !pendingQuestion) {
+        return false;
+      }
+      const tokens = (text) =>
+        String(text || '')
+          .toLowerCase()
+          .split(/[^\p{L}\p{N}]+/u)
+          .filter(Boolean);
+      const fragmentWords = tokens(fragment);
+      if (fragmentWords.length !== 2) {
+        return false;
+      }
+      const fragmentQuestionWords = fragmentWords.filter((w) =>
+        ECHO_QUESTION_WORDS.has(w)
+      );
+      if (fragmentQuestionWords.length === 0) {
+        return false;
+      }
+      const pendingTokens = new Set(tokens(pendingQuestion));
+      return !fragmentQuestionWords.some((w) => pendingTokens.has(w));
+    },
+
     _alternativeAvailable(pool) {
       return (
         Array.isArray(pool) &&
@@ -314,9 +607,11 @@
     //
     // _pickVaried: The central response selection method. Filters the
     // pool through the question budget, removes recently-used responses
-    // from consideration, scores remaining candidates with
-    // scoreResponseCandidate, and randomly selects from among the
-    // top-scoring options to provide natural variety.
+    // from consideration, applies the personality-engine quality gates
+    // (no riddle jokes on heavy turns, no recently-used openers), scores
+    // remaining candidates with scoreResponseCandidate, and randomly
+    // selects from among the top-scoring options to provide natural
+    // variety.
     //
     // scoreResponseCandidate: Ranks a response candidate on a 0-1 scale,
     // penalizing:
@@ -376,14 +671,65 @@
         candidates = budgeted;
       }
 
+      // Phase 2 quality gates (personality engine, see personality-
+      // engine.js): a heavy turn must never receive a riddle-style joke
+      // line from any pool, and no reply should re-open with an opener
+      // already used in a recent bot message ("That sounds really hard."
+      // twice in a row reads scripted). Each gate only prunes when a
+      // non-empty set survives, so a tiny pool can never collapse to an
+      // empty pick.
+      const personality = global.DaryaPersonalityEngine;
+      if (personality && candidates.length > 1) {
+        const heavyTurn =
+          this.lastTurnNeedsCare ||
+          personality.classifyTone(
+            this.currentTurnSeriousness,
+            this._lastEmotionAnalysis || null
+          ) === 'heavy';
+        if (heavyTurn) {
+          const coherent = candidates.filter(
+            (item) => !personality.isToneIncoherent(item)
+          );
+          if (coherent.length > 0) {
+            candidates = coherent;
+          }
+        }
+        const freshOpeners = candidates.filter(
+          (item) => !personality.wasOpenerUsedRecently(item, recent)
+        );
+        if (freshOpeners.length > 0) {
+          candidates = freshOpeners;
+        }
+      }
+
       const ranked = candidates.map((candidate) => ({
         candidate,
         score: this.scoreResponseCandidate(candidate)
       }));
       const bestScore = Math.max(...ranked.map((item) => item.score));
-      const best = ranked
+      let best = ranked
         .filter((item) => item.score >= bestScore - 0.12)
         .map((item) => item.candidate);
+      // Phase 2 quality retry (response scorer, see response-scorer.js):
+      // among the top-ranked candidates, drop any that trip an objective
+      // quality signal (question overload, missing acknowledgment on a
+      // heavy turn) when a cleaner alternative remains. Recency and
+      // opener repetition are already handled above, so the scorer only
+      // adds signals the pool scoring does not see.
+      const scorer = global.DaryaResponseScorer;
+      if (scorer && best.length > 1) {
+        const strong = best.filter((candidate) => {
+          const result = scorer.scoreReply(candidate, {
+            userLength: String(this._currentNormalizedInput || '').length,
+            seriousness: this.currentTurnSeriousness,
+            recentBotMessages: recent
+          });
+          return !scorer.shouldRetry(result);
+        });
+        if (strong.length > 0) {
+          best = strong;
+        }
+      }
       const picked = best[Math.floor(Math.random() * best.length)];
       if (options.trackQuestions !== false) {
         this._noteAskedQuestion(picked);

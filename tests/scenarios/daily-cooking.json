@@ -1,0 +1,27 @@
+{
+  "name": "learning to cook as a beginner",
+  "description": "A beginner who never learned to cook asks where to start, then how to learn, then for one easy dish. Verifies that cooking guidance comes from the offline knowledge layer (cooking_basics fact) with a substantive reply, that follow-up learning questions keep routing to knowledge, and that practical tips turns answer directly rather than bouncing to a generic fallback.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I never learned how to cook, where do I even start?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "How do I learn to cook?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "learning_advice"
+    },
+    {
+      "text": "Any easy cooking tips for a beginner?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: cooking question routes to knowledge and returns the cooking_basics fact (start with three to five dishes, basic pantry). Turn 2: the learning-phrased question still answers from the same fact via the knowledge override. Turn 3: a tips request with framing words returns the fact again with practical guidance.",
+    "behavior": "All three turns are knowledge-driven: the cooking_basics fact matches on kitchen words (cook, cooking) plus framing words (where do I start, how do I, tips). Replies are substantive, non-error, and never use generic fallbacks."
+  }
+}

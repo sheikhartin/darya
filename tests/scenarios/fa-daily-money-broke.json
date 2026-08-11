@@ -1,0 +1,28 @@
+{
+  "name": "بی‌پولی و گذراندن ماه",
+  "description": "A Persian user is broke and does not know how to get through the month, asks how to live on little money, and says they have nothing. Verifies the money_broke fact answers in Persian without shame, and the direct what-do-I-do question routes to the help topic.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "پول ندارم و نمیدونم چطور ماه رو بگذرونم",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "money"
+    },
+    {
+      "text": "چطور با پول کم زندگی کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "بی پولم، چیکار کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "what_do_i_do"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the broke disclosure routes to the money topic. Turn 2: \"چطور با پول کم زندگی کنم\" returns the money_broke fact. Turn 3: \"بی پولم چیکار کنم\" routes to the help-seeking topic.",
+    "behavior": "Persian money-stress phrasings route to the money conversation topic or the money_broke fact; both normalize the situation and separate worth from balance."
+  }
+}

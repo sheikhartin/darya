@@ -25,7 +25,7 @@
   src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -33,7 +33,7 @@
   src: url('../fonts/Vazirmatn-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -41,7 +41,7 @@
   src: url('../fonts/Vazirmatn-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -49,7 +49,7 @@
   src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -57,7 +57,7 @@
   src: url('../fonts/Lalezar-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -65,7 +65,7 @@
   src: url('../fonts/BeVietnamPro-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -73,7 +73,7 @@
   src: url('../fonts/BeVietnamPro-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -81,7 +81,7 @@
   src: url('../fonts/BeVietnamPro-SemiBold.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -89,7 +89,7 @@
   src: url('../fonts/BeVietnamPro-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -97,7 +97,7 @@
   src: url('../fonts/BeVietnamPro-Italic.woff2') format('woff2');
   font-weight: 400;
   font-style: italic;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -105,7 +105,7 @@
   src: url('../fonts/Quicksand-VF.woff2') format('woff2-variations');
   font-weight: 400 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 :root {
@@ -970,64 +970,6 @@ html[data-theme='beach'] .picker__theme-heading {
   border-radius: 50%;
 }
 
-/* Attention state on the welcome screen: when sound is enabled but
-   silent (autoplay needs a user gesture), the toggle fades in and out
-   with a soft ring a few seconds after the picker appears, inviting a
-   tap that both starts the sound and dismisses the nudge. GPU-only
-   properties (opacity/transform) are animated. */
-.picker__sound-toggle--attention {
-  color: var(--color-foam);
-  animation: sound-attention-fade 2.2s var(--ease-tide) infinite;
-}
-
-.picker__sound-toggle--attention::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px solid var(--color-seafoam);
-  opacity: 0;
-  animation: sound-attention-ring 2.2s var(--ease-tide) infinite;
-  pointer-events: none;
-}
-
-@keyframes sound-attention-fade {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes sound-attention-ring {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-
-  50% {
-    opacity: 0.9;
-    transform: scale(1.12);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .picker__sound-toggle--attention,
-  .picker__sound-toggle--attention::after {
-    animation: none;
-  }
-
-  .picker__sound-toggle--attention {
-    color: var(--color-foam);
-  }
-}
-
 .picker__sound-toggle:hover {
   color: var(--color-foam);
   background: rgba(127, 190, 176, 0.08);
@@ -1424,6 +1366,76 @@ html[dir='ltr'] .bubble-row--user .bubble-meta {
 
 html[dir='ltr'] .bubble-row--bot .bubble-meta {
   text-align: left;
+}
+
+/* --------------------------------------------------------------------- */
+/* Quick-reply chips: tappable suggestions under a bot message (exercise  */
+/* yes/no answers, mood scale ratings). Real buttons with 44px hit       */
+/* targets, keyboard operability inherited from the button element, and  */
+/* a soft press micro-interaction. Chips sit on the bot side of the      */
+/* chat (same physical side as Darya's bubbles, see the bubble-side      */
+/* note above) and wrap onto multiple lines when the mood scale renders  */
+/* ten options.                                                          */
+/* --------------------------------------------------------------------- */
+
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-width: 84%;
+  /* margin-right is physical, so it pins chips to the physical left in   */
+  /* both languages, matching the bot bubbles' side convention above.    */
+  margin-right: auto;
+  padding-inline-start: 2px;
+  animation: rise-in 0.3s var(--ease-tide) both;
+}
+
+.quick-reply {
+  min-height: 44px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--color-foam);
+  background: var(--surface-control);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-tide),
+    background 0.2s var(--ease-tide),
+    color 0.2s var(--ease-tide),
+    transform 0.15s var(--ease-tide);
+}
+
+.quick-reply:hover {
+  border-color: var(--color-seafoam);
+  background: var(--surface-control-hover);
+  color: var(--color-foam);
+}
+
+.quick-reply:active {
+  transform: scale(0.96);
+}
+
+html[data-theme='beach'] .quick-reply {
+  background: rgba(31, 84, 73, 0.88);
+  border-color: rgba(15, 46, 58, 0.15);
+  color: #f0f7f4;
+}
+
+html[data-theme='beach'] .quick-reply:hover {
+  background: #28645a;
+  border-color: #6cc4a8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-replies {
+    animation: none;
+  }
+
+  .quick-reply:active {
+    transform: none;
+  }
 }
 
 /* Typing indicator */
@@ -2056,244 +2068,82 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   inset: 0;
   z-index: 110;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: max(env(safe-area-inset-top, 0px) + 16px, 4vh);
   pointer-events: none;
   animation: notification-in 0.28s var(--ease-tide) both;
 }
 
-/* The toast drops in gently from above (it lives at the top of the
-   viewport), a short slide plus fade over GPU-only opacity/transform.
-   Disabled under prefers-reduced-motion below. */
+/* The badge blooms in gently at the center of the viewport: a short
+   scale plus fade over GPU-only opacity/transform. Disabled under
+   prefers-reduced-motion below. */
 @keyframes notification-in {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: scale(0.82);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
 .notification-container {
-  /* Default accent (info teal) so the bar and chip never render
-     colorless even if a severity modifier is missing. Custom
-     properties lead the block per the project's stylelint rules. */
+  /* Default accent (info teal) so the badge never renders colorless
+     even if a severity modifier is missing. Custom properties lead the
+     block per the project's stylelint rules. */
   --notification-accent: #94d0c1;
 
-  position: relative;
   pointer-events: auto;
-  max-width: 460px;
-  width: calc(100% - 2 * var(--space-3));
-  padding: var(--space-4) var(--space-5);
-  background: var(--surface-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-elevated);
-  backdrop-filter: blur(8px);
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  cursor: default;
-  overflow: hidden;
-}
-
-/* Severity accent bar along the inline-start edge (right in RTL, left
-   in LTR). The card's own border-radius clips the square ends via
-   overflow: hidden; the soft glow is clipped to the card, so it adds
-   emphasis with no animation. */
-.notification-container::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 4px;
-  background: var(--notification-accent);
-  box-shadow: 0 0 10px var(--notification-accent);
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-panel);
+  border: 1px solid var(--notification-accent);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 0 28px var(--notification-accent),
+    var(--shadow-elevated);
+  backdrop-filter: blur(8px);
 }
 
 .notification-container--error {
   --notification-accent: #e2805f;
 
   border-color: #e2805f;
-  box-shadow:
-    /* Subtle severity tint across the whole card: an inset shadow with a
-       huge spread covers the full surface without fighting the
-       theme-specific background overrides below. */
-    inset 0 0 0 1000px rgba(226, 128, 95, 0.05),
-    0 0 24px rgba(226, 128, 95, 0.18),
-    var(--shadow-elevated);
 }
 
 .notification-container--warn {
   --notification-accent: #f2b987;
 
   border-color: #f2b987;
-  box-shadow:
-    inset 0 0 0 1000px rgba(242, 185, 135, 0.05),
-    0 0 24px rgba(242, 185, 135, 0.15),
-    var(--shadow-elevated);
 }
 
 .notification-container--info {
   --notification-accent: #94d0c1;
 
   border-color: #94d0c1;
-  box-shadow:
-    inset 0 0 0 1000px rgba(148, 208, 193, 0.05),
-    0 0 24px rgba(148, 208, 193, 0.12),
-    var(--shadow-elevated);
 }
 
-/* The severity type chip sits centered in the card; the dismiss button
-   floats in the inline-end corner (absolute, so it never shifts the
-   chip off-center). */
-.notification-header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Severity icon: the entire visual of the badge. It inherits the
+   luminous severity accent via currentColor and is marked aria-hidden
+   in the markup (the overlay's aria-label carries the message to
+   assistive tech). */
+.notification-icon {
+  width: 34px;
+  height: 34px;
+  color: var(--notification-accent);
 }
 
-/* The type label is a small emphasis chip. The pill is outlined with a
-   translucent severity border rather than a tinted background: a tinted
-   background would composite lighter than the panel and push the label
-   text below the 4.5:1 threshold in the beach theme, while a border
-   leaves the text on the plain panel where the luminous accents clear
-   WCAG AA with margin. */
-.notification-type {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(148, 208, 193, 0.35);
-}
-
-/* Severity icon: inherits the chip's luminous accent via currentColor.
-   It is decorative (the bilingual type text carries the meaning) and is
-   marked aria-hidden in the markup. */
-.notification-type__icon {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-}
-
-/* The type label is bilingual ("هشدار · Warning"), mirroring the picker
-   intro's dot-separated pair. Each side keeps its own font and spacing:
-   Persian gets no uppercase or letterspacing (it has no case, and wide
-   tracking would look wrong), English keeps the compact uppercase chip. */
-.notification-type__fa {
-  font-family: Vazirmatn, Tahoma, sans-serif;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.notification-type__en {
-  font-family: 'Be Vietnam Pro', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.notification-type__sep {
-  opacity: 0.65;
-}
-
-/* Labels and icons sit on a dark panel in both themes, so they use
-   luminous accents that clear WCAG 4.5:1 against the darkest panel
-   (the chip border is a translucent 40% stroke of the same hue). */
-.notification-type--error {
-  color: #f7b8a5;
-  border-color: rgba(226, 128, 95, 0.4);
-}
-
-.notification-type--warn {
-  color: #f2b987;
-  border-color: rgba(242, 185, 135, 0.4);
-}
-
-.notification-type--info {
-  color: #94d0c1;
-  border-color: rgba(148, 208, 193, 0.4);
-}
-
-.notification-message {
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: var(--text-primary);
-  margin: 0;
-  overflow-wrap: anywhere;
-  text-align: center;
-}
-
-/* Bilingual notifications render the Persian line on top and the
-   English line below, both centered. Each line carries its own font so
-   Persian glyphs never fall back to a Latin face and vice versa. */
-.notification-message--fa {
-  font-family: Vazirmatn, Tahoma, sans-serif;
-}
-
-.notification-message--en {
-  font-family: 'Be Vietnam Pro', sans-serif;
-}
-
-.notification-dismiss {
-  position: absolute;
-  inset-inline-end: 0;
-  inset-block: 0;
-  margin-block: auto;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--color-foam-dim);
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 50%;
-  transition:
-    color 0.15s,
-    background 0.15s;
-  padding: 0;
-  line-height: 1;
-}
-
-/* Expand the invisible tap target to 44px (24px visual + 20px). */
-.notification-dismiss::after {
-  content: '';
-  position: absolute;
-  inset: -10px;
-  border-radius: 50%;
-}
-
-.notification-dismiss:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.notification-dismiss:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-/* Beach theme overrides for notification overlay. The beach panel is
-   also dark teal, so the luminous severity accents keep working; the
-   generic border override must NOT be allowed to wash out the severity
-   border color, so it is replaced with explicit per-severity borders. */
+/* Beach theme override for the notification badge. The beach panel is
+   also dark teal, so the luminous severity accents keep working; a
+   solid background (not translucent) keeps the glow exact over the
+   bright sand. */
 html[data-theme='beach'] .notification-container {
-  /* Solid, not translucent: at 96% alpha the teal composited over the
-     bright sand would lighten the surface just enough to push the
-     luminous severity accents below the 4.5:1 text threshold. A solid
-     panel is visually identical and keeps the contrast claims exact. */
   background: var(--color-tide);
 }
 
@@ -2307,23 +2157,6 @@ html[data-theme='beach'] .notification-container--warn {
 
 html[data-theme='beach'] .notification-container--info {
   border-color: #94d0c1;
-}
-
-html[data-theme='beach'] .notification-message {
-  color: #f0f7f4;
-}
-
-/* The close glyph inherits foam-dim (#9dbdb6), which lands at 4.29:1 on
-   the solid tide panel. A brighter foam keeps the dismissal affordance
-   at 6.3:1 while the hover state still brightens to primary text. */
-html[data-theme='beach'] .notification-dismiss {
-  color: #cfe0da;
-}
-
-/* The dismiss glyph sits on the solid tide panel, so its focus ring
-   must be luminous rather than the dark ink used on light surfaces. */
-html[data-theme='beach'] .notification-dismiss:focus-visible {
-  outline-color: #a8d9cc;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2367,8 +2200,7 @@ html[data-theme='beach'] .notification-dismiss:focus-visible {
   .sound-toggle__slash,
   .composer,
   .exit-confirm-bar__btn,
-  .confirm-btn,
-  .notification-dismiss {
+  .confirm-btn {
     animation: none !important;
     transition: none !important;
   }

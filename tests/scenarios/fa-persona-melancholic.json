@@ -1,0 +1,29 @@
+{
+  "name": "حال مالیخولیایی و بیداریِ سحرگاهی",
+  "description": "A Persian person finds no pleasure in anything and wakes at four every morning, asks whether this is just sadness or something more, and feels guilty about feeling this way. Verifies the depression thread opens, the sadness-vs-more question is answered honestly, and the guilt stays on the self-esteem thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "هیچی برام لذت نداره و هر صبح ساعت چهار بیدار می‌شم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "depression"
+    },
+    {
+      "text": "این فقط غمه یا چیز بیشتری؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "depression"
+    },
+    {
+      "text": "از این حال‌م احساس گناه می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "self_esteem"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the depression thread (anhedonia, early waking). Turn 2 answers the sadness-vs-more question honestly in Persian, distinguishing normal sadness from signs worth checking with a professional. Turn 3 keeps the guilt on the self-esteem thread with compassion.",
+    "behavior": "Anhedonia and early-morning waking are recognized as real low-mood signals answered with honesty and warmth, and the guilt about the mood is met with self-compassion, never a diagnostic claim."
+  }
+}

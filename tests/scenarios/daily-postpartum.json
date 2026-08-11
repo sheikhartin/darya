@@ -1,0 +1,29 @@
+{
+  "name": "postpartum overwhelm",
+  "description": "A new parent who feels overwhelmed and tearful, suspects postpartum depression, and asks why they feel so alone. Verifies parenting care, a non-shaming professional-support reply for the depression disclosure, and loneliness care for the isolation question.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I just had a baby and I feel overwhelmed and tearful all the time",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    },
+    {
+      "text": "I think I might have postpartum depression",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    },
+    {
+      "text": "Why do I feel so alone after having a baby?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the parenting thread for new-parent overwhelm. Turn 2 keeps the postpartum-depression disclosure on parenting with a supportive, non-shaming reply. Turn 3 answers the isolation question from the loneliness thread.",
+    "behavior": "Postpartum feelings stay on the parenting thread without diagnosis, and the postpartum loneliness question gets real companionship care."
+  }
+}

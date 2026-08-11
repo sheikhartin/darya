@@ -1,0 +1,29 @@
+{
+  "name": "بازار کار ۲۰۲۶ و مسیر شغلی",
+  "description": "A Persian young adult asks which jobs have a market in 2026, what skills are in demand, and whether changing careers at 30 is too late. Verifies the career_2026 fact answers in Persian with a numbered list of growing fields, and the career_switch fact for pivots.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چه شغل هایی در ۲۰۲۶ بازار کار دارن؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "مهارت های پرتقاضا برای آینده چیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "در سی سالگی شغل عوض کردن دیره؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the in-demand jobs question returns the career_2026 list. Turn 2: the skills question returns the same fact. Turn 3: the mid-career question returns the career_switch fact.",
+    "behavior": "Persian career keywords (بازار کار ۲۰۲۶, مهارت های پرتقاضا, شغل عوض کردن) route to the career facts; mid-career change is framed as possible at any age."
+  }
+}

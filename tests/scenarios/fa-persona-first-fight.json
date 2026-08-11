@@ -1,0 +1,29 @@
+{
+  "name": "زوج تازه‌کار بعد از اولین دعوای جدی",
+  "description": "A Persian person in a new relationship had a first real fight with their partner, asks what makes a relationship actually healthy, and admits wanting to talk but being scared. Verifies the relationship thread opens, the healthy-relationship question is answered, and the fear of talking stays on the anxiety thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "دیروز من و همسرم اولین دعوای جدی‌مون رو داشتیم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "چه چیزی یه رابطه رو واقعاً سالم می‌کنه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "می‌خوام باهاش حرف بزنم ولی می‌ترسم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the relationship thread (first real fight). Turn 2 answers the healthy-relationship question with substance in Persian. Turn 3 keeps the scared-to-talk disclosure on the anxiety thread.",
+    "behavior": "A first fight in a new relationship is normalized and given practical repair guidance, and the fear of the difficult conversation is acknowledged rather than brushed aside."
+  }
+}

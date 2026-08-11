@@ -1,0 +1,29 @@
+{
+  "name": "نوجوان در آستانه امتحان نهایی",
+  "description": "A Persian high-school student has final exams next week and cannot focus, asks how to study without stress, and says everyone expects too much of them. Verifies the school and anxiety threads open, the study question is answered, and the pressure stays on the stress thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "امتحانای نهایی هفته بعد شروع می‌شه و نمی‌تونم تمرکز کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "school"
+    },
+    {
+      "text": "چطور بدون استرس درس بخونم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "همه ازم انتظار دارن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the school thread with focus trouble. Turn 2 answers the stress-free study question in Persian. Turn 3 keeps the expectation pressure on the stress thread.",
+    "behavior": "Exam-season anxiety is met with practical study guidance, and the pressure of others' expectations is acknowledged as stress rather than dismissed or turned into a generic opener."
+  }
+}

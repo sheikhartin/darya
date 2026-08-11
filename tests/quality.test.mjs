@@ -166,7 +166,94 @@ test('dialogue scenarios maintain state across multiple turns', () => {
     'knowledge-anxiety.json',
     'fa-knowledge-relationship.json',
     'fa-knowledge-career.json',
-    'fa-knowledge-anxiety.json'
+    'fa-knowledge-anxiety.json',
+    // Grief and mindfulness domain fixtures existed on disk but were
+    // never executed by the runner: only their structure was validated.
+    'knowledge-grief.json',
+    'fa-knowledge-grief.json',
+    'knowledge-mindfulness.json',
+    'fa-knowledge-mindfulness.json',
+    'knowledge-resilience-purpose.json',
+    'profile-memory.json',
+    'fa-profile-memory.json',
+    'fa-greeting-loop.json',
+    'fa-grief-enhanced.json',
+    'fa-knowledge-resilience-purpose.json',
+    'fa-mixed-emotional-tone.json',
+    'fa-question-budget.json',
+    'fa-serious-conversation.json',
+    'fa-topic-cycling.json',
+    'fa-work-correction.json',
+    // Daily-life conversations (2026 content update): cooking, TV series,
+    // anime, relationships (good and toxic), habits (building and breaking),
+    // intimacy, health, money, friendship, career 2026, melancholia.
+    'daily-cooking.json',
+    'daily-series.json',
+    'daily-anime.json',
+    'daily-relationship-good.json',
+    'daily-relationship-toxic.json',
+    'daily-habits-good.json',
+    'daily-habits-bad.json',
+    'daily-sex-intimacy.json',
+    'daily-health.json',
+    'daily-money-broke.json',
+    'daily-friendship.json',
+    'daily-career-2026.json',
+    'daily-melancholia.json',
+    // Daily-life phrasings round (2026): gym/fitness anxiety, dating-app
+    // fatigue, remote-work isolation, postpartum, and pet-loss grief.
+    'daily-gym-anxiety.json',
+    'daily-dating-apps.json',
+    'daily-remote-work.json',
+    'daily-postpartum.json',
+    'daily-pet-loss.json',
+    'fa-daily-cooking.json',
+    'fa-daily-series.json',
+    'fa-daily-anime.json',
+    'fa-daily-relationship-good.json',
+    'fa-daily-relationship-toxic.json',
+    'fa-daily-habits-good.json',
+    'fa-daily-habits-bad.json',
+    'fa-daily-sex-intimacy.json',
+    'fa-daily-health.json',
+    'fa-daily-money-broke.json',
+    'fa-daily-friendship.json',
+    'fa-daily-career-2026.json',
+    'fa-daily-melancholia.json',
+    'fa-daily-gym-anxiety.json',
+    'fa-daily-dating-apps.json',
+    'fa-daily-remote-work.json',
+    'fa-daily-postpartum.json',
+    'fa-daily-pet-loss.json',
+    // Persona-based daily-life conversations (2026 content round): varied
+    // characters and situations that exercise topic threads together with
+    // knowledge answers, one EN + FA pair per persona.
+    'persona-new-dad.json',
+    'persona-night-shift-nurse.json',
+    'persona-exam-teen.json',
+    'persona-couch-potato.json',
+    'persona-new-city-friends.json',
+    'persona-quit-smoking.json',
+    'persona-first-fight.json',
+    'persona-caregiver.json',
+    'persona-burned-out-founder.json',
+    'persona-broke-student.json',
+    'persona-laid-off.json',
+    'persona-melancholic.json',
+    'persona-intimacy-talk.json',
+    'fa-persona-new-dad.json',
+    'fa-persona-night-shift-nurse.json',
+    'fa-persona-exam-teen.json',
+    'fa-persona-couch-potato.json',
+    'fa-persona-new-city-friends.json',
+    'fa-persona-quit-smoking.json',
+    'fa-persona-first-fight.json',
+    'fa-persona-caregiver.json',
+    'fa-persona-burned-out-founder.json',
+    'fa-persona-broke-student.json',
+    'fa-persona-laid-off.json',
+    'fa-persona-melancholic.json',
+    'fa-persona-intimacy-talk.json'
   ];
   for (const file of scenarios) {
     const scenario = JSON.parse(read(`tests/scenarios/${file}`));
@@ -1384,7 +1471,85 @@ test('all scenario fixture files contain multiple turns and metadata', () => {
     'tests/scenarios/fa-knowledge-mindfulness.json',
     'tests/scenarios/knowledge-grief.json',
     'tests/scenarios/knowledge-mindfulness.json',
-    'tests/scenarios/knowledge-resilience-purpose.json'
+    'tests/scenarios/knowledge-resilience-purpose.json',
+    'tests/scenarios/profile-memory.json',
+    'tests/scenarios/fa-profile-memory.json',
+    'tests/scenarios/fa-greeting-loop.json',
+    'tests/scenarios/fa-grief-enhanced.json',
+    'tests/scenarios/fa-knowledge-resilience-purpose.json',
+    'tests/scenarios/fa-mixed-emotional-tone.json',
+    'tests/scenarios/fa-question-budget.json',
+    'tests/scenarios/fa-serious-conversation.json',
+    'tests/scenarios/fa-topic-cycling.json',
+    'tests/scenarios/fa-work-correction.json',
+    // Daily-life conversations (2026 content update): cooking, TV series,
+    // anime, relationships (good and toxic), habits (building and breaking),
+    // intimacy, health, money, friendship, career 2026, melancholia.
+    'tests/scenarios/daily-cooking.json',
+    'tests/scenarios/daily-series.json',
+    'tests/scenarios/daily-anime.json',
+    'tests/scenarios/daily-relationship-good.json',
+    'tests/scenarios/daily-relationship-toxic.json',
+    'tests/scenarios/daily-habits-good.json',
+    'tests/scenarios/daily-habits-bad.json',
+    'tests/scenarios/daily-sex-intimacy.json',
+    'tests/scenarios/daily-health.json',
+    'tests/scenarios/daily-money-broke.json',
+    'tests/scenarios/daily-friendship.json',
+    'tests/scenarios/daily-career-2026.json',
+    'tests/scenarios/daily-melancholia.json',
+    'tests/scenarios/daily-gym-anxiety.json',
+    'tests/scenarios/daily-dating-apps.json',
+    'tests/scenarios/daily-remote-work.json',
+    'tests/scenarios/daily-postpartum.json',
+    'tests/scenarios/daily-pet-loss.json',
+    'tests/scenarios/fa-daily-cooking.json',
+    'tests/scenarios/fa-daily-series.json',
+    'tests/scenarios/fa-daily-anime.json',
+    'tests/scenarios/fa-daily-relationship-good.json',
+    'tests/scenarios/fa-daily-relationship-toxic.json',
+    'tests/scenarios/fa-daily-habits-good.json',
+    'tests/scenarios/fa-daily-habits-bad.json',
+    'tests/scenarios/fa-daily-sex-intimacy.json',
+    'tests/scenarios/fa-daily-health.json',
+    'tests/scenarios/fa-daily-money-broke.json',
+    'tests/scenarios/fa-daily-friendship.json',
+    'tests/scenarios/fa-daily-career-2026.json',
+    'tests/scenarios/fa-daily-melancholia.json',
+    'tests/scenarios/fa-daily-gym-anxiety.json',
+    'tests/scenarios/fa-daily-dating-apps.json',
+    'tests/scenarios/fa-daily-remote-work.json',
+    'tests/scenarios/fa-daily-postpartum.json',
+    'tests/scenarios/fa-daily-pet-loss.json',
+    // Persona-based daily-life conversations (2026 content round): varied
+    // characters and situations that exercise topic threads together with
+    // knowledge answers, one EN + FA pair per persona.
+    'tests/scenarios/persona-new-dad.json',
+    'tests/scenarios/persona-night-shift-nurse.json',
+    'tests/scenarios/persona-exam-teen.json',
+    'tests/scenarios/persona-couch-potato.json',
+    'tests/scenarios/persona-new-city-friends.json',
+    'tests/scenarios/persona-quit-smoking.json',
+    'tests/scenarios/persona-first-fight.json',
+    'tests/scenarios/persona-caregiver.json',
+    'tests/scenarios/persona-burned-out-founder.json',
+    'tests/scenarios/persona-broke-student.json',
+    'tests/scenarios/persona-laid-off.json',
+    'tests/scenarios/persona-melancholic.json',
+    'tests/scenarios/persona-intimacy-talk.json',
+    'tests/scenarios/fa-persona-new-dad.json',
+    'tests/scenarios/fa-persona-night-shift-nurse.json',
+    'tests/scenarios/fa-persona-exam-teen.json',
+    'tests/scenarios/fa-persona-couch-potato.json',
+    'tests/scenarios/fa-persona-new-city-friends.json',
+    'tests/scenarios/fa-persona-quit-smoking.json',
+    'tests/scenarios/fa-persona-first-fight.json',
+    'tests/scenarios/fa-persona-caregiver.json',
+    'tests/scenarios/fa-persona-burned-out-founder.json',
+    'tests/scenarios/fa-persona-broke-student.json',
+    'tests/scenarios/fa-persona-laid-off.json',
+    'tests/scenarios/fa-persona-melancholic.json',
+    'tests/scenarios/fa-persona-intimacy-talk.json'
   ];
   for (const file of fixtures) {
     const scenario = JSON.parse(read(file));
@@ -1991,65 +2156,53 @@ test('modal surfaces move focus in, contain it, and restore it', () => {
   assert.match(overlays, /el\.exitConfirmNo\.focus\(\)/u);
   assert.match(app, /exitConfirmBar\.addEventListener\('keydown'/u);
   assert.match(app, /confirmExitNo\(\)/u);
-  // Toasts localize their chrome instead of hardcoding English labels.
-  assert.match(overlays, /ui\.notificationDismiss/u);
+  // The icon-only notification badge is dismissed by a document-level
+  // Escape handler that never steals focus from the composer (there is
+  // no dismiss button to Tab into).
+  assert.match(overlays, /notificationKeyHandler/u);
 });
 
-test('notifications are bilingual and the picker sound toggle draws attention', () => {
+test('notifications are icon-only symbols with an accessible label', () => {
   const overlays = readOverlays();
   const css = read('css/style.css');
   const app = readApp();
 
-  // Notifications render the severity type in both languages with a dot
-  // separator (FA · EN), mirroring the picker intro pairing.
-  assert.match(overlays, /notification-type__fa/u);
-  assert.match(overlays, /notification-type__sep/u);
-  assert.match(overlays, /notification-type__en/u);
-  assert.match(overlays, /notification-message--fa/u);
-  assert.match(overlays, /notification-message--en/u);
-  assert.match(css, /\.notification-type__fa/u);
-  assert.match(css, /\.notification-type__sep/u);
-  assert.match(css, /\.notification-type__en/u);
-  assert.match(css, /\.notification-message--fa/u);
-  assert.match(css, /\.notification-message--en/u);
+  // The badge is a bare severity symbol: no message text is ever
+  // painted. The message travels only as the overlay's aria-label so
+  // screen readers still announce it, and the icon is marked decorative.
+  assert.match(overlays, /notification-overlay/u);
+  assert.match(overlays, /notification-container/u);
+  assert.match(overlays, /notification-icon/u);
+  assert.match(overlays, /createSeverityIcon/u);
+  assert.match(overlays, /createElementNS/u);
+  assert.match(overlays, /aria-hidden', 'true'/u);
+  assert.match(overlays, /aria-label/u);
+  assert.match(overlays, /role', 'alert'/u);
+  assert.match(overlays, /aria-live', 'assertive'/u);
+  // No message text nodes exist anywhere in the notification part.
+  assert.doesNotMatch(overlays, /notification-message--fa/u);
+  assert.doesNotMatch(overlays, /notification-type__en/u);
+  assert.doesNotMatch(overlays, /notification-dismiss/u);
 
-  // The bilingual message lines must be centered.
-  assert.match(css, /\.notification-message \{[^}]*text-align: center/u);
-
-  // The welcome-screen sound toggle nudges the user when sound is
-  // enabled but silent (autoplay needs a gesture): a delayed attention
-  // class with a smooth fade/ring animation and a reduced-motion
-  // fallback.
-  assert.match(app, /SOUND_ATTENTION_DELAY_MS: 3000/u);
-  assert.match(app, /armSoundAttention/u);
-  assert.match(app, /clearSoundAttention/u);
-  assert.match(app, /picker__sound-toggle--attention/u);
-  assert.match(css, /\.picker__sound-toggle--attention/u);
-  assert.match(css, /@keyframes sound-attention-fade/u);
-  assert.match(css, /@keyframes sound-attention-ring/u);
+  // The badge is centered on the viewport and keeps a circular outline.
+  assert.match(css, /\.notification-overlay \{[^}]*justify-content: center/u);
+  assert.match(css, /\.notification-overlay \{[^}]*align-items: center/u);
+  assert.match(css, /\.notification-container \{[^}]*border-radius: 50%/u);
   assert.match(
     css,
-    /prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.picker__sound-toggle--attention/u
+    /\.notification-icon \{[^}]*color: var\(--notification-accent\)/u
   );
-
-  // Severity icons are inline SVG (built via the DOM API, never
-  // markup strings) and render as an emphasis chip inside the type
-  // label.
-  assert.match(overlays, /notification-type__icon/u);
-  assert.match(overlays, /createElementNS/u);
-  assert.match(css, /\.notification-type__icon/u);
-  assert.match(css, /\.notification-type \{[^}]*padding/u);
-  // The chip outlines itself with a translucent severity border instead
-  // of a tinted background, so the label text keeps sitting on the plain
-  // panel where the luminous accents clear WCAG 4.5:1.
-  assert.match(css, /\.notification-type \{[^}]*border: 1px solid/u);
-
-  // The type chip is centered in the card: the header centers its
-  // content while the dismiss button floats in the inline-end corner,
-  // and the toast enters with a dedicated slide-down animation.
-  assert.match(css, /\.notification-header \{[^}]*justify-content: center/u);
-  assert.match(css, /\.notification-dismiss \{[^}]*position: absolute/u);
+  assert.match(css, /\.notification-container--error/u);
+  assert.match(css, /\.notification-container--warn/u);
+  assert.match(css, /\.notification-container--info/u);
   assert.match(css, /@keyframes notification-in/u);
+  assert.match(css, /--notification-accent/u);
+
+  // The picker sound toggle is strictly opt-in: it has no attention
+  // nudge and no autoplay wiring, because sound never starts on its own.
+  assert.doesNotMatch(app, /armSoundAttention|initAutoplayGesture/u);
+  assert.doesNotMatch(app, /SOUND_ATTENTION_DELAY_MS/u);
+  assert.doesNotMatch(css, /\.picker__sound-toggle--attention/u);
 
   // Sound toggles always reflect ACTUAL playback: the boot path syncs
   // the picker toggle from isPlaying() (honest "off" before any user
@@ -2061,12 +2214,8 @@ test('notifications are bilingual and the picker sound toggle draws attention', 
     /pickerSoundToggle\.setAttribute\('aria-pressed', 'true'\)/u
   );
 
-  // The container gains a severity accent bar and a per-severity tint
-  // driven by one custom property, and the beach theme restores the
-  // severity border colors instead of letting its generic border
-  // override wash them out (dark-mode parity in both themes).
-  assert.match(css, /--notification-accent/u);
-  assert.match(css, /\.notification-container::before/u);
+  // The beach theme keeps the luminous severity accents legible on its
+  // solid tide panel (dark-mode parity in both themes).
   assert.match(
     css,
     /html\[data-theme='beach'\] \.notification-container--error/u
@@ -2390,8 +2539,7 @@ test('reduced motion disables every animation and transitions stay instant', () 
     '.sound-toggle__slash',
     '.composer',
     '.exit-confirm-bar__btn',
-    '.confirm-btn',
-    '.notification-dismiss'
+    '.confirm-btn'
   ]) {
     assert.match(
       catchAll,
@@ -2440,14 +2588,6 @@ test('reduced motion disables every animation and transitions stay instant', () 
     css,
     /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.breathe-countdown[\s\S]*?transition: none !important;/u,
     'breathe countdown transition disabled under reduce'
-  );
-
-  // The picker sound-toggle attention ring (added by JS when sound is
-  // enabled but silent) must also be static under reduce.
-  assert.match(
-    css,
-    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.picker__sound-toggle--attention,[\s\S]*?animation: none;/u,
-    'sound attention ring disabled under reduce'
   );
 });
 
@@ -2500,70 +2640,40 @@ test('ambient sound starts playback within the user gesture, not after buffering
   assert.match(ambient, /PLAY_ATTEMPT_TIMEOUT_MS/u);
 });
 
-test('ambient sound cookie constants stay above the state initializer', () => {
-  // Regression guard for the var-hoisting cookie bug. The module-scope
-  // `var isEnabled = getSavedState() === true` initializer reads
-  // SOUND_COOKIE_NAME through getSavedState at load time. If a cookie
-  // constant is ever declared below that line, the initializer sees
-  // undefined (var hoisting) or a TDZ ReferenceError (const), and a
-  // returning user's saved sound preference is silently lost on every
-  // visit. This structural test locks the source order; the smoke-test
-  // marker gives the same guard in the bash-only runner, and the final
-  // assertions keep the two engines' anchors in sync.
-  // After the module split, the cookie constants live in the data part
-  // file and the state initializer lives in the main file, which loads
-  // after it. The hoisting hazard is now a load-order hazard: if the
-  // data part ever loads after the main file, getSavedState reads an
-  // undefined constant again and the saved preference is lost.
+test('ambient sound never persists its state and always boots silent', () => {
+  // Ambient sound is strictly opt-in: the module always boots silent,
+  // is started only by a toggle click, and never saves its state. The
+  // old cookie persistence (SOUND_COOKIE_NAME / getSavedState) was
+  // removed entirely; the only cookie touch left is the one-time legacy
+  // cleanup that expires the cookie written by versions before 1.2.0.
   const data = read('js/ui/ambient-sound-data.js');
   const main = read('js/ui/ambient-sound.js');
-  const dataLines = data.split('\n');
-  const mainLines = main.split('\n');
 
-  // The constants must exist in the data part file, as const.
-  const cookieNameLine = dataLines.findIndex((line) =>
-    /^\s*const SOUND_COOKIE_NAME = /u.test(line)
-  );
-  const cookieAgeLine = dataLines.findIndex((line) =>
-    /^\s*const SOUND_COOKIE_MAX_AGE_DAYS = /u.test(line)
-  );
-  assert.ok(cookieNameLine >= 0, 'SOUND_COOKIE_NAME declaration not found');
-  assert.ok(cookieAgeLine >= 0, 'SOUND_COOKIE_MAX_AGE_DAYS not found');
-  assert.match(
-    dataLines[cookieNameLine],
-    /^\s*const SOUND_COOKIE_/u,
-    'SOUND_COOKIE_NAME must stay a const declaration'
-  );
-  assert.match(
-    dataLines[cookieAgeLine],
-    /^\s*const SOUND_COOKIE_/u,
-    'SOUND_COOKIE_MAX_AGE_DAYS must stay a const declaration'
-  );
+  // No persistence constants or readers/writers remain.
+  assert.doesNotMatch(data, /SOUND_COOKIE_MAX_AGE_DAYS/u);
+  assert.doesNotMatch(main, /function getSavedState\(/u);
+  assert.doesNotMatch(main, /function saveCookieState\(/u);
+  assert.doesNotMatch(main, /autoplayIfEnabled/u);
+  assert.doesNotMatch(main, /getSavedState\(\) === true/u);
 
-  // The main file's state initializer reads getSavedState at load time.
-  const initializerLine = mainLines.findIndex((line) =>
-    /isEnabled: getSavedState\(\) === true/u.test(line)
-  );
-  assert.ok(initializerLine >= 0, 'isEnabled initializer not found');
+  // The module boots silent: isEnabled starts false unconditionally.
+  assert.match(main, /isEnabled: false/u);
 
-  // getSavedState must keep reading the cookie constant via the data
-  // global (a rename that desyncs the binding would silently disable
-  // every guard above).
-  assert.match(main, /function getSavedState\(\)[\s\S]*D\.SOUND_COOKIE_NAME/u);
-
-  // The data part file must load before the main file in index.html;
-  // otherwise the constant is undefined when the initializer runs.
-  const html = read('index.html');
-  const dataSrc = html.indexOf('js/ui/ambient-sound-data.js');
-  const mainSrc = html.indexOf('js/ui/ambient-sound.js');
-  assert.ok(dataSrc >= 0 && mainSrc > dataSrc, 'data part must load first');
+  // The legacy cookie cleanup exists and is wired at load, keyed to the
+  // data-part constant (a rename that desyncs the binding would silently
+  // re-enable persistence from the old cookie).
+  assert.match(main, /function expireLegacyCookie\(/u);
+  assert.match(main, /expireLegacyCookie\(\);/u);
+  assert.match(data, /const LEGACY_SOUND_COOKIE_NAME = 'darya_sound'/u);
+  assert.match(main, /D\.LEGACY_SOUND_COOKIE_NAME/u);
 
   // The bash smoke marker must keep matching the same anchors; if the
   // source patterns drift, the marker would go quiet and lose its
   // coverage in the smoke runner.
   const smoke = read('tests/smoke-test.sh');
-  assert.match(smoke, /grep -n "SOUND_COOKIE_NAME = "/u);
-  assert.match(smoke, /grep -n "isEnabled: getSavedState"/u);
+  assert.match(smoke, /isEnabled: false/u);
+  assert.match(smoke, /LEGACY_SOUND_COOKIE_NAME/u);
+  assert.match(smoke, /expireLegacyCookie/u);
 });
 
 test('semantic theme tokens are defined for reusable component roles', () => {
@@ -2626,11 +2736,16 @@ test('mobile-first responsive guards: touch targets, iOS zoom, safe areas', () =
     /\.composer__send::before[\s\S]*?inset: -3px/u,
     'send button needs a 44px tap target'
   );
+  // The icon-only notification badge is a fixed 76px circle, already far
+  // above the 44px minimum tap target, so no hit-area extension is
+  // needed and none may be added back for a dismiss button that no
+  // longer exists.
   assert.match(
     css,
-    /\.notification-dismiss::after[\s\S]*?inset: -10px/u,
-    'notification dismiss needs a 44px tap target'
+    /\.notification-container \{[^}]*width: 76px/u,
+    'notification badge stays a generous tap target'
   );
+  assert.doesNotMatch(css, /\.notification-dismiss/u);
   assert.match(
     css,
     /\.picker__sound-toggle::before[\s\S]*?inset: -6px/u,
@@ -2702,10 +2817,12 @@ test('responsive breakpoints keep all five widths free of horizontal overflow', 
     /\.bubble \{[\s\S]*?overflow-wrap: break-word/u,
     'chat bubbles must wrap unbroken strings'
   );
+  // The icon-only notification overlay pins to the viewport at every
+  // width (the centered 76px badge can never overflow horizontally).
   assert.match(
     css,
-    /\.notification-message \{[\s\S]*?overflow-wrap: anywhere/u,
-    'notification messages must wrap anywhere'
+    /\.notification-overlay \{[^}]*inset: 0/u,
+    'notification overlay pins to the viewport at every width'
   );
 
   // The menu popover is anchored to the header trigger and must never
@@ -2862,11 +2979,14 @@ test('beach translucent panel text clears WCAG AA on idle and hover', () => {
 
   /* The beach menu trigger is a pale sky chip; the icon ink darkened
      from #2f7384 (3.85:1) to #1a5f6d, and hover darkens a step further
-     to #14505f. The notification close glyph on the solid tide panel
-     brightened from foam-dim (4.29:1) to #cfe0da. */
+     to #14505f. The icon-only notification badge keeps its luminous
+     info accent #94d0c1 on the solid tide panel #1f5449 (4.99:1). */
   assert.ok(contrastRatio('#1a5f6d', '#cddde1') >= 4.5, 'trigger icon on sky');
   assert.ok(contrastRatio('#14505f', '#cadde3') >= 4.5, 'trigger hover on sky');
-  assert.ok(contrastRatio('#cfe0da', '#1f5449') >= 4.5, 'notification dismiss');
+  assert.ok(
+    contrastRatio('#94d0c1', '#1f5449') >= 4.5,
+    'notification badge accent on tide'
+  );
 
   /* The beach theme actually ships these overrides, scoped so the ocean
      theme keeps its own accents untouched. */
@@ -2885,7 +3005,7 @@ test('beach translucent panel text clears WCAG AA on idle and hover', () => {
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.notification-dismiss[\s\S]*color: #cfe0da/u
+    /html\[data-theme='beach'\] \.notification-container \{[^}]*background: var\(--color-tide\)/u
   );
 });
 
@@ -2910,9 +3030,10 @@ test('non-text contrast: input boundaries and focus rings clear WCAG 1.4.11', ()
   );
   // Beach dark-panel focus rings use luminous foam #a8d9cc.
   assert.ok(contrastRatio('#a8d9cc', '#456d5e') >= 3.0, 'beach send focus');
+  // The badge's 1px severity border is its identifying boundary.
   assert.ok(
-    contrastRatio('#a8d9cc', '#1f5449') >= 3.0,
-    'beach notif dismiss focus'
+    contrastRatio('#94d0c1', '#1f5449') >= 3.0,
+    'beach notification badge boundary'
   );
   assert.ok(
     contrastRatio('#a8d9cc', '#386557') >= 3.0,
@@ -2955,7 +3076,7 @@ test('non-text contrast: input boundaries and focus rings clear WCAG 1.4.11', ()
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.notification-dismiss:focus-visible \{[\s\S]*?outline-color: #a8d9cc/u
+    /html\[data-theme='beach'\] \.notification-container--info \{[^}]*border-color: #94d0c1/u
   );
   // Beach composer focus-within and selected theme segment match the
   // same luminous language, and the send button got a shell fill.
@@ -3042,7 +3163,6 @@ test('keyboard focus indicators are visible on every interactive element', () =>
     '.breathe-trigger',
     '.composer__send',
     '.menu__item',
-    '.notification-dismiss',
     '.exit-confirm-bar__btn',
     '.breathe-close'
   ]) {

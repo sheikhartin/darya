@@ -1,0 +1,27 @@
+{
+  "name": "recognizing and leaving a toxic relationship",
+  "description": "Someone worried about their relationship asks about red flags and how to leave, then shares that their partner is controlling. Verifies the relationship_toxic fact names concrete warning signs (control, isolation, gaslighting, aggression), and that a personal disclosure gets an empathetic, safety-aware conversation reply.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "What are the red flags of a toxic relationship?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "How do I leave a toxic relationship?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "I think my partner is controlling me",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: red-flags question returns the relationship_toxic fact with concrete warning signs. Turn 2: leaving-a-toxic-relationship question returns the same fact, including safety-first advice. Turn 3: the first-person disclosure routes to the relationship/feeling rules with a compassionate question, never a lecture.",
+    "behavior": "The toxic-relationship fact keeps the safety-first framing: if in danger, contact a trusted person or authority, leaving is a process, and it is not the persons fault. Disclosures route to empathetic conversation pools."
+  }
+}

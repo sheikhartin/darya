@@ -1,0 +1,28 @@
+{
+  "name": "سیگاریِ سال‌ها در تلاش برای ترک",
+  "description": "A Persian person has tried to quit smoking for years, asks what actually works to break a bad habit, then admits smoking again yesterday and disliking himself. Verifies the need thread opens, the habit-breaking question is answered, and the relapse shame stays on the self-esteem thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سال‌هاست می‌خوام سیگار رو ترک کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "need"
+    },
+    {
+      "text": "برای ترک عادت بد واقعاً چی جواب می‌ده؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "دیروز دوباره سیگار کشیدم و از خودم بدم میاد",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "self_esteem"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the need thread (wanting to quit smoking). Turn 2 answers the habit-breaking question with evidence-based steps in Persian. Turn 3 keeps the relapse self-dislike on the self-esteem thread.",
+    "behavior": "A quit-smoking context is never misread as a goodbye. The relapse is met with encouragement and a path forward, not guilt or a canned response."
+  }
+}

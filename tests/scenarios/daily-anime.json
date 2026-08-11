@@ -1,0 +1,26 @@
+{
+  "name": "anime and japanese animation picks",
+  "description": "A newcomer asks for anime recommendations in several phrasings. Verifies the new movies_anime fact answers with a tasteful mix of film and series anime (Your Name, A Silent Voice, Fullmetal Alchemist, Spy x Family, Violet Evergarden, Demon Slayer).",
+  "language": "en",
+  "turns": [
+    {
+      "text": "Can you recommend some anime?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "What is a good anime series for a beginner?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "What anime should I watch next?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"recommend some anime\" hits the anime keyword and returns the anime fact. Turn 2: \"anime series for a beginner\" matches the anime series keywords. Turn 3: \"anime should I watch next\" keeps routing to the same fact.",
+    "behavior": "The movies_anime fact is distinct from movies_animation (animated films): the bare \"anime\" keyword and its compound variants (\"anime series\", \"japanese anime\") route anime requests there, never to the western animation list."
+  }
+}

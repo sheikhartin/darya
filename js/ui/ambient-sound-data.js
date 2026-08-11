@@ -47,11 +47,13 @@
   /** Expected theme keys that must exist in a valid manifest. */
   const EXPECTED_MANIFEST_THEMES = ['beach', 'ocean'];
 
-  /** Name of the cookie used to persist the sound toggle state. */
-  const SOUND_COOKIE_NAME = 'darya_sound';
-
-  /** Number of days until the sound cookie expires. */
-  const SOUND_COOKIE_MAX_AGE_DAYS = 365;
+  /**
+   * Name of the cookie that versions before 1.2.0 used to persist the
+   * sound toggle state. Kept only so the module can expire it once at
+   * load: ambient sound now always boots silent and is started only by
+   * the toggle buttons, so a stale "on" cookie must not linger.
+   */
+  const LEGACY_SOUND_COOKIE_NAME = 'darya_sound';
 
   /**
    * Error names that describe playback being unavailable *right now*
@@ -123,8 +125,7 @@
     PLAY_ATTEMPT_TIMEOUT_MS,
     THEME_CHANGE_DELAY_MS,
     EXPECTED_MANIFEST_THEMES,
-    SOUND_COOKIE_NAME,
-    SOUND_COOKIE_MAX_AGE_DAYS,
+    LEGACY_SOUND_COOKIE_NAME,
     FALLBACK_MANIFEST,
     isFileProtocol,
     isTransientError,

@@ -39,6 +39,12 @@ test('bilingual parity: fa and en packs expose the same structural fields', () =
     'checkInEvery',
     'questionPattern',
     'questionFallbacks',
+    'unknownTopicResponses',
+    'promiseAcknowledgedResponses',
+    'promiseCircleBackResponses',
+    'promiseReleasedResponses',
+    'promiseLaterPattern',
+    'promiseForgetPattern',
     'topicCallbacks',
     'quotedCallbackTemplates',
     'distressNudges',
@@ -71,6 +77,45 @@ test('bilingual parity: both packs expose the same UI string keys', () => {
   const faKeys = Object.keys(FA.ui).sort();
   const enKeys = Object.keys(EN.ui).sort();
   assert.deepEqual(faKeys, enKeys);
+});
+
+test('unknown-topic and promise pools are present with warm content in both packs', () => {
+  const closing = [
+    'glad',
+    'happy to help',
+    'خوشحالم',
+    'موفق باشی',
+    'امیدوارم',
+    'خداحافظ',
+    'bye',
+    'see you',
+    'take care'
+  ];
+  for (const lang of [FA, EN]) {
+    assert.ok(lang.unknownTopicResponses.length >= 3, lang.code);
+    assert.ok(lang.promiseAcknowledgedResponses.length >= 3, lang.code);
+    assert.ok(lang.promiseCircleBackResponses.length >= 3, lang.code);
+    assert.ok(lang.promiseReleasedResponses.length >= 2, lang.code);
+    // Every circle-back line is a gentle invitation back to the topic.
+    for (const line of lang.promiseCircleBackResponses) {
+      assert.match(line, /[?؟]/u, `${lang.code}: ${line}`);
+    }
+    // The warm pools never close the conversation.
+    for (const line of [
+      ...lang.unknownTopicResponses,
+      ...lang.promiseAcknowledgedResponses,
+      ...lang.promiseReleasedResponses
+    ]) {
+      const lower = line.toLocaleLowerCase();
+      for (const phrase of closing) {
+        assert.equal(
+          lower.includes(phrase.toLocaleLowerCase()),
+          false,
+          `${lang.code}: ${line}`
+        );
+      }
+    }
+  }
 });
 
 test('notification chrome is localized in both packs', () => {

@@ -1,0 +1,28 @@
+{
+  "name": "نگرانی‌های صمیمیت جنسی",
+  "description": "A Persian user in a relationship worries about talking about sex, a drop in desire, and fear of sex. Verifies the sex_intimacy fact answers in Persian with the professional disclaimer, and the fearful disclosure routes to anxiety.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چطور با همسرم درباره سکس حرف بزنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "چرا میل جنسیم کم شده؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "از رابطه جنسی میترسم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the how-to-talk question routes through the relationship topic and returns the sex_intimacy fact. Turn 2: the desire-drop question returns the fact with the no-blame \"I\" statements advice. Turn 3: the fear disclosure routes to anxiety with a validating reply.",
+    "behavior": "Persian intimacy worries are normalized without shame, answered with honest communication advice and a clear not-a-professional line; personal fear stays an emotional disclosure."
+  }
+}

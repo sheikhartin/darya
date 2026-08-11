@@ -1,0 +1,29 @@
+{
+  "name": "دانشجوی بی‌پول که با نودل فوری زندگی می‌کند",
+  "description": "A Persian student surviving on instant noodles asks how to learn cheap and simple meals, and admits having no money for fancy ingredients. Verifies the school thread opens, the cheap-cooking question routes to the cooking fact, and the money constraint stays on the money thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "دانشجوام و با نودل فوری زنده‌ام",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "school"
+    },
+    {
+      "text": "چطور غذاهای ارزون و ساده یاد بگیرم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "learning_advice"
+    },
+    {
+      "text": "برای مواد گرون پول ندارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "money"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the school thread (student, instant noodles). Turn 2 answers the cheap-meals question from the cooking knowledge fact in Persian. Turn 3 keeps the budget constraint on the money thread.",
+    "behavior": "Student poverty is handled without shame: cheap cooking advice is practical and ingredient-light, and the no-money disclosure is acknowledged as a real constraint, not a joke."
+  }
+}

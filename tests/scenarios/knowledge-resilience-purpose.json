@@ -18,7 +18,7 @@
       "intent": "seek_knowledge_purpose"
     },
     {
-      "dialogueAct": "statement",
+      "dialogueAct": "question",
       "text": "What do the stoics say about resilience and strength?",
       "intent": "seek_knowledge_stoicism"
     },

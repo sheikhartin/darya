@@ -117,28 +117,13 @@
       el.picker.hidden = true;
       el.app.hidden = false;
       st.chatActive = true;
-      // Leaving the picker stops any sound-attention nudge: the language
-      // click is itself a gesture that can start the sound.
-      ctrl.clearSoundAttention();
       ctrl.startConversation();
 
-      // Auto-play ambient sound if the user previously opted in, syncing
-      // the toggle to the ACTUAL result: if the browser blocks the
-      // automatic start, the toggle rolls back to "off" and a brief toast
-      // points to the menu toggle for a gesture-based start.
+      // Ambient sound is strictly opt-in: it is never started by the
+      // language click. The toggle keeps showing the honest playback
+      // state, and the user starts sound by clicking a toggle button.
       if (typeof ctrl.DaryaAmbientSound !== 'undefined') {
-        var soundIntentOn = ctrl.DaryaAmbientSound.getSavedState() === true;
-        ctrl.DaryaAmbientSound.autoplayIfEnabled().then(function () {
-          // Sync from the ACTUAL playback state: an autoplay attempt can
-          // keep the user's intent (a transient policy rejection) without
-          // any audio running, and the toggle must never claim sound is
-          // playing when it is not.
-          var actuallyPlaying = ctrl.DaryaAmbientSound.isPlaying();
-          ctrl.syncSoundToggleUI(actuallyPlaying);
-          if (!actuallyPlaying && soundIntentOn) {
-            ctrl.notifySoundAutoplayBlocked();
-          }
-        });
+        ctrl.syncSoundToggleUI(ctrl.DaryaAmbientSound.isPlaying());
       }
     }
 
@@ -173,12 +158,11 @@
       st.currentTitle = '';
       st.userSpoke = false;
       // Sync the picker sound toggle with the actual playback state so the
-      // toggle shows correctly when returning to the picker, then arm the
-      // attention nudge for the saved-but-silent case.
+      // toggle shows correctly when returning to the picker. Nothing is
+      // auto-started: sound only plays after a toggle click.
       if (typeof ctrl.DaryaAmbientSound !== 'undefined') {
         ctrl.syncSoundToggleUI(ctrl.DaryaAmbientSound.isPlaying());
       }
-      ctrl.armSoundAttention();
       if (el.pickerLangLock) {
         var faSpan = el.pickerLangLock.querySelector('.picker__lang-lock-fa');
         var enSpan = el.pickerLangLock.querySelector('.picker__lang-lock-en');

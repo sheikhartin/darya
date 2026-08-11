@@ -185,6 +185,16 @@
       return null;
     }
 
+    // A parenthetical is the user's own aside ("(I am a man)"); a
+    // pronoun swap inside it reads broken ("I are a man") because the
+    // opening parenthesis makes the token fail the word regex, so the
+    // "I" stays while "am" becomes "are". Skip reflection entirely for
+    // any sentence that carries parentheses - the fallback chain
+    // handles those safely instead of echoing a mangled aside.
+    if (/[()]/.test(text)) {
+      return null;
+    }
+
     let swapped = false;
     const result = words.map((token) => {
       const match = token.match(/^([A-Za-z']+)([.,!?]*)$/);

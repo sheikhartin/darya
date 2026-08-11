@@ -6,6 +6,7 @@
 > well-adopted tools over trendy ones.
 
 ## 1. Architecture and Stack
+
 - Prefer built-in APIs over libraries. Add a dependency only when it
   saves real time or prevents bugs, and only if it is maintained,
   stable, secure, lightweight, and permissively licensed. Never add a
@@ -15,7 +16,7 @@
   visible dependencies. Match the existing style of the codebase.
 - Keep source files under 600 lines. When a file approaches the limit,
   split it into part files (see the Darya engine's `responder-*.js`,
-  `app-*.js`, and `*-pools-*.js` pattern) rather than growing it.
+  `app-*.js`, and `*-responses-*.js` pattern) rather than growing it.
   Data and response-pool files are part of the source tree too.
 - No magic numbers or magic strings: every literal beyond 0, 1, or
   empty string becomes a named constant, ideally grouped in a
@@ -34,8 +35,19 @@
   user opts in. Local-first when possible. Offline-first apps allow at
   most one optional, silent-failing network call per session, fired at
   startup, never carrying user data.
+- Example names in comments, tests, and docs use Iranian-origin names
+  (کوروش, داریوش, آریا, آرتین, سپنتا, باران, آناهیتا) rather than
+  Arabic-origin given names like علی or محمد. Fixed Arabic phrases
+  (سلام علیکم) are not names and stay as they are.
+- The Persian normalizer maps ئ to ی (so «مطمئن» arrives as «مطمین» and
+  «رئیس» as «رییس»). Every rule pattern, keyword list, stopword, and
+  lexicon that contains ئ must also carry the normalized ی form; the
+  same dual-spelling rule applies to Arabic look-alikes (ي/ك/ة/ؤ) that
+  the normalizer converts. Display prose keeps the standard spelling
+  (جزئیات, سؤال) because output is never normalized.
 
 ## 2. Testing
+
 - Testing is not optional. Every feature needs tests; every bug fix
   needs a regression test that would have caught it.
 - Structure tests as Arrange-Act-Assert. Name them
@@ -46,6 +58,7 @@
   100%. A PR with complex logic but no tests is not done.
 
 ## 3. Code Quality
+
 - Single responsibility: one clear job per function, module, class.
 - YAGNI: build what is needed now, but structure it so extension later
   does not require a rewrite.
@@ -59,6 +72,7 @@
   and document the root cause.
 
 ## 4. UI, Animation, and i18n
+
 - CSS custom properties for theming. Logical properties
   (`inset-inline`, `padding-inline`, `margin-block`) over physical ones
   for automatic RTL/LTR support.
@@ -83,6 +97,7 @@
   translatable strings, including `dir` and `code` fields.
 
 ## 5. Security
+
 - OWASP Top 10 as the baseline threat model. Validate input at every
   boundary. Never trust client input.
 - Auth tokens: HttpOnly, Secure, SameSite cookies. Never localStorage
@@ -91,6 +106,7 @@
   secrets only in environment variables. Pin exact dependency versions.
 
 ## 6. AI Ethics
+
 - Be transparent about AI involvement. Never imply emotions, genuine
   understanding, or professional qualifications.
 - Use inclusive language. Default to singular "they" when gender is
@@ -104,6 +120,7 @@
   code.
 
 ## 7. Performance
+
 - Avoid N+1 queries and unnecessary re-renders. Lazy-load heavy assets.
 - Use passive event listeners for scroll and touch. Batch DOM reads
   before writes.
@@ -112,12 +129,14 @@
   and throttled networks.
 
 ## 8. Autonomy
+
 - Requires approval: config files, new dependencies, deleting files,
   production or infrastructure changes, lock files.
 - Autonomous: editing source files in scope, running tests and
   formatters, reading docs, minor behavior-preserving refactors.
 
 ## 9. Communication
+
 - Present findings as Summary, Details, Options, Recommendation. Start
   with the conclusion. Be direct but respectful. No excessive flattery
   or hedging.
@@ -136,6 +155,7 @@
   docs. Darya's codebase is English and Farsi only.
 
 ## 10. Commits and Docs
+
 - Use Conventional Commits: `type(scope): description` with types like
   `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`,
   `ci`. One PR, one concern. Keep PRs small and well described.
@@ -145,6 +165,7 @@
   docs; explain actual pipelines and behavior instead.
 
 ## 11. Definition of Done
+
 A task is complete when all of the following hold:
 
 1. Full test suite passes with no regressions.

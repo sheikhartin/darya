@@ -213,7 +213,9 @@
       id: 'profession_acting',
       keywords: [
         'بازیگری',
+        // Dual spelling: the normalizer maps «تئاتر» to «تیاتر».
         'تئاتر',
+        'تیاتر',
         'بازیگری در سینما',
         'چطور بازیگر شوم',
         'acting career',
@@ -303,6 +305,37 @@
       ],
       fa: 'آتش‌نشانی یک شغل خدماتی و امدادی است که هم شجاعت می‌خواهد و هم آموزش فنی جدی. استخدام معمولاً از طریق آزمون‌های سازمان آتش‌نشانی انجام می‌شود و شامل آزمون آمادگی جسمانی، پزشکی و آموزش‌های تخصصی اطفای حریق و امداد است. کار آتش‌نشان فقط خاموش‌کردن آتش نیست؛ شامل امداد در تصادفات، حوادث طبیعی و آموزش ایمنی به مردم هم می‌شود. این شغل شیفت‌های سنگین و استرس دارد، اما از نظر اجتماعی یکی از محترم‌ترین شغل‌هاست.',
       en: 'Firefighting is a service and emergency career that requires both courage and serious technical training. Hiring usually goes through the fire department recruitment process, including physical fitness tests, medical checks, and specialized firefighting and rescue training. A firefighters work is not only putting out fires; it includes rescue in accidents and natural disasters and teaching the public about safety. The job has heavy shifts and stress, but it is one of the most respected professions socially.'
+    },
+    {
+      id: 'learning_english',
+      keywords: [
+        'انگلیسی یاد بگیرم',
+        'چطور انگلیسی یاد بگیرم',
+        'چطوری انگلیسی یاد بگیرم',
+        'یادگیری زبان انگلیسی',
+        'زبان انگلیسی یاد بگیرم',
+        'how to learn english',
+        'how can i learn english',
+        'learn english',
+        'english learning tips',
+        'best way to learn english'
+      ],
+      weak: ['انگلیسی', 'english', 'زبان', 'language'],
+      weakSafe: true,
+      hints: [
+        'یاد',
+        'یاد بگیرم',
+        'یادگیری',
+        'آموزش',
+        'صحبت',
+        'learn',
+        'study',
+        'speak',
+        'fluent',
+        'vocabulary'
+      ],
+      fa: 'برای یادگیری انگلیسی، به‌جای غرق شدن در گرامر، سراغ «ورودیِ قابل‌فهم» برو: محتوای واقعی (پادکست، سریال با زیرنویس انگلیسی، متن‌های ساده) در سطحی کمی بالاتر از سطح فعلی‌ات. تکرارِ فاصله‌دار برای واژگان (مثلاً فلش‌کارت) خیلی مؤثرتر از حفظ یک‌شبه است، و بلند حرف زدن، حتی با خودت یا با یک پارتنر زبانی، بهترین تمرین گفتار است. قانون ساده: هر روز بیست دقیقه بهتر از هفته‌ای یک‌بار دو ساعت است. اشتباه کردن بخشی از مسیر است، نه نشانه‌ی شکست.',
+      en: 'To learn English, do not lead with grammar drills; go for comprehensible input: real content (podcasts, series with English subtitles, simple texts) at a level slightly above your current one. Spaced repetition for vocabulary (flashcards) beats last-minute cramming, and speaking out loud, even alone or with a language partner, is the best speaking practice. The simple rule: 20 minutes every day beats two hours once a week. Making mistakes is part of the path, not a sign of failure.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

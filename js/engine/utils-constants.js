@@ -84,8 +84,93 @@
   // question a short answer (yes/no/maybe) is responding to. Keeps short
   // answers contextual without treating a stale question as current.
   const PENDING_ANSWER_WINDOW = 3;
+  // A question-echo answer ("کدوم آدم؟! الیاس، خواهرزاده من") must carry
+  // a genuinely short echoed fragment: the user repeats just enough of
+  // Darya's question to signal "I am answering that one", never a full
+  // question of their own ("آیا الیزا هم مثل تو گاو بوده؟! من تحقیق
+  // کردم..."). Both caps must hold; see parseEchoShape in utils.js.
+  const ECHO_FRAGMENT_MAX_CHARS = 28;
+  const ECHO_FRAGMENT_MAX_WORDS = 4;
+  // The answer part of a question-echo (the words after the ؟ split) must
+  // carry at least this many words to be read as a real answer rather than
+  // a bare acknowledgement.
+  const ECHO_ANSWER_MIN_WORDS = 2;
+  // How many turns an active conversation subject stays "current" for the
+  // fallback subject-continuation path: an unmatched statement that follows
+  // a disclosed subject ("سه ماه پیش از دنیا رفت" after a grief disclosure)
+  // keeps the thread alive instead of being treated as an unknown topic.
+  const SUBJECT_CONTINUATION_WINDOW = 4;
+  /**
+   * Rule topics that are pure acknowledgments (yes/no/thanks/sorry) and
+   * carry no conversational substance. They must never become the
+   * conversation subject: after a real disclosure ("my girlfriend left
+   * me"), a bare "yeah" continuing that thread would otherwise overwrite
+   * the subject with 'affirmation' and every follow-up would lose the
+   * thread.
+   */
+  const FILLER_TOPICS = new Set([
+    'affirmation',
+    'negation',
+    'gratitude',
+    'apology'
+  ]);
   const MIXED_SCRIPT_FOREIGN_MIN = 3;
-  const MIXED_SCRIPT_FOREIGN_RATIO = 0.05;
+  // A bilingual sentence must have a substantial foreign-script chunk
+  // before it is treated as mixed: a single English loanword in an
+  // otherwise Persian sentence ("امروز خیلی tired هستم") is everyday
+  // Persian code-switching, not a language switch, and must never
+  // trigger the mixed-language redirect. A genuinely bilingual sentence
+  // ("من یک how are you دارم") crosses the threshold and does.
+  //
+  // The layering with minScriptRatio (0.6) is intentional: messages up
+  // to 35 percent foreign letters are ordinary speech and flow through
+  // the normal pipeline; the narrow band up to 40 percent triggers the
+  // softer mixed-language redirect; anything more foreign is a language
+  // switch and gets the direct "write in {language}" redirect first.
+  const MIXED_SCRIPT_FOREIGN_RATIO = 0.35;
+  // Persian (Eastern Arabic) digit characters, used to convert
+  // Arabic-Indic digits typed on Arabic keyboards and to echo a stored
+  // age back in the exact script the user typed.
+  const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+  // Turns that express aversion, reluctance, or physical nervousness are
+  // never joke material ("I don't even want to go tomorrow", "my voice
+  // shakes when I present"), even when no single word raises the
+  // seriousness score past the threshold. Humor coloring and the light
+  // smalltalk replacement both consult this pattern.
+  const HUMOR_BLOCK_PATTERN =
+    // eslint-disable-next-line max-len
+    /(?:\b(?:don'?t|dont|cant|cannot|won'?t|wont|never|no longer|no more|hate|dread(?:ing)?|nervous|shakes?|shaking|trembling|panic|sick of|tired of|fed up|can'?t stand|cant stand|not in the mood|not looking forward|wish i didn'?t|wish i hadn'?t)\b)|(?<!\p{L})(?:دوست ندارم|حوصله ندارم|حالم بده|خسته شدم|دیگه طاقت|دلهره|می‌لرزه|عصبی‌ام|عصبیام|استرس دارم|بی‌حوصله|بی‌حال)(?!\p{L})/iu;
+  // Session user-profile bounds (see responder-profile.js): an age
+  // outside the plausible human range is not stored, and a captured name
+  // shorter than two characters (a lone letter or a copula remnant) is
+  // rejected as noise.
+  const MAX_PROFILE_AGE_YEARS = 130;
+  const MIN_PROFILE_NAME_LENGTH = 2;
+  // Ages at or below this are read as children (the young-user age
+  // guard in responder-profile.js): the stored-profile reply switches
+  // to the age-appropriate pool, which warmly encourages talking to a
+  // trusted adult rather than assuming adult self-reliance.
+  const YOUNG_USER_MAX_AGE = 13;
+  // Deferred-topic promise memory (see responder-promise.js): how many
+  // turns after "I'll tell you later" Darya circles back, and how long a
+  // promise stays pending before it expires silently (it is never
+  // brought up again after that point).
+  const PROMISE_CIRCLEBACK_DELAY_TURNS = 4;
+  const PROMISE_EXPIRY_TURNS = 14;
+  // Guided therapeutic exercises (see responder-exercises.js): how many
+  // turns an in-progress exercise stays active before it expires
+  // silently. The user may take their time between steps; after this
+  // many turns of unrelated chat, the exercise is retired rather than
+  // hanging over the conversation.
+  const EXERCISE_ACTIVE_WINDOW = 10;
+  // Mood check-in scale (see responder-mood.js): the user rates their
+  // mood on a 1..10 scale; values at or below MOOD_LOW_MAX read as low
+  // and values at or above MOOD_HIGH_MIN read as high, with the middle
+  // band read as moderate.
+  const MOOD_SCALE_MIN = 1;
+  const MOOD_SCALE_MAX = 10;
+  const MOOD_LOW_MAX = 4;
+  const MOOD_HIGH_MIN = 8;
 
   // ========================================================================
   // Text helpers
@@ -169,7 +254,24 @@
     BOREDOM_MIN_TURNS,
     MINOR_ATTRACTION_PENDING_WINDOW,
     PENDING_ANSWER_WINDOW,
+    ECHO_FRAGMENT_MAX_CHARS,
+    ECHO_FRAGMENT_MAX_WORDS,
+    ECHO_ANSWER_MIN_WORDS,
+    SUBJECT_CONTINUATION_WINDOW,
+    FILLER_TOPICS,
     MIXED_SCRIPT_FOREIGN_MIN,
-    MIXED_SCRIPT_FOREIGN_RATIO
+    MIXED_SCRIPT_FOREIGN_RATIO,
+    PERSIAN_DIGITS,
+    HUMOR_BLOCK_PATTERN,
+    MAX_PROFILE_AGE_YEARS,
+    MIN_PROFILE_NAME_LENGTH,
+    YOUNG_USER_MAX_AGE,
+    PROMISE_CIRCLEBACK_DELAY_TURNS,
+    PROMISE_EXPIRY_TURNS,
+    EXERCISE_ACTIVE_WINDOW,
+    MOOD_SCALE_MIN,
+    MOOD_SCALE_MAX,
+    MOOD_LOW_MAX,
+    MOOD_HIGH_MIN
   };
 })(typeof window !== 'undefined' ? window : globalThis);

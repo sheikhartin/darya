@@ -1,0 +1,28 @@
+{
+  "name": "بی‌تحرک که می‌خواهد ورزش را شروع کند",
+  "description": "A Persian person has been completely sedentary for years, asks how to start exercising as a beginner, and dismisses a ten-minute walk as too little. Verifies the health thread opens, the beginner exercise question is answered, and the movement-habit follow-up stays on health.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سال‌هاست کاملاً بی‌تحرک بودم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    },
+    {
+      "text": "چطور ورزش رو به عنوان مبتدی شروع کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "ده دقیقه پیاده‌روی خیلی کمه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the health thread (sedentary years). Turn 2 answers the beginner exercise question with a gentle, concrete starting point in Persian. Turn 3 keeps the movement conversation on health.",
+    "behavior": "A beginner exercise request gets real, low-barrier guidance, and the 'ten minutes is too little' self-criticism is handled without letting the thread fall to a generic fallback."
+  }
+}
