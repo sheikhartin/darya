@@ -28,9 +28,10 @@ coverage
 # Playwright test artifacts
 /test-results/
 
-# Capacitor generated projects (regenerated via npm run android:add)
-/android/
+# Capacitor web bundle (generated via npm run sync:web)
 /www/
+# Note: the android/ platform folder is committed (its own .gitignore
+# excludes generated web assets, build outputs, and the keystore).
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
