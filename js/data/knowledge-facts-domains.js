@@ -330,12 +330,17 @@
       id: 'football_goat',
       keywords: [
         'بهترین بازیکن تاریخ',
+        'بهترین فوتبالیست',
+        'بهترین فوتبالیست جهان',
+        'بهترین فوتبالیست تاریخ',
         'مسی یا رونالدو',
         'مسی',
         'رونالدو',
         'messi or ronaldo',
         'greatest player',
         'best player ever',
+        'best footballer',
+        'greatest footballer',
         'goat of football',
         'messi',
         'ronaldo'
@@ -345,6 +350,154 @@
       hints: ['فوتبال', 'football', 'بازیکن', 'player', 'توپ طلا', 'ballon'],
       fa: 'بحث «بهترین بازیکن تاریخ» یکی از داغ‌ترین بحث‌های فوتبال است. لیونل مسی با ۸ توپ طلا و قهرمانی جام جهانی ۲۰۲۲ رکورددار توپ طلاست و کریستیانو رونالدو با ۵ توپ طلا و رکورد گل‌های ملی، پرگل‌ترین بازیکن تاریخ است. هر دو طرف حرف‌های خودشان را دارند؛ برای تو کدام مهم‌تر است: آمار، قهرمانی‌ها یا سبک بازی؟',
       en: 'The greatest-footballer-of-all-time debate is one of the sports hottest arguments. Lionel Messi holds the record with eight Ballon dOr awards plus the 2022 World Cup, while Cristiano Ronaldo, with five Ballon dOrs and the all-time international goals record, is the most prolific scorer ever. Both sides have strong cases; what matters more to you, stats, trophies, or playing style?'
+    },
+    {
+      id: 'volleyball_goat',
+      keywords: [
+        'بهترین والیبالیست',
+        'بهترین بازیکن والیبال',
+        'بهترین والیبالیست تاریخ',
+        'بهترین والیبالیست جهان',
+        'greatest volleyball player',
+        'best volleyball player',
+        'best volleyballer',
+        'goat of volleyball'
+      ],
+      weak: [],
+      weakSafe: true,
+      hints: ['والیبال', 'volleyball', 'بازیکن', 'player'],
+      fa: 'در والیبال مردان، کرچ کرالی آمریکایی با سه مدال طلای المپیک (۱۹۸۴، ۱۹۸۸، ۱۹۹۶) پرافتخارترین است و پرتکرارترین نام در بحث بهترین تاریخ؛ در دوران مدرن، ویلفردو لئون و اروین انگاپت از برجسته‌ترین‌ها هستند. در والیبال زنان، ژو تینگ چین و فوفائوی برزیلی نام‌هایی پرتکرار در این بحث‌اند.',
+      en: 'In men’s volleyball, Karch Kiraly of the USA, with three Olympic golds (1984, 1988, 1996), is the most decorated and the most cited name in the greatest-of-all-time debate; in the modern era, Wilfredo Leon and Earvin Ngapeth stand out. In women’s volleyball, Zhu Ting of China and Brazil’s Fofao are frequent picks.'
+    },
+    {
+      id: 'mma_goat',
+      keywords: [
+        'بهترین مبارز رزمی',
+        'بهترین مبارز تاریخ',
+        'بهترین مبارز ام‌ام‌ای',
+        'بهترین فایتر تاریخ',
+        'best mma fighter',
+        'greatest mma fighter',
+        'goat of mma',
+        'best fighter of all time'
+      ],
+      weak: [],
+      weakSafe: true,
+      hints: ['ام‌ام‌ای', 'mma', 'مبارزه', 'fight', 'ufc'],
+      fa: 'رایج‌ترین نام‌ها در بحث بهترین مبارز تاریخ ام‌ام‌ای: خبیب نورمحمداف با رکورد ۲۹ پیروزی بدون باخت که در ۲۰۲۰ بازنشسته شد، جان جونز با یکی از طولانی‌ترین دوران قهرمانی تاریخ UFC، و دیمیتریوس جانسون با رکورد بیشترین دفاع پیاپی از عنوان. در بخش زنان، آماندا نونز پرافتخارترین است.',
+      en: 'The most cited names in the greatest-MMA-fighter debate: Khabib Nurmagomedov, undefeated at 29-0 when he retired in 2020; Jon Jones, with one of the longest title reigns in UFC history; and Demetrious Johnson, who holds the record for consecutive title defenses. In women’s MMA, Amanda Nunes is the most decorated.'
+    },
+    {
+      id: 'us_presidents',
+      keywords: [
+        'رئیس جمهور',
+        'رییس جمهور',
+        'رئیس جمهور آمریکا',
+        'رئیس جمهور سابق آمریکا',
+        'رئیس جمهور امریکا',
+        'رئیس جمهور آمریکا ۲۰۱۴',
+        'us president',
+        'us presidents',
+        'president of the united states',
+        'president of america',
+        'american president',
+        'president in 2014'
+      ],
+      weak: [],
+      weakSafe: true,
+      hints: [
+        'آمریکا',
+        'امریکا',
+        'usa',
+        'america',
+        'اوباما',
+        'obama',
+        'ترامپ',
+        'trump',
+        'بایدن',
+        'biden'
+      ],
+      fa: 'باراک اوباما از ۲۰۰۹ تا ۲۰۱۷ رئیس‌جمهور آمریکا بود، پس در سال ۲۰۱۴ او رئیس‌جمهور بود. رئیس‌جمهورهای اخیر: جورج دبلیو بوش (۲۰۰۱ تا ۲۰۰۹)، باراک اوباما (۲۰۰۹ تا ۲۰۱۷)، دونالد ترامپ (۲۰۱۷ تا ۲۰۲۱ و دوباره از ۲۰۲۵)، جو بایدن (۲۰۲۱ تا ۲۰۲۵).',
+      en: 'Barack Obama was the US president from 2009 to 2017, so he held the office in 2014. Recent presidents: George W. Bush (2001-2009), Barack Obama (2009-2017), Donald Trump (2017-2021, and again from 2025), Joe Biden (2021-2025).'
+    },
+    {
+      id: 'iran_president',
+      keywords: [
+        'رئیس جمهور',
+        'رییس جمهور',
+        'رئیس جمهور ایران',
+        'رئیس جمهور الان ایران',
+        'president of iran',
+        'who is the president of iran'
+      ],
+      weak: [],
+      weakSafe: true,
+      hints: ['ایران', 'iran', 'پزشکیان', 'pezeshkian', 'رئیسی', 'raisi'],
+      fa: 'مسعود پزشکیان از مرداد ۱۴۰۳ (اوت ۲۰۲۴) رئیس‌جمهور ایران است؛ او جانشین ابراهیم رئیسی شد که در خرداد ۱۴۰۳ در سانحه‌ی سقوط بالگرد درگذشت.',
+      en: 'Masoud Pezeshkian became president of Iran in July 2024, succeeding Ebrahim Raisi, who died in a helicopter crash in May 2024.'
+    },
+    {
+      id: 'world_capitals',
+      keywords: [
+        'پایتخت فرانسه',
+        'پایتخت ایران',
+        'پایتخت ترکیه',
+        'پایتخت آلمان',
+        'پایتخت ایتالیا',
+        'پایتخت انگلیس',
+        'پایتخت انگلستان',
+        'پایتخت ژاپن',
+        'پایتخت چین',
+        'پایتخت روسیه',
+        'پایتخت مصر',
+        'پایتخت کانادا',
+        'پایتخت استرالیا',
+        'پایتخت اسپانیا',
+        'پایتخت هند',
+        'پایتخت برزیل',
+        'capital of france',
+        'capital of iran',
+        'capital of turkey',
+        'capital of germany',
+        'capital of italy',
+        'capital of england',
+        'capital of japan',
+        'capital of china',
+        'capital of russia',
+        'capital of egypt',
+        'capital of canada',
+        'capital of australia',
+        'capital of spain',
+        'capital of india',
+        'capital of brazil'
+      ],
+      // Bare «پایتخت»/"capital" is deliberately NOT weakSafe: without a
+      // country/city hint a generic question ("what is the capital of a
+      // fictional planet") must stay unknown instead of firing the list.
+      // The country-specific keyword phrases above carry the real hits.
+      weak: ['پایتخت', 'capital'],
+      hints: ['کشور', 'شهر', 'جغرافیا', 'country', 'city', 'geography'],
+      fa: 'پایتخت‌های پرپرسش: ایران: تهران، فرانسه: پاریس، ترکیه: آنکارا، آلمان: برلین، ایتالیا: رم، بریتانیا: لندن، ژاپن: توکیو، چین: پکن، روسیه: مسکو، مصر: قاهره، کانادا: اتاوا، استرالیا: کانبرا، اسپانیا: مادرید، هند: دهلی‌نو، برزیل: برازیلیا.',
+      en: 'Common capital cities: Iran: Tehran, France: Paris, Turkey: Ankara, Germany: Berlin, Italy: Rome, UK: London, Japan: Tokyo, China: Beijing, Russia: Moscow, Egypt: Cairo, Canada: Ottawa, Australia: Canberra, Spain: Madrid, India: New Delhi, Brazil: Brasilia.'
+    },
+    {
+      id: 'countries_count',
+      keywords: [
+        'چند کشور',
+        'چند تا کشور',
+        'چند کشور تو دنیا',
+        'تعداد کشورهای دنیا',
+        'تعداد کشورها',
+        'چند تا کشور تو دنیاست',
+        'how many countries',
+        'number of countries',
+        'how many countries in the world'
+      ],
+      weak: [],
+      weakSafe: true,
+      hints: ['دنیا', 'جهان', 'world', 'geography', 'جغرافیا'],
+      fa: '۱۹۳ کشور عضو سازمان ملل متحد هستند و با دو ناظر دائمی (فلسطین و واتیکان) مجموع معمولاً ۱۹۵ گفته می‌شود. برخی فهرست‌ها با احتساب سرزمین‌های مورد مناقشه به حدود ۲۰۶ می‌رسند.',
+      en: 'There are 193 member states of the United Nations, plus two permanent observers (Palestine and the Vatican), so the usual answer is 195. Some lists count disputed territories and reach around 206.'
     },
     {
       id: 'volleyball',

@@ -37,7 +37,23 @@
         'skills for the future',
         'future job market',
         'jobs in 2026',
-        'job market 2026'
+        'job market 2026',
+        // The transcript probes asked about 2030 («تا سال ۲۰۳۰ چه حرفه‌ای
+        // خوبه», "what careers will be good by 2030?"); the future is
+        // the same horizon, so both decades route to the same shelf.
+        'تا سال ۲۰۳۰',
+        'سال ۲۰۳۰',
+        'تا ۲۰۳۰',
+        'by 2030',
+        'in 2030',
+        'careers by 2030',
+        'careers in 2030',
+        'jobs in 2030',
+        'jobs by 2030',
+        'good careers in 2030',
+        'what careers will be good in 2030',
+        '2028',
+        'jobs in 2028'
       ],
       weak: ['آینده', 'بازار کار', 'مهارت', 'پرتقاضا', 'future', 'in demand'],
       weakSafe: true,

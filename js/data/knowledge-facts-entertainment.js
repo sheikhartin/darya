@@ -480,6 +480,73 @@
       ],
       fa: 'پیشنهادهای انیمه برای تازه‌کارها و علاقه‌مندان:\n۱. «نام تو» (Your Name، ۲۰۱۶): عاشقانه‌ای خیال‌انگیز درباره دو نوجوان که خواب‌هایشان را عوض می‌کنند.\n۲. «صدای خاموش» (A Silent Voice، ۲۰۱۶): درباره‌ی قلدری، بخشش و بازگشت به زندگی.\n۳. «فولمتال آلکمیست: برادرهود»: داستانی حماسی درباره برادرانی که قانون تبادل را شکستند.\n۴. «اسپای ایکس فمیلی» (Spy x Family): جاسوس، قاتل و تله‌پات که یک خانواده‌ی نمایشی می‌سازند؛ کمدی گرم و خانوادگی.\n۵. «وایولت اورگاردن» (Violet Evergarden): نامه‌نویسی که احساسات را از خلال نامه‌های دیگران می‌فهمد؛ درخشان و اشک‌آور.\n۶. «شکارچی شیطان» (Demon Slayer): نبرد نوجوانی برای نجات خواهرش؛ انیمیشن فوق‌العاده و هیجانی.',
       en: 'Anime picks for newcomers and fans alike:\n1. Your Name (2016): a dreamlike romance about two teenagers who swap places in their sleep.\n2. A Silent Voice (2016): about bullying, forgiveness, and finding a way back to life.\n3. Fullmetal Alchemist: Brotherhood: an epic story of two brothers who broke the rules of alchemy.\n4. Spy x Family: a spy, an assassin, and a telepath building a fake family; warm, funny, and wholesome.\n5. Violet Evergarden: a letter-writer who learns feelings through the letters of others; gorgeous and tearful.\n6. Demon Slayer: a teenage battle to save a sister, with stunning animation and edge-of-seat action.'
+    },
+    {
+      id: 'youtubers_recommendation',
+      keywords: [
+        'یوتیوبر',
+        'یوتیوبر خوب',
+        'یوتیوبرهای خوب',
+        'یوتیوبر ایرانی',
+        'کانال یوتیوب',
+        'youtuber',
+        'youtubers',
+        'good youtubers',
+        'best youtubers',
+        'youtube channels',
+        'recommend some youtubers',
+        'name some youtubers',
+        'name some good youtubers',
+        'good youtube channels',
+        'best youtube channels'
+      ],
+      weak: ['یوتیوب', 'youtube'],
+      weakSafe: false,
+      hints: ['پیشنهاد', 'معرفی', 'اسم', 'recommend', 'name', 'کانال'],
+      fa: 'چند یوتیوبر خوب بر اساس حوزه (سلایق شخصی متفاوت است، پس این‌ها نقطه‌ی شروع‌اند):\nآموزش و تکنولوژی: فیل‌ایکس (فلکس)، مایکل ریوز و خرسندبلاگ.\nعلم: ورشو و دکتر محسن داوری (علمی و پزشکی ساده).\nتاریخ و فرهنگ: کانال‌های مستندسازی مثل نیم‌روز و سرنخ.\nسرگرمی و لایف‌استایل: پین‌کست و راد.\nسفر و تجربه: کانال‌های ویدیویی مثل سفرنامه‌ی مستند. اگر ژانر مورد علاقه‌ات را بگویی، دقیق‌تر پیشنهاد می‌دهم.',
+      en: 'A few good YouTubers by area (tastes differ, so treat these as starting points):\nEducation and tech: Fireship, Michael Reeves, and NetworkChuck.\nScience: Kurzgesagt and Veritasium.\nHistory and culture: OverSimplified and Vox.\nEntertainment and lifestyle: MrBeast and Yes Theory.\nTravel and documentary: Drew Binsky and Bald and Bankrupt. Tell me a genre you like and I can be more specific.'
+    },
+    {
+      id: 'song_recommendations',
+      keywords: [
+        'آهنگ پیشنهاد',
+        'یه آهنگ پیشنهاد',
+        'یک آهنگ پیشنهاد',
+        'آهنگ خوب',
+        'آهنگ پیشنهاد بده',
+        'موسیقی پیشنهاد',
+        'song recommendation',
+        'recommend a song',
+        'recommend some songs',
+        'good songs to listen',
+        'suggest a song',
+        'suggest some music'
+      ],
+      weak: ['آهنگ', 'موسیقی', 'song', 'music'],
+      weakSafe: false,
+      hints: ['پیشنهاد', 'بده', 'بگو', 'recommend', 'suggest', 'listen'],
+      fa: 'چند آهنگ ماندگار از فرهنگ‌های مختلف (سلیقه شخصی است، پس این‌ها نقطه‌ی شروع‌اند):\nفارسی کلاسیک: «مرغ سحر» با صدای قمرالملوک وزیری یا اجراهای ارکسترال.\nفارسی مدرن: قطعه‌های ماندگار محسن نامجو مثل «آهای مردم».\nدنیا: «بوهمین رپسودی» ملکه (Queen)، «ایمرجین» پینک‌فلوی (Pink Floyd)، «هتل کالیفرنیا» ایگلز (Eagles) و «تایم» هانس زیمر. اگر حال‌وهوای امروزت را بگویی، دقیق‌تر پیشنهاد می‌دهم.',
+      en: 'A few timeless songs from different cultures (taste is personal, so treat these as starting points):\nClassics: Bohemian Rhapsody by Queen and Hotel California by the Eagles.\nAmbient and deep: Time by Hans Zimmer and Shine On You Crazy Diamond by Pink Floyd.\nModern: Blinding Lights by The Weeknd and Viva La Vida by Coldplay. Tell me your current mood and I can be more specific.'
+    },
+    {
+      id: 'horror_story',
+      keywords: [
+        'داستان ترسناک',
+        'داستان وحشت',
+        'داستان ترسناک تعریف کن',
+        'یه داستان ترسناک',
+        'یک داستان ترسناک',
+        'داستان ترسناک بگو',
+        'horror story',
+        'scary story',
+        'tell me a horror story',
+        'tell me a scary story'
+      ],
+      weak: ['ترسناک', 'وحشت', 'scary', 'creepy'],
+      weakSafe: false,
+      hints: ['داستان', 'تعریف', 'بگو', 'story', 'tell'],
+      fa: 'یک داستان کوتاه ترسناک:\nاتاق کناری هر شب ساعت سه دقیقه بامداد، در می‌زد: سه ضربه‌ی آرام و منظم. ماه‌ها بود که آن اتاق خالی بود و کلیدش را مادرم زیر فرش پنهان کرده بود. دیشب به جای صدای در، یک صدای زنانه از پشت دیوار گفت: «این بار کلید را تو پنهان کردی؟» من هنوز جواب ندادم، چون مطمئن نیستم مادرم این جمله را شنیده یا نه. دوست داری همین‌جا تمامش کنم یا ادامه بدهم؟',
+      en: 'A short horror story:\nEvery night at exactly 3:03 AM, the door of the spare room knocked: three soft, steady taps. The room had been empty for months, and my mother had hidden its key under the rug. Last night, instead of the knock, a woman voice whispered through the wall: Did you hide the key this time? I have not answered yet, because I am not sure whether my mother heard it too. Do you want me to end it here, or keep going?'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);
