@@ -5,12 +5,58 @@
 (function (global) {
   'use strict';
 
-  const FACT_REQUEST_EN =
-    // eslint-disable-next-line max-len
-    /\b(?:tell me|give me|share|any|some|more|another|a few|several)\s+(?:(?:at least|just|only|a single|single)\s+)?(?:\d+|one|two|three|four|five|a|an|a few|some|several|single)?(?:\s+(?:fun|interesting|shocking|surprising|weird|random|amazing|mind-blowing|single))*\s*facts?\b|\bfacts?\s+(?:about|on|regarding)\b/i;
+  // Category adjectives usable as fact-request flavors ("historical
+  // fact", "music fact", "tell me a scientific fact"). Every word maps
+  // to an existing CATEGORY_EN key so the topic filter never returns
+  // empty, and keeping them in one fragment lets the verb-led, bare, and
+  // single-count patterns share the list.
+  const CATEGORY_ADJ_EN =
+    '(?:historical|scientific|science|space|music|animals?|sports?|tech(?:nology)?|food|body|health|money|financial|art|life|relationship|social|history)';
+
+  const FACT_REQUEST_EN = new RegExp(
+    '\\b(?:tell me|give me|share|any|some|more|another|a few|several)' +
+      '\\s+(?:(?:at least|just|only|a single|single)\\s+)?' +
+      '(?:\\d+|one|two|three|four|five|a|an|a few|some|several|single)?' +
+      '(?:\\s+(?:fun|interesting|shocking|surprising|weird|random|amazing|mind-blowing|cool|crazy|single|' +
+      CATEGORY_ADJ_EN +
+      '))*\\s*facts?\\b' +
+      // Bare noun-phrase requests ("historical fact", "music fact",
+      // "fun fact about space", "the facts about space") have no
+      // leading verb. The branch is anchored at both ends and the
+      // optional about-topic must be the tail of the message, so a
+      // statement ("that is a fun fact", "in fact", "one fact about my
+      // life is...", "fact check", "the facts are clear") can never be
+      // misread as a request. This also replaces the old unanchored
+      // "facts about" alternative, which wrongly caught sentences like
+      // "one fact about my life is that I am fine".
+      '|^\\s*(?:a|an|some|any|the)?\\s*(?:fun|interesting|shocking|surprising|' +
+      'weird|random|amazing|mind-blowing|cool|crazy|single|' +
+      CATEGORY_ADJ_EN +
+      ')?\\s*facts?' +
+      // Each topic word must not be a copula: "the facts about my life
+      // are clear" must stop the topic at "my life" and fail, never
+      // absorb "are" as a topic word and answer with facts.
+      '(?:\\s+(?:about|on|regarding)\\s+' +
+      '(?!(?:is|are|was|were|am)\\b)[a-z0-9-]+' +
+      '(?:\\s+(?!(?:is|are|was|were|am)\\b)[a-z0-9-]+){0,3})?' +
+      // A trailing politeness marker is part of the request, not the
+      // statement tail: "facts about space please" must match while "the
+      // facts about my life are clear" still falls through.
+      '(?:\\s+please)?[.!?]*\\s*$',
+    'i'
+  );
+
+  // "a fun fact" / "an interesting fact" / "a historical fact" are
+  // singular requests: exactly one fact, not the default three.
+  const SINGLE_FACT_EN = new RegExp(
+    '\\b(?:a|an)\\s+(?:fun|interesting|shocking|surprising|weird|random|amazing|mind-blowing|single|' +
+      CATEGORY_ADJ_EN +
+      ')?\\s*facts?\\b',
+    'i'
+  );
   const FACT_REQUEST_FA =
     // eslint-disable-next-line max-len
-    /(?:حداقل|فقط)?\s*(?:حقیقت|حقایق|واقعیت جالب|واقعیت‌های جالب)(?:\s*(?:درباره|راجع به|در مورد|از|برام|بگو|بگویید|بهم))?|(?:بگو|بگویید|برام|بهم)\s+(?:حداقل|فقط)?\s*(?:یک|یه|چند تا|چند|سه تا|دو تا|پنج تا|۴|۵|۳|۲)?\s*(?:حقیقت|واقعیت جالب)/u;
+    /(?:حداقل|فقط)?\s*(?:حقیقت|حقایق|واقعیت جالب|واقعیت‌های جالب|فکت)(?:\s*(?:درباره|راجع به|در مورد|از|برام|بگو|بگویید|بهم))?|(?:بگو|بگویید|برام|بهم)\s+(?:حداقل|فقط)?\s*(?:یک|یه|چند تا|چند|سه تا|دو تا|پنج تا|۴|۵|۳|۲)?\s*(?:حقیقت|واقعیت جالب|فکت)|(?:یک|یه|چند تا|چند)?\s*فکت\s*.{0,20}?\s*(?:بگو|بگویید|برام|بهم)/u;
   const SHOCKING_EN =
     /\b(?:shocking|surprising|weird|random|amazing|mind-blowing)\b/i;
   const SHOCKING_FA =
@@ -21,14 +67,14 @@
   const AT_LEAST_FA = /(?:حداقل)/u;
   const COUNT_FA = /(?:یک|یه|دو|سه|چهار|پنج|چند)/u;
   const CATEGORY_EN = {
-    science: /\b(?:science|physics|chemistry|biology|water)\b/i,
+    science: /\b(?:science|scientific|physics|chemistry|biology|water)\b/i,
     space:
       /\b(?:space|planet|star|solar|universe|moon|venus|jupiter|saturn)\b/i,
     animals:
       /\b(?:animal|animals|octopus|cow|elephant|tardigrade|sloth|wombat)\b/i,
     history:
-      /\b(?:history|ancient|empire|egypt|rome|pyramid|cleopatra|mammoth)\b/i,
-    body: /\b(?:body|human body|bone|brain|stomach|tongue|saliva)\b/i,
+      /\b(?:history|historical|ancient|empire|egypt|rome|pyramid|cleopatra|mammoth)\b/i,
+    body: /\b(?:body|health|human body|bone|brain|stomach|tongue|saliva)\b/i,
     food: /\b(?:food|fruit|chocolate|vanilla|honey|peanut|wasabi|cheese)\b/i,
     tech: /\b(?:tech|technology|computer|internet|email|keyboard|mouse|website)\b/i,
     life: /\b(?:life|habit|sleep|memory|choice|decision|learning)\b/i,
@@ -38,8 +84,11 @@
       /\b(?:relationship|relationships|marriage|consent|love|partner|intimacy)\b/i,
     sports:
       /\b(?:sport|sports|football|soccer|basketball|olympic|marathon|badminton|golf|tennis|athlete|naismith)\b/i,
-    // eslint-disable-next-line max-len
-    art: /\b(?:art|arts|music|painting|drawing|sculpture|theater|piano|violin|beethoven|mona lisa|lascaux|song|musician|composer)\b/i,
+    // music comes before art so a "music fact" request lands on the
+    // music pool (the first matching category wins in the lookup loop).
+    music:
+      /\b(?:music|song|songs|musician|composer|piano|violin|guitar|beethoven|mozart|orchestra|melody|album|band)\b/i,
+    art: /\b(?:art|arts|painting|drawing|sculpture|theater|mona lisa|lascaux|gogh|munch|canvas|museum|artist)\b/i,
     money:
       /\b(?:money|finance|financial|dollar|salary|credit card|gold|bank|banking|interest|economy|currency)\b/i
   };
@@ -47,7 +96,10 @@
     science: /(?:علم|فیزیک|شیمی|زیست|آب)/u,
     space: /(?:فضا|سیاره|ستاره|منظومه|کیهان|ماه|مشتری|زحل|زهره)/u,
     animals: /(?:حیوان|حیوانات|اختاپوس|گاو|فیل|خرس آبی|تنبل|وامبت)/u,
-    history: /(?:تاریخ|باستان|امپراتوری|مصر|روم|هرم|کلئوپاترا|ماموت)/u,
+    // ئ→یی variants included: the normalizer maps «کلئوپاترا» to
+    // «کلیوپاترا», so both spellings are needed to keep the trigger live.
+    history:
+      /(?:تاریخ|باستان|امپراتوری|مصر|روم|هرم|کلئوپاترا|کلیوپاترا|ماموت)/u,
     body: /(?:بدن|استخوان|مغز|معده|زبان|بزاق)/u,
     food: /(?:غذا|میوه|شکلات|وانیل|عسل|بادام|وازابی|پنیر)/u,
     tech: /(?:فناوری|تکنولوژی|کامپیوتر|اینترنت|ایمیل|کیبورد|ماوس|وب‌سایت)/u,
@@ -56,7 +108,12 @@
     relationship: /(?:رابطه|روابط|ازدواج|رضایت|عشق|شریک|صمیمیت)/u,
     sports:
       /(?:ورزش|فوتبال|بسکتبال|المپیک|ماراتن|بدمینتون|گلف|تنیس|ورزشکار|نایسمیت)/u,
-    art: /(?:هنر|موسیقی|نقاشی|پیانو|ویولن|بتهوون|مونالیزا|لاسکو|آهنگ|خواننده|آهنگساز)/u,
+    // music comes before art so a "موسیقی" request lands on the music
+    // pool (the first matching category wins in the lookup loop).
+    music:
+      /(?:موسیقی|آهنگ|ترانه|خواننده|آهنگساز|نوازنده|پیانو|ویولن|گیتار|بتهوون|موتسارت|ارکستر)/u,
+    // Same dual-spelling rule for «تئاتر» → «تیاتر».
+    art: /(?:هنر|نقاشی|مجسمه|تئاتر|تیاتر|مونالیزا|لاسکو|ونگوگ|مونک|تابلو|موزه|نقاش)/u,
     money:
       /(?:پول|مالی|دلار|حقوق|کارت اعتباری|طلا|بانک|بانکداری|بهره|اقتصاد|ارز)/u
   };
@@ -113,13 +170,9 @@
           count = map[word];
         }
       }
-    } else if (
-      !isPersian &&
-      /\b(?:a|an)\s+(?:fun|interesting|shocking|surprising|weird|random|amazing|mind-blowing|single)?\s*facts?\b/i.test(
-        lower
-      )
-    ) {
-      // "a fun fact" / "an interesting fact" means exactly one.
+    } else if (!isPersian && SINGLE_FACT_EN.test(lower)) {
+      // "a fun fact" / "an interesting fact" / "a historical fact"
+      // means exactly one.
       count = 1;
     }
     // "at least N facts" promises a minimum, never fewer. The floor of 3

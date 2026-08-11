@@ -77,7 +77,23 @@
     MINOR_ATTRACTION_PENDING_WINDOW,
     PENDING_ANSWER_WINDOW,
     MIXED_SCRIPT_FOREIGN_MIN,
-    MIXED_SCRIPT_FOREIGN_RATIO
+    MIXED_SCRIPT_FOREIGN_RATIO,
+    PERSIAN_DIGITS,
+    HUMOR_BLOCK_PATTERN,
+    MAX_PROFILE_AGE_YEARS,
+    MIN_PROFILE_NAME_LENGTH,
+    YOUNG_USER_MAX_AGE,
+    ECHO_FRAGMENT_MAX_CHARS,
+    ECHO_FRAGMENT_MAX_WORDS,
+    ECHO_ANSWER_MIN_WORDS,
+    FILLER_TOPICS,
+    PROMISE_CIRCLEBACK_DELAY_TURNS,
+    PROMISE_EXPIRY_TURNS,
+    EXERCISE_ACTIVE_WINDOW,
+    MOOD_SCALE_MIN,
+    MOOD_SCALE_MAX,
+    MOOD_LOW_MAX,
+    MOOD_HIGH_MIN
   } = global.DaryaUtilsConstants;
 
   const {
@@ -88,6 +104,15 @@
     scoreSentiment,
     reflectPronouns
   } = global.DaryaUtilsText;
+
+  // Question-echo shape: a short question fragment ending in ؟/? followed
+  // by an answer of at least two characters ("کدوم آدم؟! الیاس، خواهرزاده
+  // من"). The fragment char cap is enforced here in the regex; the word
+  // cap and the answer checks live in parseEchoShape below.
+  const ECHO_SHAPE_RE = new RegExp(
+    `^(.{0,${ECHO_FRAGMENT_MAX_CHARS}}?)[؟?][؟!]*\\s+(.{2,})$`,
+    'u'
+  );
 
   // ========================================================================
   // Memory
@@ -125,6 +150,37 @@
       this.pendingQuestions = [];
       this.answeredQuestions = [];
       this.consecutiveAcknowledgements = 0;
+      // Deferred-topic promise (see responder-promise.js): set when the
+      // user says "I'll tell you later" and cleared on release, expiry,
+      // or when the promise is kept. Null when nothing is pending.
+      this.pendingPromise = null;
+      // Terse-farewell two-step state (see responder.js): true after the
+      // first farewell turn asked for exit confirmation, so the next
+      // farewell says goodbye instead of asking again. Any non-farewell
+      // message clears it, mirroring the app layer's pendingExit flag.
+      this.farewellPending = false;
+      // Session mood log (see responder-mood.js): ratings the user chose
+      // to record on the 1..10 scale, oldest first, capped at the
+      // language's moodLogSize. Purely in-memory and session-only.
+      this.moodLog = [];
+    }
+
+    /**
+     * Remembers that the user deferred a topic at the given turn, so
+     * Darya can circle back to it a few turns later. Only the most
+     * recent promise is kept: a new one replaces the old.
+     * @param {number} turn - The turn count when the promise was made.
+     */
+    rememberPromise(turn) {
+      this.pendingPromise = { promisedAtTurn: turn, circledBack: false };
+    }
+
+    /**
+     * Retires the pending promise (released by the user, expired, or
+     * fulfilled).
+     */
+    clearPromise() {
+      this.pendingPromise = null;
     }
 
     rememberUtterance(utterance) {
@@ -174,7 +230,13 @@
 
     updateSubject(topics, entities) {
       const topic = topics[0] || this.currentSubject.topic || null;
-      if (topic !== this.currentSubject.topic) {
+      // Pure acknowledgment topics (yes/no/thanks/sorry) carry no
+      // conversational substance: letting them own the subject would wipe
+      // a real disclosure ("my girlfriend left me" -> "yeah" -> subject
+      // becomes 'affirmation'), so the next follow-up loses the thread.
+      // They keep the current subject instead.
+      const isFiller = topic !== null && FILLER_TOPICS.has(topic);
+      if (topic !== this.currentSubject.topic && !isFiller) {
         this.currentSubject = { topic, entityRefs: [], since: this.turnCount };
       }
       const refs = (entities || []).map(
@@ -355,14 +417,29 @@
       return best;
     }
 
-    randomRecentUtterance(exclude = '') {
-      const candidates = this.recentUtterances.filter(
-        (u) => u !== exclude && u.split(/\s+/).filter(Boolean).length >= 3
-      );
-      if (candidates.length === 0) {
-        return null;
+    /**
+     * Returns the most recent substantive utterance to circle back to, or
+     * null when none exists. Deterministic by design: the quoted callback
+     * (see responder-rules.js) must always return to the LATEST topic the
+     * person raised instead of a random one, so a release turn like
+     * «ولش کن» / "never mind" never picks a different old phrase on every
+     * run (the flaky 9-variant behavior from the transcript replay). The
+     * current turn's own text is excluded, and utterances shorter than
+     * three words are skipped so a bare "ok" or "خب" is never quoted.
+     * @param {string} exclude - The current turn's text to skip.
+     * @returns {string|null}
+     */
+    mostRecentUtterance(exclude = '') {
+      for (let i = this.recentUtterances.length - 1; i >= 0; i -= 1) {
+        const utterance = this.recentUtterances[i];
+        if (
+          utterance !== exclude &&
+          utterance.split(/\s+/).filter(Boolean).length >= 3
+        ) {
+          return utterance;
+        }
       }
-      return candidates[Math.floor(Math.random() * candidates.length)];
+      return null;
     }
 
     isInDistressStreak() {
@@ -372,6 +449,36 @@
       const recent = this.sentimentHistory.slice(-DISTRESS_STREAK_LENGTH);
       return recent.every((score) => score < 0);
     }
+  }
+
+  /**
+   * Splits a question-echo input ("کدوم آدم؟! الیاس، خواهرزاده من") into
+   * its echoed question fragment and answer part, or returns null when the
+   * input is not echo-shaped. The echoed fragment must be genuinely short
+   * (at most ECHO_FRAGMENT_MAX_CHARS characters and ECHO_FRAGMENT_MAX_WORDS
+   * words): a full question of the user's own («آیا الیزا هم مثل تو گاو
+   * بوده؟! من تحقیق کردم...») is not an echo of Darya's question, so it
+   * must never be consumed as an answer. The answer part must carry at
+   * least two words and no question mark. The shape only survives in the
+   * raw input because the normalizer strips ؟/؟ punctuation.
+   * @param {string} rawText - Raw (unnormalized) user input
+   * @returns {{fragment: string, answerPart: string}|null}
+   */
+  function parseEchoShape(rawText) {
+    const match = String(rawText || '').match(ECHO_SHAPE_RE);
+    if (!match) {
+      return null;
+    }
+    const fragment = match[1].trim();
+    const answerPart = match[2].trim();
+    if (
+      fragment.split(/\s+/u).filter(Boolean).length > ECHO_FRAGMENT_MAX_WORDS ||
+      answerPart.split(/\s+/u).filter(Boolean).length < ECHO_ANSWER_MIN_WORDS ||
+      /[؟?]/u.test(answerPart)
+    ) {
+      return null;
+    }
+    return { fragment, answerPart };
   }
 
   global.DaryaUtils = {
@@ -443,14 +550,30 @@
     BOREDOM_MIN_TURNS,
     MINOR_ATTRACTION_PENDING_WINDOW,
     PENDING_ANSWER_WINDOW,
+    ECHO_FRAGMENT_MAX_CHARS,
+    ECHO_FRAGMENT_MAX_WORDS,
+    ECHO_ANSWER_MIN_WORDS,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,
+    PERSIAN_DIGITS,
+    HUMOR_BLOCK_PATTERN,
+    MAX_PROFILE_AGE_YEARS,
+    MIN_PROFILE_NAME_LENGTH,
+    YOUNG_USER_MAX_AGE,
+    PROMISE_CIRCLEBACK_DELAY_TURNS,
+    PROMISE_EXPIRY_TURNS,
+    EXERCISE_ACTIVE_WINDOW,
+    MOOD_SCALE_MIN,
+    MOOD_SCALE_MAX,
+    MOOD_LOW_MAX,
+    MOOD_HIGH_MIN,
     scriptRatio,
     isValidScript,
     truncateExcerpt,
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
+    parseEchoShape,
     ConversationMemory
   };
 })(typeof window !== 'undefined' ? window : globalThis);

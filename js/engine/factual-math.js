@@ -63,11 +63,35 @@
     const alt = words.join('|');
     return text.match(
       new RegExp(
-        // eslint-disable-next-line max-len
-        `(?<![\\p{L}0-9])(${alt})(?!\\p{L})\\s*(به علاوه|بعلاوه|منهای|ضربدر|تقسیم\\s+بر|به توان)\\s*(?<![\\p{L}0-9])(${alt})(?!\\p{L})`,
+        `(?<![\\p{L}0-9])(${alt})(?!\\p{L})\\s*(${FA_WORD_OP})\\s*(?<![\\p{L}0-9])(${alt})(?!\\p{L})`,
         'u'
       )
     );
+  }
+
+  // The "plus" operator may be typed with a half-space (به‌علاوه), a
+  // plain space (به علاوه), or nothing (بهعلاوه / بعلاوه). The regex
+  // accepts an optional single half-space or space so every spelling
+  // lands on the same math branch instead of the "don't know" fallback.
+  const PERSIAN_HALFSPACE = '\u200c';
+  const FA_PLUS_WORD = `به[ ${PERSIAN_HALFSPACE}]?علاوه|بعلاوه`;
+  // «منها» is the common casual spelling of «منهای» (minus) in Persian
+  // texting; both are accepted between two operands.
+  const FA_WORD_OP = `${FA_PLUS_WORD}|منهای|منها|ضربدر|تقسیم\\s+بر|به توان`;
+  // Anchored membership test for the "plus" spellings, compiled once:
+  // بهعلاوه (no gap), به علاوه (space), به‌علاوه (half-space), بعلاوه.
+  const FA_PLUS_OP_RE = new RegExp(`^(?:${FA_PLUS_WORD})$`, 'u');
+
+  /**
+   * True when the raw operator string is one of the "plus" spellings
+   * (بهعلاوه / به علاوه / به‌علاوه / بعلاوه). FA_PLUS_WORD is a regex
+   * pattern, so membership is tested by matching it anchored, not by
+   * string equality against its alternation pieces.
+   * @param {string} opRaw
+   * @returns {boolean}
+   */
+  function isPlusWordOp(opRaw) {
+    return FA_PLUS_OP_RE.test(opRaw);
   }
 
   function handleFactualQuestion(engine, text) {
@@ -78,8 +102,7 @@
     // the trailing "5+3", and a match may not start mid-decimal.
     const FA_OPERAND = '[۰-۹0-9]+(?:[.٫][۰-۹0-9]+)?|[.٫][۰-۹0-9]+';
     const EN_OPERAND = '\\d+(?:\\.\\d+)?|\\.\\d+';
-    const FA_OP =
-      '[+\\-*xX/^÷\\u00D7]|به علاوه|بعلاوه|منهای|ضربدر|تقسیم\\s+بر|به توان';
+    const FA_OP = `[+\\-*xX/^÷\\u00D7]|${FA_WORD_OP}`;
     const enMatch = text.match(
       new RegExp(
         `(?:what\\s+is|what'?s)\\s*(${EN_OPERAND})\\s*([+\\-*xX/^÷])\\s*(${EN_OPERAND})`,
@@ -106,10 +129,9 @@
     let isBareExpression = false;
     if (bareMath) {
       const matchText = text.slice(0, bareMath.index + bareMath[0].length);
-      const hasPersianWordOp =
-        /(?:بعلاوه|منهای|ضربدر|تقسیم\s+بر|به توان)/u.test(
-          String(bareMath[2] || '')
-        );
+      const hasPersianWordOp = new RegExp(FA_WORD_OP, 'u').test(
+        String(bareMath[2] || '')
+      );
       // The operator character itself may be a letter (x / X for
       // multiplication), so it is excluded before the letter scan;
       // otherwise "5x3" would be rejected as text while "8*3" works.
@@ -141,9 +163,9 @@
         opRaw.toLowerCase() === '/'
       ) {
         op = '/';
-      } else if (opRaw === 'بعلاوه' || opRaw === '+') {
+      } else if (opRaw === '+' || isPlusWordOp(opRaw)) {
         op = '+';
-      } else if (opRaw === 'منهای' || opRaw === '-') {
+      } else if (opRaw === 'منهای' || opRaw === 'منها' || opRaw === '-') {
         op = '-';
       } else if (opRaw === 'به توان' || opRaw === '^') {
         op = '^';
@@ -274,15 +296,21 @@
       const isWordDiv =
         wordOpRaw === 'تقسیم' || wordOpRaw === 'تقسیم بر' || wordOpRaw === '/';
       const isWordPow = wordOpRaw === 'به توان' || wordOpRaw === '^';
-      const op = isWordDiv ? '/' : isWordPow ? '^' : wordOpRaw;
+      const isWordPlus = isPlusWordOp(wordOpRaw);
+      const op = isWordDiv
+        ? '/'
+        : isWordPow
+          ? '^'
+          : isWordPlus
+            ? '+'
+            : wordOpRaw;
       let result;
       switch (op) {
-        case 'بعلاوه':
-        case 'به علاوه':
         case '+':
           result = a + b;
           break;
         case 'منهای':
+        case 'منها':
         case '-':
           result = a - b;
           break;
@@ -487,7 +515,11 @@
    * Picks a follow-up redirect for a factual (math) answer. The follow-up
    * is a light meta-question, so it must bypass the question-budget filter
    * (otherwise, once the budget is spent, _pickVaried would fall back to a
-   * generic therapeutic line instead of the intended follow-up pool).
+   * generic therapeutic line instead of the intended follow-up pool). The
+   * last follow-up used is remembered on the engine so consecutive answers
+   * never repeat the same redirect: the full answer string is what lands
+   * in recentBotMessages, so _pickVaried's pool recency filtering alone
+   * cannot dedupe the bare follow-up sentence.
    * @param {DaryaResponseEngine} engine
    * @returns {string} Follow-up sentence with a leading space, or ''
    */
@@ -496,12 +528,16 @@
       engine.lang.factualQuestionFollowups &&
       engine.lang.factualQuestionFollowups.length
     ) {
-      return (
-        ' ' +
-        engine._pickVaried(engine.lang.factualQuestionFollowups, {
-          ignoreQuestionBudget: true
-        })
-      );
+      const pool = engine.lang.factualQuestionFollowups;
+      const options =
+        pool.length > 1 && engine._lastFactualFollowup
+          ? pool.filter((line) => line !== engine._lastFactualFollowup)
+          : pool;
+      const picked = engine._pickVaried(options, {
+        ignoreQuestionBudget: true
+      });
+      engine._lastFactualFollowup = picked;
+      return ' ' + picked;
     }
     return '';
   }

@@ -13,12 +13,51 @@
     QUOTED_CALLBACK_PROBABILITY,
     PRONOUN_REFLECTION_PROBABILITY,
     EXCERPT_MAX_LENGTH,
+    SUBJECT_CONTINUATION_WINDOW,
     reflectPronouns,
     truncateExcerpt
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, SOURCE_SUGGESTION_CHANCE } =
     global.DaryaResponderShared;
+
+  /**
+   * Copula (linking-verb) words that can wrap a captured subject phrase
+   * when a rule's tail pattern (`\s*(.*)`) grabs the rest of the user's
+   * sentence. «ولی بچه خواهرم هست» captures «هست خواهرزاده» (the copula
+   * lands at the START of the fragment because it follows the matched
+   * kinship word), and "my mom is the best" captures "is the best".
+   * Echoing the copula back («درباره‌ی هست خواهرزاده») reads broken, so
+   * leading and trailing copulas are stripped from the echoed subject.
+   * Only the {captured} substitution is cleaned: knowledge lookups
+   * consume the raw capture untouched.
+   */
+  const CAPTURED_COPULA_WORDS =
+    'هست|هستم|هستی|هستیم|هستید|هستند|هستش|است|نیست|نیستم|' +
+    'نیستی|نیستیم|نیستید|نیستند|is|are|was|were|am|be|been|being';
+  // Leading and trailing alternatives share the same word list. The
+  // \\s+ guards keep single-token captures safe: a bare capture like
+  // «است» or "is" (already trimmed at the capture site) fails both
+  // branches, so a user asking about the word itself is never erased.
+  const CAPTURED_COPULA_RE = new RegExp(
+    `^(?:${CAPTURED_COPULA_WORDS})\\s+|\\s+(?:${CAPTURED_COPULA_WORDS})$`,
+    'iu'
+  );
+
+  /**
+   * Removes leading and trailing copula words from a captured subject
+   * phrase so an echoed fragment reads as a noun phrase, not as a verb
+   * remnant. Loops because both ends can carry a copula (rare).
+   * @param {string} value - The captured subject
+   * @returns {string}
+   */
+  function trimCapturedCopulas(value) {
+    let out = value;
+    while (CAPTURED_COPULA_RE.test(out)) {
+      out = out.replace(CAPTURED_COPULA_RE, ' ').trim();
+    }
+    return out;
+  }
 
   Object.assign(global.DaryaResponseEngine.prototype, {
     _matchRules(normalizedText) {
@@ -243,6 +282,18 @@
           ignoreQuestionBudget: true
         });
       }
+      if (matchedRule.topic === 'app_command') {
+        // App-command pool lines close with an invitation ("دوست داری
+        // درباره‌ی خودت صحبت کنیم؟") to steer the chat back on track. In
+        // a long conversation the question budget is usually exhausted, so
+        // without this exemption every line would be filtered and the
+        // honest UI pointer would collapse into a generic fallback (the
+        // "turn on ambient sound" transcript bug). The user gave a direct
+        // command; the reply must always deliver.
+        return this._pickVaried(matchedRule.responses, {
+          ignoreQuestionBudget: true
+        });
+      }
 
       // The same-rule streak guard only exists to stop the SAME rule from
       // firing its pool too many turns in a row (e.g. a user who keeps
@@ -283,7 +334,10 @@
           r.includes('{captured}')
         );
         const template = this._pickVaried(withCapture);
-        return template.replace('{captured}', captured);
+        // The captured tail often carries a trailing or leading copula
+        // («هست خواهرزاده», "is the best"); echoing it verbatim reads
+        // broken, so the copula is trimmed before substitution.
+        return template.replace('{captured}', trimCapturedCopulas(captured));
       }
 
       const captureFree = matchedRule.responses.filter(
@@ -325,6 +379,22 @@
           return factual.text + followup;
         }
         if (this.currentTurnDialogueAct === 'question') {
+          // A first-person process question ("چطور میتونم مدیریت کنم",
+          // "how do I talk to her") right after a disclosure asks for
+          // guidance on the SAME subject the user just shared, so the
+          // subject continuation keeps the thread instead of conceding
+          // ignorance. The _isPersonalProcessQuestion gate is what keeps
+          // a genuine new question ("دیروز چه اتفاقی افتاد؟", "what is
+          // the capital of France?") from being hijacked by an old
+          // subject: those never match the first-person process forms.
+          const continuation = this._isPersonalProcessQuestion(
+            normalizedUserText
+          )
+            ? this._subjectContinuationReply()
+            : null;
+          if (continuation) {
+            return continuation;
+          }
           // For factual questions that fell through the knowledge layer,
           // honesty plus a reliable-source pointer (Wikipedia, reputable
           // YouTube channels, qualified experts) is more useful than a
@@ -346,11 +416,6 @@
           );
         }
         return this._pickVaried(this.lang.questionFallbacks);
-      }
-
-      const entityCallback = this._respondToEntityReference();
-      if (entityCallback) {
-        return entityCallback;
       }
 
       if (
@@ -376,8 +441,43 @@
         return this._pickVaried(this.lang.smalltalk);
       }
 
+      const entityCallback = this._respondToEntityReference();
+      if (entityCallback) {
+        return entityCallback;
+      }
+
+      // A statement that matches no rule but follows an active subject
+      // (the user adding a detail to what they just disclosed, like
+      // "سه ماه پیش از دنیا رفت" right after a grief disclosure) stays
+      // in that thread: Darya asks the subject's follow-up question
+      // instead of conceding the topic as unknown. This is the Rogerian
+      // "stay with the thread" behavior that answers the real-transcript
+      // complaint about Darya forgetting the conversation. Keyed on the
+      // memory subject, so it only fires right after a subject was
+      // established and only for subjects that have follow-up questions.
+      // It runs after smalltalk (a genuinely light pivot still gets its
+      // cheerful reply) and after the entity callback (a named-entity
+      // memory reference is the stronger memory signal) but before the
+      // quoted-callback and pronoun reflection, which would otherwise
+      // steal an in-thread detail turn with a probabilistic line.
+      // The quoted-callback now always targets the most recent
+      // substantive utterance (see mostRecentUtterance), so it is
+      // deterministic in WHICH thread it returns to; only its firing
+      // gate (QUOTED_CALLBACK_PROBABILITY) stays probabilistic.
+      const continuation = this._subjectContinuationReply();
+      if (continuation) {
+        return continuation;
+      }
+
       if (normalizedUserText && Math.random() < QUOTED_CALLBACK_PROBABILITY) {
-        const excerpt = this.memory.randomRecentUtterance(normalizedUserText);
+        // Circle back to the MOST RECENT topic the person raised, never a
+        // random old phrase: a release or filler turn like «ولش کن» must
+        // return to the same latest thread every time, so the reply is
+        // deterministic across runs. mostRecentUtterance already skips the
+        // current turn's own text and any sub-three-word filler, and
+        // returns null when nothing qualifies, letting the turn fall
+        // through to the honest unknown-topic pool.
+        const excerpt = this.memory.mostRecentUtterance(normalizedUserText);
         if (excerpt) {
           const template = this._pickVaried(this.lang.quotedCallbackTemplates);
           return template.replace(
@@ -401,11 +501,72 @@
         }
       }
 
+      // A genuinely unmatched statement (no rule, no entity callback, no
+      // quoted-memory callback) gets the honest unknown-topic pool:
+      // Darya admits the subject is outside what she knows and invites
+      // the person to open it up, instead of a canned therapeutic line
+      // that reads as evasive (the "you never understand me" complaint
+      // from real transcripts). Only the no-rule path reaches here with
+      // preferTopic null, and a bare "ok" answering a pending question
+      // never reaches it either, so the pool can never mislabel a reply
+      // as unknown. The invitation questions bypass the budget the same
+      // way the distress nudge does: an honest "help me understand"
+      // must always deliver.
+      if (
+        preferTopic === null &&
+        this.currentTurnDialogueAct !== 'acknowledgement' &&
+        this.lang.unknownTopicResponses &&
+        this.lang.unknownTopicResponses.length > 0
+      ) {
+        return this._pickVaried(this.lang.unknownTopicResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
       this._fallbackToggle = !this._fallbackToggle;
       const pool = this._fallbackToggle
         ? this.lang.strategyShiftFallbacks
         : this.lang.genericFallbacks;
       return this._pickVaried(pool);
+    },
+
+    /**
+     * Continues the active conversation subject when a statement matches
+     * no rule: the user is adding detail to what they already disclosed
+     * ("سه ماه پیش از دنیا رفت" right after "مامانم فوت کرده"). Returns
+     * the subject's follow-up question when the subject is recent and has
+     * one, otherwise null so the caller falls through to the honest
+     * unknown pool. The subject keeps its topic across unmatched turns
+     * (see ConversationMemory.updateSubject), so this only fires while a
+     * subject is genuinely current; a brand-new topic with no subject yet
+     * still gets the unknown pool.
+     * @returns {string|null}
+     */
+    _subjectContinuationReply() {
+      const subject = this.memory.currentSubject;
+      if (!subject || !subject.topic) {
+        return null;
+      }
+      if (this.memory.turnCount - subject.since > SUBJECT_CONTINUATION_WINDOW) {
+        return null;
+      }
+      const specific = this.lang.topicSpecificQuestions?.[subject.topic];
+      if (!specific || specific.length === 0) {
+        return null;
+      }
+      // Bypass the question budget like the short-answer context path:
+      // the follow-up replaces the answered turn one-for-one, so it is
+      // not a new barrage. The picked question is recorded as pending so
+      // a following short answer or question-echo can continue the same
+      // thread.
+      const reply = this._pickVaried(specific, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+      if (reply && this._isQuestionResponse(reply)) {
+        this.memory.noteBotQuestion(reply, subject.topic);
+      }
+      return reply;
     }
   });
 })(typeof window !== 'undefined' ? window : globalThis);

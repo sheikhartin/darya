@@ -6,7 +6,6 @@
   'use strict';
 
   const {
-    EXIT_SCAN_WINDOW,
     EXIT_SCAN_TRIGGER_LENGTH,
     SERIOUSNESS_TOPIC_FLOOR,
     SERIOUSNESS_WEIGHT,
@@ -28,6 +27,52 @@
      * @returns {boolean}
      */
     isExitCommand(rawText) {
+      // A story that merely mentions a farewell ("I said goodbye to my
+      // friend today", «بهش بدرود گفتم») is not a leave request. The
+      // per-language exitStoryPattern catches past-tense reports so the
+      // app layer never shows the exit-confirm bar mid-conversation. The
+      // check intentionally short-circuits: a message mixing a story and
+      // a real farewell ("I said goodbye to my friend, now goodbye to
+      // you") is treated as a story, which is vanishingly rare.
+      if (
+        this.lang.exitStoryPattern &&
+        this.lang.exitStoryPattern.test(rawText)
+      ) {
+        return false;
+      }
+      const normalized = normalizeForMatching(rawText, this.lang).toLowerCase();
+      // A question about the MEANING of a farewell word («وداع کردن
+      // می‌دونی یعنی چی؟», «معنی خداحافظ چیه؟», "what does 'goodbye'
+      // mean?", "what is the meaning of goodbye?") is a vocabulary
+      // question, not a leave request: «وداع», «خداحافظ» and "goodbye"
+      // are exit keywords, but the user is asking what the word means.
+      // The word_meaning rule owns those turns (both its surface forms,
+      // the «X یعنی چی» and «معنی X چیه» shapes), so the exit check
+      // must not hijack them into the confirm flow (the app layer would
+      // otherwise show its exit bar for a plain question). Tested
+      // against the normalized text, the same pipeline the rules match
+      // on.
+      const meaningRule =
+        Array.isArray(this.lang.rules) &&
+        this.lang.rules.find((r) => r.topic === 'word_meaning');
+      if (meaningRule && meaningRule.pattern.test(normalized)) {
+        return false;
+      }
+      // Some exit keywords open everyday phrases that are not leave
+      // requests: the EN "take care" keyword appears in caregiving
+      // sentences ("i take care of my mother"). The per-language
+      // exitFalsePositivePattern marks those whole messages as non-exits,
+      // so the exit bar never hijacks a caregiving disclosure into the
+      // two-step goodbye flow. Like exitStoryPattern this is a
+      // whole-message short-circuit: a message mixing a caregiving "take
+      // care of" and a real farewell is vanishingly rare and reads as the
+      // caregiving disclosure, matching the story-pattern trade-off.
+      if (
+        this.lang.exitFalsePositivePattern &&
+        this.lang.exitFalsePositivePattern.test(normalized)
+      ) {
+        return false;
+      }
       // Check each exit keyword against the normalized words array using
       // exact whole-token matching to prevent substring false positives
       // ("exitement" must not match "exit", and "برمیگردم" must not match
@@ -36,55 +81,42 @@
       // the old \b-anchored regex approach only understood ASCII word
       // characters, so Persian phrases like "باید برم" never matched.
       // Capture the language pack before the plain-function callback below:
-      // inside a `function (keyword) {}`, `this` is not bound to the engine,
-      // so `this.lang` would be undefined.
-      const lang = this.lang;
-      const normalized = normalizeForMatching(rawText, lang).toLowerCase();
+      // inside a `function (keywordTokens) {}`, `this` is not bound to the
+      // engine, so `this.lang` would be undefined.
       const words = normalized.split(/\s+/u).filter(Boolean);
       // For long inputs, only the first and last few tokens matter for
       // exit detection (e.g. a closing "gotta go" after a long message).
-      // The window must be at least as wide as the longest multi-word
-      // keyword, otherwise keywords like "i should get going" (4 tokens)
-      // could never fit inside it.
-      const longestKeyword = Math.max(
-        ...lang.exitKeywords.map(
-          (k) =>
-            normalizeForMatching(k, lang)
-              .toLowerCase()
-              .split(/\s+/u)
-              .filter(Boolean).length
-        ),
-        EXIT_SCAN_WINDOW
-      );
+      // The window is precomputed in the constructor as at least as wide
+      // as the longest multi-word keyword, so keywords like "i should get
+      // going" (4 tokens) always fit inside it.
       const windows =
         words.length > EXIT_SCAN_TRIGGER_LENGTH
-          ? [words.slice(0, longestKeyword), words.slice(-longestKeyword)]
+          ? [
+              words.slice(0, this._exitLongestKeyword),
+              words.slice(-this._exitLongestKeyword)
+            ]
           : [words];
-      return lang.exitKeywords.some(function (keyword) {
-        // Normalize the keyword through the exact same pipeline as the
-        // user input (including half-space handling), so both sides are
-        // tokenized identically. The Persian half-space normalizer turns a
-        // ZWNJ (U+200C) into a regular space, so "می‌بینمت" becomes the two
-        // tokens ["می", "بینمت"]. Only when the keyword goes through the
-        // same normalization can its tokens equal the input tokens.
-        const kwWords = normalizeForMatching(keyword, lang)
-          .toLowerCase()
-          .split(/\s+/u)
-          .filter(Boolean);
-        if (kwWords.length === 1) {
+      // The keyword token sequences were normalized once in the
+      // constructor through the exact same pipeline as the user input
+      // (including half-space handling), so both sides are tokenized
+      // identically. The Persian half-space normalizer turns a ZWNJ
+      // (U+200C) into a regular space, so "می‌بینمت" becomes the two
+      // tokens ["می", "بینمت"] on both sides.
+      return this._exitKeywords.some(function (keywordTokens) {
+        if (keywordTokens.length === 1) {
           // Single-word keyword: exact token match against the full word
           // list, so "exitement" never matches the keyword "exit".
-          return words.includes(kwWords[0]);
+          return words.includes(keywordTokens[0]);
         }
         // Multi-word keyword: check that the keyword tokens appear as a
         // contiguous sequence inside one of the search windows. Token
         // matching (not a \b regex) works for both Latin and Persian
         // script, because \b only recognizes ASCII word characters.
         return windows.some(function (window) {
-          for (let i = 0; i + kwWords.length <= window.length; i += 1) {
+          for (let i = 0; i + keywordTokens.length <= window.length; i += 1) {
             let match = true;
-            for (let j = 0; j < kwWords.length; j += 1) {
-              if (window[i + j] !== kwWords[j]) {
+            for (let j = 0; j < keywordTokens.length; j += 1) {
+              if (window[i + j] !== keywordTokens[j]) {
                 match = false;
                 break;
               }

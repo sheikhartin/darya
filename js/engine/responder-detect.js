@@ -19,6 +19,7 @@
     WELLBEING_CHECK_TURNS,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,
+    HUMOR_BLOCK_PATTERN,
     scoreSentiment
   } = global.DaryaUtils;
 
@@ -293,7 +294,7 @@
       //      about Darya's state is meaningful regardless of the tone.
       const isDirectWellBeingQuestion =
         // eslint-disable-next-line max-len
-        /(?:^|\s)(?:how are you|how are you doing|are you (?:ok|alright|good)|what about you|خوبی|چطوری|حالت چطور|حالت خوبه)(?:\s|$|[!?.؟])/iu.test(
+        /(?:^|\s)(?:how are you|how are you doing|are you (?:ok|alright|good)|what about you|خوبی|چطوری|حالت چطور|حالت خوبه|سلامتی|سلامت هستی)(?:\s|$|[!?.؟])/iu.test(
           matchingText
         );
       return (
@@ -351,7 +352,10 @@
             /(?<!\p{L})(?:عالی|قشنگ|خوشحال|خوب گذشت|خوش گذشت|لذت بردم|دوست داشتم|بهترین|خوشمزه|فوق\u200cالعاده|باحال|کیف کردم)(?!\p{L})/u
           : // eslint-disable-next-line max-len
             /\b(?:best|great|awesome|amazing|wonderful|lovely|delicious|enjoyed|fantastic|nice day|so good|fun|good day)\b/i;
-      return lightPositive.test(text);
+      // A nervous or reluctant disclosure ("my voice shakes", "I don't
+      // feel like going") is never light positive, even if it happens to
+      // contain a positive word.
+      return !HUMOR_BLOCK_PATTERN.test(text) && lightPositive.test(text);
     },
 
     _isEmotionalStatement(text) {
@@ -396,12 +400,18 @@
       const enMaybe =
         // eslint-disable-next-line max-len
         /^(?:maybe|perhaps|not sure|i don'?t know|i'?m not sure|i am not sure|i guess|possibly|let me think|probably|we'?ll see)\b/iu;
+      // The Persian ی form only: the normalizer maps the Arabic ي to ی,
+      // so the Arabic spelling in a pattern would never match.
       const faAffirm =
-        /^(?:بله|آره|اره|باشه|اوکی|اوكي|حتما|حتماً|چشم|موافقم|بله حتما|بله حتماً)(?!\p{L})/u;
+        /^(?:بله|آره|اره|باشه|اوکی|حتما|حتماً|چشم|موافقم|بله حتما|بله حتماً)(?!\p{L})/u;
       const faNegate =
-        /^(?:نه|نخیر|نه نه|نه بابا|الان نه|دوست ندارم|نمیخوام|نمی خوام|مطمئنم نه)(?!\p{L})/u;
+        // The ئ→یی normalizer turns «مطمئنم» into «مطمینم», so the
+        // refusal must carry both spellings or it never matches.
+        /^(?:نه|نخیر|نه نه|نه بابا|الان نه|دوست ندارم|نمیخوام|نمی خوام|مطمئنم نه|مطمینم نه)(?!\p{L})/u;
       const faMaybe =
-        /^(?:شاید|مطمئن نیستم|نمی دونم|نمیدونم|نمی‌دونم|نمیدونم|احتمالا|احتمالاً|فکر کنم|بذار فکر کنم)(?!\p{L})/u;
+        // Same dual-spelling rule for the uncertain branch.
+        // eslint-disable-next-line max-len
+        /^(?:شاید|مطمئن نیستم|مطمین نیستم|نمی دونم|نمیدونم|نمی‌دونم|نمیدونم|احتمالا|احتمالاً|فکر کنم|بذار فکر کنم)(?!\p{L})/u;
       if (this.lang.code === 'fa') {
         if (faAffirm.test(trimmed)) {
           return 'affirm';

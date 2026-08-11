@@ -24,7 +24,9 @@
     HUMAN_TOUCH_INTERVAL,
     OPENING_RETURNING_PRIMARY,
     OPENING_RETURNING_SECONDARY,
-    OPENING_NEW_PRIMARY
+    OPENING_NEW_PRIMARY,
+    HUMOR_BLOCK_PATTERN,
+    scoreSentiment
   } = global.DaryaUtils;
 
   const { LIVED_TOPICS } = global.DaryaResponderShared;
@@ -82,11 +84,25 @@
       return found ? `blend_${found.join('_')}` : null;
     },
 
-    canHumorFire() {
+    canHumorFire(normalized) {
       return (
         this.memory.turnCount >= 3 &&
+        // A question turn gets an ANSWER (knowledge, factual, or a warm
+        // reflection); swapping in a random humor line would replace
+        // "Jupiter is the largest planet" with "that was a plot twist",
+        // a real-transcript failure mode.
+        this.currentTurnDialogueAct !== 'question' &&
         this.currentTurnSeriousness < SERIOUS_TURN_THRESHOLD &&
-        !this.lastTurnNeedsCare
+        !this.lastTurnNeedsCare &&
+        // A negative-sentiment or aversive turn ("I don't even want to go
+        // tomorrow", "my voice shakes when I present") is never joke
+        // material, even when no single word raised the seriousness score
+        // past the threshold. The text gate only applies when a normalized
+        // text is provided; direct unit calls without one keep the
+        // state-based behavior.
+        (!normalized ||
+          (scoreSentiment(normalized, this.lang.sentimentLexicon) >= 0 &&
+            !HUMOR_BLOCK_PATTERN.test(normalized)))
       );
     },
 
@@ -157,12 +173,21 @@
           topic === 'meta_feedback' ||
           topic === 'about_eliza' ||
           topic === 'compliment_darya' ||
-          topic === 'misread_correction'
+          topic === 'misread_correction' ||
+          // The generalization pool gently challenges a blanket belief
+          // with its own acknowledging opener; humor or a heavy warmth
+          // prefix would undercut the challenge and read as flippant.
+          topic === 'generalization' ||
+          // App-command pool lines already carry the honest pointer to the
+          // real UI control; humor or warmth coloring would replace the
+          // "turn on ambient sound" reply with a tone line and re-break
+          // the transcript scenario.
+          topic === 'app_command'
       );
       if (alreadyWarmTopic) {
         return reply;
       }
-      if (this.canHumorFire() && Math.random() < HUMOR_CHANCE) {
+      if (this.canHumorFire(normalized) && Math.random() < HUMOR_CHANCE) {
         return this._pickVaried(this.lang.humor || [reply]);
       }
       if (
@@ -186,7 +211,14 @@
         this.memory.turnCount % SMALLTALK_TURN_INTERVAL === 0 &&
         Math.random() < SMALLTALK_CHANCE &&
         normalized &&
-        !this.lang.questionPattern.test(normalized)
+        !this.lang.questionPattern.test(normalized) &&
+        // The light smalltalk replacement is only for genuinely light,
+        // non-negative turns: a nervous or reluctant disclosure on a
+        // light streak ("my voice shakes when I present") must keep its
+        // caring reply, never be swapped for a cheerful smalltalk line.
+        this.currentTurnSeriousness < MODERATE_SERIOUSNESS_THRESHOLD &&
+        scoreSentiment(normalized, this.lang.sentimentLexicon) >= 0 &&
+        !HUMOR_BLOCK_PATTERN.test(normalized)
       ) {
         return this._pickVaried(this.lang.smalltalk || [reply]);
       }
@@ -337,9 +369,18 @@
       // "best X" for a buyable product is a guide request ("best camera to
       // buy"); bare "best" is too broad to include on its own, so only the
       // product-noun combination counts.
+      // Follow-up and opinion framings were added for the 2026 persona
+      // round: "how does a turbocharger actually work?", "who has the
+      // most F1 titles?", "is Tesla really the future?", "do you think
+      // it will replace computers?" and rec-follow-ups ("anything
+      // similar but darker?") all need the knowledge lookup to engage.
+      // Bare copulas (is/are/am) stay OUT: they are too common in
+      // emotional disclosures ("my life is hard") and would let the
+      // knowledge shelf hijack lived feelings. The lookup itself still
+      // gates the answer, so these framings only open the door.
       const en =
         // eslint-disable-next-line max-len
-        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many)|advice|tips|learn|what (?:is|are)|who (?:is|was)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about)\b/i;
+        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply)\b/i;
       // Only genre words that commonly appear without a فیلم/سریال prefix
       // are listed here (انیمیشن, مستند). Thriller queries ("فیلم هیجانی",
       // "تریلر معرفی کن") already carry فیلم/پیشنهاد/معرفی, and standalone
@@ -352,7 +393,36 @@
       // emotions.
       const fa =
         // eslint-disable-next-line max-len
-        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ)/u;
+        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است)/u;
+      return en.test(text) || fa.test(text);
+    },
+
+    /**
+     * True when the question is a first-person process question
+     * ("چطور میتونم مدیریت کنم", "how do I talk to her") that deictically
+     * refers back to the active conversation subject. Such questions ask
+     * for guidance on the topic the user JUST disclosed, so the subject
+     * continuation serves them better than an honest-ignorance reply.
+     * Genuine new questions ("دیروز چه اتفاقی افتاد؟", "what is the
+     * capital of France?") never match these first-person process forms,
+     * so they keep the honest question fallback and are never hijacked by
+     * an old subject.
+     * @param {string} text - Normalized matching text
+     * @returns {boolean}
+     */
+    _isPersonalProcessQuestion(text) {
+      const en =
+        // eslint-disable-next-line max-len
+        /\b(?:how (?:can|do|should|could|would) i\b|how to\b|what (?:should|can|do) i\b|what (?:should|can|do) we\b|can you help me\b|do you think i can\b|will i\b|can i\b)/iu;
+      // Only first-person subjunctive forms count: «شه/بشه/شود» are
+      // third-person and would let a genuine new question like «چطور
+      // میشه؟» (how is that possible?) be hijacked by an old subject.
+      // The «باید/میتونم» branch keeps short repair questions on the
+      // active thread («فکر می‌کنی باید جواب بدم؟») without touching
+      // «باید برم» (I have to go).
+      const fa =
+        // eslint-disable-next-line max-len
+        /(?:چطور|چگونه|چجوری|چی جوری|چه جوری|چطوری)\s*.{0,40}?(?:کنم|بکنم|بزنم|برم|بیام|بگم|بگویم|بگیرم|بدم|بردارم|بذارم|بگذارم|بشوم|بشم|بخوام|بخواهم|ببینم|بفهمم)|(?:می‌خوام|میخوام|دلم می‌خواد|دلم میخواد).{0,20}(?:کنم|بکنم)|(?:باید|می‌تونم|میتونم|بتونم).{0,14}(?:بدم|بکنم|کنم|جبران کنم|درستش کنم)/u;
       return en.test(text) || fa.test(text);
     },
 
@@ -370,7 +440,14 @@
      * @returns {Array} Reordered matches
      */
     _preferLivedRuleOverKnowledge(matches, text) {
-      if (matches[0]?.rule.topic !== 'knowledge') {
+      // The learning_advice rule ("should i learn react or vue?", "how
+      // do i start streaming?") outranks the knowledge shelf by
+      // priority, but a first-person emotional disclosure that mentions
+      // learning ("i feel anxious and i want to learn to cope") must
+      // still reach the lived-experience rule: treat it like knowledge
+      // so the same reorder applies.
+      const first = matches[0]?.rule?.topic;
+      if (first !== 'knowledge' && first !== 'learning_advice') {
         return matches;
       }
       if (this._isKnowledgeRequest(text)) {
