@@ -1608,3 +1608,180 @@ test('wild: non-career want-to-be wishes never hijack learning advice', () => {
     );
   }
 });
+
+test('wild: affectionate FA greetings are welcomed, never read as noise', () => {
+  // «سلاااامممم عسلم», «درود خانمم», and «سلام خانومی» from the real
+  // transcript are warm openers, not spam or frustration. Each must get
+  // a friendly greeting reply, never the honest-unknown line or the
+  // repeated-greeting dismissal.
+  const openers = [
+    'سلاااامممم عسلم',
+    'درود خانمم',
+    'سلام خانومی',
+    'سلام عزیز دلم'
+  ];
+  for (const line of openers) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.ok(reply.length > 10, `${line}: reply too short: "${reply}"`);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive line: "${reply}"`);
+    assert.match(
+      reply,
+      /سلام|درود|خوش|خوشحال|حضور|آمدی|خبر/iu,
+      `${line}: should welcome the greeting: "${reply}"`
+    );
+  }
+});
+
+test('wild: FA story requests reach the curated horror story, not the unknown pool', () => {
+  // «یه داستان ترسناک تعریف کن» and «داستان ترسناک بگو» used to fall
+  // through to the honest-unknown pool (the FA knowledge-request pattern
+  // lacked a story framing). Both must return the curated short horror
+  // story.
+  for (const line of ['یه داستان ترسناک تعریف کن', 'داستان ترسناک بگو']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(
+      reply,
+      /داستان|اتاق|ترسناک|ساعت|در می‌زد/iu,
+      `${line}: should tell the horror story: "${reply}"`
+    );
+  }
+  // A life-story disclosure is NOT a story request: it must never be
+  // answered with the fiction shelf.
+  const life = freshEngine(FA);
+  const lifeReply = life.respond('داستان زندگیم خیلی سخته');
+  assert.doesNotMatch(
+    lifeReply,
+    /اتاق کناری|3:03|ساعت سه/iu,
+    `life disclosure must not trigger the fiction shelf: "${lifeReply}"`
+  );
+});
+
+test('wild: FA dev-salary and framework-comparison questions reach the facts', () => {
+  // «درآمد یه برنامه‌نویس تو ایران چقدره؟» used to be swallowed by the
+  // work rule (the salary bypass used an ASCII-only \b that never fires
+  // after Persian letters), and «بین ری اکت و ویو کدوم بهتره؟» by
+  // learning_advice (the FA request pattern lacked a comparison
+  // framing). Both must now answer from the factual shelf.
+  const cases = [
+    [
+      'درآمد یه برنامه‌نویس تو ایران چقدره؟',
+      'برنامه‌نویس|درآمد|حقوق|شهر|تجربه'
+    ],
+    ['بین ری اکت و ویو کدوم بهتره؟', 'ری‌اکت|ری اکت|ویو|فریم‌ورک|جاوااسکریپت'],
+    ['چند تا یوتیوبر خوب بهم معرفی کن', 'یوتیوبر|کانال|آموزش']
+  ];
+  for (const [line, must] of cases) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(
+      reply,
+      new RegExp(must, 'iu'),
+      `${line}: should answer from the shelf: "${reply}"`
+    );
+  }
+  // The comparison framing must not drag in a bare «کدوم مسیر» disclosure.
+  const path = freshEngine(FA);
+  const pathReply = path.respond('کدوم مسیر رو برم؟');
+  assert.doesNotMatch(
+    pathReply,
+    /ری‌اکت|ویو|فریم‌ورک/iu,
+    `bare which-path question must not reach the shelf: "${pathReply}"`
+  );
+});
+
+test('wild: FA fatigue phrasings are heard as fatigue, not physical pain', () => {
+  // «چرا همیشه خسته‌ام؟» (ZWNJ) and the no-ZWNJ «چرا همیشه خستهام؟»
+  // both normalize differently; both must route to the health thread and
+  // reply with a fatigue-aware line, never the pain-only wording
+  // («دردت را می‌شنوم») or the unknown pool.
+  for (const line of [
+    'چرا همیشه خسته‌ام؟',
+    'چرا همیشه خستهام؟',
+    'چرا همش خسته‌ام'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.doesNotMatch(
+      reply,
+      /دردت را می‌شنوم|این درد چقدر/iu,
+      `${line}: must not use pain-only wording: "${reply}"`
+    );
+    assert.ok(
+      engine.currentTurnTopics.includes('health_pain') ||
+        engine.currentTurnTopics.includes('health'),
+      `${line}: must route to the health thread, got: ${engine.currentTurnTopics.join(',')}`
+    );
+  }
+});
+
+test('wild: FA new-parent announcements reach the new_baby celebration', () => {
+  // «تازه مامان شدم» used to be swallowed by the family rule (bare
+  // «مامان») and answered with a family follow-up question. The new_baby
+  // rule (51) must outrank family (50) and celebrate the announcement.
+  for (const line of [
+    'تازه مامان شدم',
+    'تازه بابا شدم!',
+    'تازه یه بچه به دنیا اومده تو خونواده‌مون'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.ok(
+      engine.currentTurnTopics.includes('new_baby'),
+      `${line}: must route to new_baby, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `FA new parent: ${line}`);
+  }
+});
+
+test('wild: EN fatigue phrasings get fatigue-aware replies, not pain wording', () => {
+  // EN parity for the FA fatigue fix: "why am i always tired", "i am
+  // always exhausted these days", and the feel-form must route to the
+  // health thread and reply with a tiredness-aware line, never the
+  // pain-only wording ("I hear your pain") or the unknown pool.
+  for (const line of [
+    'why am i always tired?',
+    'i am always exhausted these days',
+    'i feel tired every day'
+  ]) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.doesNotMatch(
+      reply,
+      /I hear your pain|Pain can be exhausting|That sounds painful/iu,
+      `${line}: must not use pain-only wording: "${reply}"`
+    );
+    assert.ok(
+      engine.currentTurnTopics.includes('health_pain') ||
+        engine.currentTurnTopics.includes('health'),
+      `${line}: must route to the health thread, got: ${engine.currentTurnTopics.join(',')}`
+    );
+  }
+  // "tired of" stays a work/feeling disclosure, never health fatigue.
+  const work = freshEngine(EN);
+  const workReply = work.respond('i am tired of my job');
+  assert.doesNotMatch(
+    workReply,
+    /sleep|exhausted all the time/iu,
+    `tired-of must not route to fatigue: "${workReply}"`
+  );
+});
+
+test('wild: EN and FA fun-fact and horror requests answer without evading', () => {
+  // The "something interesting" opener (EN) and the FA horror-story
+  // request both used to bounce to generic fallbacks. Each must answer
+  // from the factual shelf.
+  const en = freshEngine(EN);
+  const enReply = en.respond('tell me something interesting');
+  assert.doesNotMatch(enReply, EVASIVE, `EN interesting: "${enReply}"`);
+  assert.match(enReply, /fact|facts|heart|piano|octopus/iu, 'EN facts');
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('یه داستان ترسناک بگو');
+  assert.doesNotMatch(faReply, EVASIVE, `FA horror: "${faReply}"`);
+  assert.match(faReply, /داستان|اتاق|ترسناک/iu, 'FA horror story');
+});

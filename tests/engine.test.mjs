@@ -408,9 +408,13 @@ test('repetition: seeded deterministic run has fixed variety count', () => {
     for (let i = 0; i < 10; i += 1) {
       seen.add(engine.respond('I feel anxious and stressed'));
     }
+    // The anxiety pool grew during the 1.2.0 content expansion (rule
+    // lines plus topic-specific follow-ups), so the deterministic seed
+    // now surfaces 8 distinct replies; the lock tracks regressions that
+    // shrink variety back down.
     assert.ok(
-      seen.size >= 5 && seen.size <= 6,
-      `expected 5-6, got ${seen.size}`
+      seen.size >= 7 && seen.size <= 9,
+      `expected 7-9, got ${seen.size}`
     );
   } finally {
     restore();
@@ -7776,11 +7780,16 @@ test('genuine new questions are never hijacked by the active subject', () => {
   const en = freshEngine(EN);
   en.entityCallbackProbability = 0;
   en.respond('my girlfriend and I keep fighting');
-  const enReply = en.respond('what is the capital of France?');
+  const enReply = en.respond(
+    'what is the capital of the fictional planet Zorbus?'
+  );
   assert.ok(
     !topicPool(EN, 'relationship').some((line) => line === enReply),
     `a concrete new EN question must not be answered with a relationship follow-up, got: ${enReply}`
   );
+  // The question is deliberately fictional: the capitals fact answers
+  // real countries ("capital of France"), so a make-believe planet must
+  // keep the honest fallback and prove no subject hijack happens.
   assert.match(
     enReply,
     /answer|don'?t|not sure|interesting|worth|wiki|understand/iu,
