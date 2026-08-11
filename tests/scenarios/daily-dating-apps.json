@@ -1,0 +1,29 @@
+{
+  "name": "dating app fatigue",
+  "description": "Someone exhausted by dating apps who asks for profile help and admits the apps make them feel worse. Verifies all three phrasings stay on the dating_apps thread with its empathetic pool instead of the generic dating-culture encyclopedia entry.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "Dating apps are exhausting and I never match with anyone",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "dating_apps"
+    },
+    {
+      "text": "How do I write a good dating profile?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "dating_apps"
+    },
+    {
+      "text": "Online dating makes me feel worse about myself",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "dating_apps"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the dating_apps thread for swipe fatigue. Turn 2 answers the profile question from the same pool. Turn 3 keeps the self-worth disclosure on dating_apps.",
+    "behavior": "Dating-app fatigue and profile questions are lived experiences: the knowledge shelf must never hijack them into a generic dating-culture fact, in either language."
+  }
+}

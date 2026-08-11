@@ -1,0 +1,29 @@
+{
+  "name": "سوگ از دست دادن حیوان خانگی",
+  "description": "Someone grieving a dead dog, an empty house after losing a cat, and being told it was just an animal. Verifies all three Persian phrasings stay on pet_loss/grief with real acknowledgment instead of a dismissive reply.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سگم مرد و نمی‌تونم جلوی گریه‌م رو بگیرم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "pet_loss"
+    },
+    {
+      "text": "گربه‌م رو از دست دادم و خونه خالیه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "grief"
+    },
+    {
+      "text": "همه می‌گن فقط یه حیوون بود ولی من خیلی عزادارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "pet_loss"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the pet_loss thread for a dog's death. Turn 2 stays on pet_loss for the empty house. Turn 3 keeps the dismissal-fighting grief on pet_loss.",
+    "behavior": "Persian pet-loss grief is acknowledged as real: «فقط یه حیوون بود» is never echoed dismissively and the conversation stays on the grief thread."
+  }
+}

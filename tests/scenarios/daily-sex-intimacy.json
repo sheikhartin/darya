@@ -1,0 +1,29 @@
+{
+  "name": "intimacy and sexual health worries",
+  "description": "A person in a relationship worries about intimacy: how to talk about sex with a partner, why desire dropped, and feeling anxious about sex. Verifies the sex_intimacy fact answers empathetically with the professional-help disclaimer (no diagnosis, consent at every step), while the anxious disclosure routes to the anxiety topic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "How do I talk about sex with my partner?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "Why has my libido dropped?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "I feel anxious about sex",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the how-to-talk question routes through the relationship topic and answers with the sex_intimacy fact. Turn 2: the libido question returns the same fact, naming stress, medication, hormones, and relationship dynamics as common factors. Turn 3: the anxious disclosure routes to anxiety with a validating reply.",
+    "behavior": "Sexual-health questions are answered factually and non-judgmentally with a clear \"I am not a substitute for a professional\" line and a consent-first message. Personal anxiety about sex stays an emotional disclosure."
+  }
+}

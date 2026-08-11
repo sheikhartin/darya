@@ -1,0 +1,27 @@
+{
+  "name": "مالیخولیا و غم سنگین",
+  "description": "A Persian user asks what melancholia means, what a melancholic feeling is, and whether it is treatable. Verifies the melancholia fact answers in Persian, explaining the distinct subtype and pointing to professional care.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "مالیخولیا یعنی چی؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "word_meaning"
+    },
+    {
+      "text": "حس مالیخولیایی چیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "مالیخولیا درمان داره؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"مالیخولیا یعنی چی\" routes through the word-meaning topic and returns the melancholia fact. Turn 2: \"حس مالیخولیایی چیه\" returns the fact. Turn 3: the treatability question matches the dedicated keyword and returns the fact, which confirms it is treatable with professional help.",
+    "behavior": "Persian melancholia keywords (مالیخولیا, مالیخولیایی, درمان مالیخولیا) route to the fact, which disarms toxic positivity and includes the crisis pointer."
+  }
+}

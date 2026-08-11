@@ -1,0 +1,28 @@
+{
+  "name": "couple struggling to talk about intimacy",
+  "description": "A person and their partner have trouble talking about intimacy, ask how to talk about sex without awkwardness, and admit their desire has dropped and they are worried. Verifies the relationship thread opens, the sex-talk question routes to the intimacy fact, and the desire worry stays on the anxiety thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "My partner and I have trouble talking about intimacy",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "How do we talk about sex without awkwardness?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "My desire has dropped and I am worried",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the relationship thread (talking about intimacy). Turn 2 answers the sex-talk question with a respectful, practical intimacy fact. Turn 3 keeps the desire-drop worry on the anxiety thread without judgment.",
+    "behavior": "Intimacy questions are answered openly and without shame, with a clear fact about communication, and a drop in desire is normalized as a real concern worth talking about, not a taboo."
+  }
+}

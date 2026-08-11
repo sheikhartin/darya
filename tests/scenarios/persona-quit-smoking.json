@@ -1,0 +1,28 @@
+{
+  "name": "years-long smoker trying to quit",
+  "description": "A person has tried to quit smoking for years, asks what actually works to break a bad habit, then admits relapsing yesterday and feeling awful. Verifies the health thread opens, the habit-breaking question is answered, and the relapse shame is met with care, not an exit flow.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I have been trying to quit smoking for years",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    },
+    {
+      "text": "What actually works to break a bad habit?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "I relapsed yesterday and I feel awful",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "feeling"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the health thread (quitting smoking). Turn 2 answers the habit-breaking question with evidence-based steps. Turn 3 treats the relapse as a normal recovery moment and stays in the conversation rather than misreading 'quit' as a goodbye.",
+    "behavior": "The word 'quit' inside a quitting-smoking context must never trigger the exit flow. The relapse is met with encouragement and a path forward, not guilt or a canned response."
+  }
+}

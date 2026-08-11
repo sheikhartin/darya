@@ -1,0 +1,29 @@
+{
+  "name": "couch potato starting to exercise",
+  "description": "A person who has been completely sedentary for years asks how to start exercising as a total beginner, then dismisses a ten-minute walk as nothing. Verifies the health thread opens, the beginner exercise question is answered, and the self-discounting follow-up stays on health.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I have been completely sedentary for years",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    },
+    {
+      "text": "How do I start exercising as a total beginner?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "health"
+    },
+    {
+      "text": "Walking for ten minutes feels like nothing",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "health"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the health thread (sedentary years). Turn 2 answers the beginner exercise question with a gentle, concrete starting point. Turn 3 keeps the movement habit conversation on health.",
+    "behavior": "A beginner exercise request gets real, low-barrier guidance instead of an intimidation-heavy lecture, and the 'ten minutes is nothing' self-criticism is handled without letting the thread fall to a generic fallback."
+  }
+}

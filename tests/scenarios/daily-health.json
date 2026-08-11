@@ -1,0 +1,26 @@
+{
+  "name": "common health questions",
+  "description": "A user asks about fatigue, headaches, and back pain. Verifies the health_common fact gives general guidance (hydration, sleep, posture, movement), flags warning signs that need a doctor, and never diagnoses.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "Why am I always so tired?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "Why do I keep getting headaches?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "Back pain question, is it serious?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: fatigue question returns the health_common fact with basics-first guidance. Turn 2: headache question returns the same fact. Turn 3: back pain question also returns the fact, including the red-flag list and the doctors-visit pointer.",
+    "behavior": "The health_common fact stays within safe boundaries: general lifestyle guidance plus explicit warning signs (sudden severe pain, numbness, chest pain, high fever, persistent symptoms) and a clear statement that Darya is not a doctor."
+  }
+}

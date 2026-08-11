@@ -1,0 +1,29 @@
+{
+  "name": "new in town with no friends",
+  "description": "A person moved to a new city three months ago, has no friends, asks how adults make friends, and admits spending every weekend alone. Verifies the loneliness thread opens and stays open, with the friendship question answered.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I moved to a new city three months ago and I have no friends",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "How do adults make friends?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "loneliness"
+    },
+    {
+      "text": "I spend every weekend alone",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the loneliness thread (new city, no friends). Turn 2 answers the adult-friendship question with real, low-pressure steps. Turn 3 keeps the weekend-alone disclosure on the loneliness thread.",
+    "behavior": "Moving to a new city and having no social circle is treated as a genuine loneliness disclosure, answered with practical connection steps and empathy, never as a topic for a trivia fact."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "اجرای بودجه سؤال در فارسی",
+  "description": "آزمایش سازوکار بودجه سؤال: بعد از اینکه کاربر سؤالی می‌پرسد، موتور باید از پرسیدن سؤال دیگر در پاسخ خودداری کند. پنجره بودجه (QUESTION_BUDGET_WINDOW=3 و QUESTION_BUDGET_LIMIT=1) از پاسخ‌های سؤالی متوالی جلوگیری می‌کند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "نمی‌تونم بخوابم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    },
+    {
+      "text": "به نظرت چی؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "sleep"
+    },
+    {
+      "text": "شب‌ها مدام از خواب بیدار می‌شم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    }
+  ],
+  "expected": {
+    "finalTurn": "بعد از اینکه کاربر سؤال مستقیمی می‌پرسد (جمله 2)، پاسخ موتور نباید با علامت سؤال تمام شود؛ بودجه سؤال وقتی کاربر تازه سؤالی پرسیده از پاسخ سؤالی جلوگیری می‌کند.",
+    "behavior": "موتور consecutiveQuestions و پنجره کشویی askedQuestionTurns را دنبال می‌کند. در جمله 2 پاسخ از پاسخ‌های غیرسؤالی استفاده می‌کند. در جمله 3 موضوع به خواب برمی‌گردد و چون جمله کاربر محتوایی است موتور می‌تواند سؤال پیگیری بپرسد."
+  }
+}

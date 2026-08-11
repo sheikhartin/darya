@@ -1,0 +1,29 @@
+{
+  "name": "رابطه سمی و نشانه‌هایش",
+  "description": "A Persian user asks about toxic relationship signs, how to leave, then shares that their spouse is controlling. Verifies the relationship_toxic fact answers in Persian with warning signs and safety-first advice, and the disclosure gets an empathetic reply.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "نشانه های رابطه سمی چیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور از رابطه سمی خارج شوم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "فکر میکنم همسرم داره کنترل میکنه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the red-flags question returns the relationship_toxic fact. Turn 2: the leaving question returns the same safety-first guidance. Turn 3: the controlling-spouse disclosure routes to the relationship/feeling rules.",
+    "behavior": "Toxic-relationship guidance in Persian names control, isolation, put-downs, gaslighting, and aggression, prioritizes safety, and frames leaving as a supported process."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "melancholia and heavy low mood",
+  "description": "A user asks what melancholia is, what melancholic depression feels like, and shares that nothing gives pleasure anymore. Verifies the melancholia fact explains the distinct subtype (anhedonia, psychomotor changes, early waking, guilt), frames cheer-up lines as unhelpful, and points to professional help, while the pleasure disclosure gets a validating reply.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "What is melancholia?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "What does melancholic depression feel like?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "depression"
+    },
+    {
+      "text": "Nothing gives me pleasure anymore",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"what is melancholia\" returns the melancholia fact with the distinct-subtype explanation. Turn 2: the feel-like question routes through the depression topic and returns the fact, which explicitly says \"cheer up\" lines do not help and professional care is treatable. Turn 3: the anhedonia disclosure gets a supportive, non-toxic-positive reply.",
+    "behavior": "Melancholia is presented as a real, biologically rooted subtype of depression that is treatable with professional help. The engine avoids toxic positivity: the fact explicitly disarms \"cheer up\" advice and includes the crisis-line pointer."
+  }
+}

@@ -13,7 +13,7 @@
       "text": "How can I stay present in the moment?",
       "dialogueAct": "question",
       "intent": "topic_statement",
-      "topic": "knowledge"
+      "topic": "mindfulness"
     },
     {
       "text": "My anxiety has been really bad lately",
@@ -23,7 +23,7 @@
     }
   ],
   "expected": {
-    "finalTurn": "Turn 1: mindfulness keyword triggers knowledge rule, DaryaKnowledge.answer('en', 'mindfulness') returns 4 entries, reply length > 40 chars. Turn 2: 'present moment' hint maps to mindfulness domain, dialogueAct is 'question' due to question mark. Turn 3: 'anxiety' keyword triggers anxiety conversational rule (priority 40), engine returns empathetic response from anxiety pool.",
-    "behavior": "Knowledge rule (priority 55) matches on 'mindfulness' and 'present moment' keywords. Domain detection maps to 'mindfulness' via domainHints. Knowledge responses are returned as independent copies (.slice()). After knowledge, topic routing continues normally via the anxiety rule."
+    "finalTurn": "Turn 1: 'mindfulness'/'meditation' keywords trigger both the knowledge rule (priority 55) and the conversational mindfulness rule (priority 40); the knowledge shelf answers the explicit 'tell me about' request, reply length > 40 chars. Turn 2: 'present moment' matches only the conversational mindfulness rule (the phrase is not in the knowledge rule), so the topic is 'mindfulness', not 'knowledge', and dialogueAct is 'question' due to the question mark. Turn 3: 'anxiety' keyword triggers the anxiety conversational rule, engine returns empathetic response from the anxiety pool.",
+    "behavior": "Turn 1 routes to the knowledge shelf because 'mindfulness' is an explicit knowledge keyword (the shelf's mindfulness domain returns curated entries). Turn 2 is conversational phrasing ('stay present in the moment'), which belongs to the dedicated mindfulness rule, not the shelf, so the topic is 'mindfulness'. Turn 3 returns to normal conversational routing via the anxiety rule."
   }
 }

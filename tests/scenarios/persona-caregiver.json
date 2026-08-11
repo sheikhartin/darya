@@ -1,0 +1,29 @@
+{
+  "name": "caregiver for an aging mother",
+  "description": "A person cares for their aging mother and is wearing down, asks how not to burn out as a caregiver, and admits she forgets things now which breaks his heart. Verifies the caregiver thread opens, the burnout question is answered, and the grief of watching her decline stays on the caregiver thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I take care of my aging mother and it is wearing me down",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "caregiver"
+    },
+    {
+      "text": "How do I not burn out as a caregiver?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "caregiver"
+    },
+    {
+      "text": "She forgets things now and it breaks my heart",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "caregiver"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the caregiver thread (aging mother, wearing down). Turn 2 answers the caregiver-burnout question with realistic self-care steps. Turn 3 keeps the grief of her memory decline on the caregiver thread.",
+    "behavior": "Caregiver exhaustion is recognized as its own heavy burden with concrete support, and the emotional weight of a parent's decline is held without falling back to a generic reply."
+  }
+}

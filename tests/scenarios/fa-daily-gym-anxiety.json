@@ -1,0 +1,29 @@
+{
+  "name": "اضطراب باشگاه برای تازه‌کار",
+  "description": "A beginner who is embarrassed to exercise in front of others, fears being stared at, and asks how to reduce the gym fear. Verifies the fitness rule beats the work rule even when «تازه‌کارم» is present, and that the follow-up question stays on fitness/anxiety.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "جلوی بقیه خجالت می‌کشم ورزش کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "fitness"
+    },
+    {
+      "text": "از رفتن به باشگاه می‌ترسم، همه بهم نگاه می‌کنن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "fitness"
+    },
+    {
+      "text": "چطور ترسم از باشگاه رو کم کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "fitness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the fitness thread for exercise embarrassment. Turn 2 stays on fitness for the fear of being stared at. Turn 3 keeps the anxiety question on fitness.",
+    "behavior": "«تازه‌کارم» in a gym context must never pull the conversation into the work thread: the fitness rule outranks work and owns the reply."
+  }
+}

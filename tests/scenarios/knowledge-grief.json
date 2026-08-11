@@ -13,7 +13,7 @@
       "text": "I'm struggling with bereavement",
       "dialogueAct": "statement",
       "intent": "topic_statement",
-      "topic": "knowledge"
+      "topic": "grief"
     },
     {
       "text": "I lost my grandmother last month",
@@ -23,7 +23,7 @@
     }
   ],
   "expected": {
-    "finalTurn": "Turn 1: 'grief' keyword triggers knowledge rule, domainHints maps to 'grief' domain, reply length > 40 chars. Turn 2: 'bereavement' maps to grief domain, knowledge rule fires again. Turn 3: 'lost my' triggers the conversational grief rule (priority 45) via 'lost my grandmother' pattern, engine returns grief-specific conversational response from the 6-entry response pool.",
-    "behavior": "Knowledge rule matches on 'grief' and 'bereavement', both mapped to 'grief' domain via domainHints. The knowledge shelf returns 4 entries for grief. On turn 3, the conversational grief rule (priority 45) matches instead of the knowledge rule because 'lost my' is part of the grief rule pattern, not the knowledge rule pattern, demonstrating proper separation between the knowledge shelf and conversational rules."
+    "finalTurn": "Turn 1: 'grief' keyword triggers knowledge rule, domainHints maps to 'grief' domain, reply length > 40 chars. Turn 2: 'I'm struggling with bereavement' is a personal-struggle statement without explicit knowledge framing ('tell me about', 'how can I'), so the conversational grief rule (priority 45, which includes 'bereavement') matches instead of the knowledge rule. Turn 3: 'lost my' triggers the conversational grief rule via 'lost my grandmother' pattern, engine returns grief-specific conversational response from the 6-entry response pool.",
+    "behavior": "Turn 1 routes to the knowledge shelf (explicit 'how can I cope with' framing maps to the grief domain via domainHints; the shelf returns 4 entries). Turn 2 is personal disclosure, not a knowledge request: the conversational grief rule matches 'bereavement' and responds with empathy. Turn 3: the conversational grief rule (priority 45) matches via 'lost my', demonstrating proper separation between the knowledge shelf and conversational rules."
   }
 }

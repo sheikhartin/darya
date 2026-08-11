@@ -1,0 +1,28 @@
+{
+  "name": "زوجی که درباره صمیمیت حرف نمی‌زنند",
+  "description": "A Persian person and their partner cannot easily talk about intimacy, ask how to talk about sex without embarrassment, and admit their sexual desire has dropped and they are worried. Verifies the relationship thread opens, the sex-talk question routes to the intimacy fact, and the desire worry stays on the anxiety thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "من و همسرم نمی‌تونیم راحت درباره صمیمیت حرف بزنیم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    },
+    {
+      "text": "چطور بدون خجالت درباره سکس صحبت کنیم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "میل جنسی‌ام کم شده و نگرانم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the relationship thread (talking about intimacy). Turn 2 answers the sex-talk question with a respectful, practical intimacy fact in Persian. Turn 3 keeps the desire-drop worry on the anxiety thread without judgment.",
+    "behavior": "Intimacy questions are answered openly and without shame, with a clear fact about communication, and a drop in desire is normalized as a real concern worth talking about, not a taboo."
+  }
+}

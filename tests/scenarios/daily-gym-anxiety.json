@@ -1,0 +1,29 @@
+{
+  "name": "gym anxiety beginner",
+  "description": "A beginner who is embarrassed to work out in front of people, asks how to stop the anxiety, and discloses it again. Verifies the fitness rule owns beginner gym phrasings (never an unknown-topic reply) and that the follow-up question carries the anxiety thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I am too embarrassed to work out in front of people",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "fitness"
+    },
+    {
+      "text": "How do I stop feeling anxious about the gym?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "anxiety"
+    },
+    {
+      "text": "I feel anxious about starting at a new gym",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the fitness thread for gym embarrassment. Turn 2 keeps the anxiety thread on the gym question. Turn 3 stays on anxiety when the disclosure is repeated.",
+    "behavior": "A beginner gym-disclosure never falls to the unknown pool: embarrassment, fear of being stared at, and follow-up questions all stay on the fitness/anxiety threads."
+  }
+}

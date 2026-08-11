@@ -1,0 +1,28 @@
+{
+  "name": "یادگیری آشپزی برای مبتدی",
+  "description": "A Persian beginner who never cooked asks where to start, how to learn, and how to cook one simple dish. Verifies the bilingual cooking_basics fact answers in Persian with concrete first steps and no shame.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "آشپزی بلد نیستم از کجا شروع کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "opener_help"
+    },
+    {
+      "text": "چطور آشپزی یاد بگیرم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "learning_advice"
+    },
+    {
+      "text": "چطور یه غذای ساده بپزم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the where-to-start question returns the cooking_basics fact in Persian. Turn 2: the how-to-learn question returns the same fact. Turn 3: the simple-dish question matches the dedicated keyword and returns the fact again.",
+    "behavior": "The Persian keywords (آشپزی بلد نیستم, چطور آشپزی یاد بگیرم, غذای ساده بپزم) route beginner cooking questions to the knowledge layer; replies are substantive Persian text, never generic fallbacks."
+  }
+}
