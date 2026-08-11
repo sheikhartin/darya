@@ -21,6 +21,19 @@
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, SOURCE_SUGGESTION_CHANCE } =
     global.DaryaResponderShared;
 
+  // Imperative request phrases ("tell me something interesting", «یه
+  // چیزی جالب بگو», "name some youtubers", «چند تا یوتیوبر بگو»). These
+  // are requests for content, not statements, so the pronoun reflection
+  // must never echo them back ("So tell you something interesting" - the
+  // EN transcript misfire). They still route to the fun-fact, knowledge,
+  // or honest pools through their normal rules.
+  const IMPERATIVE_REQUEST_PATTERN = new RegExp(
+    '(?:tell me|show me|give me|name (?:some|a few|me)|share (?:something|some)|' +
+      'recommend|suggest|explain (?:to me )?|describe (?:to me )?|list (?:some|a few)|' +
+      'بگو|بگویید|بگید|به من بگو|بهم بگو|برام بگو|به‌م بگو|برام بنویس|یه.{0,4}(?:چیز|چیزی).{0,6}(?:بگو|جالب)|چیزی.{0,6}(?:بگو|جالب)|بگو.{0,10}(?:چیزی|چیز)|اسم.{0,8}(?:بگو|ببر)|پیشنهاد.{0,6}(?:بده|کن)|نام.{0,6}(?:ببر|بگو))',
+    'iu'
+  );
+
   /**
    * Copula (linking-verb) words that can wrap a captured subject phrase
    * when a rule's tail pattern (`\s*(.*)`) grabs the rest of the user's
@@ -98,6 +111,27 @@
     _respondWithRule(matchedRule, captured) {
       if (matchedRule.topic === 'gratitude' && this.lang.gratitudeResponses) {
         return this._pickVaried(this.lang.gratitudeResponses);
+      }
+      // Fatigue phrasings («چرا همیشه خسته‌ام؟», the no-ZWNJ «چرا همیشه
+      // خستهام» that normalizes to «خست هام», "why am i always tired",
+      // "i am always exhausted") match the health_pain rule's fatigue
+      // branch. They must be answered from the dedicated fatigue pool,
+      // never the pain-only lines («دردت را می‌شنوم», "I hear your
+      // pain"), so the reply names tiredness, not physical pain.
+      const fatigueText = this._currentNormalizedInput || '';
+      const isFatigueTurn =
+        this.lang.code === 'fa'
+          ? /(?:چرا|همیشه|همش).{0,12}(?:خسته|خست)/u.test(fatigueText)
+          : // eslint-disable-next-line max-len
+            /\b(?:always|so|really|constantly|this) (?:tired|exhausted)\b|(?:tired|exhausted) (?:all the time|these days|every day|always)\b/iu.test(
+              fatigueText
+            );
+      if (
+        matchedRule.topic === 'health_pain' &&
+        this.lang.fatigueResponses &&
+        isFatigueTurn
+      ) {
+        return this._pickVaried(this.lang.fatigueResponses);
       }
       if (
         matchedRule.topic === 'professional_boundary' &&
@@ -275,6 +309,28 @@
           ignoreQuestionBudget: true
         });
       }
+      if (matchedRule.topic === 'joke_count' && this.lang.ruleTellJoke) {
+        // «چندتا جک بلدی؟» deserves a real number, not another joke. The
+        // {count} placeholder carries the actual joke-pool size so the
+        // answer stays truthful when jokes are added or removed.
+        return this._pickVaried(matchedRule.responses, {
+          ignoreQuestionBudget: true
+        }).replace(/\{count\}/gu, String(this.lang.ruleTellJoke.length));
+      }
+      if (matchedRule.topic === 'health_pain') {
+        // Every new pain report deserves the caring pool, even right
+        // after another question was asked: the pool lines end with a
+        // gentle follow-up, and without the exemption the question budget
+        // filtered them all and the pain complaint collapsed into a
+        // generic "you do not have to solve it all at once" line (the
+        // transcript's «دستم درد میکنه» failure). Same-rule streak is
+        // also exempt: repeated pain reports are not a broken record,
+        // they are the same ongoing complaint.
+        return this._pickVaried(matchedRule.responses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
       if (matchedRule.topic === 'ask_me_question') {
         // The user explicitly asked for a question, so the budget must not
         // swallow the pool.
@@ -305,6 +361,7 @@
       // dedicated pool.
       if (
         matchedRule.topic !== 'greeting' &&
+        matchedRule.topic !== 'health_pain' &&
         this.memory.sameRuleStreak > MAX_CONSECUTIVE_SAME_RULE &&
         matchedRule.topic === this.memory.lastRuleTopic
       ) {
@@ -490,6 +547,17 @@
       if (
         this.lang.pronounMap &&
         normalizedUserText &&
+        // Reflection is for STATEMENTS, never questions: reflecting a
+        // question back («آیا پدر و مادر داری؟» -> "So I have parents") is
+        // exactly the mangling the transcript complained about. Questions
+        // keep the honest unknown-topic / question-acknowledgement pools.
+        !_isQuestionTurn &&
+        // Imperative requests ("tell me something interesting", «یه
+        // چیزی جالب بگو», "name some youtubers") are not statements to
+        // reflect either: "tell me X" must route to the fun-fact,
+        // knowledge, or honest pools, never echo back as "So tell you X"
+        // (the transcript's EN reflection misfire).
+        !IMPERATIVE_REQUEST_PATTERN.test(normalizedUserText) &&
         Math.random() < PRONOUN_REFLECTION_PROBABILITY
       ) {
         const reflected = reflectPronouns(

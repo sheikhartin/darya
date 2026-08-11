@@ -15,7 +15,8 @@
     BOREDOM_SKIP_CHANCE,
     WELLBEING_CHECK_TURNS,
     BOREDOM_CHECK_INTERVAL,
-    BOREDOM_MIN_TURNS
+    BOREDOM_MIN_TURNS,
+    WORD_REPETITION_THRESHOLD
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
@@ -38,6 +39,18 @@
     'professional_boundary'
   ]);
 
+  // The frustration/insult and word-repetition overrides must never
+  // replace the reply of a matched substantive rule. The transcript's
+  // top complaint was that a health complaint with an insult attached
+  // («میگم دستم درد میکنه... الاغ»), a greeting wrapped in frustration
+  // («احمق، سلام کردم»), or an angry real question all got a canned
+  // "I see you are frustrated" line instead of an answer. When ANY rule
+  // matched, the engine already has a substantive reply ready (health,
+  // greeting, knowledge, money, ...); the de-escalation overrides are
+  // reserved for turns where NO rule matched (pure insults, venting).
+  // A turn that matched a rule is never "topic-less", so gating on
+  // matchedRule is deterministic and language-agnostic.
+
   // Personal/emotional topics that must never be hijacked by the
   // knowledge-shelf override. A disclosure like "sorry. I am stressed
   // about my business" matched the apology rule and should stay with
@@ -53,6 +66,13 @@
     'self_esteem',
     'motivation',
     'health',
+    // health_pain joins the blocked set: a pain or fatigue complaint
+    // ("my hand hurts", "why am i always tired", «دستم درد میکنه»,
+    // «چرا همیشه خسته‌ام؟») is a lived body disclosure with its own
+    // empathetic pool, so the knowledge shelf must never replace it with
+    // a generic health fact. The "why" framing in the EN request pattern
+    // used to let the shelf hijack fatigue questions.
+    'health_pain',
     'need',
     'feeling',
     'joy',
@@ -424,9 +444,19 @@
         // question. The lookup itself still gates the answer.
         (!KNOWLEDGE_BLOCKED_PERSONAL.has(matchedRule?.topic) ||
           (matchedRule?.topic === 'work' &&
-            /\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
+            (/\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
               matchingText
-            ))) &&
+            ) ||
+              // A salary question about a profession ("درآمد یه
+              // برنامه‌نویس تو ایران چقدره؟", "how much does a developer
+              // earn?") is a genuine factual question, not a work-stress
+              // disclosure: the work rule must not block the dev-salary
+              // fact from answering it. The boundary is (?!\p{L}) rather
+              // than \b because \b is ASCII-only in JavaScript: after
+              // Persian letters like «درآمد» it never fires.
+              /(?:درآمد|حقوق|پول|قیمت|دستمزد|earn|earning|income|salary|wage|pay)(?!\p{L})/iu.test(
+                matchingText
+              )))) &&
         DaryaKnowledge &&
         DaryaKnowledge.lookup &&
         this._isKnowledgeRequest(matchingText);
@@ -613,7 +643,20 @@
         this.lang.wordRepetitionResponses
       ) {
         const repetition = this._detectWordRepetition(matchingText);
-        if (repetition) {
+        // A matched substantive rule (health, loneliness, ...) already
+        // has a caring reply ready; the repeated-word quote must never
+        // eat it («دلم درد میکنه» after «دستم درد میکنه» was quoted
+        // back as "you keep saying pain" instead of being heard). The
+        // one exception is a word repeated many times WITHIN this same
+        // message («غمگین غمگین غمگین غمگین»): that is a pure
+        // repetition signal, so naming the word still wins over the
+        // broad sadness reply.
+        if (
+          repetition &&
+          (!matchedRule ||
+            this._withinMessageRepetition(repetition.word, matchingText) >=
+              WORD_REPETITION_THRESHOLD)
+        ) {
           const pool = this.lang.wordRepetitionResponses;
           const template = this._pickVaried(pool);
           reply = template
@@ -639,6 +682,12 @@
         // about ELIZA or Darya's origin ("is ELIZA also dumb?"): a real
         // answer beats another canned "I see you are frustrated" line,
         // which was a top complaint from real transcripts.
+        // A matched substantive rule (health, greeting, knowledge, ...)
+        // likewise means the engine has a real answer ready: an insult
+        // attached to a question must never replace the answer with a
+        // de-escalation lecture (the transcript's «دستم درد میکنه الاغ»
+        // failure). Pure insults that match no rule still de-escalate.
+        !matchedRule &&
         matchedRule?.topic !== 'meta_feedback' &&
         matchedRule?.topic !== 'self_improvement' &&
         matchedRule?.topic !== 'about_eliza' &&

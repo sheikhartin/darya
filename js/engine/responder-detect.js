@@ -131,6 +131,21 @@
       return /^[\p{Emoji}\u200d\ufe0f\s]+$/u.test(trimmed);
     },
 
+    // How many times a word is repeated WITHIN a single message (not
+    // across turns). The word-repetition override uses this to decide
+    // whether a pure in-message repetition («غمگین غمگین غمگین غمگین»)
+    // should still name the word even when a broad rule like sadness
+    // also matches, while a word merely echoed from an earlier turn
+    // («دلم درد میکنه» after «دستم درد میکنه») keeps the rule's reply.
+    _withinMessageRepetition(word, normalizedText) {
+      const clean = String(normalizedText || '').replace(
+        /[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu,
+        ' '
+      );
+      const words = clean.toLowerCase().split(/\s+/u).filter(Boolean);
+      return words.filter((w) => w === word).length;
+    },
+
     _detectWordRepetition(normalizedText) {
       const recent = [...this.memory.recentUtterances];
       const stopWords =

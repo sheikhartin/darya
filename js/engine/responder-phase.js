@@ -174,6 +174,14 @@
           topic === 'about_eliza' ||
           topic === 'compliment_darya' ||
           topic === 'misread_correction' ||
+          // The health_pain pool already opens with a caring line
+          // ("دردت را میشنوم و جدی می‌گیرم"); a generic warmth prefix on
+          // top stacked "اشکالی ندارد برای این موضوع وقت بگذاری." onto a
+          // pain complaint (the «میتونی یه راه‌حل برای درد دستم بگی؟»
+          // transcript failure). The birthday pool is similarly
+          // self-sufficient and never needs a heavy warmth line.
+          topic === 'health_pain' ||
+          topic === 'birthday' ||
           // The generalization pool gently challenges a blanket belief
           // with its own acknowledging opener; humor or a heavy warmth
           // prefix would undercut the challenge and read as flippant.
@@ -380,7 +388,7 @@
       // gates the answer, so these framings only open the door.
       const en =
         // eslint-disable-next-line max-len
-        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply)\b/i;
+        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply|name (?:some|a few|me|the|your)|list (?:some|a few|me|the))\b/i;
       // Only genre words that commonly appear without a فیلم/سریال prefix
       // are listed here (انیمیشن, مستند). Thriller queries ("فیلم هیجانی",
       // "تریلر معرفی کن") already carry فیلم/پیشنهاد/معرفی, and standalone
@@ -390,10 +398,16 @@
       // generic shopping boundary pool. Bare "کدوم/کدام" stays OUT on
       // purpose: it is too common in personal disclosures ("استرس دارم
       // کدوم مسیر رو برم") and would let the knowledge rule hijack lived
-      // emotions.
+      // emotions. A comparison suffix ("کدوم بهتره", "کدام بهتر است")
+      // turns it into a genuine either-or question ("بین ری اکت و ویو
+      // کدوم بهتره؟"), which the facts answer. "تعریف کن"/"تعریف بکن"
+      // open story and definition requests ("یه داستان ترسناک تعریف
+      // کن"), and a «یه/یک داستان» noun phrase marks a story request;
+      // the lookup itself still gates the answer, so a compliment like
+      // "از من تعریف کن" (no fact matches) never reaches the shelf.
       const fa =
         // eslint-disable-next-line max-len
-        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است)/u;
+        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است|(?:کدوم|کدام).{0,6}بهتر|تعریف کن|تعریف بکن|(?:یه|یک).{0,4}داستان|داستان.{0,10}(?:بگو|تعریف کن|برام)|اسم.{0,8}(?:چند|چندتا|یه|یک|برام|بگو)|چندتا.{0,10}(?:یوتیوبر|کانال|بازی|فیلم|سریال|آهنگ|کتاب))/u;
       return en.test(text) || fa.test(text);
     },
 
