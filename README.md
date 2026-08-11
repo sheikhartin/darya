@@ -495,14 +495,43 @@ variables > Actions):
 - `ANDROID_KEY_PASSWORD`: the key password
 
 For local release builds, create `android/keystore.properties`
-(gitignored) instead:
+(gitignored) instead. The `storeFile` path is resolved relative to
+`android/app/`, so if the keystore lives there (as
+`android/app/darya-release-key.jks` does here), a bare filename works:
 
 ```properties
-storeFile=/absolute/path/to/darya-release.jks
+storeFile=darya-release-key.jks
 storePassword=CHANGE_ME_STORE
 keyAlias=darya
 keyPassword=CHANGE_ME_KEY
 ```
+
+### Before your first store submission
+
+Work through this checklist once, before the first release:
+
+1. **Back up the keystore.** Copy `darya-release-key.jks` and both
+   passwords to a password manager and one offline location (encrypted
+   USB or safe deposit box). Iranian stores have no key-reset
+   mechanism: losing the keystore permanently locks you out of
+   updates.
+2. **Verify the keystore.** Confirm the alias and expiry with
+   `keytool -list -v -keystore android/app/darya-release-key.jks
+   -storepass YOUR_STORE_PASSWORD`; the alias must be `darya` and the
+   validity should span decades (the `-validity 10000` default is
+   about 27 years).
+3. **Add the four GitHub secrets** listed above, with
+   `ANDROID_KEYSTORE_BASE64` from `base64 -w0
+   android/app/darya-release-key.jks`.
+4. **Enable GitHub Pages** (Settings > Pages, deploy from a branch) so
+   [PRIVACY.md](PRIVACY.md) resolves at a public URL for the Play
+   Console, or host it anywhere else.
+5. **Trigger the workflow** by pushing the version tag; confirm the
+   GitHub Release shows both `app-release.aab` and `app-release.apk`
+   attached, and that the APK is signed with your key (install it on a
+   device, or check with `apksigner verify --print-certs`).
+6. **Upload:** the AAB to Google Play (enrolling in Play App Signing),
+   the signed APK to Cafe Bazaar and Myket.
 
 ### Store notes
 
