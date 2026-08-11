@@ -85,7 +85,11 @@ required_files=(
   "js/engine/responder-phase.js"
   "js/engine/responder-rules.js"
   "js/engine/responder-entity.js"
+  "js/engine/responder-profile.js"
   "js/engine/responder-overrides.js"
+  "js/engine/responder-promise.js"
+  "js/engine/responder-exercises.js"
+  "js/engine/responder-mood.js"
   "js/engine/time-utils.js"
   "js/ui/core.js"
   "js/ui/ambient-visuals.js"
@@ -108,26 +112,30 @@ required_files=(
   "js/data/knowledge-facts-entertainment.js"
   "js/data/knowledge-facts-project.js"
   "js/data/knowledge-facts-domains.js"
+  "js/data/knowledge-facts-daily.js"
+  "js/data/knowledge-facts-career.js"
   "js/data/knowledge-fun-facts.js"
   "js/data/knowledge-lists.js"
   "js/data/knowledge-base.js"
   "js/languages/index.js"
   "js/languages/fa.js"
-  "js/languages/fa-lookups.js"
-  "js/languages/fa-data.js"
+  "js/languages/fa-responses-base.js"
+  "js/languages/fa-responses-topics.js"
+  "js/languages/fa-responses-rules.js"
+  "js/languages/fa-responses-contexts.js"
+  "js/languages/fa-responses-features.js"
   "js/languages/fa-rules.js"
-  "js/languages/fa-responses-pools-c.js"
-  "js/languages/fa-responses-pools-b.js"
-  "js/languages/fa-responses-pools-a.js"
-  "js/languages/fa-responses.js"
+  "js/languages/fa-vocabulary.js"
+  "js/languages/fa-maps.js"
   "js/languages/en.js"
-  "js/languages/en-lookups.js"
-  "js/languages/en-data.js"
+  "js/languages/en-responses-base.js"
+  "js/languages/en-responses-topics.js"
+  "js/languages/en-responses-rules.js"
+  "js/languages/en-responses-contexts.js"
+  "js/languages/en-responses-features.js"
   "js/languages/en-rules.js"
-  "js/languages/en-responses-pools-c.js"
-  "js/languages/en-responses-pools-b.js"
-  "js/languages/en-responses-pools-a.js"
-  "js/languages/en-responses.js"
+  "js/languages/en-vocabulary.js"
+  "js/languages/en-maps.js"
   "js/text/halfspace-data.js"
   "js/text/halfspace.js"
   "js/text/entity-extractor-data.js"
@@ -159,7 +167,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app/index.js js/app/composer.js js/app/language.js js/app/conversation.js js/app/menu.js js/app/sound.js js/engine/index.js js/engine/utils-constants.js js/engine/utils-text.js js/engine/utils.js js/engine/factual-math.js js/engine/factual-datetime.js js/engine/factual-fun-facts.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/responder-public.js js/engine/responder-detect.js js/engine/responder-safety.js js/engine/responder-emotion.js js/engine/responder-phase.js js/engine/responder-rules.js js/engine/responder-entity.js js/engine/responder-overrides.js js/engine/time-utils.js js/ui/core.js js/ui/ambient-visuals.js js/ui/ambient-sound-data.js js/ui/ambient-sound-helpers.js js/ui/ambient-sound-playback.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays-breathe.js js/ui/overlays-confirm.js js/ui/overlays-notify.js js/ui/overlays.js js/data/knowledge-reflections.js js/data/knowledge-facts-science.js js/data/knowledge-facts-tech.js js/data/knowledge-facts-culture.js js/data/knowledge-facts-life.js js/data/knowledge-facts-education.js js/data/knowledge-facts-entertainment.js js/data/knowledge-facts-project.js js/data/knowledge-facts-domains.js js/data/knowledge-fun-facts.js js/data/knowledge-lists.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/fa-lookups.js js/languages/fa-data.js js/languages/fa-rules.js js/languages/fa-responses-pools-c.js js/languages/fa-responses-pools-b.js js/languages/fa-responses-pools-a.js js/languages/fa-responses.js js/languages/en.js js/languages/en-lookups.js js/languages/en-data.js js/languages/en-rules.js js/languages/en-responses-pools-c.js js/languages/en-responses-pools-b.js js/languages/en-responses-pools-a.js js/languages/en-responses.js js/text/halfspace-data.js js/text/halfspace.js js/text/entity-extractor-data.js js/text/entity-extractor.js; do
+  for f in js/app/index.js js/app/composer.js js/app/language.js js/app/conversation.js js/app/menu.js js/app/sound.js js/engine/index.js js/engine/utils-constants.js js/engine/utils-text.js js/engine/utils.js js/engine/factual-math.js js/engine/factual-datetime.js js/engine/factual-fun-facts.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/responder-public.js js/engine/responder-detect.js js/engine/responder-safety.js js/engine/responder-emotion.js js/engine/responder-phase.js js/engine/responder-rules.js js/engine/responder-entity.js js/engine/responder-profile.js js/engine/responder-overrides.js js/engine/responder-promise.js js/engine/responder-exercises.js js/engine/responder-mood.js js/engine/time-utils.js js/ui/core.js js/ui/ambient-visuals.js js/ui/ambient-sound-data.js js/ui/ambient-sound-helpers.js js/ui/ambient-sound-playback.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays-breathe.js js/ui/overlays-confirm.js js/ui/overlays-notify.js js/ui/overlays.js js/data/knowledge-reflections.js js/data/knowledge-facts-science.js js/data/knowledge-facts-tech.js js/data/knowledge-facts-culture.js js/data/knowledge-facts-life.js js/data/knowledge-facts-education.js js/data/knowledge-facts-entertainment.js js/data/knowledge-facts-project.js js/data/knowledge-facts-domains.js js/data/knowledge-facts-daily.js js/data/knowledge-facts-career.js js/data/knowledge-fun-facts.js js/data/knowledge-lists.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/fa-responses-base.js js/languages/fa-responses-topics.js js/languages/fa-responses-rules.js js/languages/fa-responses-contexts.js js/languages/fa-responses-features.js js/languages/fa-rules.js js/languages/fa-vocabulary.js js/languages/fa-maps.js js/languages/en.js js/languages/en-responses-base.js js/languages/en-responses-topics.js js/languages/en-responses-rules.js js/languages/en-responses-contexts.js js/languages/en-responses-features.js js/languages/en-rules.js js/languages/en-vocabulary.js js/languages/en-maps.js js/text/halfspace-data.js js/text/halfspace.js js/text/entity-extractor-data.js js/text/entity-extractor.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -175,7 +183,7 @@ section "Node engine test suite"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  if node --test --test-reporter tap tests/engine.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs > /tmp/darya-node-test.log 2>&1; then
+  if node --test --test-reporter tap tests/engine.test.mjs tests/foundation.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs > /tmp/darya-node-test.log 2>&1; then
     node_pass=$(grep -oP '(?<=# pass )\d+' /tmp/darya-node-test.log || echo "ER")
     ok "all tests passed ($node_pass tests)"
   else
@@ -202,21 +210,15 @@ else
   fail "[hidden] override rule missing; picker/app may not actually hide (see conversation history)"
 fi
 
-# The sound-cookie init-order bug: the cookie-name constant must be
-# declared before the module-state initializer that reads it. A hoisted
-# `var` made the cookie regex look for "undefined=" and silently dropped
-# the saved sound preference on every page load. After the module split,
-# the constant lives in the data part file that loads before the main
-# module (which holds the state initializer), preserving the ordering.
-sound_cookie_file=js/ui/ambient-sound-data.js
-sound_cookie_line=$(grep -n "SOUND_COOKIE_NAME = " "$sound_cookie_file" | head -1 | cut -d: -f1)
-sound_enabled_line=$(grep -n "isEnabled: getSavedState" js/ui/ambient-sound.js | head -1 | cut -d: -f1)
-sound_main_line=$(grep -n "js/ui/ambient-sound.js" index.html | head -1 | cut -d: -f1)
-sound_data_line=$(grep -n "js/ui/ambient-sound-data.js" index.html | head -1 | cut -d: -f1)
-if [[ -n "$sound_cookie_line" && -n "$sound_enabled_line" && -n "$sound_main_line" && -n "$sound_data_line" && "$sound_data_line" -lt "$sound_main_line" ]]; then
-  ok "sound cookie constant is declared before the module state initializer"
+# Ambient sound is strictly opt-in: it always boots silent, is started
+# only by a toggle click, and never persists its state. The old cookie
+# persistence (SOUND_COOKIE_NAME / getSavedState) was removed entirely;
+# the only cookie touch left is the one-time legacy cleanup that expires
+# the cookie written by versions before 1.2.0.
+if grep -q 'isEnabled: false' js/ui/ambient-sound.js && ! grep -q 'getSavedState\|saveCookieState\|autoplayIfEnabled' js/ui/ambient-sound.js && grep -q 'LEGACY_SOUND_COOKIE_NAME' js/ui/ambient-sound-data.js && grep -q 'expireLegacyCookie' js/ui/ambient-sound.js; then
+  ok "ambient sound boots silent with no cookie persistence or autoplay"
 else
-  fail "sound cookie constant ordering regressed; saved preference would be lost on every visit"
+  fail "ambient sound persistence/autoplay may have regressed; sound must boot off and only start on a toggle click"
 fi
 
 # The Persian word-boundary bug: \b does not work on Persian script in JS
@@ -370,17 +372,21 @@ entries = set(re.findall(r"['\"](\./[^'\"]+)['\"]", sw))
 required = {'./index.html'}
 required.update('./js/languages/' + p.name for p in pathlib.Path('js/languages').glob('*.js'))
 required.update('./js/text/' + p.name for p in pathlib.Path('js/text').glob('*.js'))
+required.update('./js/engine/' + p.name for p in pathlib.Path('js/engine').glob('*.js'))
+required.update('./js/app/' + p.name for p in pathlib.Path('js/app').glob('*.js'))
+required.update('./js/ui/' + p.name for p in pathlib.Path('js/ui').glob('*.js'))
+required.update('./js/data/' + p.name for p in pathlib.Path('js/data').glob('*.js'))
 required.update('./fonts/' + p.name for p in pathlib.Path('fonts').glob('*.woff2'))
 raise SystemExit(0 if required <= entries else 1)
 PY2
 then
-  ok "service worker precaches every language script and font"
+  ok "service worker precaches every script and font"
 else
   fail "service worker precache is incomplete"
 fi
 
 forbidden_pattern='language'\ 'model|L''LM|AI'\ 'assistant|therap''ist|دانلود گفتگو ('\ 'Markdown'\ ')|(^|[^A-Za-z])v[0-9]+\.[0-9]+'
-if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
   ok "forbidden identity and legacy version strings stay out of app sources"
 else
   fail "forbidden source strings found: $(tr '\n' ' ' </tmp/darya-forbidden.log)"
@@ -690,7 +696,11 @@ else
     check_status "/js/engine/responder-phase.js" "200"
     check_status "/js/engine/responder-rules.js" "200"
     check_status "/js/engine/responder-entity.js" "200"
+    check_status "/js/engine/responder-profile.js" "200"
     check_status "/js/engine/responder-overrides.js" "200"
+    check_status "/js/engine/responder-promise.js" "200"
+    check_status "/js/engine/responder-exercises.js" "200"
+    check_status "/js/engine/responder-mood.js" "200"
     check_status "/js/engine/time-utils.js" "200"
     check_status "/js/ui/core.js" "200"
     check_status "/js/ui/ambient-visuals.js" "200"
@@ -707,21 +717,23 @@ else
     check_status "/js/data/knowledge-base.js" "200"
     check_status "/js/languages/index.js" "200"
     check_status "/js/languages/fa.js" "200"
-    check_status "/js/languages/fa-lookups.js" "200"
-    check_status "/js/languages/fa-data.js" "200"
+    check_status "/js/languages/fa-responses-base.js" "200"
+    check_status "/js/languages/fa-responses-topics.js" "200"
+    check_status "/js/languages/fa-responses-rules.js" "200"
+    check_status "/js/languages/fa-responses-contexts.js" "200"
+    check_status "/js/languages/fa-responses-features.js" "200"
     check_status "/js/languages/fa-rules.js" "200"
-    check_status "/js/languages/fa-responses-pools-c.js" "200"
-    check_status "/js/languages/fa-responses-pools-b.js" "200"
-    check_status "/js/languages/fa-responses-pools-a.js" "200"
-    check_status "/js/languages/fa-responses.js" "200"
+    check_status "/js/languages/fa-vocabulary.js" "200"
+    check_status "/js/languages/fa-maps.js" "200"
     check_status "/js/languages/en.js" "200"
-    check_status "/js/languages/en-lookups.js" "200"
-    check_status "/js/languages/en-data.js" "200"
+    check_status "/js/languages/en-responses-base.js" "200"
+    check_status "/js/languages/en-responses-topics.js" "200"
+    check_status "/js/languages/en-responses-rules.js" "200"
+    check_status "/js/languages/en-responses-contexts.js" "200"
+    check_status "/js/languages/en-responses-features.js" "200"
     check_status "/js/languages/en-rules.js" "200"
-    check_status "/js/languages/en-responses-pools-c.js" "200"
-    check_status "/js/languages/en-responses-pools-b.js" "200"
-    check_status "/js/languages/en-responses-pools-a.js" "200"
-    check_status "/js/languages/en-responses.js" "200"
+    check_status "/js/languages/en-vocabulary.js" "200"
+    check_status "/js/languages/en-maps.js" "200"
     check_status "/assets/favicon.ico" "200"
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"

@@ -28,6 +28,11 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  E2E_WAIT_MS,
+  clickWithRetry,
+  waitForPageFunction
+} from './e2e-helpers.mjs';
 
 const PROJECT_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -173,7 +178,8 @@ test(
             '--disable-gpu',
             '--mute-audio',
             '--disable-dev-shm-usage',
-            '--autoplay-policy=no-user-gesture-required'
+            '--autoplay-policy=no-user-gesture-required',
+            '--force-prefers-reduced-motion'
           ]
         });
       } catch (err) {
@@ -190,10 +196,11 @@ test(
       });
 
       const expectFocused = async (expectedId) => {
-        await page.waitForFunction(
+        await waitForPageFunction(
+          page,
           (id) => document.activeElement && document.activeElement.id === id,
           expectedId,
-          { timeout: 5000 }
+          E2E_WAIT_MS.FOCUS
         );
       };
 
@@ -202,36 +209,42 @@ test(
       // animation frame; keying before that races the popover handler).
       const openMenuFromTrigger = async () => {
         await page.keyboard.press('Enter');
-        await page.waitForFunction(
+        await waitForPageFunction(
+          page,
           () => !document.getElementById('menu-popover').hidden,
           null,
-          { timeout: 5000 }
+          E2E_WAIT_MS.FOCUS
         );
         await expectFocused('menu-new-chat');
       };
 
-      // 1. Load the app and start a conversation with a real click.
+      // 1. Load the app and start a conversation with a real click. The
+      //    click is retried once: under load, Chrome's initial layout
+      //    can be slow enough that the first click misses the app's
+      //    ready state, and a single retry absorbs that stall.
       await page.goto(`http://127.0.0.1:${server.address().port}/`, {
         waitUntil: 'load'
       });
       await page.waitForSelector('#picker-en');
-      await page.click('#picker-en');
+      await clickWithRetry(page, '#picker-en');
 
       // The greeting lands with a typing delay; the composer stays
       // disabled until then, after which the app focuses it.
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => {
           const input = document.getElementById('composer-input');
           return input && !input.disabled;
         },
         null,
-        { timeout: 15000 }
+        E2E_WAIT_MS.GREETING
       );
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document.activeElement === document.getElementById('composer-input'),
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
 
       // 2. Walk the real tab order from the composer to the trigger,
@@ -247,12 +260,13 @@ test(
       for (let i = 0; i < Math.abs(steps); i += 1) {
         await page.keyboard.press(stepKey);
       }
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document.activeElement &&
           document.activeElement.id === 'menu-trigger',
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
 
       // 3. Enter opens the menu and focus lands on the first item.
@@ -293,17 +307,19 @@ test(
 
       // 6. Escape closes the menu and returns focus to the trigger.
       await page.keyboard.press('Escape');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => document.getElementById('menu-popover').hidden === true,
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document.activeElement &&
           document.activeElement.id === 'menu-trigger',
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       assert.equal(
         await page.getAttribute('#menu-trigger', 'aria-expanded'),
@@ -320,10 +336,11 @@ test(
 
       await openMenuFromTrigger();
       await page.keyboard.press('Tab');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         (id) => document.activeElement && document.activeElement.id === id,
         nextId,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       assert.equal(
         await page.getAttribute('#menu-trigger', 'aria-expanded'),
@@ -331,27 +348,30 @@ test(
       );
 
       await page.keyboard.press('Shift+Tab');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document.activeElement &&
           document.activeElement.id === 'menu-trigger',
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       await openMenuFromTrigger();
       await page.keyboard.press('Shift+Tab');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => document.getElementById('menu-popover').hidden === true,
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       if (prevId) {
         // The trigger has a control before it (e.g. the breathe trigger
         // on the picker or a pre-chat state): focus lands on it.
-        await page.waitForFunction(
+        await waitForPageFunction(
+          page,
           (id) => document.activeElement && document.activeElement.id === id,
           prevId,
-          { timeout: 5000 }
+          E2E_WAIT_MS.FOCUS
         );
       } else {
         // During a chat the breathe trigger is hidden, so the menu
@@ -388,24 +408,27 @@ test(
       await page.keyboard.press('ArrowDown');
       await expectFocused('menu-theme-toggle');
       await page.keyboard.press('Enter');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => document.getElementById('menu-popover').hidden === true,
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document.activeElement &&
           document.activeElement.id === 'menu-trigger',
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       // The theme flips through a View Transition, which applies the DOM
       // update on a later frame - wait for it to land before asserting.
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         (before) => document.documentElement.dataset.theme !== before,
         themeBefore,
-        { timeout: 10000 }
+        E2E_WAIT_MS.THEME
       );
       const themeAfter = await page.evaluate(
         () => document.documentElement.dataset.theme
@@ -452,7 +475,8 @@ test(
             '--disable-gpu',
             '--mute-audio',
             '--disable-dev-shm-usage',
-            '--autoplay-policy=no-user-gesture-required'
+            '--autoplay-policy=no-user-gesture-required',
+            '--force-prefers-reduced-motion'
           ]
         });
       } catch (err) {
@@ -469,40 +493,42 @@ test(
       });
 
       const expectFocused = async (selector) => {
-        await page.waitForFunction(
+        await waitForPageFunction(
+          page,
           (sel) => {
             const el = document.activeElement;
             return !!(el && el.matches(sel));
           },
           selector,
-          { timeout: 5000 }
+          E2E_WAIT_MS.FOCUS
         );
       };
 
       // Start a conversation so the chat surface (and its menu) exist.
+      // The picker click is retried once to absorb a load-induced stall.
       await page.goto(`http://127.0.0.1:${server.address().port}/`, {
         waitUntil: 'load'
       });
       await page.waitForSelector('#picker-en');
-      await page.click('#picker-en');
-      await page.waitForFunction(
+      await clickWithRetry(page, '#picker-en');
+      await waitForPageFunction(
+        page,
         () => {
           const input = document.getElementById('composer-input');
           return input && !input.disabled;
         },
         null,
-        { timeout: 15000 }
+        E2E_WAIT_MS.GREETING
       );
-      await page
-        .waitForFunction(
-          () => {
-            const typing = document.getElementById('typing-row');
-            return !typing || typing.hidden;
-          },
-          null,
-          { timeout: 20000 }
-        )
-        .catch(() => {});
+      await waitForPageFunction(
+        page,
+        () => {
+          const typing = document.getElementById('typing-row');
+          return !typing || typing.hidden;
+        },
+        null,
+        E2E_WAIT_MS.LONG
+      ).catch(() => {});
 
       // ---- New-chat confirm dialog ----
       // Open the menu and activate "New chat" to show the confirm dialog.
@@ -510,17 +536,19 @@ test(
         document.getElementById('menu-trigger').focus()
       );
       await page.keyboard.press('Enter');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => !document.getElementById('menu-popover').hidden,
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       await expectFocused('#menu-new-chat');
       await page.keyboard.press('Enter');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => !!document.querySelector('.confirm-overlay'),
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
 
       // The dialog focuses the safe "No" button by default.
@@ -534,10 +562,11 @@ test(
 
       // Escape closes the dialog and returns focus to the menu trigger.
       await page.keyboard.press('Escape');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => !document.querySelector('.confirm-overlay'),
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       await expectFocused('#menu-trigger');
 
@@ -547,10 +576,11 @@ test(
       await expectFocused('#exit-confirm-no');
       // Escape cancels, hides the bar, and returns focus to the composer.
       await page.keyboard.press('Escape');
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () => document.getElementById('exit-confirm-bar').hidden === true,
         null,
-        { timeout: 5000 }
+        E2E_WAIT_MS.FOCUS
       );
       await expectFocused('#composer-input');
 
