@@ -1,0 +1,27 @@
+{
+  "name": "what makes a healthy relationship",
+  "description": "A person reflects on relationship quality: what makes a relationship good, how to tell if theirs is healthy, and whether open communication is a good sign. Verifies knowledge guidance on healthy relationships, including the pre-existing relationship_plan fact, and that a personal reflection stays on the relationship thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "What makes a relationship good?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "How do I know if my relationship is healthy?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "We rarely argue and talk openly, is our relationship healthy?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "relationship"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"what makes a relationship good\" returns the relationship_good fact (respect, listening, mutual effort, room to grow). Turn 2: the healthy-signs question returns the relationship_plan fact. Turn 3: a first-person relationship reflection routes to the relationship rule with a caring follow-up.",
+    "behavior": "Knowledge answers cover the traits of a good relationship, while a lived reflection about ones own relationship routes to the conversation relationship rule, keeping empathy separate from factual guidance."
+  }
+}

@@ -1,17 +1,15 @@
 /**
  * Ambient-sound module regression tests.
  *
- * The classic script initializes `isEnabled` from the saved cookie at
- * load time. This test loads the module into a sandboxed global with a
- * fake `document` (whose `cookie` holds the preference) and asserts the
- * initial state honors it.
+ * Ambient sound is strictly opt-in: the module always boots silent, is
+ * started only by a toggle click, and never persists its state. A legacy
+ * cookie written by versions before 1.2.0 (darya_sound) is expired once
+ * at load so a stale "on" preference can never start audio by itself.
  *
- * Historical bug this guards against: the cookie-name constant was
- * declared at the bottom of the module but referenced by the top-level
- * initializer. Due to `var` hoisting it was `undefined` at init time, so
- * the cookie regex looked for `undefined=`, never matched, and a
- * returning user's saved sound preference was silently lost on every
- * visit (the toggle always booted "off").
+ * These tests load the module into a sandboxed global with a fake
+ * `document` and fake `Audio`, and assert the boot state, the toggle
+ * lifecycle, the failure-cap behavior, the synthesized fallback, and the
+ * visibility handling all match that contract.
  */
 
 import test from 'node:test';
@@ -40,7 +38,9 @@ const SCRIPTS = [
 
 /**
  * Loads the ambient-sound scripts into the shared global with a fake
- * document whose cookie contains the given value.
+ * document whose cookie contains the given value. The cookie simulates
+ * a legacy leftover from an older version; the module never reads it
+ * for state and must expire it at load.
  * @param {string} cookie - The document.cookie string to expose
  */
 function loadWithCookie(cookie) {
@@ -69,17 +69,19 @@ function loadWithCookie(cookie) {
   }
 }
 
-test('saved sound preference is honored at module load', () => {
+test('ambient sound always boots silent, even with a legacy on-cookie', () => {
   try {
     loadWithCookie('darya_sound=1');
-    assert.equal(globalThis.DaryaAmbientSound.enabled, true);
+    // The stale "on" cookie from an old version must never enable sound:
+    // every visit starts silent, and only a toggle click starts audio.
+    assert.equal(globalThis.DaryaAmbientSound.enabled, false);
     assert.equal(globalThis.DaryaAmbientSound.isPlaying(), false);
   } finally {
     delete globalThis.DaryaAmbientSound;
   }
 });
 
-test('a disabled preference and an absent preference both boot off', () => {
+test('a legacy disabled or absent cookie also boots off', () => {
   try {
     loadWithCookie('darya_sound=0');
     assert.equal(globalThis.DaryaAmbientSound.enabled, false);
@@ -92,78 +94,37 @@ test('a disabled preference and an absent preference both boot off', () => {
   }
 });
 
-test('concurrent autoplay callers share one in-flight audio start', async () => {
-  // The language-picker click and the first-gesture document listener can
-  // both call autoplayIfEnabled() on the same click, before either
-  // play() promise has settled. Each call must not create its own Audio
-  // element (that would double-fetch the sound file on first visit); a
-  // single in-flight attempt is shared, and an already-playing state
-  // never restarts audio.
-  const originalDocument = globalThis.document;
-  const originalFetch = globalThis.fetch;
-  const originalAudio = globalThis.Audio;
+test('the legacy sound cookie is expired at load', () => {
+  const box = loadSandbox('darya_sound=1', () => Promise.resolve());
   try {
-    const instances = [];
-    class FakeAudio {
-      constructor() {
-        instances.push(this);
-      }
-      addEventListener() {}
-      removeEventListener() {}
-      play() {
-        this.paused = false;
-        this.readyState = 2;
-        return Promise.resolve();
-      }
-      pause() {}
-      removeAttribute() {}
-      load() {}
-    }
-    globalThis.document = {
-      cookie: 'darya_sound=1',
-      documentElement: { getAttribute: () => 'ocean' },
-      addEventListener() {},
-      removeEventListener() {}
-    };
-    globalThis.fetch = () =>
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({ beach: ['beach.mp3'], ocean: ['ocean.mp3'] })
-      });
-    globalThis.Audio = FakeAudio;
-    for (const { filename, code } of SCRIPTS) {
-      vm.runInThisContext(code, { filename });
-    }
-
-    const ambient = globalThis.DaryaAmbientSound;
-    const first = ambient.autoplayIfEnabled();
-    const second = ambient.autoplayIfEnabled();
-    const results = await Promise.all([first, second]);
-
-    assert.equal(
-      instances.length,
-      1,
-      'concurrent callers must share one Audio'
+    // The module must remove the old persistence cookie so the stale
+    // value cannot linger and confuse a later reinstall.
+    assert.ok(
+      !box.fakeDocument.cookie.includes('darya_sound=1'),
+      `legacy cookie should be expired, got: ${box.fakeDocument.cookie}`
     );
-    assert.deepEqual(results, [true, true]);
-
-    // Once playing, a further autoplay request must be a no-op.
-    const again = await ambient.autoplayIfEnabled();
-    assert.equal(again, true);
-    assert.equal(instances.length, 1, 'already playing must not restart audio');
+    assert.equal(box.ambient.enabled, false);
   } finally {
-    delete globalThis.DaryaAmbientSound;
-    globalThis.document = originalDocument;
-    globalThis.fetch = originalFetch;
-    globalThis.Audio = originalAudio;
+    box.restore();
+  }
+});
+
+test('an absent legacy cookie is left untouched at load', () => {
+  const box = loadSandbox('theme=ocean', () => Promise.resolve());
+  try {
+    // Expiry must not fabricate the cookie: without a legacy sound
+    // cookie present, the cookie string is left exactly as it was.
+    assert.equal(box.fakeDocument.cookie, 'theme=ocean');
+    assert.equal(box.ambient.enabled, false);
+  } finally {
+    box.restore();
   }
 });
 
 /**
  * Loads the module with a fake document and a fake Audio whose play()
  * behaves according to the given behavior.
- * @param {string} cookie - The document.cookie to expose
+ * @param {string} cookie - A legacy document.cookie to expose (unused for state)
  * @param {Function} play - play() implementation returning a promise
  * @returns {object} the sandbox surface (ambient, instances, handlers)
  */
@@ -236,78 +197,162 @@ function abortError() {
   return err;
 }
 
-test('autoplay blocked by autoplay policy keeps the saved preference', async () => {
-  const box = loadSandbox('darya_sound=1', () =>
-    Promise.reject(notAllowedError())
-  );
+test('a toggle click starts playback', async () => {
+  const box = loadSandbox('', function (audio) {
+    audio.paused = false;
+    audio.readyState = 4;
+    return Promise.resolve();
+  });
   try {
-    const result = await box.ambient.autoplayIfEnabled();
-    // A NotAllowedError is not a load failure: the module must keep its
-    // enabled intent and the saved cookie so a later gesture can retry.
+    const result = await box.ambient.toggle();
     assert.equal(result, true);
     assert.equal(box.ambient.enabled, true);
-    assert.equal(box.ambient.isPlaying(), false);
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+    assert.equal(box.ambient.isPlaying(), true);
   } finally {
     box.restore();
   }
 });
 
-test('a genuine load failure still rolls back and wipes the preference', async () => {
-  const box = loadSandbox('darya_sound=1', () =>
-    Promise.reject(
-      Object.assign(new Error('decode failed'), { name: 'TypeError' })
-    )
-  );
+test('a second toggle click stops playback', async () => {
+  const box = loadSandbox('', function (audio) {
+    audio.paused = false;
+    audio.readyState = 4;
+    return Promise.resolve();
+  });
   try {
-    const result = await box.ambient.autoplayIfEnabled();
-    assert.equal(result, false);
+    assert.equal(await box.ambient.toggle(), true);
+    // Wait out the rapid-click guard (armed through the volume fade-in)
+    // so the second click is a fresh toggle instead of joining the first.
+    await new Promise((resolve) => setTimeout(resolve, 850));
+    const stopped = await box.ambient.toggle();
+    assert.equal(stopped, false);
     assert.equal(box.ambient.enabled, false);
+    assert.equal(box.ambient.isPlaying(), false);
+  } finally {
+    box.restore();
+  }
+});
+
+test('toggle keeps in-memory intent when playback is policy-blocked', async () => {
+  const box = loadSandbox('', () => Promise.reject(notAllowedError()));
+  try {
+    const result = await box.ambient.toggle();
+    // A NotAllowedError is not a load failure: the module keeps its
+    // enabled intent for the session (a later toggle click can retry)
+    // and never writes any persistence state.
+    assert.equal(result, true);
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.ambient.isPlaying(), false);
     assert.ok(
-      box.fakeDocument.cookie.startsWith('darya_sound=0'),
-      `cookie should record the disabled state, got: ${box.fakeDocument.cookie}`
+      !box.fakeDocument.cookie.includes('darya_sound=1') &&
+        !box.fakeDocument.cookie.includes('darya_sound=0'),
+      'no state cookie may be written'
     );
   } finally {
     box.restore();
   }
 });
 
-test('toggle keeps user intent when playback is policy-blocked', async () => {
-  const box = loadSandbox('darya_sound=0', () =>
-    Promise.reject(notAllowedError())
+test('a genuine load failure rolls back to disabled without persisting', async () => {
+  const box = loadSandbox('', () =>
+    Promise.reject(
+      Object.assign(new Error('decode failed'), { name: 'TypeError' })
+    )
   );
   try {
     const result = await box.ambient.toggle();
-    // The user asked to enable sound; a NotAllowedError must not silently
-    // convert that into a disabled preference. The module keeps its
-    // enabled intent for the session (a later gesture or tab return can
-    // retry) without writing a "playing" cookie that no sound backs up.
-    assert.equal(result, true);
-    assert.equal(box.ambient.enabled, true);
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=0');
+    assert.equal(result, false);
+    assert.equal(box.ambient.enabled, false);
+    assert.ok(
+      !box.fakeDocument.cookie.includes('darya_sound=1') &&
+        !box.fakeDocument.cookie.includes('darya_sound=0'),
+      'no state cookie may be written'
+    );
   } finally {
     box.restore();
   }
 });
 
-test('tab becoming visible retries autoplay without wiping preference', async () => {
-  const box = loadSandbox('darya_sound=1', () =>
-    Promise.reject(notAllowedError())
-  );
+test('tab hiding aborts an in-flight play attempt promptly', async () => {
+  // If play() never settles (a throttled media load in a hidden tab),
+  // the visibility handler must abort the attempt right away instead of
+  // waiting for the 15s safety timeout. The abort is transient: the
+  // user's in-memory intent is kept.
+  const box = loadSandbox('', () => new Promise(() => {}));
   try {
-    // Simulate an initial autoplay attempt that was policy-blocked.
-    await box.ambient.autoplayIfEnabled();
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+    const toggling = box.ambient.toggle();
+    // Let the microtask chain reach playThemeSound and register the
+    // in-flight attempt before hiding the tab.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    box.fakeDocument.hidden = true;
+    box.handlers.visibilitychange();
+    const result = await toggling;
+    assert.equal(result, true, 'abort keeps the user intent to enable');
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.ambient.isPlaying(), false);
+    assert.equal(box.instances.length, 1);
+  } finally {
+    box.restore();
+  }
+});
 
-    // Tab returns to the foreground: the visibility handler must retry
-    // autoplay rather than silently staying silent, and the retry must
-    // remain preference-safe.
+test('tab becoming visible resumes audio that was playing before hiding', async () => {
+  // Pausing on hide and resuming on show only continues audio the user
+  // already started with a toggle click; it never starts new audio.
+  const box = loadSandbox('', function (audio) {
+    audio.paused = false;
+    audio.readyState = 4;
+    return Promise.resolve();
+  });
+  try {
+    await box.ambient.toggle();
+    assert.equal(box.ambient.isPlaying(), true);
+
+    box.fakeDocument.hidden = true;
+    box.handlers.visibilitychange();
+    assert.equal(
+      box.instances[0].paused,
+      true,
+      'audio pauses when the tab hides'
+    );
+
     box.fakeDocument.hidden = false;
     box.handlers.visibilitychange();
-
     await new Promise((resolve) => setTimeout(resolve, 10));
+    assert.equal(
+      box.ambient.isPlaying(),
+      true,
+      'audio resumes when the tab returns'
+    );
+    assert.equal(box.instances.length, 1, 'no second Audio element spawned');
+  } finally {
+    box.restore();
+  }
+});
+
+test('tab becoming visible never auto-starts silent sound', async () => {
+  // If a transient failure left the intent enabled but nothing playing,
+  // returning to the tab must NOT retry playback on its own: sound only
+  // starts after a toggle click.
+  const box = loadSandbox('', () => Promise.reject(notAllowedError()));
+  try {
+    const result = await box.ambient.toggle();
+    assert.equal(result, true);
     assert.equal(box.ambient.enabled, true);
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=1');
+    assert.equal(box.ambient.isPlaying(), false);
+    assert.equal(box.instances.length, 1);
+
+    box.fakeDocument.hidden = false;
+    box.handlers.visibilitychange();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    assert.equal(
+      box.instances.length,
+      1,
+      'tab return must not auto-start playback'
+    );
+    assert.equal(box.ambient.enabled, true);
+    assert.equal(box.ambient.isPlaying(), false);
   } finally {
     box.restore();
   }
@@ -319,7 +364,7 @@ test('toggle recovers after the failure cap is reached', async () => {
   // once more instead of short-circuiting into a permanent no-op (the
   // reported "not toggling anymore" bug).
   let failuresLeft = 3;
-  const box = loadSandbox('darya_sound=0', function (audio) {
+  const box = loadSandbox('', function (audio) {
     if (failuresLeft > 0) {
       failuresLeft -= 1;
       return Promise.reject(
@@ -342,7 +387,6 @@ test('toggle recovers after the failure cap is reached', async () => {
     assert.equal(recovered, true, 'fresh toggle must start playback');
     assert.equal(box.ambient.enabled, true);
     assert.equal(box.ambient.isPlaying(), true);
-    assert.ok(box.fakeDocument.cookie.startsWith('darya_sound=1'));
   } finally {
     box.restore();
   }
@@ -353,7 +397,7 @@ test('rapid toggle clicks share one in-flight start', async () => {
   // must collapse into one toggle operation: the pendingToggle guard
   // joins the running start instead of spawning a second Audio element
   // and interleaving an enable/disable cycle.
-  const box = loadSandbox('darya_sound=0', function (audio) {
+  const box = loadSandbox('', function (audio) {
     audio.paused = false;
     audio.readyState = 4;
     return new Promise((resolve) => setTimeout(resolve, 30));
@@ -375,7 +419,7 @@ test('toggle reflects playback as soon as play() succeeds, before the fade-in fi
   // The on-state must flip the moment audio genuinely starts, not after
   // the 800ms volume fade-in completes: the volume ramp is cosmetic and
   // must never delay the toggle UI (the feedback-lag fix).
-  const box = loadSandbox('darya_sound=0', function (audio) {
+  const box = loadSandbox('', function (audio) {
     audio.paused = false;
     audio.readyState = 4;
     return Promise.resolve();
@@ -390,7 +434,6 @@ test('toggle reflects playback as soon as play() succeeds, before the fade-in fi
       box.instances[0].volume < 0.25,
       'toggle resolved before the volume fade-in completed'
     );
-    assert.ok(box.fakeDocument.cookie.startsWith('darya_sound=1'));
   } finally {
     box.restore();
   }
@@ -402,7 +445,7 @@ test('a toggle inside the fade-in window joins the first instead of flipping', a
   // fade-in: a second toggle that lands after play() succeeded but
   // before the fade finished must join the running operation (same
   // result), never start an enable/disable cycle that ends silent.
-  const box = loadSandbox('darya_sound=0', function (audio) {
+  const box = loadSandbox('', function (audio) {
     audio.paused = false;
     audio.readyState = 4;
     return Promise.resolve();
@@ -425,36 +468,12 @@ test('a toggle inside the fade-in window joins the first instead of flipping', a
   }
 });
 
-test('tab hiding aborts an in-flight play attempt promptly', async () => {
-  // If play() never settles (a throttled media load in a hidden tab),
-  // the visibility handler must abort the attempt right away instead of
-  // waiting for the 15s safety timeout. The abort is transient: the
-  // user's intent is kept and no preference is wiped.
-  const box = loadSandbox('darya_sound=0', () => new Promise(() => {}));
-  try {
-    const toggling = box.ambient.toggle();
-    // Let the microtask chain reach playThemeSound and register the
-    // in-flight attempt before hiding the tab.
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    box.fakeDocument.hidden = true;
-    box.handlers.visibilitychange();
-    const result = await toggling;
-    assert.equal(result, true, 'abort keeps the user intent to enable');
-    assert.equal(box.ambient.enabled, true);
-    assert.equal(box.ambient.isPlaying(), false);
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=0');
-    assert.equal(box.instances.length, 1);
-  } finally {
-    box.restore();
-  }
-});
-
 test('transient failures never count toward the failure cap', async () => {
   // Timeouts, tab-hidden aborts, and autoplay-policy rejections are not
   // file problems: they must not accumulate into the permanent-disable
   // cap, or a slow network could brick the toggle after a few tries.
   let failuresLeft = 5;
-  const box = loadSandbox('darya_sound=0', function (audio) {
+  const box = loadSandbox('', function (audio) {
     if (failuresLeft > 0) {
       failuresLeft -= 1;
       return Promise.reject(abortError());
@@ -469,7 +488,6 @@ test('transient failures never count toward the failure cap', async () => {
       assert.equal(result, true, 'transient failure keeps the intent');
       assert.equal(box.ambient.enabled, true);
       assert.equal(box.ambient.isPlaying(), false);
-      assert.equal(box.fakeDocument.cookie, 'darya_sound=0');
     }
     // A subsequent working file still starts normally: five transient
     // failures never poisoned the counter.
@@ -525,14 +543,14 @@ test('theme change aborts an in-flight play attempt', async () => {
   // When the theme changes while a load is still in flight, the stale
   // attempt must be aborted promptly (transient, intent kept) so it can
   // never resolve into the wrong theme or linger until the timeout.
-  const box = loadSandbox('darya_sound=1', () => new Promise(() => {}));
+  const box = loadSandbox('', () => new Promise(() => {}));
   try {
-    const starting = box.ambient.autoplayIfEnabled();
+    const toggling = box.ambient.toggle();
     // Let the microtask chain reach playThemeSound and register the
     // in-flight attempt before switching the theme.
     await new Promise((resolve) => setTimeout(resolve, 5));
     box.ambient.onThemeChange('beach');
-    const result = await starting;
+    const result = await toggling;
     assert.equal(result, true, 'abort keeps the user intent');
     assert.equal(box.ambient.enabled, true);
     assert.equal(box.ambient.isPlaying(), false);
@@ -552,32 +570,6 @@ test('theme change aborts an in-flight play attempt', async () => {
   }
 });
 
-test('tab return retries when a transient failure kept the intent', async () => {
-  // A transient failure (e.g. the tab hid mid-load) keeps the in-memory
-  // intent even when no cookie was written yet. Returning to the tab
-  // must retry based on that intent, not only on the saved cookie.
-  const box = loadSandbox('darya_sound=0', () => Promise.reject(abortError()));
-  try {
-    const result = await box.ambient.toggle();
-    assert.equal(result, true);
-    assert.equal(box.ambient.enabled, true);
-    assert.equal(box.ambient.isPlaying(), false);
-    assert.equal(box.fakeDocument.cookie, 'darya_sound=0');
-    assert.equal(box.instances.length, 1);
-
-    box.fakeDocument.hidden = false;
-    box.handlers.visibilitychange();
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // The visibility retry started a second attempt even though the
-    // cookie says "off", because the intent is held in memory.
-    assert.equal(box.instances.length, 2);
-    assert.equal(box.ambient.enabled, true);
-  } finally {
-    box.restore();
-  }
-});
-
 test('the third consecutive failed toggle engages the synthesized fallback', async () => {
   // Genuine failures accumulate across toggles (the counter is not reset
   // on every click). On the third failure the module must switch to the
@@ -587,7 +579,7 @@ test('the third consecutive failed toggle engages the synthesized fallback', asy
   const originalWindow = globalThis.window;
   let failuresLeft = 3;
   try {
-    const box = loadSandbox('darya_sound=0', function (audio) {
+    const box = loadSandbox('', function (audio) {
       if (failuresLeft > 0) {
         failuresLeft -= 1;
         return Promise.reject(

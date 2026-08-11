@@ -1,0 +1,29 @@
+{
+  "name": "مراقب مادر سال‌خورده",
+  "description": "A Persian person cares for their aging mother and is exhausted, asks how to take care of themselves without burning out, and admits she forgets things now which breaks their heart. Verifies the caregiver thread opens, the burnout question is answered, and the grief of her decline stays on the caregiver thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "از مادرم که سنش بالا رفته مراقبت می‌کنم و خسته شدم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "caregiver"
+    },
+    {
+      "text": "چطور مراقب خودم باشم که نسوزم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "caregiver"
+    },
+    {
+      "text": "الان چیزها رو فراموش می‌کنه و دلم می‌شکنه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "caregiver"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the caregiver thread (aging mother, exhausted). Turn 2 answers the caregiver-burnout question with realistic self-care steps in Persian. Turn 3 keeps the grief of her memory decline on the caregiver thread.",
+    "behavior": "Caregiver exhaustion is recognized as its own heavy burden with concrete support, and the emotional weight of a parent's decline is held without falling back to a generic reply."
+  }
+}

@@ -106,12 +106,20 @@
       ],
       art: [
         'مونالیزای داوینچی ابرو ندارد؛ پژوهشگران می‌گویند یا هرگز کشیده نشده‌اند یا در طول قرن‌ها پاک شده‌اند.',
+        'نقاشی‌های غار «لاسکو» در فرانسه حدود هفده‌هزار سال قدمت دارند و هنوز رنگ‌هایشان زنده است.',
+        '«ونگوگ» در طول زندگی‌اش فقط یک نقاشی را فروخت؛ بقیه‌ی شهرتش بعد از مرگش آمد.',
+        '«جیغ» مونک فقط یک نقاشی نیست؛ چهار نسخه‌ی جدا از آن وجود دارد که در موزه‌های مختلف نگهداری می‌شوند.',
+        'رنگ آبی «اولترامارین» روزی از طلا گران‌تر بود؛ از سنگ کمیاب لاجورد ساخته می‌شد و فقط نقاشان ثروتمند از آن استفاده می‌کردند.',
+        'پیکاسو از نوجوانی مثل یک نقاش حرفه‌ای طراحی می‌کرد؛ گفته می‌شود اولین کلمه‌ای که یاد گرفت «مداد» بود.'
+      ],
+      music: [
         'بتهوون بعد از ناشنوایی کامل هم به آهنگسازی ادامه داد؛ سمفونی نهمش را وقتی اجرا کرد که اصلاً نمی‌شنید.',
         'یک پیانوی بزرگ (گرند) بیش از دوازده‌هزار قطعه دارد و حدود دویست و پنجاه سیم.',
         'ویولن معمولاً از بیش از هفتاد قطعه‌ی چوبی جدا ساخته می‌شود که به هم چسبانده می‌شوند.',
         'کوتاه‌ترین آهنگ ضبط‌شده‌ی جهان فقط ۱٫۳۱۶ ثانیه است؛ اثری از گروه نپالم دث به نام «تو رنج می‌بری».',
-        'نقاشی‌های غار «لاسکو» در فرانسه حدود هفده‌هزار سال قدمت دارند و هنوز رنگ‌هایشان زنده است.',
-        'آهنگ «تولدت مبارک» ابتدا به عنوان آهنگ «صبح بخیر» ساخته شد و بعدها شعر تولد گرفت.'
+        'آهنگ «تولدت مبارک» ابتدا به عنوان آهنگ «صبح بخیر» ساخته شد و بعدها شعر تولد گرفت.',
+        'نت استاندارد «لا» (A4) که ارکسترها با آن کوک می‌شوند، در ۴۴۰ هرتز است.',
+        'جان کیج قطعه‌ای به نام «۴۳۳» ساخت که تمام اجرایش چهار دقیقه و سی‌وسه ثانیه سکوت است؛ خودِ سکوت، موسیقی شد.'
       ],
       money: [
         'اسکناس‌های آمریکا از کاغذ ساخته نمی‌شوند؛ از ترکیبی از پنبه و کتان ساخته می‌شوند.',
@@ -223,12 +231,20 @@
       ],
       art: [
         'The Mona Lisa has no eyebrows; researchers believe they were either never painted or have faded away over the centuries.',
+        'The Lascaux cave paintings in France are about 17,000 years old, and their colors are still vivid.',
+        'Van Gogh sold only one painting during his lifetime; the rest of his fame came after his death.',
+        'The Scream is not one painting but four separate versions of the same image, held in different museums.',
+        'The blue pigment ultramarine was once more expensive than gold; it was ground from the rare stone lapis lazuli, so only wealthy painters could afford it.',
+        'Picasso was drawing like a professional by his early teens; some say his first word was "pencil".'
+      ],
+      music: [
         'Beethoven kept composing after going completely deaf; he conducted the premiere of his Ninth Symphony when he could not hear a note of it.',
         'A grand piano has more than 12,000 parts and around 250 strings.',
         'A violin is usually built from more than seventy separate pieces of wood, all glued together.',
         'The shortest recorded song in the world lasts just 1.316 seconds; it is called "You Suffer" by Napalm Death.',
-        'The Lascaux cave paintings in France are about 17,000 years old, and their colors are still vivid.',
-        '"Happy Birthday" was originally written as a song called "Good Morning" and only got its birthday lyrics later.'
+        '"Happy Birthday" was originally written as a song called "Good Morning" and only got its birthday lyrics later.',
+        'The tuning note A4, which orchestras tune to, vibrates at 440 hertz.',
+        'John Cage wrote a piece called Four Thirty Three whose entire performance is four minutes and thirty-three seconds of silence; the silence itself became the music.'
       ],
       money: [
         'US dollar bills are not made of paper; they are a blend of cotton and linen.',

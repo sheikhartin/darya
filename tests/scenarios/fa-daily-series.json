@@ -1,0 +1,26 @@
+{
+  "name": "پیشنهاد سریال",
+  "description": "A Persian viewer asks for series suggestions in three phrasings. Verifies the movies_tv_series fact answers in Persian with a mixed list (Breaking Bad, Succession, Severance, Dark, Ted Lasso, Squid Game).",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چه سریالی ببینم این آخر هفته؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "سریال پیشنهاد بده لطفا",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "سریال چی ببینم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"چه سریالی ببینم\" returns the series list. Turn 2: the imperative request returns the same list. Turn 3: the bare \"سریال چی ببینم\" matches the dedicated series keywords.",
+    "behavior": "Series-specific Persian keywords (چه سریالی ببینم, سریال پیشنهاد بده, سریال چی ببینم) outscore the generic movie fact for series requests, so the dedicated list answers."
+  }
+}

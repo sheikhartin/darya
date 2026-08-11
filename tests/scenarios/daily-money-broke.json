@@ -1,0 +1,27 @@
+{
+  "name": "being broke and surviving the month",
+  "description": "A person is broke and does not know how to survive the month, asks how people cope on very little money, and says they have no money. Verifies the money_broke fact removes shame, shrinks the problem to urgent items, and points to support, while the direct \"what do I do\" question routes to the what_do_i_do help topic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I am broke and I do not know how to survive the month",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "How do people survive on very little money?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "I have no money, what do I do?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "what_do_i_do"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the broke disclosure returns the money_broke fact (not a personal failure, write urgent items, free resources, worth is not the balance). Turn 2: the survival question returns the same fact. Turn 3: \"what do I do\" routes to the help-seeking topic with a small-first-step reply.",
+    "behavior": "Money stress is normalized as a circumstance, not a moral failing. The fact points to concrete free help (food banks, libraries, debt advice) and includes the crisis-line note if hopelessness becomes self-harm thoughts."
+  }
+}

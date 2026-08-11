@@ -1,0 +1,28 @@
+{
+  "name": "laid-off worker looking for work",
+  "description": "A person laid off last month is scared about finding work, asks what jobs will be in demand in 2026, and worries their resume feels empty without a degree. Verifies the work and anxiety threads open, the in-demand-jobs question is answered, and the degree worry stays on the work thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I got laid off last month and I am scared about finding work",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "What jobs will actually be in demand in 2026?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "My resume feels empty without a degree",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the work thread with layoff anxiety. Turn 2 answers the 2026 in-demand jobs question with current-career guidance. Turn 3 keeps the no-degree worry on the work thread.",
+    "behavior": "A layoff is met with realistic, forward-looking career guidance rather than generic reassurance, and the degree worry is addressed without minimizing the real barrier."
+  }
+}

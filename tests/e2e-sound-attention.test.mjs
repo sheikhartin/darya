@@ -1,17 +1,19 @@
 /**
- * End-to-end browser test for the sound-attention nudge and bilingual
+ * End-to-end browser tests for ambient sound behavior and bilingual
  * notifications.
  *
- * Drives a real headless Chrome (Playwright's library API pointed at the
- * system Chrome binary, so nothing needs to be downloaded) against the
- * app served from a local static server, and asserts:
+ * Ambient sound is strictly opt-in: it always boots silent, is started
+ * only by a toggle click, and is never restored from a saved preference.
+ * These tests drive a real headless Chrome (Playwright's library API
+ * pointed at the system Chrome binary, so nothing needs to be
+ * downloaded) against the app served from a local static server, and
+ * assert:
  *
- *   1. With the saved sound preference on but nothing playing yet (the
- *      welcome/picker screen where autoplay is blocked until a gesture),
- *      the picker sound toggle gains an attention class after a short
- *      delay, inviting the tap that starts the sound.
- *   2. Tapping the toggle starts playback and clears the attention
- *      state (the nudge has served its purpose).
+ *   1. A legacy sound cookie from an old version never enables sound at
+ *      boot: the picker toggle starts "off" and no audio plays until the
+ *      user taps the toggle.
+ *   2. A real tap on the picker sound toggle starts playback and keeps
+ *      it playing.
  *   3. Notifications render bilingually: the Persian line on top, the
  *      English line below, both centered, and a dot-separated type
  *      label ("هشدار · Warning") like the picker intro.
@@ -28,6 +30,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { E2E_WAIT_MS, waitForPageFunction } from './e2e-helpers.mjs';
 
 const PROJECT_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -121,34 +124,50 @@ function findChromeBinary() {
   return null;
 }
 
+/**
+ * Launches headless Chrome with autoplay allowed, skipping the test when
+ * no binary exists.
+ * @param {object} t - The node:test context (for t.skip)
+ * @returns {Promise<import('@playwright/test').Browser|null>}
+ */
+async function launchChrome(t) {
+  const chromePath = findChromeBinary();
+  if (!chromePath) {
+    t.skip('no Chrome/Chromium binary found; skipping the e2e sound test');
+    return null;
+  }
+  try {
+    return await chromium.launch({
+      executablePath: chromePath,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-gpu',
+        '--mute-audio',
+        '--disable-dev-shm-usage',
+        '--autoplay-policy=no-user-gesture-required',
+        '--force-prefers-reduced-motion'
+      ]
+    });
+  } catch (err) {
+    t.skip('headless Chrome failed to launch: ' + err.message);
+    return null;
+  }
+}
+
 test(
-  'picker sound toggle draws attention when sound is on-but-silent',
+  'a legacy sound cookie never enables sound at boot; a tap on the toggle starts it',
   { timeout: 60000 },
   async (t) => {
+    // A stale "on" cookie written by an old version must not start
+    // audio or flip the toggle on: every visit boots silent, and only a
+    // toggle click starts playback.
     const server = await startStaticServer();
-    const chromePath = findChromeBinary();
-
     let browser;
     try {
-      if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the e2e sound-attention test'
-        );
-      }
-      try {
-        browser = await chromium.launch({
-          executablePath: chromePath,
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-gpu',
-            '--mute-audio',
-            '--disable-dev-shm-usage',
-            '--autoplay-policy=no-user-gesture-required'
-          ]
-        });
-      } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+      browser = await launchChrome(t);
+      if (!browser) {
+        return;
       }
 
       const page = await browser.newPage();
@@ -160,9 +179,8 @@ test(
         }
       });
 
-      // Seed the saved preference before the page loads so the module
-      // boots with sound intent on but nothing playing (autoplay needs
-      // a gesture that has not happened yet).
+      // Seed a legacy "on" cookie before the page loads, exactly like a
+      // returning user from an old version would have.
       await page.goto(`http://127.0.0.1:${server.address().port}/`, {
         waitUntil: 'domcontentloaded'
       });
@@ -172,60 +190,40 @@ test(
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#picker-sound-toggle');
 
-      // The toggle shows the HONEST state: the saved preference is on,
-      // but nothing can play before a user gesture, so it starts "off"
-      // (never a silent "on"). This is the regression guard for the
-      // refresh-with-sound-enabled bug where the toggle claimed sound
-      // was playing when the browser had blocked autoplay.
+      // The toggle must start honestly "off" even though the legacy
+      // cookie said "on": no saved preference can enable sound.
       assert.equal(
         await page.getAttribute('#picker-sound-toggle', 'aria-pressed'),
         'false',
-        'saved sound intent does not fake an on state before a gesture'
+        'a legacy on-cookie must not flip the toggle on at boot'
       );
+      const bootState = await page.evaluate(() => ({
+        enabled: window.DaryaAmbientSound.enabled,
+        playing: window.DaryaAmbientSound.isPlaying()
+      }));
+      assert.equal(bootState.enabled, false, 'sound must boot disabled');
+      assert.equal(bootState.playing, false, 'nothing may play at boot');
 
-      // The attention class must appear after the configured delay
-      // (SOUND_ATTENTION_DELAY_MS, 3s), not before.
-      await page.waitForFunction(
-        () =>
-          document
-            .getElementById('picker-sound-toggle')
-            .classList.contains('picker__sound-toggle--attention'),
-        null,
-        { timeout: 10000 }
-      );
-
-      // Tapping the toggle starts the sound (the click is the user
-      // gesture autoplay needs) and must clear the attention state. The
-      // click is issued through the DOM because the attention pulse
-      // animates the button (scale/opacity), which makes Playwright's
-      // stability check wait forever for a "stable" element.
+      // Tapping the toggle is the gesture that starts sound: it flips on
+      // only once playback has genuinely started. The click is issued
+      // through the DOM because the button has a hover transition that
+      // makes Playwright's stability check wait.
       await page.evaluate(() => {
         document.getElementById('picker-sound-toggle').click();
       });
-
-      // The toggle must flip on ONLY once playback has genuinely
-      // started (the sync is keyed off the actual audio state). Waiting
-      // for the flip therefore proves real playback began, not just
-      // that the click happened.
-      await page.waitForFunction(
+      await waitForPageFunction(
+        page,
         () =>
           document
             .getElementById('picker-sound-toggle')
             .getAttribute('aria-pressed') === 'true',
         null,
-        { timeout: 8000 }
+        E2E_WAIT_MS.PLAYBACK
       );
-
-      // With the sound genuinely playing, the attention nudge has
-      // served its purpose and must be gone.
       assert.equal(
-        await page.evaluate(() =>
-          document
-            .getElementById('picker-sound-toggle')
-            .classList.contains('picker__sound-toggle--attention')
-        ),
-        false,
-        'starting sound clears the attention nudge'
+        await page.evaluate(() => window.DaryaAmbientSound.isPlaying()),
+        true,
+        'the toggle click must start real playback'
       );
 
       assert.deepEqual(pageErrors, [], 'no uncaught errors in the browser');
@@ -244,36 +242,16 @@ test(
   { timeout: 60000 },
   async (t) => {
     // Regression guard for the "turns on for a second, then turns off"
-    // bug. A real tap fires pointerdown BEFORE click. The document-level
-    // first-gesture listener used to autoplay on that pointerdown (the
-    // saved preference was on), and then the click's toggle() saw the
-    // just-started playback as "already playing" and flipped it right
-    // back off. The first-gesture listener must yield to the toggle's
-    // own click handler when the gesture is on a sound toggle itself.
+    // bug. A real touch tap fires pointerdown before click. Sound is
+    // opt-in, so nothing may start on the pointerdown; the click's
+    // toggle() owns the gesture and must leave the sound genuinely
+    // playing past the fade-in.
     const server = await startStaticServer();
-    const chromePath = findChromeBinary();
-
     let browser;
     try {
-      if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the e2e tap regression test'
-        );
-      }
-      try {
-        browser = await chromium.launch({
-          executablePath: chromePath,
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-gpu',
-            '--mute-audio',
-            '--disable-dev-shm-usage',
-            '--autoplay-policy=no-user-gesture-required'
-          ]
-        });
-      } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+      browser = await launchChrome(t);
+      if (!browser) {
+        return;
       }
 
       const page = await browser.newPage();
@@ -285,19 +263,13 @@ test(
         }
       });
 
-      // Seed the saved preference ON so the first-gesture autoplay path
-      // is armed (this is the state in which the double-fire occurred).
       await page.goto(`http://127.0.0.1:${server.address().port}/`, {
-        waitUntil: 'domcontentloaded'
+        waitUntil: 'load'
       });
-      await page.evaluate(() => {
-        document.cookie = 'darya_sound=1; path=/';
-      });
-      await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#picker-sound-toggle');
 
-      // Simulate a real touch tap: pointerdown (which the first-gesture
-      // listener used to hijack) followed by the browser's click.
+      // Simulate a real touch tap: pointerdown followed by the browser's
+      // click. Nothing may start on the pointerdown alone.
       await page.evaluate(() => {
         const toggle = document.getElementById('picker-sound-toggle');
         toggle.dispatchEvent(
@@ -313,16 +285,15 @@ test(
       });
 
       // The tap must result in REAL playback that stays on: the toggle
-      // flips to on and the audio keeps playing past the fade-in. If the
-      // first-gesture listener still raced the toggle, the state would
-      // settle back to off shortly after the click.
-      await page.waitForFunction(
+      // flips to on and the audio keeps playing past the fade-in.
+      await waitForPageFunction(
+        page,
         () =>
           document
             .getElementById('picker-sound-toggle')
             .getAttribute('aria-pressed') === 'true',
         null,
-        { timeout: 8000 }
+        E2E_WAIT_MS.PLAYBACK
       );
       await page.waitForTimeout(1200);
       const settled = await page.evaluate(() => ({
@@ -348,33 +319,15 @@ test(
 );
 
 test(
-  'notifications render bilingually (FA on top, EN below, dot-separated type)',
+  'notifications render as a centered icon-only badge with the message in aria-label',
   { timeout: 60000 },
   async (t) => {
     const server = await startStaticServer();
-    const chromePath = findChromeBinary();
-
     let browser;
     try {
-      if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the e2e notification test'
-        );
-      }
-      try {
-        browser = await chromium.launch({
-          executablePath: chromePath,
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-gpu',
-            '--mute-audio',
-            '--disable-dev-shm-usage',
-            '--autoplay-policy=no-user-gesture-required'
-          ]
-        });
-      } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+      browser = await launchChrome(t);
+      if (!browser) {
+        return;
       }
 
       const page = await browser.newPage();
@@ -392,81 +345,80 @@ test(
       await page.waitForSelector('#picker-en');
 
       // Show a bilingual warning notification directly through the
-      // public API and inspect the rendered DOM.
+      // public API and inspect the rendered DOM. A long duration keeps
+      // the badge on screen for the whole test: under the heavy load of
+      // a full-suite run the sequential assertions below can exceed the
+      // default auto-dismiss, which would make the overlay vanish
+      // mid-measurement.
       await page.evaluate(() => {
-        window.DaryaOverlays.showNotification('warn', {
-          fa: 'پیام هشدار فارسی',
-          en: 'English warning message'
-        });
+        window.DaryaOverlays.showNotification(
+          'warn',
+          {
+            fa: 'پیام هشدار فارسی',
+            en: 'English warning message'
+          },
+          60000
+        );
       });
 
       const overlay = page.locator('.notification-overlay');
-      await overlay.waitFor({ timeout: 5000 });
+      await overlay.waitFor({ timeout: E2E_WAIT_MS.FOCUS });
 
-      // Type label: FA part, dot separator, EN part (in DOM order).
-      assert.equal(
-        await page.textContent('.notification-type__fa'),
-        'هشدار',
-        'type label shows the Persian severity first'
-      );
-      assert.equal(
-        await page.textContent('.notification-type__sep'),
-        '·',
-        'type label uses a dot separator'
-      );
-      assert.equal(
-        await page.textContent('.notification-type__en'),
-        'Warning',
-        'type label shows the English severity after the dot'
-      );
-
-      // Message lines: Persian on top, English below, both with correct
-      // direction attributes and centered.
-      const faMsg = overlay.locator('.notification-message--fa');
-      const enMsg = overlay.locator('.notification-message--en');
-      await faMsg.waitFor({ timeout: 5000 });
-      await enMsg.waitFor({ timeout: 5000 });
-      assert.equal(
-        await faMsg.textContent(),
-        'پیام هشدار فارسی',
-        'Persian message renders on its own line'
-      );
-      assert.equal(
-        await enMsg.textContent(),
-        'English warning message',
-        'English message renders on its own line'
-      );
-      assert.equal(await faMsg.getAttribute('dir'), 'rtl');
-      assert.equal(await enMsg.getAttribute('dir'), 'ltr');
-      assert.equal(await faMsg.getAttribute('lang'), 'fa');
-      assert.equal(await enMsg.getAttribute('lang'), 'en');
-
-      const order = await page.evaluate(() => {
-        const container = document.querySelector('.notification-container');
-        const paragraphs = [
-          ...container.querySelectorAll('.notification-message')
-        ];
-        return paragraphs.map((el) => el.className);
+      // No text is painted anywhere in the notification: the badge is a
+      // bare severity symbol (the user asked for icon-only, "just a
+      // symbol like warning is enough"). Both language lines exist only
+      // as the accessible label.
+      const visibleText = await page.evaluate(() => {
+        const overlay = document.querySelector('.notification-overlay');
+        return (overlay.textContent || '').trim();
       });
-      assert.deepEqual(
-        order,
-        [
-          'notification-message notification-message--fa',
-          'notification-message notification-message--en'
-        ],
-        'Persian line comes before the English line'
+      assert.equal(
+        visibleText,
+        '',
+        'notification must not render any visible text'
       );
 
-      const alignment = await faMsg.evaluate(
-        (el) => getComputedStyle(el).textAlign
+      // The bilingual message lives in the overlay aria-label so screen
+      // readers still announce it.
+      assert.equal(
+        await overlay.getAttribute('aria-label'),
+        'پیام هشدار فارسی English warning message',
+        'bilingual message is carried as the accessible label'
       );
-      assert.equal(alignment, 'center', 'bilingual lines are centered');
+      assert.equal(await overlay.getAttribute('role'), 'alert');
+      assert.equal(await overlay.getAttribute('aria-live'), 'assertive');
 
-      // Severity icon: an inline SVG marked aria-hidden (decorative,
-      // the bilingual type text carries the meaning), inheriting the
-      // chip's accent color.
-      const icon = page.locator('.notification-type__icon');
-      await icon.waitFor({ timeout: 5000 });
+      // The badge is a round container centered in the viewport (both
+      // axes), not a top-aligned text card.
+      const placement = await page.evaluate(() => {
+        const overlay = document.querySelector('.notification-overlay');
+        const badge = document.querySelector('.notification-container');
+        const or = overlay.getBoundingClientRect();
+        const br = badge.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+        return {
+          badgeCenterX: br.left + br.width / 2,
+          badgeCenterY: br.top + br.height / 2,
+          viewportCenterX: vw / 2,
+          viewportCenterY: vh / 2,
+          overlayWidth: or.width
+        };
+      });
+      assert.ok(
+        Math.abs(placement.badgeCenterX - placement.viewportCenterX) < 4,
+        'badge is horizontally centered in the viewport'
+      );
+      assert.ok(
+        Math.abs(placement.badgeCenterY - placement.viewportCenterY) < 4,
+        'badge is vertically centered in the viewport'
+      );
+
+      // Severity icon: an inline SVG marked aria-hidden (decorative, the
+      // overlay aria-label carries the meaning), inheriting the amber
+      // warn accent through currentColor.
+      const icon = page.locator('.notification-icon');
+      await icon.waitFor({ timeout: E2E_WAIT_MS.FOCUS });
       assert.equal(await icon.getAttribute('aria-hidden'), 'true');
       assert.equal(
         await icon.evaluate((el) => el.tagName),
@@ -475,8 +427,7 @@ test(
       );
       const iconColor = await page.evaluate(
         () =>
-          getComputedStyle(document.querySelector('.notification-type__icon'))
-            .color
+          getComputedStyle(document.querySelector('.notification-icon')).color
       );
       assert.equal(
         iconColor,
@@ -488,7 +439,7 @@ test(
       // shapes never render empty (a circle with no radius or a path
       // with no data draws nothing).
       const iconGeometry = await page.evaluate(() => {
-        const icon = document.querySelector('.notification-type__icon');
+        const icon = document.querySelector('.notification-icon');
         const first = icon.firstElementChild;
         return {
           tag: first ? first.tagName : null,
@@ -504,102 +455,28 @@ test(
           ')'
       );
 
-      // Type label renders as an emphasis chip outlined with the
-      // severity accent (a border, not a tinted background, so the text
-      // always sits on the plain panel).
-      const chipBorder = await page.evaluate(
-        () =>
-          getComputedStyle(document.querySelector('.notification-type'))
-            .borderTopColor
-      );
-      assert.match(
-        chipBorder,
-        /242, 185, 135/u,
-        'warn chip is outlined with the amber accent'
-      );
-
-      // The type chip is horizontally centered in the card (the dismiss
-      // button floats in the corner and must not shift it).
-      const centered = await page.evaluate(() => {
-        const container = document.querySelector('.notification-container');
-        const chip = document.querySelector('.notification-type');
-        const cr = container.getBoundingClientRect();
-        const hr = chip.getBoundingClientRect();
+      // The badge is round (equal width/height, 50% radius) so it reads
+      // as a symbol, not a text card.
+      const badgeShape = await page.evaluate(() => {
+        const badge = document.querySelector('.notification-container');
+        const cs = getComputedStyle(badge);
+        const r = badge.getBoundingClientRect();
         return {
-          containerCenter: cr.left + cr.width / 2,
-          chipCenter: hr.left + hr.width / 2,
-          width: cr.width
+          width: r.width,
+          height: r.height,
+          radius: cs.borderRadius
         };
       });
       assert.ok(
-        Math.abs(centered.containerCenter - centered.chipCenter) <
-          centered.width * 0.05,
-        'type chip is centered in the notification card'
+        Math.abs(badgeShape.width - badgeShape.height) < 2,
+        'badge is circular (equal width and height)'
       );
+      assert.equal(badgeShape.radius, '50%', 'badge uses a 50% radius');
 
-      // Dark-mode check in both themes: the luminous severity accent
-      // must keep WCAG contrast on the dark panel in ocean AND beach.
-      // The panel (possibly translucent in beach) is composited over
-      // white, the worst case for a dark surface, before the ratio is
-      // computed.
-      const measureContrast = () =>
-        page.evaluate(() => {
-          const container = document.querySelector('.notification-container');
-          const label = document.querySelector('.notification-type');
-          const toRgb = (css) => {
-            const m = css.match(
-              /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)/
-            );
-            return [
-              Number(m[1]),
-              Number(m[2]),
-              Number(m[3]),
-              m[4] === undefined ? 1 : Number(m[4])
-            ];
-          };
-          const lum = (rgb) => {
-            const lin = rgb.slice(0, 3).map((c) => {
-              const s = c / 255;
-              return s <= 0.03928
-                ? s / 12.92
-                : Math.pow((s + 0.055) / 1.055, 2.4);
-            });
-            return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-          };
-          // The text renders on the chip, which sits on the panel, which
-          // in the beach theme used to be translucent over the bright
-          // backdrop. Composite chip-over-panel, then panel-over-white
-          // (the worst case for a dark surface), to get the effective
-          // background the label actually renders on.
-          const fg = toRgb(getComputedStyle(label).color);
-          const chip = toRgb(getComputedStyle(label).backgroundColor);
-          const panel = toRgb(getComputedStyle(container).backgroundColor);
-          const over = (top, bottom) =>
-            top
-              .slice(0, 3)
-              .map((c, i) => c * top[3] + bottom[i] * (1 - top[3]));
-          const chipOnPanel = over(chip, panel);
-          const bg = over([...chipOnPanel, 1], [255, 255, 255, 1]);
-          const l1 = lum(fg);
-          const l2 = lum(bg);
-          return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-        });
-
-      const oceanRatio = await measureContrast();
-      assert.ok(
-        oceanRatio >= 4.5,
-        'ocean theme: type label passes 4.5:1 (' + oceanRatio.toFixed(2) + ')'
-      );
-
+      // Beach theme keeps the amber severity border on the badge.
       await page.evaluate(() => {
         document.documentElement.setAttribute('data-theme', 'beach');
       });
-
-      const beachRatio = await measureContrast();
-      assert.ok(
-        beachRatio >= 4.5,
-        'beach theme: type label passes 4.5:1 (' + beachRatio.toFixed(2) + ')'
-      );
       const beachBorder = await page.evaluate(
         () =>
           getComputedStyle(document.querySelector('.notification-container'))
@@ -611,8 +488,10 @@ test(
         'beach theme keeps the amber severity border'
       );
 
-      // Dismiss the toast so the timer has nothing to clean up later.
-      await page.click('.notification-dismiss');
+      // Escape dismisses the badge (document-level handler that never
+      // moves focus, so the composer caret is safe).
+      await page.keyboard.press('Escape');
+      await overlay.waitFor({ state: 'detached', timeout: E2E_WAIT_MS.FOCUS });
 
       assert.deepEqual(pageErrors, [], 'no uncaught errors in the browser');
     } finally {

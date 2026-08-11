@@ -1,0 +1,26 @@
+{
+  "name": "پیشنهاد انیمه",
+  "description": "A Persian anime newcomer asks what to watch. Verifies the movies_anime fact answers in Persian with a tasteful mix of film and series anime.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "انیمه چی ببینم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "یک انیمه خوب بهم معرفی کن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "انیمه چی خوبه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"انیمه چی ببینم\" returns the anime fact. Turn 2: the imperative \"یک انیمه خوب بهم معرفی کن\" also returns it. Turn 3: \"انیمه چی خوبه\" matches the dedicated keyword.",
+    "behavior": "Persian anime keywords (انیمه چی ببینم, انیمه خوب, انیمه چی خوبه) route to the anime fact, distinct from the western animation list."
+  }
+}

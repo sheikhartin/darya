@@ -10,7 +10,7 @@
  *   - language.js:     applyLanguage, selectLanguage, showPicker
  *   - conversation.js: startConversation, exit flow, sendMessage
  *   - menu.js:         menu popover keyboard/pointer behavior
- *   - sound.js:        sound toggle sync, attention nudge, autoplay
+ *   - sound.js:        sound toggle sync, bilingual UI text
  */
 (function (global) {
   'use strict';
@@ -45,23 +45,14 @@
     MIN_REPLY_DELAY_MS: 1500,
     MAX_REPLY_DELAY_MS: 2300,
 
-    /** Delay before the picker sound toggle draws attention (ms). */
-    SOUND_ATTENTION_DELAY_MS: 3000,
-
     /** Proactive idle opener delay range (ms): Darya speaks first after
      * the greeting if the user stays silent. Randomized per conversation
      * so it never feels scripted. */
     IDLE_OPENER_MIN_MS: 8000,
     IDLE_OPENER_MAX_MS: 20000,
 
-    /** @type {number|null} Handle for the pending sound-attention timer. */
-    soundAttentionTimer: null,
-
     /** @type {number} Index of the focused menu item in the popover. */
-    menuFocusIndex: 0,
-
-    /** True once a blocked-autoplay toast has been shown this session. */
-    soundBlockedToastShown: false
+    menuFocusIndex: 0
   };
 
   Object.assign(
@@ -266,27 +257,11 @@
 
   if (el.pickerSoundToggle) {
     el.pickerSoundToggle.addEventListener('click', function () {
-      // The tap is the gesture that starts the sound: stop the nudge.
-      ctrl.clearSoundAttention();
       DaryaAmbientSound.toggle().then(function () {
         ctrl.syncSoundToggleUI(DaryaAmbientSound.isPlaying());
       });
     });
   }
-
-  // When the tab returns to the foreground, the ambient-sound module may
-  // have started playback on its own (its visibility handler retries
-  // autoplay). If sound is genuinely playing now, the picker nudge has
-  // served its purpose and must not keep pulsing over a live sound.
-  document.addEventListener('visibilitychange', function () {
-    if (
-      !document.hidden &&
-      typeof DaryaAmbientSound !== 'undefined' &&
-      DaryaAmbientSound.isPlaying()
-    ) {
-      ctrl.clearSoundAttention();
-    }
-  });
 
   // ========================================================================
   // Refresh / close guard
@@ -338,26 +313,12 @@
   DaryaAmbient.initOceanParticles();
   DaryaAmbient.initBirdShadows();
 
-  // Initialize both sound toggles from the ACTUAL playback state, not
-  // the saved preference. At boot nothing can be playing yet (browsers
-  // block audible autoplay until the user has interacted with the page;
-  // see the MDN autoplay guide), so the toggles start honestly "off"
-  // even when the user previously enabled sound. The saved preference
-  // is still honored by the first-gesture autoplay retry and by the
-  // picker attention nudge, which invites the tap that starts it.
+  // Initialize both sound toggles from the ACTUAL playback state. At
+  // boot nothing can be playing (the module always starts silent), so
+  // the toggles show honestly "off". Ambient sound is strictly opt-in:
+  // it only ever starts after the user clicks a toggle button, and it
+  // is never restored from a saved preference.
   if (el.pickerSoundToggle && typeof DaryaAmbientSound !== 'undefined') {
     ctrl.syncSoundToggleUI(DaryaAmbientSound.isPlaying());
   }
-
-  // The welcome screen is shown first: if the saved preference wants
-  // sound but the browser has not allowed autoplay yet, nudge the user
-  // toward the toggle after a short delay.
-  ctrl.armSoundAttention();
-
-  ctrl.initAutoplayGesture();
-
-  // The menu sound toggle starts honest: the HTML default is "off" and
-  // nothing is playing yet (browsers require a user gesture before audio
-  // can start). The first interaction re-syncs the toggle from the
-  // actual playback result via autoplayIfEnabled().then(...).
 })(typeof window !== 'undefined' ? window : globalThis);

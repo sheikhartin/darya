@@ -1,0 +1,28 @@
+{
+  "name": "تازه‌وارد شهر جدید بدون دوست",
+  "description": "A Persian person moved to a new city three months ago with no friends, asks how adults make friends, and admits spending every weekend alone. Verifies the loneliness thread opens and stays open, with the friendship question answered.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سه ماهه به شهر جدید اومدم و هیچ دوستی ندارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "آدم‌های بزرگ چطور دوست پیدا می‌کنن؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "هر آخر هفته تنهام",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the loneliness thread (new city, no friends). Turn 2 answers the adult-friendship question with real, low-pressure steps in Persian. Turn 3 keeps the weekend-alone disclosure on the loneliness thread.",
+    "behavior": "Moving to a new city and having no social circle is treated as a genuine loneliness disclosure, answered with practical connection steps and empathy, never as a topic for a trivia fact."
+  }
+}

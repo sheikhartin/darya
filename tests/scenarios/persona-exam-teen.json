@@ -1,0 +1,29 @@
+{
+  "name": "teen cramming before final exams",
+  "description": "A high-school student has final exams next week, cannot focus, asks how to study without panicking, and admits everyone expects too much of them. Verifies the school and anxiety threads open, the study question is answered, and the pressure stays on the stress thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "My final exams start next week and I cannot focus",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "school"
+    },
+    {
+      "text": "How do I study without panicking?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "anxiety"
+    },
+    {
+      "text": "Everyone expects so much from me",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the school thread with focus trouble. Turn 2 answers the panic-free study question with study guidance. Turn 3 keeps the exam pressure on the stress thread.",
+    "behavior": "Exam-season anxiety is met with practical study advice, and the expectation pressure is acknowledged as stress rather than dismissed or turned into a generic opener."
+  }
+}

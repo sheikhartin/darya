@@ -33,8 +33,13 @@
     /** @type {string|null} The theme ('ocean' or 'beach') of the current audio. */
     currentTheme: null,
 
-    /** @type {boolean} Whether ambient sound is currently enabled by the user. */
-    isEnabled: getSavedState() === true,
+    /**
+     * @type {boolean} Whether ambient sound is currently enabled by the
+     * user. Always starts false: sound is opt-in per session and can
+     * only be enabled by clicking a toggle button. Never restored from
+     * storage, so a stale preference can never start audio by itself.
+     */
+    isEnabled: false,
 
     /** @type {number} The target volume (0-1) for new audio playback. */
     targetVolume: D.DEFAULT_VOLUME,
@@ -62,9 +67,8 @@
 
     /**
      * @type {Promise<boolean>|null} In-flight start attempt, shared by
-     * concurrent callers (the language-picker click, the first-gesture
-     * document listener, the menu/picker toggle, and the theme-change
-     * timer) so a single user gesture never starts two audio elements.
+     * concurrent callers (the toggle button and the theme-change timer)
+     * so a single user gesture never starts two audio elements.
      */
     pendingStart: null,
 
@@ -104,8 +108,8 @@
       // Abort any in-flight play attempt instead of letting it hang: a
       // hidden tab throttles media loading, so the attempt would only
       // sit until the safety timeout and then look like a failure. The
-      // abort is transient: it keeps the user's intent so the tab
-      // returning to focus can retry via autoplayIfEnabled.
+      // abort is transient: it keeps the user's in-memory intent so a
+      // later toggle click can retry.
       if (state.inFlightAttempt) {
         state.inFlightAttempt.fail(D.makeTransientError('AbortError'));
       }
@@ -117,7 +121,9 @@
       }
     } else {
       // Tab became visible again; resume playback if it was playing
-      // before the tab was hidden.
+      // before the tab was hidden. This resumes audio the user already
+      // started this session, not a fresh autoplay: nothing is ever
+      // started without a toggle click.
       if (
         state.isEnabled &&
         state.wasPlayingBeforeHidden &&
@@ -129,14 +135,6 @@
         });
       }
       state.wasPlayingBeforeHidden = false;
-      // The tab returning to focus is a fresh activation. If the user
-      // wants sound (saved preference, or a just-aborted toggle kept the
-      // intent) but nothing is actually playing, try to start it now.
-      // Transient failures are handled safely inside autoplayIfEnabled,
-      // so this never wipes the saved preference.
-      if ((getSavedState() === true || state.isEnabled) && !isPlaying()) {
-        autoplayIfEnabled();
-      }
     }
   }
 
@@ -146,48 +144,29 @@
   }
 
   // ========================================================================
-  // Persistence
+  // Legacy cookie cleanup
   // ========================================================================
 
   /**
-   * Saves the current sound enabled/disabled state to a persistent cookie
-   * so the preference is remembered across visits.
+   * Expires the sound-preference cookie written by versions before
+   * 1.2.0. Ambient sound no longer persists its state: it always boots
+   * silent and is started only by a toggle click, so a stale "on"
+   * cookie from an old visit must be removed rather than left to linger.
    * Best-effort only; failures are silently ignored.
    */
-  function saveCookieState() {
+  function expireLegacyCookie() {
     try {
-      var expires = new Date(
-        Date.now() + D.SOUND_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000
-      ).toUTCString();
-      document.cookie =
-        D.SOUND_COOKIE_NAME +
-        '=' +
-        (state.isEnabled ? '1' : '0') +
-        '; expires=' +
-        expires +
-        '; path=/; SameSite=Lax';
-    } catch (e) {
-      // Best-effort only; sound still works per-session.
-    }
-  }
-
-  /**
-   * Returns the saved sound state from the cookie, or null if no cookie
-   * is found. Used during boot to restore the UI toggle state.
-   * @returns {boolean|null} true if enabled, false if disabled, null if unknown
-   */
-  function getSavedState() {
-    try {
-      var match = document.cookie.match(
-        new RegExp('(?:^|; )' + D.SOUND_COOKIE_NAME + '=([^;]*)')
-      );
-      if (match) {
-        return match[1] === '1';
+      // Only write when the cookie actually exists: a no-op set would
+      // create the cookie in some environments for the first time.
+      if (document.cookie.indexOf(D.LEGACY_SOUND_COOKIE_NAME) === -1) {
+        return;
       }
+      document.cookie =
+        D.LEGACY_SOUND_COOKIE_NAME +
+        '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
     } catch (e) {
-      // document.cookie may throw in restrictive environments
+      // Best-effort only.
     }
-    return null;
   }
 
   // ========================================================================
@@ -234,12 +213,10 @@
         },
         function () {
           // Defensive: performToggle should never reject, but if it does
-          // (an unexpected internal error), settle as "off" and persist
-          // it rather than leaving an unhandled rejection that could
-          // freeze the toggle.
+          // (an unexpected internal error), settle as "off" rather than
+          // leaving an unhandled rejection that could freeze the toggle.
           state.pendingToggle = null;
           state.isEnabled = false;
-          saveCookieState();
           return false;
         }
       );
@@ -261,8 +238,8 @@
    * audio state. Transient failures (autoplay policy, tab-hidden abort,
    * slow-network timeout) keep the user's intent instead.
    *
-   * The current enabled/disabled state is saved to a cookie after each
-   * successful toggle so it persists across sessions.
+   * The enabled state is session-only: it is never persisted, so every
+   * visit starts silent and sound plays only after a toggle click.
    *
    * @returns {Promise<boolean>} Resolves with the new enabled state.
    */
@@ -270,9 +247,10 @@
     // The button reflects ACTUAL playback, so a click always does what
     // its visible state promises: stop when playing, start otherwise.
     // Keying off isPlaying() also recovers the edge case where the
-    // module was left "enabled" but silent (e.g. an autoplay attempt
-    // was blocked or a tab-resume failed): the next click restarts
-    // within the gesture instead of toggling to a confusing "off".
+    // module was left "enabled" but silent (e.g. a tab-resume failed or
+    // a policy block occurred on a theme-change start): the next click
+    // restarts within the gesture instead of toggling to a confusing
+    // "off".
     if (isPlaying()) {
       // Disable: clear any pending theme change, then stop current audio
       state.isEnabled = false;
@@ -282,7 +260,6 @@
       }
       state.consecutiveFailures = 0;
       return P.stopCurrent().then(function () {
-        saveCookieState();
         return false;
       });
     }
@@ -298,7 +275,6 @@
         // disabled so the toggle never reports an enabled state that no
         // sound could ever back up.
         state.isEnabled = false;
-        saveCookieState();
         return false;
       }
       // The theme already switched (the toggle starts the current
@@ -425,10 +401,10 @@
 
   /**
    * Starts playback for the given theme, sharing a single in-flight
-   * attempt between concurrent callers (the toggle, the autoplay retry,
-   * and the theme-change timer) so one gesture never starts two audio
-   * elements. Resolves with the ACTUAL enabled state after the attempt
-   * settles: genuine failures roll back to disabled, transient failures
+   * attempt between concurrent callers (the toggle button and the
+   * theme-change timer) so one gesture never starts two audio elements.
+   * Resolves with the ACTUAL enabled state after the attempt settles:
+   * genuine failures roll back to disabled, transient failures
    * (autoplay policy, tab-hidden abort, slow-network timeout) keep the
    * user's intent.
    * @param {string} theme - 'ocean' or 'beach'
@@ -441,9 +417,6 @@
     state.pendingStart = P.playThemeSound(theme).then(
       function () {
         state.pendingStart = null;
-        // Playback started (or the synthesized fallback took over):
-        // persist the state so the preference survives the session.
-        saveCookieState();
         // Report the ACTUAL enabled state: the synthesized fallback may
         // have disabled the system internally if it could not start.
         return state.isEnabled;
@@ -452,8 +425,8 @@
         state.pendingStart = null;
         // A transient failure (autoplay policy, tab-hidden abort, or
         // slow-network timeout) is not a playback failure: the file is
-        // fine, the context was just not ready. Keep the saved intent so
-        // a later gesture or tab return can retry. Genuine load/decode
+        // fine, the context was just not ready. Keep the in-memory
+        // intent so a later toggle click can retry. Genuine load/decode
         // errors still roll back honestly so the UI never claims sound
         // is enabled when it cannot play.
         if (D.isTransientError(err)) {
@@ -463,32 +436,10 @@
         // error). Roll back the enabled state so the UI correctly
         // reports that no sound is playing.
         state.isEnabled = false;
-        saveCookieState();
         return false;
       }
     );
     return state.pendingStart;
-  }
-
-  /**
-   * Automatically starts playback of the current theme sound if ambient
-   * sound is enabled in the user's settings, utilizing a user-gesture context.
-   * Safe to call multiple times; if already playing, does nothing.
-   * Concurrent callers (the language-picker click and the first-gesture
-   * document listener can fire on the same click) share one in-flight
-   * attempt instead of each starting their own Audio element.
-   * @returns {Promise<boolean>} Resolves with the ACTUAL enabled state.
-   */
-  function autoplayIfEnabled() {
-    if (state.pendingStart) {
-      return state.pendingStart;
-    }
-    if (state.isEnabled && !isPlaying()) {
-      var theme =
-        document.documentElement.getAttribute('data-theme') || 'ocean';
-      return startPlayback(theme);
-    }
-    return Promise.resolve(state.isEnabled);
   }
 
   // ========================================================================
@@ -501,6 +452,10 @@
   // delay audio.play() past Chrome's transient user activation and the
   // autoplay policy would reject playback (NotAllowedError).
   if (typeof document !== 'undefined') {
+    // Expire the sound-preference cookie left behind by versions before
+    // 1.2.0, then preload the manifest so the first toggle click can
+    // start playback immediately within the user-gesture window.
+    expireLegacyCookie();
     P.loadManifest();
   }
 
@@ -509,8 +464,6 @@
     onThemeChange,
     setVolume,
     isPlaying,
-    getSavedState,
-    autoplayIfEnabled,
     get enabled() {
       return state.isEnabled;
     },

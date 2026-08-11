@@ -1,0 +1,29 @@
+{
+  "name": "انزوای دورکاری",
+  "description": "A remote worker who feels isolated, misses colleagues, and asks how to not be alone while working from home. Verifies the isolation disclosure opens the work thread and the follow-up question routes to loneliness.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "از خونه کار می‌کنم و کاملاً احساس انزوا می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "دورکاری تنهاییه، دلم برای همکارها تنگ شده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "چطور توی دورکاری تنها نباشم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the work thread for isolation. Turn 2 moves to loneliness for missing colleagues. Turn 3 answers the solitude question from the loneliness thread.",
+    "behavior": "Persian remote-work isolation gets the same two-thread care as English, and the practical question never falls to a generic fallback."
+  }
+}

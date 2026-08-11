@@ -1,0 +1,29 @@
+{
+  "name": "remote work isolation",
+  "description": "A remote worker who feels isolated, misses colleagues, and asks how to make friends while working alone. Verifies the isolation disclosure carries both work and loneliness threads, and the friendship question routes to loneliness.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I work from home and I feel totally isolated",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "Remote work is lonely, I miss having colleagues",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "How do I make friends when I work alone all day?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the work thread with a loneliness overlay. Turn 2 moves to the loneliness thread for missing colleagues. Turn 3 answers the friend-making question from the loneliness thread.",
+    "behavior": "Remote-work isolation is recognized as both a work and a loneliness experience, and a practical friendship question is not bounced to a generic fallback."
+  }
+}

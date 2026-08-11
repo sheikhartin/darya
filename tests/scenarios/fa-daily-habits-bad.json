@@ -1,0 +1,26 @@
+{
+  "name": "ترک عادت بد",
+  "description": "A Persian user asks how to quit bad habits in several phrasings. Verifies the habits_breaking fact answers in Persian (awareness of triggers, replacement, environment, urge surfing, no self-blame).",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چطور عادت بد رو ترک کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "ترک عادت بد چطور ممکنه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "چطور عادت بدمو ترک کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"چطور عادت بد رو ترک کنم\" returns the habits_breaking fact. Turn 2: \"ترک عادت بد چطور ممکنه\" returns it too. Turn 3: the possessive form \"عادت بدمو\" also matches.",
+    "behavior": "Persian keywords cover the collocation variants (عادت بد رو ترک کنم, ترک عادت بد, عادت بدمو) so real typing variations all route to the same fact."
+  }
+}

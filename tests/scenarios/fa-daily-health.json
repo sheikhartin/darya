@@ -1,0 +1,26 @@
+{
+  "name": "سؤال‌های سلامت",
+  "description": "A Persian user asks about fatigue, headaches, and back pain. Verifies the health_common fact answers in Persian with basics-first guidance and warning-sign pointers.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چرا همیشه خسته ام؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "چرا مدام سردرد میگیرم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "کمرم درد میکنه، جدیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the fatigue question returns the health_common fact. Turn 2: the headache question returns it too. Turn 3: the back pain question matches the dedicated keyword and returns the fact including the red-flag list.",
+    "behavior": "Persian health keywords (همیشه خسته ام, سردرد میگیرم, کمرم درد میکنه) route to the general-guidance fact, which always defers serious cases to a doctor."
+  }
+}

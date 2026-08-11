@@ -1,0 +1,48 @@
+{
+  "name": "session profile memory: age and name disclosure with late recall",
+  "description": "Tests the session user profile (name and age) across many turns in English. The user discloses age and name early, then talks about work and anxiety topics in between, and later asks Darya to recall both details. Verifies the disclosures route through the profile override (statement/open_statement), the intervening topic turns stay on their own topics, and the recall questions return via the profile recall path (question/information_or_reflection) instead of an evasive generic line.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "I'm 24 years old",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "my name is Sara",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "my job has been stressful lately",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "how old am I?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "I've been feeling anxious about the future",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "what is my name?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "I am tired of this whole thing",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turns 1-2 store age (24) and name (Sara) in the in-memory profile. Turns 3 and 5 route to the work and anxiety rules respectively. Turns 4 and 6 are recall questions answered from the stored profile, not from an evasive unknown-detail pool. Turn 7 is an ordinary statement turn after the recall.",
+    "behavior": "The profile override runs before the generic rule pipeline: disclosures use the ageStored/nameStored pools with {age}/{name} placeholders filled, and recall questions use the ageKnown/nameKnown pools. Intervening emotional turns do not disturb the stored values, proving the memory is session-scoped and survives topic shifts."
+  }
+}

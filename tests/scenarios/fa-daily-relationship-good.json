@@ -1,0 +1,29 @@
+{
+  "name": "نشانه‌های رابطه سالم",
+  "description": "A Persian user asks for the signs of a healthy relationship, how to know if theirs is good, and shares that their relationship is warm. Verifies the relationship_good fact answers in Persian and that a positive reflection stays knowledge-driven.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "نشانه های رابطه سالم چیه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چطور بفهمم رابطه ام خوبه؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "رابطه ما خیلی خوبه و با هم حرف میزنیم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the signs question returns the relationship_good fact. Turn 2: the my-relationship question returns the same fact. Turn 3: the positive relationship statement stays on the knowledge thread with a validating reply.",
+    "behavior": "Persian relationship-quality questions (نشانه های رابطه سالم, رابطه ام خوبه) route to knowledge; the positive disclosure does not get misread as a conflict or complaint."
+  }
+}

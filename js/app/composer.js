@@ -97,6 +97,11 @@
      * Shows the typing indicator, waits for a delay proportional to response
      * length, then appends the bot's reply. Returns true if the reply was
      * delivered, false if the conversation generation changed (stale reply).
+     * When the engine attached quick-reply chips to this turn (exercise
+     * yes/no, mood scale ratings), they are rendered under the message and
+     * tapping one routes the label back through sendMessage as a normal
+     * user turn. Stale chips from a previous reply are cleared by the
+     * renderer itself.
      * @param {string} replyText
      * @param {number} generation
      * @returns {Promise<boolean>}
@@ -113,6 +118,16 @@
         return false;
       }
       UI.utils.appendMessage('bot', replyText);
+      // Quick-reply chips ride on the last delivered turn: the engine
+      // fills st.engine.lastTurnQuickReplies during respond(), and the
+      // app re-sends the chosen label through the normal message path so
+      // the engine's exercise/mood state machines see a real user turn.
+      var chips = st.engine && st.engine.lastTurnQuickReplies;
+      if (chips && chips.length > 0) {
+        UI.utils.renderQuickReplies(chips, function (label) {
+          ctrl.sendMessage(label);
+        });
+      }
       return true;
     }
 

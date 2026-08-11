@@ -1,0 +1,26 @@
+{
+  "name": "tv series suggestions",
+  "description": "A viewer asks for TV series suggestions in three natural phrasings: a weekend plan question, an imperative request, and a bare suggestions question. Verifies the dedicated movies_tv_series fact answers with a mixed list of beloved and underground shows across genres.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "What series should I watch this weekend?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "Recommend a good series please",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "Any TV series suggestions?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"what series should I watch\" matches the movies_tv_series keywords and returns the numbered series list. Turn 2: the imperative \"recommend a good series\" still routes to knowledge and returns the same curated list. Turn 3: \"TV series suggestions\" matches the dedicated series keywords.",
+    "behavior": "The dedicated movies_tv_series fact (added alongside the genre facts) wins over the generic movies_recommendations fact because its series-specific keywords score higher for series requests. Replies come as numbered lists, which the list-trimming helper can cut on request."
+  }
+}

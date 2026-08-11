@@ -1,0 +1,27 @@
+{
+  "name": "breaking bad habits",
+  "description": "A user wants to break bad habits: general advice, procrastination, and nail biting. Verifies the habits_breaking fact (awareness, replacement, environment, urge surfing) answers directly, and that a procrastination disclosure routes to the procrastination topic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "How do I break a bad habit?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "I keep procrastinating, how do I stop?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "procrastination"
+    },
+    {
+      "text": "How do I stop biting my nails?",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"how do I break a bad habit\" returns the habits_breaking fact. Turn 2: the procrastination disclosure routes to the procrastination/motivation topic with a non-judgmental reply. Turn 3: nail biting routes back to the same fact.",
+    "behavior": "The habits_breaking fact covers awareness of triggers, replacement habits, environment changes, and the urge-surfing technique. Procrastination stays its own conversation topic."
+  }
+}

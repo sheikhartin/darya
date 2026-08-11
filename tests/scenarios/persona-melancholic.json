@@ -1,0 +1,29 @@
+{
+  "name": "melancholic low mood and early waking",
+  "description": "A person finds no pleasure in anything and wakes at four every morning, asks whether this is just sadness or something more, and feels guilty for feeling this way. Verifies the depression thread opens, the sadness-vs-something-more question is answered honestly, and the guilt stays on the feeling thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "Nothing brings me pleasure anymore and I wake up at four every morning",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "depression"
+    },
+    {
+      "text": "Is this just sadness or something more?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "depression"
+    },
+    {
+      "text": "I feel guilty for feeling this way",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "feeling"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the depression thread (anhedonia, early waking). Turn 2 answers the sadness-vs-more question honestly, distinguishing normal sadness from signs worth checking with a professional. Turn 3 keeps the guilt on the feeling thread with compassion.",
+    "behavior": "Anhedonia and early-morning waking are recognized as real low-mood signals answered with honesty and warmth, and the guilt about the mood is met with self-compassion, never a diagnostic claim."
+  }
+}

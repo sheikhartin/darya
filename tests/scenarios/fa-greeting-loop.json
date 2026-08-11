@@ -1,0 +1,35 @@
+{
+  "name": "حلقه تکراری سلام بدون ورود به گفتگو در فارسی",
+  "description": "آزمایش توانایی موتور در تشخیص و مدیریت کاربری که بدون ارائه محتوای واقعی مدام سلام می‌کند. پس از دو سلام متوالی (آستانه تکرار)، سلام‌های بعدی از استخر repeatedGreetingResponses استفاده می‌کنند، و انواع سلام (هی، درود بر تو) همچنان به‌عنوان greeting شناخته می‌شوند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سلام",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "درود",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "هی",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    },
+    {
+      "text": "درود بر تو",
+      "dialogueAct": "greeting",
+      "intent": "greeting",
+      "topic": "greeting"
+    }
+  ],
+  "expected": {
+    "finalTurn": "پس از دو سلام متوالی (آستانه تکرار)، سلام‌های بعدی از استخر repeatedGreetingResponses استفاده می‌کنند که تکرار را تأیید می‌کند و به‌جای شروع دوبارهٔ گفتگو، دعوت به شروع تازه می‌کند. انواع سلام مانند «هی» و «درود بر تو» همچنان به‌عنوان greeting شناخته می‌شوند.",
+    "behavior": "تشخیص سلام تکراری به‌جای برخورد با هر سلام به‌عنوان شروع گفتگویی تازه، استخر repeatedGreetingResponses را جایگزین می‌کند. الگوهای گسترده سلام (هی، درود بر تو، درود) به‌عنوان greeting کار می‌کنند."
+  }
+}

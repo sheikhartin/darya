@@ -1,0 +1,28 @@
+{
+  "name": "sleep-deprived new father",
+  "description": "A first-time father running on no sleep: his baby wakes every two hours, he asks how to function, and admits he fears he is not a good father. Verifies the parenting rule opens the thread, the sleep fact answers the function question, and the parental self-doubt stays on the parenting thread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "My baby has been up every two hours and I am exhausted",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    },
+    {
+      "text": "How do I function on so little sleep?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "I am worried I am not a good father",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "parenting"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the parenting thread (baby up every two hours). Turn 2 answers the sleep question with the sleep fact. Turn 3 keeps the parental self-doubt on parenting.",
+    "behavior": "A real new-parent disclosure stays on the parenting thread across turns while a factual sleep question is still answered factually, showing the engine separates lived disclosure from information requests."
+  }
+}

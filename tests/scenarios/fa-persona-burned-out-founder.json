@@ -1,0 +1,28 @@
+{
+  "name": "بنیان‌گذار استارتاپِ سوخته",
+  "description": "A Persian startup founder whose company is growing is completely burned out, asks how to continue without breaking, and admits feeling guilty every time they rest. Verifies the stress thread opens, the keep-going question is answered, and the rest guilt stays on the self-esteem thread.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "استارتاپم داره بزرگ می‌شه ولی من کاملاً سوختم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "stress"
+    },
+    {
+      "text": "چطور ادامه بدم بدون اینکه بشکنم؟",
+      "dialogueAct": "emotional_statement",
+      "intent": "emotional_expression"
+    },
+    {
+      "text": "هر وقت استراحت می‌کنم احساس گناه می‌کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "self_esteem"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1 opens the stress thread (growing startup, burned out). Turn 2 answers the keep-going question with sustainable-work guidance in Persian. Turn 3 keeps the rest guilt on the self-esteem thread.",
+    "behavior": "Success-fueled burnout is taken seriously: the reply separates ambition from sustainability, and the guilt around resting is met with self-compassion rather than a hustle lecture."
+  }
+}

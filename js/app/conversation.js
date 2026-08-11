@@ -25,6 +25,7 @@
       var generation = ++st.conversationGeneration;
       st.engine = new ctrl.DaryaResponseEngine(st.lang);
       st.conversationEnded = false;
+      st.exitConfirmShown = false;
       st.transcript = [];
       if (el.chat) {
         el.chat.replaceChildren();
@@ -153,6 +154,7 @@
      */
     function confirmExitNo() {
       st.pendingExit = false;
+      st.exitConfirmShown = false;
       ctrl.DaryaOverlays.hideExitConfirmBar();
       UI.utils.focusInputUnlessTouch();
     }
@@ -172,7 +174,12 @@
 
       var isExit = st.engine.isExitCommand(text);
 
-      if (isExit && st.pendingExit) {
+      // Once an exit confirmation has been shown in this conversation,
+      // a later farewell command goes straight to goodbye: the user has
+      // already been asked once, and re-asking would read as Darya not
+      // letting them leave ("بدرود" then "بای" both getting "are you
+      // sure?" was a real-transcript complaint).
+      if (isExit && (st.pendingExit || st.exitConfirmShown)) {
         var replyText = st.engine.farewell();
         var delivered = await ctrl.deliverReply(replyText, generation);
         if (!delivered || generation !== st.conversationGeneration) {
@@ -193,6 +200,7 @@
           return;
         }
         st.pendingExit = true;
+        st.exitConfirmShown = true;
         ctrl.setComposerBusy(false);
         ctrl.DaryaOverlays.showExitConfirmBar();
         return;

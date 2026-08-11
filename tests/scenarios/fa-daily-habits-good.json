@@ -1,0 +1,28 @@
+{
+  "name": "ساختن عادت خوب",
+  "description": "A Persian user wants to build good habits and shares an intention to walk each morning. Verifies the habits_building fact answers in Persian (tiny starts, habit stacking, environment, identity) and the intention gets a supportive need reply.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چطور عادت خوب بسازم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "عادت خوب درست کردن از کجا شروع کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "opener_help"
+    },
+    {
+      "text": "میخوام هر روز صبح پیاده روی کنم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "need"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: \"چطور عادت خوب بسازم\" returns the habits_building fact. Turn 2: the where-to-start question returns it too. Turn 3: the morning-walk intention routes to the need rule with a gentle proposal.",
+    "behavior": "Persian habit-building questions route to knowledge; personal intentions stay conversational via the need rule."
+  }
+}

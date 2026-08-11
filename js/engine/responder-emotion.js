@@ -125,6 +125,48 @@
       return this.lastDetectedEmotion;
     },
 
+    /**
+     * Returns the enriched emotional analysis of the last turn
+     * (emotion, valence, arousal, dominance, intense) from the
+     * emotion analyzer, or null when the module is unavailable.
+     * @returns {object|null}
+     */
+    _currentEmotionAnalysis() {
+      return this._lastEmotionAnalysis || null;
+    },
+
+    /**
+     * True when the user's emotional arc moved meaningfully toward the
+     * positive since the previous turn (e.g. from sad to hopeful).
+     * Requires the emotion analyzer and at least two trajectory samples.
+     * @returns {boolean}
+     */
+    _emotionShiftedPositive() {
+      if (!global.DaryaEmotionAnalyzer || !this.emotionTrajectory) {
+        return false;
+      }
+      return global.DaryaEmotionAnalyzer.isPositiveShift(
+        this.emotionTrajectory.previous(),
+        this.emotionTrajectory.last()
+      );
+    },
+
+    /**
+     * True when the user's emotional arc moved meaningfully toward the
+     * negative since the previous turn. Used to soften the reply and
+     * avoid humor on a turn where the user is sliding down.
+     * @returns {boolean}
+     */
+    _emotionShiftedNegative() {
+      if (!global.DaryaEmotionAnalyzer || !this.emotionTrajectory) {
+        return false;
+      }
+      return global.DaryaEmotionAnalyzer.isNegativeShift(
+        this.emotionTrajectory.previous(),
+        this.emotionTrajectory.last()
+      );
+    },
+
     _calibrateEmotionalTone(reply, detectedEmotion) {
       const calibration = this.lang.emotionCalibration;
       if (!calibration || !calibration[detectedEmotion]) {

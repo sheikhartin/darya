@@ -1,0 +1,29 @@
+{
+  "name": "تنهایی و پیدا کردن دوست",
+  "description": "A Persian person is lonely with no friends, asks how to make friends in adulthood, and wonders why they have none. Verifies the friendship_lonely fact answers in Persian and the disclosure routes to the loneliness topic.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "هیچ دوستی ندارم و خیلی تنهام",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "چطور توی بزرگسالی دوست پیدا کنم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    },
+    {
+      "text": "چرا هیچ دوستی ندارم؟",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "loneliness"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turn 1: the disclosure routes to the loneliness topic. Turn 2: the adult-friendship question returns the friendship_lonely fact. Turn 3: the why question stays on the loneliness thread with the fact text.",
+    "behavior": "Persian loneliness keywords (هیچ دوستی ندارم, دوست پیدا کنم, هیچ دوستی ندارم) route to the loneliness topic and the friendship_lonely fact with small concrete steps."
+  }
+}

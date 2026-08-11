@@ -21,6 +21,78 @@
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
     global.DaryaResponderShared;
 
+  // Topics that mean the user asked a genuine question of their own,
+  // which the rule pipeline answers directly. The question-echo override
+  // must never fire on such a message: a user asking who made Darya
+  // ("آیا الیزا هم مثل تو گاو بوده؟!") is not answering Darya's pending
+  // question, even when the fragment shares a word with it, so echoing
+  // their own words back would read as mockery.
+  const ECHO_BLOCKED_TOPICS = new Set([
+    'about_eliza',
+    'knowledge',
+    'smalltalk_identity',
+    'smalltalk_capability',
+    'word_meaning',
+    'recap',
+    'what_do_i_do',
+    'professional_boundary'
+  ]);
+
+  // Personal/emotional topics that must never be hijacked by the
+  // knowledge-shelf override. A disclosure like "sorry. I am stressed
+  // about my business" matched the apology rule and should stay with
+  // the apology pool, not a career essay from the knowledge shelf.
+  const KNOWLEDGE_BLOCKED_PERSONAL = new Set([
+    'apology',
+    'depression',
+    'self_compassion',
+    'burnout',
+    'family',
+    'family_conflict',
+    'money',
+    'self_esteem',
+    'motivation',
+    'health',
+    'need',
+    'feeling',
+    'joy',
+    'sadness',
+    'anger',
+    // Loneliness is deliberately NOT in this set: a friend-making
+    // question ("how do adults make friends?", «چطور دوست پیدا
+    // کنم؟») is a genuine practical request that the friendship fact
+    // answers, and the knowledge override is already gated on question
+    // framing, so a bare "I am lonely" disclosure can never be hijacked
+    // into an encyclopedia answer.
+    'relationship',
+    'work',
+    // Dating-app fatigue and profile questions are lived experiences with
+    // their own empathetic pool ("online dating makes me feel worse about
+    // myself" is a disclosure, not a request for the dating-culture
+    // encyclopedia entry), so the knowledge shelf must never hijack them.
+    // This also keeps EN/FA parity: both languages answer the dating-app
+    // rule pool instead of the generic culture fact.
+    'dating_apps',
+    'pet_loss',
+    'grief_hope',
+    'affection',
+    'flirtation',
+    'empty_success',
+    'about_darya_day',
+    'health_symptoms',
+    // The 2026 persona round: a harassment/threat disclosure that also
+    // names a platform ("اینستاگرام", Instagram) must never be answered
+    // with a platform fact from the knowledge shelf, and divorce and
+    // tech-frustration turns are lived experience, not encyclopedia
+    // lookups. A blanket stereotype that happens to contain a knowledge
+    // keyword is a belief to be gently challenged, never an encyclopedia
+    // lookup.
+    'harassment_threat',
+    'divorce',
+    'tech_frustration',
+    'generalization'
+  ]);
+
   Object.assign(global.DaryaResponseEngine.prototype, {
     _applySmartOverrides({
       reply,
@@ -96,6 +168,55 @@
         _overrideFired = true;
       }
 
+      // Guided therapeutic exercises (see responder-exercises.js): the
+      // user requests an exercise ("breathing exercise", "تمرین تنفس") or
+      // answers the active exercise flow with yes/no/ok. An explicit
+      // exercise request must win over conversational rules (it is a
+      // deliberate ask), and the "ok"/stop answers inside an active
+      // exercise must not be stolen by the short-answer context below
+      // (which would read them as answers to some other pending
+      // question). So this runs before the short-answer and memory
+      // overrides. When no exercise is active, the request pattern is
+      // required to fire, so ordinary chat is untouched.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        // The split-turn minor-attraction probe above fires without
+        // setting _minorAttractionTurn; the guard keeps its protective
+        // question from being replaced by an exercise offer.
+        !_overrideFired
+      ) {
+        const exerciseReply = this._handleExerciseTurn(matchingText);
+        if (exerciseReply) {
+          reply = exerciseReply;
+          _overrideFired = true;
+        }
+      }
+
+      // Session mood tracker (see responder-mood.js): the user asks to
+      // check/log their mood, answers the scale question with a rating,
+      // or asks how they have been feeling. Like exercises, the request
+      // is a deliberate ask that must not be swallowed by a rule reply or
+      // by the short-answer context (a bare number must reach the mood
+      // handler, not be read as a generic statement).
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !_overrideFired
+      ) {
+        const moodReply = this._handleMoodTurn(matchingText);
+        if (moodReply) {
+          reply = moodReply;
+          _overrideFired = true;
+        }
+      }
+
       // Short-answer context override: a bare yes/no/maybe (or a Persian
       // equivalent like بله/نه/شاید) that answers a question Darya asked
       // in the recent turns must be read as an answer to that question,
@@ -110,11 +231,103 @@
         !_minorAttractionTurn &&
         !_nearPeerLoveTurn &&
         !isRepeatedGreeting &&
-        !isSpamNoise
+        !isSpamNoise &&
+        !_overrideFired
       ) {
         const shortAnswerReply = this._resolveShortAnswerContext(matchingText);
         if (shortAnswerReply) {
           reply = shortAnswerReply;
+          _overrideFired = true;
+        } else if (
+          // A message that itself matched a question-intent rule ("who
+          // made you?", «تو رو کی ساخته؟!», a knowledge question) is the
+          // user's own question, not an answer to Darya's pending one:
+          // the rule reply wins, so the echo can never mirror the user's
+          // words back at them (see ECHO_BLOCKED_TOPICS).
+          !ECHO_BLOCKED_TOPICS.has(matchedRule?.topic)
+        ) {
+          // Question-echo + answer ("کدوم آدم؟! الیاس، خواهرزاده من"):
+          // the user answers Darya's own pending question by echoing the
+          // question word first. Must be read as an answer, not a fresh
+          // question, so it never bounces to the evasive "I don't know"
+          // pool (see responder-entity.js). The raw text is required: the
+          // normalizer strips ؟/؟ so the echo structure only survives in
+          // the unnormalized input.
+          const echoReply = this._resolveEchoAnswer(matchingText, rawText);
+          if (echoReply) {
+            reply = echoReply;
+            _overrideFired = true;
+          }
+        }
+      }
+
+      // Memory-driven overrides: the user discloses their age or name
+      // ("من ۲۴ سالمه", "I'm 24 years old", "اسمم آریاه", "my name is
+      // Sara") or asks Darya to recall them ("چند سالمه؟", "what is my
+      // name?"), answered from the in-memory session profile instead of
+      // an evasive generic line; and deferred-topic promise memory (see
+      // responder-promise.js): "I'll tell you later" ("بعداً می‌گم"), a
+      // release ("never mind", "ولش کن"), or a circle-back on a later
+      // light turn. Together these answer the "you never remember
+      // anything" complaint from real transcripts. Runs after the
+      // short-answer context so a bare yes/no answering a pending
+      // question still wins, and only when no earlier override claimed
+      // the turn.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !_overrideFired
+      ) {
+        // Question recall («یادته آخرین سوالی که ازت پرسیدم چی بود؟!»,
+        // "do you remember what the last question I asked you was?"):
+        // answered from the actual conversation memory by quoting the
+        // user's last question back, never an evasive "I do not have an
+        // answer" line (see responder-recall.js). Runs beside the profile
+        // and promise memory overrides because it is the same class of
+        // "you never remember anything" complaint.
+        const recallReply = this._handleQuestionRecallTurn(matchingText);
+        if (recallReply) {
+          reply = recallReply;
+          _overrideFired = true;
+        } else {
+          const profileReply = this._handleUserProfileTurn(matchingText);
+          if (profileReply) {
+            reply = profileReply;
+            _overrideFired = true;
+          } else {
+            const promise = this._applyPromiseOverrides({
+              matchingText,
+              matchedRule
+            });
+            if (promise.fired) {
+              reply = promise.reply;
+              _overrideFired = true;
+            }
+          }
+        }
+      }
+
+      // Knowledge-expansion request (the rich-dataset transcript turn):
+      // the user asks Darya to build a bigger store of good questions,
+      // movies, games, books, and general knowledge. Acknowledge honestly
+      // (offline build, current shelf already covers these areas, name a
+      // topic) instead of the work-rule hijack that read «کار» inside
+      // «این کار رو» as a job disclosure. Runs before the factual and
+      // fun-facts overrides so the acknowledgment wins.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !_overrideFired
+      ) {
+        const expansionReply = this._handleKnowledgeExpansionTurn(matchingText);
+        if (expansionReply) {
+          reply = expansionReply;
           _overrideFired = true;
         }
       }
@@ -122,9 +335,16 @@
       if (
         !_safetyTurn &&
         !_minorAttractionTurn &&
+        !_overrideFired &&
         !isRepeatedGreeting &&
         !isSpamNoise &&
-        matchedRule?.topic !== 'knowledge'
+        matchedRule?.topic !== 'knowledge' &&
+        // A format-feedback request ("put each on a separate line",
+        // «بعد از ۱-۲ خط فاصله بنویسی؟») is about presentation, not
+        // arithmetic: the digits inside it (e.g. «۱-۲» as a line count)
+        // must never be read as a subtraction problem. The format
+        // override below owns such turns.
+        !this.lang.formatFeedbackPattern?.test(matchingText)
       ) {
         const factualReply = handleFactualQuestion(this, normalized);
         if (factualReply) {
@@ -136,6 +356,7 @@
       if (
         !_safetyTurn &&
         !_minorAttractionTurn &&
+        !_overrideFired &&
         !isRepeatedGreeting &&
         !isSpamNoise
       ) {
@@ -195,6 +416,17 @@
         matchedRule?.topic !== 'grief' &&
         matchedRule?.topic !== 'self_compassion' &&
         matchedRule?.topic !== 'burnout' &&
+        // The work topic blocks encyclopedia answers for personal
+        // disclosures ("sorry, I am stressed about my business"), but an
+        // external question about automation ("will ai take my job?") is
+        // a world question, not a disclosure: bypass the block only when
+        // the message names an external technology and reads as a
+        // question. The lookup itself still gates the answer.
+        (!KNOWLEDGE_BLOCKED_PERSONAL.has(matchedRule?.topic) ||
+          (matchedRule?.topic === 'work' &&
+            /\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
+              matchingText
+            ))) &&
         DaryaKnowledge &&
         DaryaKnowledge.lookup &&
         this._isKnowledgeRequest(matchingText);
@@ -242,7 +474,15 @@
         matchedRule?.topic !== 'work' &&
         matchedRule?.topic !== 'knowledge' &&
         matchedRule?.topic !== 'professional_boundary' &&
+        matchedRule?.topic !== 'harassment_threat' &&
+        matchedRule?.topic !== 'divorce' &&
+        matchedRule?.topic !== 'tech_frustration' &&
         this._lastKnowledgeTopic &&
+        // The knowledge answer must come from a PREVIOUS turn: when the
+        // fallback just answered the very question this turn (religion,
+        // weirdest animal), the refinement must not re-fire and swap the
+        // fresh answer for a follow-up pool line.
+        this._lastKnowledgeTurn < this.memory.turnCount &&
         this.memory.turnCount - this._lastKnowledgeTurn <= 3 &&
         DaryaKnowledge &&
         (DaryaKnowledge.lookupGenre || DaryaKnowledge.lookupFragment)
@@ -288,6 +528,44 @@
           this._lastKnowledgeTurn = this.memory.turnCount;
           this._lastKnowledgeText = refined.text;
           _overrideFired = true;
+        } else if (
+          // A recommendation follow-up that names no genre word
+          // ("anything similar but darker?", «بهتره انیمیشن هم باشه» when
+          // the genre lookup misses) still deserves a warm continuation
+          // of the same shelf instead of a generic fallback. Question
+          // words like «کدوم/بهترین» and format-feedback requests stay
+          // out: they are genuine questions, not rec refinements.
+          (!this.lang.formatFeedbackPattern?.test(matchingText) &&
+            // eslint-disable-next-line max-len
+            /(?:similar|like that|another|one more|more like|darker|best story|which one|any other|others|in that (?:style|vein|tone)|same (?:style|tone|vibe)|recommend (?:me )?another)/iu.test(
+              matchingText
+            )) ||
+          /(?:مشابه|شبیه|مثل همین|یکی دیگه|یکی دیگر|همینطور|همین طور)/u.test(
+            matchingText
+          )
+        ) {
+          reply = this._pickVaried(this.lang.recFollowupResponses, {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          });
+          _overrideFired = true;
+        } else if (
+          // A pronoun-referencing follow-up on the last knowledge topic
+          // («فکر می‌کنی جایگزین کامپیوترای معمولی بشه؟», "do you think
+          // it would replace them?") that has no topic word of its own:
+          // acknowledge the thread explicitly instead of an evasive line.
+          /(?:will it|it will|they exist|actually|instead|rather than|what about|so if|so how|but how)/iu.test(
+            matchingText
+          ) ||
+          /(?:بشه|میشه|می‌شه|جایگزین|واقعا|واقعاً|وجود دارن)/u.test(
+            matchingText
+          )
+        ) {
+          reply = this._pickVaried(this.lang.knowledgeFollowupResponses, {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          });
+          _overrideFired = true;
         }
       }
 
@@ -327,6 +605,11 @@
         // re-asking or testing, not dwelling on a single word: re-asking
         // "who made you?" must never be met with "you keep saying made".
         this.currentTurnDialogueAct !== 'question' &&
+        // A UI command ("turn on ambient sound", "پوسته رو عوض کن")
+        // deserves the honest pointer to the real control even after a
+        // hostile streak: the app-command rule reply must never be
+        // replaced by a quote-back of words repeated earlier in the chat.
+        matchedRule?.topic !== 'app_command' &&
         this.lang.wordRepetitionResponses
       ) {
         const repetition = this._detectWordRepetition(matchingText);
@@ -352,9 +635,13 @@
         // behavior ("you keep quoting words", "be smarter", "understand
         // my meaning") deserve a humble acknowledgement, not a frustration
         // de-escalation, even when the message is worded harshly. The same
-        // applies to self-improvement requests.
+        // applies to self-improvement requests, and to genuine questions
+        // about ELIZA or Darya's origin ("is ELIZA also dumb?"): a real
+        // answer beats another canned "I see you are frustrated" line,
+        // which was a top complaint from real transcripts.
         matchedRule?.topic !== 'meta_feedback' &&
         matchedRule?.topic !== 'self_improvement' &&
+        matchedRule?.topic !== 'about_eliza' &&
         this.lang.frustrationResponses
       ) {
         // Check Darya-targeted harassment FIRST (more specific, different
@@ -468,8 +755,12 @@
         this.currentTurnDialogueAct !== 'test_input' &&
         // App/website feedback ("the theme looks broken", "the waves are
         // too small") is meta-talk about the app, not a personal emotional
-        // disclosure: a hurt prefix would read as mock sympathy.
+        // disclosure: a hurt prefix would read as mock sympathy. The same
+        // applies to UI commands ("turn on ambient sound", "پوسته رو عوض
+        // کن"): they are requests about the page, not disclosures, so a
+        // "I can hear the sadness" prefix would misread the intent.
         matchedRule?.topic !== 'app_feedback' &&
+        matchedRule?.topic !== 'app_command' &&
         // Opener-help pool lines ("There is no wrong way to start...")
         // are already warm and encouraging; a "confused" empathy prefix
         // would stack a heavy tone onto a lightweight nudge.
@@ -493,6 +784,10 @@
         !_minorAttractionTurn &&
         !isRepeatedGreeting &&
         !isSpamNoise &&
+        // A promise circle-back must never be replaced by a boredom
+        // line: the whole point is that Darya remembers the deferred
+        // topic (see responder-promise.js).
+        !this._promiseCircleBackFired &&
         this.memory.turnCount >= BOREDOM_MIN_TURNS &&
         this.memory.turnCount % BOREDOM_CHECK_INTERVAL === 0 &&
         this.lang.boredomResponses &&
@@ -520,8 +815,14 @@
         seriousness: this.currentTurnSeriousness
       });
 
+      // The harassment_threat rule is safety-critical too: its pool
+      // lines carry concrete safe steps, so the light human-tone coloring
+      // and the human-touch suffix must never dilute them (same treatment
+      // as the crisis pool and the minor-attraction guard).
       const isSafetyTurn =
-        (matchedRule && matchedRule.topic === 'safety') ||
+        (matchedRule &&
+          (matchedRule.topic === 'safety' ||
+            matchedRule.topic === 'harassment_threat')) ||
         _minorAttractionTurn ||
         _nearPeerLoveTurn;
       if (

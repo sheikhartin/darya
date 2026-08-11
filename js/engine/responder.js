@@ -12,9 +12,12 @@ const {
   ENTITY_CALLBACK_PROBABILITY,
   SERIOUS_TURN_THRESHOLD,
   ENTITY_CONFIDENCE_THRESHOLD,
+  EXIT_SCAN_WINDOW,
+  PROMISE_EXPIRY_TURNS,
   isValidScript,
   normalizeForMatching,
   scoreSentiment,
+  parseEchoShape,
   ConversationMemory
 } = U;
 
@@ -46,7 +49,37 @@ const LIVED_TOPICS = new Set([
   'grief',
   'loneliness',
   'relationship',
-  'work'
+  'work',
+  'chronic_illness',
+  'caregiver',
+  'parenting',
+  'perfectionism',
+  'procrastination',
+  // The 2026 persona round added three lived-experience topics whose
+  // pools carry their own acknowledgment and which must beat both the
+  // knowledge shelf and the bare profile acknowledgment when they fire
+  // alongside an age/name disclosure: self-worth/guilt and social
+  // comparison (self_esteem), divorce, tech frustration, and the
+  // safety-critical harassment_threat rule.
+  'self_esteem',
+  'divorce',
+  'tech_frustration',
+  'harassment_threat',
+  // Blanket generalizations get a gentle-challenge pool that already
+  // acknowledges the speaker ("That is a strong claim..."), so the
+  // generic empathy prefix must never stack on top.
+  'generalization',
+  // Learning/career-path advice pools carry their own warm reflective
+  // framing, and a lived disclosure that also mentions learning must
+  // beat the broad knowledge shelf ("i feel anxious, how do i learn to
+  // cope" stays with anxiety).
+  'learning_advice',
+  // Fitness/gym anxiety ("from going to the gym I feel stressed since
+  // I am new") is a lived disclosure whose pool already acknowledges
+  // the feeling; without this entry the FA text above was reordered to
+  // the work rule (also in the set) because the knowledge shelf outranks
+  // fitness, producing a jarring work question.
+  'fitness'
 ]);
 
   // Shared across the responder part files (see responder-*.js).
@@ -97,6 +130,34 @@ class DaryaResponseEngine {
     // (emotional calibration, human-tone coloring) skip the turn so they
     // never stack an extra prefix onto an already-warm smalltalk reply.
     this._lightPositiveFired = false;
+    // True when the current turn's reply is a promise circle-back, so
+    // the boredom override in _finalizeReply never replaces it (see
+    // responder-promise.js). Reset at the start of every turn.
+    this._promiseCircleBackFired = false;
+    // Session-only user profile: name and age the user discloses during
+    // the conversation, so "چند سالمه؟" and "what is my name?" can be
+    // answered honestly instead of evasively. Purely in-memory: cleared
+    // with the engine on every new chat, never persisted (see
+    // responder-overrides.js _handleUserProfileTurn).
+    this._userProfile = { name: null, age: null };
+    // Last math/factual follow-up sentence, so consecutive answers never
+    // append the same redirect twice in a row (the full answer string is
+    // what lands in recentBotMessages, so pool recency filtering alone
+    // cannot dedupe the bare follow-up).
+    this._lastFactualFollowup = null;
+    // Guided therapeutic exercise state (see responder-exercises.js):
+    // null when no exercise is active, otherwise { id, stepIndex,
+    // startedAtTurn }. Session-only, reset with a new chat.
+    this._activeExercise = null;
+    // Pending mood check-in (see responder-mood.js): set when Darya
+    // asked for a rating on the mood scale, cleared when the answer
+    // lands (or the request is released). Session-only.
+    this._pendingMoodRequest = null;
+    // Quick-reply chips for the UI: a short list of tappable options
+    // (exercise yes/no, mood scale) attached to the last reply. The app
+    // reads it after delivering the reply and renders the chips; reset
+    // at the start of every turn.
+    this.lastTurnQuickReplies = [];
     this.entityCallbackThreshold = ENTITY_CONFIDENCE_THRESHOLD;
     this.entityCallbackProbability = ENTITY_CALLBACK_PROBABILITY;
     this.currentTurnTopics = [];
@@ -106,6 +167,21 @@ class DaryaResponseEngine {
     this.currentTurnIntent = 'unknown';
     this.currentTurnQuestionNeed = 0;
     this._lastTurnCorrection = false;
+    // Emotional trajectory and conversation context (Phase 1 foundation):
+    // track the user's emotional arc across turns so replies can
+    // acknowledge change, and keep a lightweight statement/topic window
+    // for continuity. Both are session-only and reset with a new chat.
+    // Guarded so the engine still constructs if the new modules are not
+    // loaded (e.g. a stale cached page mid-update).
+    this.emotionTrajectory = global.DaryaEmotionAnalyzer
+      ? new global.DaryaEmotionAnalyzer.EmotionTrajectory()
+      : null;
+    this.conversationContext = global.DaryaContextWindow
+      ? new global.DaryaContextWindow.ConversationContext()
+      : null;
+    // Last turn's analyzed emotion (enriched with dimensions), kept so
+    // the trajectory comparison works across turns.
+    this._lastEmotionAnalysis = null;
     this.conversationState = {
       phase: 'new',
       dialogueAct: null,
@@ -121,6 +197,20 @@ class DaryaResponseEngine {
     // offline and from file:// with no CORS concerns.
     this._timeFetcher = new TimeFetcher();
     this._timeFetcher.prefetch();
+    // Precompute the exit-keyword token sequences once, so isExitCommand
+    // (checked for every user message) never re-normalizes the keyword
+    // list per call. Tokens are matched as exact contiguous sequences
+    // against the input word windows; see isExitCommand.
+    this._exitKeywords = (lang.exitKeywords || []).map((keyword) =>
+      normalizeForMatching(keyword, lang)
+        .toLowerCase()
+        .split(/\s+/u)
+        .filter(Boolean)
+    );
+    this._exitLongestKeyword = Math.max(
+      EXIT_SCAN_WINDOW,
+      ...this._exitKeywords.map((tokens) => tokens.length)
+    );
   }
 
   respond(rawText) {
@@ -131,10 +221,44 @@ class DaryaResponseEngine {
       return this.lang.foreignLanguageRedirect();
     }
 
+    // Terse farewells («بای», "bye", "bye bye") route to the same
+    // two-step as the app layer (app/conversation.js), which intercepts
+    // exit commands before the engine is called; this path only matters
+    // for standalone embeddings and the test harness, and it must match
+    // the app so a replay never shows «بای» being answered with a
+    // short-reply prompt. Step one asks for confirmation, step two (any
+    // later farewell) says goodbye; a non-farewell message cancels the
+    // pending state. isExitCommand applies the per-language
+    // exitStoryPattern, so past-tense reports ("I said goodbye to my
+    // friend") are never treated as exits, and a farewell wins over an
+    // insult exactly as it does in the app's sendMessage flow.
+    if (this.isExitCommand(rawText)) {
+      if (this.memory.farewellPending) {
+        this.memory.farewellPending = false;
+        return this.farewell();
+      }
+      this.memory.farewellPending = true;
+      return this.exitConfirmation();
+    }
+    this.memory.farewellPending = false;
+
     const normalized = this.lang.normalize(rawText);
     const matchingText = normalizeForMatching(rawText, this.lang);
     this._currentNormalizedInput = matchingText;
     this._lightPositiveFired = false;
+    this._promiseCircleBackFired = false;
+    // Quick-reply chips from the previous turn are stale now; only the
+    // current turn may attach fresh ones.
+    this.lastTurnQuickReplies = [];
+    // A deferred-topic promise that waited far too long expires
+    // silently: Darya never nags about a thread the person let go.
+    if (
+      this.memory.pendingPromise &&
+      this.memory.turnCount - this.memory.pendingPromise.promisedAtTurn >
+        PROMISE_EXPIRY_TURNS
+    ) {
+      this.memory.clearPromise();
+    }
     const sentimentScore = scoreSentiment(
       normalized,
       this.lang.sentimentLexicon
@@ -143,6 +267,23 @@ class DaryaResponseEngine {
     this.memory.rememberSentiment(sentimentScore);
     this.memory.turnCount += 1;
     this.memory.decayNamedEntities();
+
+    // Phase 1 foundation: enrich the detected emotion with dimensional
+    // analysis and record it in the trajectory so later turns can
+    // acknowledge emotional change. Also feed the conversation context
+    // window (statements + topics) for continuity. Both are guarded so
+    // the engine degrades gracefully without the new modules.
+    const primaryEmotion = this._detectPrimaryEmotion(matchingText);
+    if (global.DaryaEmotionAnalyzer) {
+      this._lastEmotionAnalysis = global.DaryaEmotionAnalyzer.analyzeTurn(
+        primaryEmotion,
+        sentimentScore
+      );
+      this.emotionTrajectory.push(primaryEmotion, this.memory.turnCount);
+    }
+    // NOTE: the conversation context utterance/topic recording happens
+    // after dialogue-act classification below (it needs that state); the
+    // trajectory push above only depends on the emotion, which is ready.
 
     const entities = global.DaryaEntityExtractor
       ? global.DaryaEntityExtractor.extract(normalized, this.lang, {
@@ -194,6 +335,16 @@ class DaryaResponseEngine {
     );
     const matchedRule = matches[0]?.rule || null;
     const captured = matches[0]?.captured || '';
+    // A deferred-topic promise that Darya already circled back on is
+    // fulfilled (and retired) the moment the person engages with real
+    // content again: any matched rule counts as engagement.
+    if (
+      this.memory.pendingPromise &&
+      this.memory.pendingPromise.circledBack &&
+      matchedRule
+    ) {
+      this.memory.clearPromise();
+    }
     const matchedTopics = matches.map((match) => match.rule.topic);
     this.currentTurnTopics = [...new Set(matchedTopics)];
     this.currentReferenceContext = this.resolveReferenceContext(matchingText);
@@ -231,6 +382,20 @@ class DaryaResponseEngine {
     this.currentTurnSeriousness = this._seriousnessForTurn(
       this.currentTurnTopics
     );
+    if (this.conversationContext) {
+      this.conversationContext.rememberUtterance(normalized, this.memory.turnCount, {
+        isAcknowledgement: this.currentTurnDialogueAct === 'acknowledgement',
+        isGreeting: isRepeatedGreeting
+      });
+      this.conversationContext.rememberTopics(
+        this.currentTurnTopics,
+        this.memory.turnCount
+      );
+      this.conversationContext.setActiveSubject(
+        this.currentTurnTopics[0] || null,
+        this.memory.turnCount
+      );
+    }
     this.lastTurnNeedsCare =
       this.currentTurnSeriousness >= SERIOUS_TURN_THRESHOLD ||
       /\b(?:help|advice|problem|crisis|difficult|hard|worried|angry|mad|frustrated|annoyed|pissed)\b/iu.test(
@@ -243,10 +408,26 @@ class DaryaResponseEngine {
     this.memory.rememberTopics(this.currentTurnTopics);
     this.memory.updateSubject(this.currentTurnTopics, entities);
 
+    // A blend pool acknowledges two co-occurring GENERIC topics
+    // (family+sadness, sleep+anxiety). It must never preempt a more
+    // specific rule that also matched: a new mother's "I feel like a bad
+    // mother" (parenting, 57) is not a generic family-sadness turn, so
+    // only blends whose constituents include the matched rule's own
+    // topic are eligible. Computed once here so the strategy, phase, and
+    // reply all agree on the same (possibly suppressed) blend key.
     const blendKey = this._blendKey(this.currentTurnTopics);
+    const eligibleBlendKey =
+      blendKey &&
+      (!matchedRule ||
+        blendKey
+          .replace(/^blend_/u, '')
+          .split('_')
+          .includes(matchedRule.topic))
+        ? blendKey
+        : null;
     const strategy = this.selectResponseStrategy({
       matchedRule,
-      blendKey,
+      blendKey: eligibleBlendKey,
       matchingText
     });
     this.lastResponseStrategy = strategy;
@@ -266,12 +447,23 @@ class DaryaResponseEngine {
     });
 
     const _substantiveCache = this._isSubstantiveAnswer(matchingText);
+    // A question-echo input ("کدوم آدم؟! الیاس، خواهرزاده من") looks
+    // substantive but is actually a structured answer to the pending
+    // question. It must NOT pre-mark that question answered here: the
+    // echo override (responder-entity.js) needs the question to still be
+    // pending to read its content, and it marks it answered itself.
+    // The echo shape (؟/؟! splitting a short question fragment from the
+    // answer) only survives in the raw input; the normalizer strips the
+    // punctuation. parseEchoShape bounds the fragment so a full-length
+    // question of the user's own is never treated as an echo.
+    const isEchoShaped = parseEchoShape(rawText) !== null;
     const isSubstantive =
       !isRepeatedGreeting &&
       !isSpamNoise &&
       this.currentTurnDialogueAct !== 'acknowledgement' &&
       this.currentTurnDialogueAct !== 'test_input' &&
-      _substantiveCache;
+      _substantiveCache &&
+      !isEchoShaped;
     if (isSubstantive) {
       this.memory.markLatestQuestionAnswered(normalized, this.memory.turnCount);
     }
@@ -318,8 +510,11 @@ class DaryaResponseEngine {
       this.lang.correctionResponses
     ) {
       reply = this._pickVaried(this.lang.correctionResponses);
-    } else if (blendKey && this.lang.blendResponses?.[blendKey]) {
-      reply = this._pickVaried(this.lang.blendResponses[blendKey]);
+    } else if (
+      eligibleBlendKey &&
+      this.lang.blendResponses?.[eligibleBlendKey]
+    ) {
+      reply = this._pickVaried(this.lang.blendResponses[eligibleBlendKey]);
     } else if (matchedRule) {
       reply = this._respondWithRule(matchedRule, captured);
     } else if (isPureEmoji && this.lang.emojiResponses) {
@@ -348,7 +543,7 @@ class DaryaResponseEngine {
       matchingText,
       entities,
       matchedRule,
-      blendKey,
+      blendKey: eligibleBlendKey,
       isRepeatedGreeting,
       isSpamNoise,
       safetyTurn: overridden.safetyTurn,

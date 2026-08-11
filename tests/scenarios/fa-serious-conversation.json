@@ -1,0 +1,35 @@
+{
+  "name": "گفتگوی جدی چندنوبتی با تشدید احساسی در فارسی",
+  "description": "آزمایش موضوع‌بندی، امتیازدهی احساس و رفتار تذکر پریشانی در گفتگویی که با مشاهده خنثی شروع می‌شود و به افشای احساسی جدی می‌رسد. بررسی اینکه جدیت شوخی را مسدود می‌کند، تاریخچه احساس تذکر پریشانی را هدایت می‌کند و تداوم موضوع حفظ می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "کارم این روزا خیلی استرس‌زاست",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "یه‌جورایی خوابم هم بهم ریخته",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "sleep"
+    },
+    {
+      "text": "همیشه خسته و نگرانم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "رئیس‌م داره کار رو سرم می‌ریزه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    }
+  ],
+  "expected": {
+    "finalTurn": "بعد از چهار جمله با احساس منفی متوالی، موتور باید موضوعات کار، خواب و اضطراب را دنبال کند. تذکر پریشانی (isInDistressStreak پس از DISTRESS_STREAK_LENGTH=3) باید طبق شرط دقیق بررسی شود.",
+    "behavior": "موضوعات در حافظه انباشته می‌شوند (topicWeights و topicHistory). نمره احساس برای هر جمله منفی است. موضوع جاری به تازه‌ترین موضوع مطابقت‌شده به‌روز می‌شود و ترکیب اضطراب و خواب بررسی می‌شود."
+  }
+}

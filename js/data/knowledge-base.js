@@ -213,7 +213,14 @@
       thriller: ['هیجانی', 'دلهره‌آور', 'دلهرهآور', 'دلهره آور'],
       sci_fi: ['علمی تخیلی', 'علمی-تخیلی'],
       documentary: ['مستند'],
-      animation: ['انیمیشن', 'انیمیشنی']
+      animation: ['انیمیشن', 'انیمیشنی'],
+      feel_good: [
+        'حال خوب کن',
+        'حال‌خوب‌کن',
+        'حالخوب‌کن',
+        'شاد و امیدبخش',
+        'روحیه‌بخش'
+      ]
     },
     en: {
       dark_comedy: ['dark comedy', 'black comedy'],
@@ -237,7 +244,15 @@
       thriller: ['thriller', 'suspense'],
       sci_fi: ['sci fi', 'sci-fi', 'scifi', 'science fiction'],
       documentary: ['documentary', 'documentaries'],
-      animation: ['animation', 'animated', 'cartoon']
+      animation: ['animation', 'animated', 'cartoon'],
+      feel_good: [
+        'feel good',
+        'feel-good',
+        'uplifting',
+        'heartwarming',
+        'heart-warming',
+        'cheerful'
+      ]
     }
   };
   const GENRE_FACT_IDS = {
@@ -252,7 +267,8 @@
     thriller: 'movies_thriller',
     sci_fi: 'movies_sci_fi',
     documentary: 'movies_documentary',
-    animation: 'movies_animation'
+    animation: 'movies_animation',
+    feel_good: 'movies_feel_good'
   };
 
   /**

@@ -369,7 +369,117 @@
         'genre'
       ],
       fa: 'پیشنهادهای انیمیشن فراتر از دیزنی:\n۱. «شهر اشباح» (هایائو میازاکی، ۲۰۰۱): اسکار بهترین انیمیشن؛ دختری در سرزمین ارواح.\n۲. «غول آهنی» (برد برد، ۱۹۹۹): رباتی مهربان در آمریکای دهه ۱۹۵۰.\n۳. «ترانه دریا» (تام مور، ۲۰۱۴): افسانه‌های سلتی و موسیقی چشم‌نواز.\n۴. «آنومالیسا» (چارلی کافمن، ۲۰۱۵): استاپ‌موشن بزرگ‌سالانه درباره تنهایی.\n۵. «آقای فاکس شگفت‌انگیز» (وس اندرسون، ۲۰۰۹): طنز خانوادگی بامزه با سبک خاص اندرسون.',
-      en: 'Animation beyond Disney:\n1. Spirited Away (Hayao Miyazaki, 2001): Oscar-winning journey of a girl in the spirit world.\n2. The Iron Giant (Brad Bird, 1999): a gentle robot in 1950s America.\n3. Song of the Sea (Tomm Moore, 2014): Celtic myth and breathtaking music.\n4. Anomalisa (Charlie Kaufman, 2015): an adult stop-motion film about loneliness.\n5. Fantastic Mr. Fox (Wes Anderson, 2009): signature Anderson charm in stop-motion in stop-motion.'
+      en: 'Animation beyond Disney:\n1. Spirited Away (Hayao Miyazaki, 2001): Oscar-winning journey of a girl in the spirit world.\n2. The Iron Giant (Brad Bird, 1999): a gentle robot in 1950s America.\n3. Song of the Sea (Tomm Moore, 2014): Celtic myth and breathtaking music.\n4. Anomalisa (Charlie Kaufman, 2015): an adult stop-motion film about loneliness.\n5. Fantastic Mr. Fox (Wes Anderson, 2009): signature Anderson charm in stop-motion.'
+    },
+    {
+      id: 'movies_feel_good',
+      keywords: [
+        'فیلم حال خوب کن',
+        'فیلم حال‌خوب‌کن',
+        'فیلم شاد',
+        'فیلم روحیه‌بخش',
+        'فیلمی که حالمو خوب کنه',
+        'feel good movie',
+        'feel-good movie',
+        'uplifting movie',
+        'heartwarming movie',
+        'a movie to cheer me up'
+      ],
+      weak: [
+        'حال خوب',
+        'حال‌خوب',
+        'شاد',
+        'روحیه',
+        'feel good',
+        'uplifting',
+        'cheerful'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'movie',
+        'series',
+        'recommend',
+        'suggest',
+        'genre'
+      ],
+      fa: 'فیلم‌هایی که حال را خوب می‌کنند:\n۱. «زندگی زیباست» (روبرتو بنینی، ۱۹۹۷): پدری که با بازی و مهربانی، وحشت را از کودکی دور می‌کند.\n۲. «آملی» (ژان-پیر ژونه، ۲۰۰۱): دختری که بی‌سروصدا زندگی دیگران را روشن می‌کند.\n۳. «آپستریت» یا «به بالا» (پیکسار، ۲۰۰۹): تلخ‌وشیرین، امیدبخش و سرشار از مهربانی.\n۴. «فارست گامپ» (رابرت زمکیس، ۱۹۹۴): سفری ساده که دل را گرم می‌کند.\n۵. «سفر به ایتالیا» یا «روزهای به یادماندنی» (مایکل وینترباتم، ۲۰۱۰): طنزی آرام درباره دو رفیق و غذا.\n۶. «دنیای بچه‌ها» یا Little Miss Sunshine (۲۰۰۶): خانواده‌ای به‌هم‌ریخته که در راه رسیدن به یک مسابقه، هم‌دیگر را پیدا می‌کنند.\n۷. «روح» یا Soul (پیکسار، ۲۰۲۰): درباره معنا و لذت‌های کوچک زندگی.\n۸. «جریان» یا Flow (۲۰۲۴): گربه‌ای تنها در جهانی پس از سیل؛ بدون دیالوگ و عمیقاً انسانی.',
+      en: 'Feel-good films that lift the mood:\n1. Life Is Beautiful (Roberto Benigni, 1997): a father shields his son from horror with play and love.\n2. Amelie (Jean-Pierre Jeunet, 2001): a girl quietly brightening the lives of others.\n3. Up (Pixar, 2009): bittersweet, hopeful, and full of kindness.\n4. Forrest Gump (Robert Zemeckis, 1994): a simple journey that warms the heart.\n5. The Trip (Michael Winterbottom, 2010): gentle comedy about two friends and fine food.\n6. Little Miss Sunshine (2006): a chaotic family finding each other on the road to a pageant.\n7. Soul (Pixar, 2020): about meaning and the small joys of everyday life.\n8. Flow (2024): a lone cat in a world after a flood; dialogue-free and deeply human.'
+    },
+    {
+      id: 'movies_tv_series',
+      keywords: [
+        'سریال پیشنهاد بده',
+        'چه سریالی ببینم',
+        'سریال چی ببینم',
+        'سریال معرفی کن',
+        'سریال خوب ببینم',
+        'سریال خوب برای تماشا',
+        'سریال جذاب معرفی کن',
+        'سریال دیدن',
+        'recommend a tv series',
+        'recommend a good series',
+        'recommend me a good series',
+        'what series should i watch',
+        'best series to watch',
+        'binge worthy series',
+        'tv series suggestions',
+        'series suggestions',
+        'series recommendation'
+      ],
+      weak: ['سریال', 'series', 'shows'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'معرفی',
+        'تماشا',
+        'ببینم',
+        'recommend',
+        'watch',
+        'suggest',
+        'binge'
+      ],
+      fa: 'پیشنهادهای سریال، از محبوب تا زیرزمینی‌تر:\n۱. «بریکینگ بد» (Breaking Bad): استاد شیمی که به‌تدریج وارد دنیای جنایت می‌شود؛ یکی از بهترین درام‌های تاریخ تلویزیون.\n۲. «وراثت» (Succession): نبرد قدرت در خانواده‌ای رسانه‌ای؛ طنزی تلخ و دیالوگ‌های درخشان.\n۳. «سِوِرنس» (Severance): کارمندانی که حافظه‌ی کار و زندگی‌شان جدا شده؛ علمی-تخیلی معمایی و اعتیادآور.\n۴. «دارک» (Dark): معمای سفر در زمان در شهری کوچک آلمانی؛ هوشمند و لایه‌لایه.\n۵. «تد لاسو» (Ted Lasso): مربی فوتبال آمریکایی در انگلیس؛ مهربان، خنده‌دار و حال‌خوب‌کن.\n۶. «بازی مرکب» (Squid Game): بازی‌های مرگبار برای فقیرها؛ نقدی تند بر نابرابری و سرگرم‌کننده.',
+      en: 'Series picks, from beloved to more underground:\n1. Breaking Bad: a chemistry teacher slowly drawn into the criminal world; one of the greatest dramas ever on television.\n2. Succession: a power struggle inside a media dynasty, with vicious wit and brilliant dialogue.\n3. Severance: employees whose work and home memories are surgically split; an addictive sci-fi puzzle.\n4. Dark: a time-travel mystery in a small German town; clever and layered.\n5. Ted Lasso: an American football coach in England; kind, funny, and uplifting.\n6. Squid Game: deadly games for the desperate; a sharp critique of inequality that is also wildly entertaining.'
+    },
+    {
+      id: 'movies_anime',
+      keywords: [
+        'انیمه',
+        'انیمه ببینم',
+        'انیمه چی ببینم',
+        'انیمه چه ببینم',
+        'انیمه چی خوبه',
+        'سریال انیمه',
+        'انیمه پیشنهاد',
+        'انیمه ژاپنی',
+        'انیمیشن ژاپنی',
+        'anime',
+        'anime series',
+        'anime to watch',
+        'japanese anime',
+        'recommend anime',
+        'anime recommendations',
+        'best anime'
+      ],
+      weak: ['انیمه', 'anime'],
+      weakSafe: true,
+      hints: [
+        'ژاپنی',
+        'سریال',
+        'پیشنهاد',
+        'معرفی',
+        'تماشا',
+        'japanese',
+        'series',
+        'watch',
+        'recommend'
+      ],
+      fa: 'پیشنهادهای انیمه برای تازه‌کارها و علاقه‌مندان:\n۱. «نام تو» (Your Name، ۲۰۱۶): عاشقانه‌ای خیال‌انگیز درباره دو نوجوان که خواب‌هایشان را عوض می‌کنند.\n۲. «صدای خاموش» (A Silent Voice، ۲۰۱۶): درباره‌ی قلدری، بخشش و بازگشت به زندگی.\n۳. «فولمتال آلکمیست: برادرهود»: داستانی حماسی درباره برادرانی که قانون تبادل را شکستند.\n۴. «اسپای ایکس فمیلی» (Spy x Family): جاسوس، قاتل و تله‌پات که یک خانواده‌ی نمایشی می‌سازند؛ کمدی گرم و خانوادگی.\n۵. «وایولت اورگاردن» (Violet Evergarden): نامه‌نویسی که احساسات را از خلال نامه‌های دیگران می‌فهمد؛ درخشان و اشک‌آور.\n۶. «شکارچی شیطان» (Demon Slayer): نبرد نوجوانی برای نجات خواهرش؛ انیمیشن فوق‌العاده و هیجانی.',
+      en: 'Anime picks for newcomers and fans alike:\n1. Your Name (2016): a dreamlike romance about two teenagers who swap places in their sleep.\n2. A Silent Voice (2016): about bullying, forgiveness, and finding a way back to life.\n3. Fullmetal Alchemist: Brotherhood: an epic story of two brothers who broke the rules of alchemy.\n4. Spy x Family: a spy, an assassin, and a telepath building a fake family; warm, funny, and wholesome.\n5. Violet Evergarden: a letter-writer who learns feelings through the letters of others; gorgeous and tearful.\n6. Demon Slayer: a teenage battle to save a sister, with stunning animation and edge-of-seat action.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

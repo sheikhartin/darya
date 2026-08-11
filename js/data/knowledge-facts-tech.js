@@ -554,6 +554,39 @@
       hints: ['دانلود', 'نصب', 'اپ', 'برنامه', 'download', 'install', 'app'],
       fa: 'برای دانلود اپ روی اندروید در ایران چند گزینه هست: گوگل‌پلی برای اپ‌های بین‌المللی (در صورت دسترسی)، و برای کاربران ایرانی کافه بازار و مایکت که بدون نیاز به فیلترشکن کار می‌کنند و نسخه‌های داخلی اپ‌ها را دارند. خیلی از اپ‌های ایرانی فقط در کافه بازار یا مایکت منتشر می‌شوند، پس اگر اپی را در گوگل‌پلی پیدا نکردی، حتماً همان‌جا را ببین.',
       en: 'For downloading apps on Android in Iran there are a few options: Google Play for international apps (when accessible), and for Iranian users Cafe Bazaar and Myket, which work without any VPN and carry local versions of apps. Many Iranian apps are only published on Cafe Bazaar or Myket, so if you cannot find an app on Google Play, check there.'
+    },
+    {
+      id: 'eliza_chatbot',
+      keywords: [
+        'الیزا',
+        'ایلیزا',
+        'چت بات الیزا',
+        'الیزا چیه',
+        'الیزا چی بود',
+        'اولین چت بات',
+        'eliza',
+        'elyza',
+        'eliza chatbot',
+        'who created eliza',
+        'who made eliza',
+        'first chatbot',
+        'joseph weizenbaum',
+        'weizenbaum'
+      ],
+      weak: ['وایزنبام', 'weizenbaum', 'doctor script', 'mit'],
+      weakSafe: true,
+      hints: [
+        'چت بات',
+        'هوش مصنوعی',
+        'ربات',
+        'تاریخچه',
+        'chatbot',
+        'ai',
+        'history',
+        'origin'
+      ],
+      fa: 'الیزا (ELIZA) نخستین چت‌بات تاریخ است که جوزف وایزنبام در سال ۱۹۶۶ در آزمایشگاه هوش مصنوعی MIT ساخت. الیزا با الگوهای ساده کار می‌کرد: برنامه‌ی DOCTOR جمله‌ی کاربر را با جابه‌جایی ضمیرها به یک سؤال بازمی‌گرداند، مثلاً «غمگینم» به «چرا غمگینی؟» تبدیل می‌شد. نکته‌ی جالب تاریخ: خود وایزنبام از اینکه خیلی از کاربران به الیزا وابسته می‌شدند و با آن مثل یک درمانگر واقعی حرف می‌زدند شگفت‌زده شد. همان دلیلی است که دریا هم با روش بازتاباندن حرف‌های تو طراحی شده است.',
+      en: 'ELIZA was the first chatbot in history, built by Joseph Weizenbaum at the MIT AI lab in 1966. It worked with simple pattern matching: the DOCTOR script turned the user sentence into a question by swapping pronouns, so "I am sad" became "Why are you sad?". The fascinating part of the story is that Weizenbaum was genuinely surprised how emotionally attached users became, opening up to ELIZA about their lives. That is exactly why Darya is designed around reflecting your own words back to you.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

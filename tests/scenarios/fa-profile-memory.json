@@ -1,0 +1,48 @@
+{
+  "name": "session profile memory in Persian: age and name disclosure with late recall",
+  "description": "Tests the session user profile (name and age) across many turns in Persian. The user discloses age (24) and name (آریا) early, then talks about work and anxiety topics in between, and later asks Darya to recall both details. Verifies the disclosures route through the profile override (statement/open_statement), the intervening topic turns stay on their own topics, and the recall questions return via the profile recall path (question/information_or_reflection). Persian digits must survive the recall echo.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "من ۲۴ سالمه",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "اسمم آریاه",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "این روزها کارم سخت شده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "چند سالمه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "از آینده خیلی می‌ترسم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "اسمم چیه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "از این وضع خسته شدم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Turns 1-2 store age (۲۴) and name (آریا) in the in-memory profile. Turns 3 and 5 route to the work and anxiety rules respectively. Turns 4 and 6 are recall questions answered from the stored profile, echoing the Persian digits exactly as typed, not from an evasive unknown-detail pool. Turn 7 is an ordinary statement turn after the recall.",
+    "behavior": "The profile override runs before the generic rule pipeline: disclosures use the ageStored/nameStored pools with {age}/{name} placeholders filled, and recall questions use the ageKnown/nameKnown pools. The stored age keeps the Persian digit script the user typed. Intervening emotional turns do not disturb the stored values, proving the memory is session-scoped and survives topic shifts."
+  }
+}
