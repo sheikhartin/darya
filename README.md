@@ -438,6 +438,9 @@ professional.
 
 ## Privacy
 
+See [PRIVACY.md](PRIVACY.md) for the full privacy policy (required for
+store listings).
+
 Darya has no accounts, no analytics, no tracking, and no server-side processing. Your conversation exists only in your browser tab. When you close the tab, the conversation is gone.
 
 The only persistent data is your theme preference (Ocean or Beach), stored as a simple cookie so it is remembered on your next visit. Ambient sound is never persisted: every visit starts silent, and sound plays only after you tap the sound toggle.
@@ -447,6 +450,77 @@ Darya makes no network requests at any time. No data is sent to any server, no a
 ## Offline Use
 
 After the first visit, Darya works fully offline. You can install it on your phone or desktop as a Progressive Web App. See the OFFLINE.md file for details.
+
+## Android APK Builds
+
+The `android/` platform folder is committed. Pushing a version tag (for
+example `1.2.1`, no `v` prefix) triggers the
+`.github/workflows/build-android.yml` workflow, which:
+
+1. runs the smoke check and syncs the web bundle into the platform
+   (`npm run sync:web && npx cap sync android`),
+2. stamps the app version from the tag (`1.2.1` becomes `versionCode`
+   121, `versionName "1.2.1"`),
+3. builds a **signed release AAB** (`app-release.aab`, required by
+   Google Play) and a **signed release APK** (`app-release.apk`, used
+   by Iranian stores like Cafe Bazaar and Myket),
+4. attaches both to the GitHub Release for the tag.
+
+The workflow can also be run manually from the Actions tab; without
+signing secrets it produces a debug APK for testing instead.
+
+### One-time keystore setup
+
+The release keystore is never committed. Generate it once and back it
+up somewhere safe: losing it means you can never publish an update to
+Cafe Bazaar or Myket (Google Play offers an upload-key reset, the
+Iranian stores do not). With Java installed:
+
+```bash
+keytool -genkeypair -v \
+  -keystore darya-release.jks \
+  -alias darya \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -storepass CHANGE_ME_STORE \
+  -keypass CHANGE_ME_KEY \
+  -dname "CN=Darya, OU=Darya, O=Darya, L=Tehran, ST=Tehran, C=IR"
+```
+
+Then add four repository secrets in GitHub (Settings > Secrets and
+variables > Actions):
+
+- `ANDROID_KEYSTORE_BASE64`: `base64 -w0 darya-release.jks` output
+- `ANDROID_KEYSTORE_PASSWORD`: the store password
+- `ANDROID_KEY_ALIAS`: `darya`
+- `ANDROID_KEY_PASSWORD`: the key password
+
+For local release builds, create `android/keystore.properties`
+(gitignored) instead:
+
+```properties
+storeFile=/absolute/path/to/darya-release.jks
+storePassword=CHANGE_ME_STORE
+keyAlias=darya
+keyPassword=CHANGE_ME_KEY
+```
+
+### Store notes
+
+- **Google Play:** upload the AAB and enroll in Play App Signing, which
+  splits your key into an upload key (kept by you) and a signing key
+  (managed by Google). New apps must target the current Android API
+  level; this project already targets API 36. Complete the Data safety
+  form as "no data collected" and link a hosted privacy policy. Enable
+  GitHub Pages for the repository (Settings > Pages, deploy from a
+  branch) so [PRIVACY.md](PRIVACY.md) resolves at a public URL, or host
+  it anywhere else.
+- **Cafe Bazaar and Myket:** upload the signed release APK. Developer
+  accounts require Iranian national ID verification. Both stores
+  moderate content, so a text-based app dealing with relationship and
+  intimacy education may need an appeal if flagged; the content is
+  respectful, non-explicit, and always points to professional help.
+  Keep the keystore backed up, since these stores have no key-reset
+  mechanism.
 
 ## Testing and Development
 
