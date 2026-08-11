@@ -33,6 +33,14 @@ coverage
 # Note: the android/ platform folder is committed (its own .gitignore
 # excludes generated web assets, build outputs, and the keystore).
 
+# Android signing keys: defense in depth, mirroring android/.gitignore.
+# Never commit the release keystore, its credentials, or local signing
+# properties; the keystore lives only on your machine and in CI secrets.
+*.jks
+*.keystore
+*.p12
+keystore.properties
+
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 

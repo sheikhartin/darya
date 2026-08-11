@@ -55,6 +55,7 @@ captures/
 # Keystore files: never commit the release keystore or its credentials.
 *.jks
 *.keystore
+*.p12
 
 # Local release signing credentials (storeFile, storePassword, keyAlias,
 # keyPassword). CI reads the same values from environment variables.
