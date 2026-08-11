@@ -1,6 +1,25 @@
 /**
- * Darya classic script - fa response pool.
+ * Darya classic script - fa response pools (base).
+ *
+ * Initializes the shared DaryaFaResponses object and fills in the base
+ * conversation pools every turn can use: generic and strategy-shift
+ * fallbacks, question fallbacks and acknowledgements, source
+ * suggestions, session check-ins, smalltalk, humor, gratitude, emoji
+ * replies, greetings (phase 1/2, open, inviting, returning), idle
+ * openers, professional-boundary lines, and the empty-input and
+ * engine-error replies. The topic pools live in
+ * fa-responses-topics.js and the feature pools in
+ * fa-responses-features.js; the three part files fill the same object
+ * in load order, so it is complete before fa-rules.js and the fa.js
+ * pack assembler read from it.
  */
+
+(function (global) {
+  'use strict';
+
+  global.DaryaFaResponses = {};
+})(typeof window !== 'undefined' ? window : globalThis);
+
 (function (global) {
   'use strict';
 
@@ -244,14 +263,20 @@
     'می‌بینم که این حرف‌ها را از روی دلخوری می‌زنی. من اینجام تا بشنوم، بدون قضاوت.',
     'خشمت را می‌بینم. حق داری ناراحت باشی. اگر می‌خواهی از آنچه رخ داده بگویی، من گوش می‌دهم.',
     'این انرژی به من می‌گوید که چیزی برایت مهم است. می‌توانی از آن بگویی، حتی اگر خشمگینانه باشد؟',
-    'من متوجه شدم که این حرف‌ها از سر ناامیدی یا خشم است. این حس‌ها ارزش شنیده شدن دارند.'
+    'من متوجه شدم که این حرف‌ها از سر ناامیدی یا خشم است. این حس‌ها ارزش شنیده شدن دارند.',
+    'می‌بینم که این جمله‌ها را از سر ناراحتی می‌گویی. می‌توانی ساده‌تر بگویی چه چیزی آزارت می‌دهد؟',
+    'من اینجا هستم تا بشنوم، نه برای بحث کردن. هر دلخوری که داری، می‌توانی از آن بگویی.',
+    'این خشم جای خودش را دارد؛ چیزی برایت مهم بوده و نادیده گرفته شده. بگو چه اتفاقی افتاد؟',
+    'تند حرف زدی و اشکالی ندارد؛ پشت این انرژی حرفی هست که می‌خواهد شنیده شود.'
   ];
   R.factualQuestionFollowups = [
     'حالا بگو ببینم، اصل مطلب که ذهنت را درگیر کرده چیست؟',
     'این جواب کمک کرد، یا چیز عمیق‌تری هست که بخواهی درباره‌اش حرف بزنی؟',
     'اعداد را گذاشتیم کنار. سؤالی که این روزها دنبالته چیست؟',
     'جواب سوالت را گرفتی. حالا بگو ببینم اصل مطلب چیست؟',
-    'سؤال بعدی چی می‌تونه باشه؟'
+    'سؤال بعدی چی می‌تونه باشه؟',
+    'اگر سؤال دیگری هم داری، بپرس؛ یا از امروزت بگو.',
+    'این جواب که شد؛ دوست داری برویم سراغ چیزی دیگر؟'
   ];
   R.spamNoiseResponses = [
     'به نظر می‌رسد که دستتان روی صفحه‌کلید بوده. هر وقت آماده بودید، می‌توانیم صحبت کنیم.',

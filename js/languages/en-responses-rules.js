@@ -1,5 +1,9 @@
 /**
- * Darya classic script - en response pool (part 3).
+ * Darya classic script - en response pools (rules).
+ * Rule-specific response pools for the topic, emotion, and interaction
+ * rules, plus the scenario-found rule pools (pet loss, affection,
+ * flirtation, empty success, grief hope, about Darya's day, health
+ * symptoms, impaired driving) and their detection patterns.
  */
 (function (global) {
   'use strict';
@@ -26,6 +30,49 @@
     'If things at work were better, what would actually be different?',
     'Carrying that much work pressure on your own is genuinely hard.',
     'Work is more than the hours; the weight of it can follow you home.'
+  ];
+
+  R['rulePerfectionism'] = [
+    'Perfectionism can be a heavy standard to carry. Where did the idea that it has to be flawless come from?',
+    'Starting before it is perfect is the hardest step. What would "good enough for today" look like?',
+    'The fear of it not being right can keep everything stuck. What would you like to begin, even imperfectly?',
+    'Holding yourself to a perfect standard is exhausting. What is one part you could let be unfinished for now?',
+    'Perfect is a moving target; done is what lets you move forward. What is the smallest start that counts?',
+    'Being hard on yourself about not starting is itself a kind of pressure. What would it take to begin just a little?'
+  ];
+
+  R['ruleProcrastination'] = [
+    'That pull to reach for your phone is real, and it is not laziness. What usually happens right before you reach for it?',
+    'The gap between wanting to study and actually starting is the hard part. What is the smallest possible first step?',
+    'Five focused minutes is a legitimate start. What would you work on in those five minutes?',
+    'Distraction is often a signal, not a flaw. What is the task you keep avoiding telling you?',
+    'Starting is the uphill part. What would make sitting down to study feel a little less heavy?'
+  ];
+
+  R['ruleChronicIllness'] = [
+    'Living with ongoing pain takes a real toll on both body and mind. It makes sense that you are exhausted.',
+    'I am not a doctor, and I will not guess at answers for you. But carrying this for so long is a lot; have you found anyone who truly listens?',
+    'When the doctors do not have a clear answer, the uncertainty can weigh as much as the pain. What has helped you get through the hardest days?',
+    'It is valid to feel tired of it all. What does a good day look like for you now, even a small one?',
+    'You deserve care that matches how much you are carrying. What kind of support do you wish you had?',
+    'Being believed matters. Have the people around you understood how heavy this has been?'
+  ];
+
+  R['ruleCaregiver'] = [
+    'Caring for someone you love while running on empty is one of the hardest things there is. Your exhaustion makes sense.',
+    'That guilt is heavy, and it is not evidence that you are failing. What would it take to get a little support for yourself?',
+    'You cannot pour from an empty cup. What do you do, even briefly, that is just for you?',
+    'Worrying about what might happen if you step away is exhausting in itself. Who else could share this load, even a little?',
+    'Taking care of them matters, and so does taking care of the person doing the caring. How are you, really?',
+    'It is okay to need rest. What would one honest rest day look like for you?'
+  ];
+
+  R['ruleParenting'] = [
+    'Those first weeks with a new baby are a storm of hormones and sleeplessness. Crying does not make you a bad parent.',
+    'Feeling like a bad mother does not mean you are one. It usually means you care very much. What has been the hardest part?',
+    'It is okay to feel overwhelmed and to name it. Many new parents feel this way and say nothing about it. What support do you have around you?',
+    'Your baby needs you fed, rested, and held too. What is one small thing you could do just for yourself today?',
+    'If the crying and the heaviness keep going, talking to a professional is a strong and normal step, not a sign of failure.'
   ];
 
   R['ruleWordMeaning'] = [
@@ -119,6 +166,25 @@
     'That feeling of being alone is something many people experience; you are not strange for feeling it.'
   ];
 
+  // Blanket generalizations and stereotypes ("all women are the same",
+  // "all men are selfish"): a gentle challenge that invites the specific
+  // experience behind the belief instead of mirroring the claim back or
+  // letting it pass unchallenged. First-person pain ("everyone hates
+  // me", "nobody loves me") never lands here; the loneliness rule owns
+  // those.
+  R['ruleGeneralization'] = [
+    'That is a strong claim. I am curious what experience shaped it.',
+    'People are rarely as alike as they first appear. What led you to this conclusion?',
+    'When a whole group looks the same to us, there is usually a hurt story behind it. Want to tell it?',
+    'I wonder if a specific person taught you this belief. Is there someone behind it?',
+    'Every person is more complicated than the label we give them. What made you see it this way?',
+    // A statement-form line so the challenge still lands after the
+    // question budget is exhausted (the budget filter drops question
+    // lines, and with no statement left it would swap in a generic
+    // fallback).
+    'I hear you, and I still believe people are more complex than any single label.'
+  ];
+
   R['ruleSelfEsteem'] = [
     'Those are heavy things to feel about yourself. Where do you think that belief comes from?',
     'What usually brings on thoughts like that?',
@@ -182,7 +248,9 @@
     "Worrying about your health can take up a lot of mental space. What's concerning you most?",
     'Have you had a chance to talk to a doctor about it?',
     'How much has this been affecting your day-to-day lately?',
-    'Health concerns naturally draw a lot of attention and concern.'
+    'Health concerns naturally draw a lot of attention and concern.',
+    'Noticing your body changing can feel unsettling, especially when it is not what you expected. When did you first notice it?',
+    'Body changes can bring up a lot of questions. What worries you most about this change?'
   ];
 
   R['ruleMindfulness'] = [
@@ -199,6 +267,34 @@
     'Fair point, I will keep it shorter. Plainly: you matter, and your words are heard.',
     'Sorry if that got complicated. Simply put: whatever is on your mind, you can say it here.',
     'Understood, I will keep it simple. The essence: you are not alone, and this conversation is for you.'
+  ];
+
+  // Learning/career-path advice (see the learning_advice rule): an
+  // honest, reflective answer that turns the choice back into a
+  // conversation instead of faking certainty about "which is better".
+  R['ruleLearningAdvice'] = [
+    'There is no single right answer to "which is better": it depends on your taste and your goal. What draws you to one over the other?',
+    'Before any advice, tell me: what would choosing this path mean for you, and where do you hope it leads?',
+    'Whichever path you take, practice and genuine interest open the doors. Which part of this work actually excites you?',
+    'This choice depends on your own situation. We can figure out together what fits you best.'
+  ];
+
+  // Recommendation follow-ups ("anything similar but darker?") that name
+  // no genre word: warm continuation of the same shelf instead of a
+  // generic fallback.
+  R['ruleRecFollowup'] = [
+    'I will keep going on that same shelf: want me to pick another with a similar tone?',
+    'I have a few more on that shelf. Tell me the feeling you are after and I will choose the best fit.',
+    'I can bring another one; just tell me the mood you want and I will aim closer.'
+  ];
+
+  // Pronoun-referencing follow-ups on the last knowledge topic ("do you
+  // think it would replace them?") that have no topic word of their own:
+  // acknowledge the thread explicitly instead of an evasive line.
+  R['ruleKnowledgeFollowup'] = [
+    'That is exactly the follow-up to the last thread: which part of it grabs you most?',
+    'We can go deeper on this; which angle makes you most curious?',
+    'This continues the last topic nicely; want to zoom into one side of it?'
   ];
 
   // App and website feedback: when the user comments on the app itself
@@ -297,7 +393,15 @@
     'I am reading a book on anti-gravity. It is impossible to put down.',
     'Why did the math book look sad? Because it had too many problems.',
     'Parallel lines have so much in common. It is a shame they will never meet.',
-    'Why did the coffee go to the doctor? Because it felt a little latte.'
+    'Why did the coffee go to the doctor? Because it felt a little latte.',
+    'What do you call a fake noodle? An impasta.',
+    'I told my wife she should embrace her mistakes. She gave me a hug.',
+    'Why did the bicycle fall over? Because it was two-tired.',
+    'What do you get when you cross a snowman and a vampire? Frostbite.',
+    'I am on a seafood diet. I see food and I eat it.',
+    'What dessert do ghosts love? Ice scream.',
+    'Why are fish so smart? Because they travel in schools.',
+    'I asked the librarian for a book about procrastination. She said I could pick it up tomorrow.'
   ];
 
   // The user tells Darya to back off: a private matter ("none of your
@@ -322,240 +426,154 @@
     'I cannot make purchases for you, but thinking the purchase through together is exactly what I am here for: needs first, then budget, then reviews.'
   ];
 
-  // A short affirmative answer to a question Darya just asked ("Would you
-  // like to talk about it?" -> "yes"). The reply keeps the thread going:
-  // it accepts the answer warmly and invites the user to continue, or the
-  // engine substitutes a topic-specific follow-up question when the
-  // pending topic has one (see _resolveShortAnswerContext).
-  R.shortAnswerAffirmContext = [
-    'Thanks for confirming. Where would you like to pick it up from here?',
-    'Good, then let us keep going. What is the first thing on your mind about it?',
-    'That works. I am listening, take your time.',
-    'Perfect. Tell me what feels most important about it right now.'
-  ];
-
-  // A short negative answer to a recent question ("Do you want to talk
-  // about it?" -> "no"). The reply accepts the boundary gracefully and
-  // leaves the direction open, never pushing the topic.
-  R.shortAnswerNegateContext = [
-    'That is okay, no pressure at all. Is there something else on your mind?',
-    'Understood. We can leave that thread here and go wherever you like.',
-    'No problem. This conversation is yours to steer; where would you like to take it?',
-    'Alright, we can set that aside. What would you rather talk about?'
-  ];
-
-  // A short uncertain answer ("maybe", "not sure") to a recent question.
-  // The reply honors the hesitation without interrogating, and leaves
-  // room to come back to the topic later.
-  R.shortAnswerMaybeContext = [
-    'No rush at all. We can come back to it whenever you are ready.',
-    'That is completely fine. You do not have to decide right now.',
-    'Take whatever time you need. I am here whether you return to it or not.',
-    'Okay, let us leave it open for now. What else is on your mind?'
-  ];
-
-  // A crush on someone much older (thirty years or more). Balanced and
-  // non-judgmental: the age gap itself is not wrong between consenting
-  // adults, but life stage, plans, and power balance deserve honest
-  // attention. The pool mixes questions with caring statements.
-  R['ruleAgeGap'] = [
-    'A big age gap can bring wonderful things and real challenges, and neither means it is wrong. With thirty years or more between you, the honest questions are about life stage, energy, and power: do you want the same future, and do you feel like equals in this relationship? What draws you to them, and what are you hoping for?',
-    'There is nothing shameful about a crush on someone much older. What deserves care is the practical side: different life stages, different plans, and how the people close to you might react. As long as it is between consenting adults and feels balanced to you, the age gap itself is not the problem; how you treat each other is.',
-    'It makes sense that someone with more life experience can feel captivating. With a gap this large, it is worth asking yourself: what do you want for the next ten years, and does that match what they want? Those answers matter more than the number.',
-    'I hear you. A thirty-year gap is not a flaw by itself, but it usually comes with real differences in energy, plans, and power. What matters most is that you feel respected, heard, and equal, whatever the ages say.'
-  ];
-
-  // An adult discloses sexual or romantic attraction toward a minor.
-  // Guidance from child-protection and prevention organizations (Stop It
-  // Now, the Lucy Faithfull Foundation, NSPCC) is clear: do not shame or
-  // judge, because stigma drives people away from help; state the legal
-  // boundary plainly; separate thoughts from actions, since thoughts can
-  // be worked on while acting is a choice with real harm; and signpost
-  // to confidential professional help. No sexual content is ever offered.
-  R['ruleMinorAttraction'] = [
-    'Thank you for being honest with me. I am not here to judge you, and I will not shame you for what you said. What I have to say clearly: any sexual or romantic contact with someone under 18 is against the law and causes real harm to that young person. Feeling this way is something you can get help with, but acting on it is a choice only you are responsible for. Confidential support exists, such as Stop It Now or a mental health professional who specializes in this area, and they can help you understand these feelings and keep everyone safe.',
-    'I hear you, and I want to respond with care, not judgment. The boundary has to be clear: sexual or romantic feelings toward anyone under 18 must never be acted on. It is illegal, and it harms the young person. The feelings themselves are something professional help can address confidentially, so please reach out to a specialist service or a mental health professional. You do not have to face this alone, and getting help now is the responsible step.',
-    'Thank you for telling me. I will not judge you, but I also will not pretend this is okay to act on. Acting on attraction to a minor is illegal and deeply harmful, full stop. What you can do is get confidential professional support to work through these feelings safely. Services like Stop It Now exist exactly for this, and speaking with a qualified professional is a strong, responsible choice.',
-    'I am glad you said this out loud. It takes courage. The line is firm: no sexual or romantic behaviour with anyone under 18, ever. It is illegal and it hurts a child. But having these feelings is not something you have to manage alone, confidential help exists, such as Stop It Now or a mental health professional, and seeking it is the best way to keep everyone, including you, safe.'
-  ];
-
-  // First half of a split-turn minor-attraction disclosure: attraction
-  // toward a minor was named but the speaker's own age is not yet known
-  // ("I am in love with a 13-year-old girl"). The reply must not be
-  // flirty, playful, or encouraging; it stays neutral, caring, and open
-  // so a follow-up age statement can complete the disclosure and trigger
-  // the protected help reply (see _detectMinorAttraction).
-  R.minorAttractionProbe = [
-    'Thank you for being honest with me. I want to understand your situation better before I respond. Could you share the ages involved here?',
-    'I hear you, and I am listening without judgment. To respond with care, I need to understand the situation a bit more: how old are you and how old is the other person?',
-    'I appreciate your openness. Before anything else, could you help me understand your ages in this situation? I want to make sure I respond with care.',
-    'Thank you for sharing this. I am not here to judge, but I do want to understand the full picture. Can you tell me how old each of you is?'
-  ];
-
-  // Near-peer young-adult crushes (18-20 with a 16-17 year old): the age
-  // gap is small and both people are young, so the guidance is warm and
-  // practical rather than protective. Focus on pace, respect, consent,
-  // and knowing the local age-of-consent rules.
-  R['ruleNearPeerLove'] = [
-    'Thanks for trusting me with this. A small age gap like yours is a normal part of growing up, and the feelings are real. The kindest way to handle it is slowly and honestly: make sure she always feels respected, never pressured, and free to say no at any time. Check what the age-of-consent laws are where you live, because they differ from place to place, and talk to someone you trust about it if you can. Care that protects the other person is the strongest kind of care.',
-    'It sounds like these feelings matter a lot to you. The two of you are close in age, which is different from a big gap, but it still deserves care. Take things at her pace, listen more than you talk, and never push for anything she is not fully comfortable with. Knowing your local age-of-consent rules is important too, since they vary. A good sign of a healthy connection is that both of you can talk honestly and either of you can slow down or stop without drama.',
-    'I hear you. Feelings at your age are intense and that is completely normal. What makes this work well is respect and honesty: treat her as a full person, not a goal, and let the relationship grow at a pace that feels safe for both of you. Also look up the age-of-consent laws in your country or state, because they really do differ. And if you ever feel unsure about a situation, a trusted adult or a professional you can talk to privately can help you see it clearly.',
-    'It is good that you are thinking about this thoughtfully. A few years between you is common among young people, and being mindful about it is already a good sign. The essentials are simple: her comfort matters more than your feelings, no means no and so does hesitation, and you should know the local age-of-consent rules before anything physical happens. If you treat her with consistent kindness and never pressure her, you are on the right track.'
-  ];
-
-  R['ruleAnger'] = [
-    "It sounds like there's a lot of anger built up. What triggered it?",
-    'That frustration makes sense. Do you want to walk me through exactly what happened?',
-    'Where do you feel that anger most in your body?',
-    'That frustration makes sense given what you described.',
-    'Anger often points to a boundary that matters to you.',
-    'It takes a lot of energy to carry that much frustration around.'
-  ];
-
-  R['ruleFeeling'] = [
-    'Why do you think {captured}?',
-    'How long have you felt that {captured}?',
-    'Can you say more about why {captured}?',
-    "If that feeling weren't there, what would take its place?",
-    'The feeling you are describing, {captured}, is real and it matters.',
-    'Naming that feeling, {captured}, is itself a meaningful step.'
-  ];
-
-  R['ruleReasoning'] = [
-    'Is that the only reason?',
-    'Do you think that reason tells the whole story?',
-    'What other reasons might be part of this too?',
-    'Turning a thought over from a few angles can often make it clearer.',
-    'Your mind is busy trying to get to the bottom of this, and that effort counts.'
-  ];
-
-  R['ruleNeed'] = [
-    'If you had {captured}, what would actually change in your life?',
-    "What's standing between you and {captured}?",
-    'What might a small first step toward {captured} look like?',
-    'The need you are describing, {captured}, sounds completely understandable.',
-    'Knowing that you need {captured} is itself a form of valuable self-awareness.'
-  ];
-
-  R['ruleAffirmation'] = [
-    'I see. Can you tell me a bit more?',
-    'Okay. What detail about this feels most important right now?',
-    'I hear what you are saying, and I am here to keep listening.',
-    'That makes sense to me. Take your time.'
-  ];
-
-  R['ruleNegation'] = [
-    "That's alright. So what's on your mind, then?",
-    'Understood. Would you like to bring up something else?',
-    'That is okay. Whenever you are ready to talk, I will be here.',
-    'I understand. Sometimes saying no is its own kind of beginning.'
-  ];
-
   // ------------------------------------------------------------------
-  // Date/time follow-ups: a gentle redirect back to the user's
-  // emotional context after answering a date or time question.
+  // New rule pools added for simulation findings (English parity).
   // ------------------------------------------------------------------
-  R.dateTimeFollowups = [
-    'What brought that question to mind just now?',
-    'Is there a particular reason you needed to know?',
-    'Does that date or time have a special meaning for you?',
-    'How are you feeling about the current moment?'
+
+  R['rulePetLoss'] = [
+    'Losing a pet you love is genuinely painful. What kind of companion was this animal to you?',
+    'The grief of losing a pet is real and specific. They were there every day, quietly loyal. Would you like to share a memory of them?',
+    'That empty space where your pet used to be is one of the hardest kinds of loss. How are you holding up?',
+    'A pet is family, and losing them leaves a real wound. Tell me about them, if you would like.'
   ];
 
-  // ------------------------------------------------------------------
-  // Darya-targeted harassment: calm, professional responses for when
-  // someone insults, bullies, or verbally attacks Darya directly.
-  // These acknowledge without engaging, and do not feed the troll.
-  // ------------------------------------------------------------------
-  R.daryaHarassmentResponses = [
-    'I hear the intensity in your words. I am still here if you would like to talk about what is really on your mind.',
-    'I am a conversation companion, here to listen. If something is bothering you, I am here for that.',
-    'Your words are pointed at me, but they may come from somewhere else. Would you like to talk about what is really happening?',
-    'I am here to offer a calm space. If that is not what you need right now, that is okay.',
-    'I notice the words you are using. I wonder if there is something beneath them you would like to explore.'
+  // Dating-app fatigue and dating-profile questions. The reply validates
+  // the exhaustion without feeding the endless swiping loop, and nudges
+  // toward what the person actually wants from connection.
+  R['ruleDatingApps'] = [
+    'Dating apps can feel like a second job: endless swiping, short replies, and very little real connection. What is the part that drains you the most?',
+    'The app fatigue is real and a lot of people feel it. When did dating start feeling like this to you?',
+    'Swiping without matching wears anyone down. Beyond finding someone, what kind of connection are you hoping for?',
+    'A profile is just a door, not the whole house. What do you actually want someone to know about you before they swipe?',
+    'It makes sense to feel tired of it. Would a break from the apps feel possible, even for a few days?'
   ];
 
-  // ------------------------------------------------------------------
-  // Sexual harassment: firm boundary-setting responses for
-  // inappropriate sexual comments directed at Darya. These set a
-  // clear boundary without engaging with the content.
-  // ------------------------------------------------------------------
-  R.sexualHarassmentResponses = [
-    'That kind of language is not appropriate here. I am here for conversation and support, and I would ask you to keep this space respectful.',
-    'I am a conversation companion designed for support and reflection. Let us keep this exchange respectful.',
-    'I am not able to engage with that type of comment. Would you like to talk about something else instead?',
-    'This space works best when it stays respectful. I am here if you want to continue a real conversation.'
+  // Fitness/gym anxiety (see the fitness rule): beginner movement fears.
+  // The pool lines carry their own warm acknowledgment of the anxiety so
+  // the LIVED_TOPICS calibration (which skips the generic empathy prefix
+  // for these topics) never leaves a gym disclosure sounding cold.
+  R['ruleFitness'] = [
+    'Starting something new in front of other people can feel exposing. What feels hardest about being a beginner?',
+    'It takes real courage to show up at a gym when you are unsure of yourself. What would make it feel a little less daunting?',
+    'Everyone in that room started somewhere, and most people are too busy with their own workout to judge. What is the first small step that feels doable?',
+    'Feeling anxious about your body in a gym is far more common than you might think. What kind of encouragement would help you most?'
   ];
 
-  // ------------------------------------------------------------------
-  // Apology: warm acceptance after the user says sorry (English).
-  // Kept brief and forward-moving: the pool never dwells on the
-  // apology or repeats it back.
-  // ------------------------------------------------------------------
-  R['ruleApology'] = [
-    'No problem at all. Everyone has a moment, and I am glad you are still here.',
-    'I hear your apology, and there is no judgment here. We can continue whenever you like.',
-    'There is nothing to forgive. This space is for you; what is on your mind right now?',
-    'Thank you for saying that. The conversation can pick up right from here.'
+  R['ruleAffection'] = [
+    'That means a lot to me. This is your space; whatever you are feeling, I am here to listen.',
+    'I appreciate you sharing that. I am here as a companion for this conversation, and I am glad you feel comfortable enough to say it.',
+    'That warmth is something worth honoring. Tell me: what else is on your mind today?',
+    'Thank you for saying that. This conversation is yours, and whatever is in your heart, you can share it here.'
   ];
 
-  // ------------------------------------------------------------------
-  // Meta-feedback: the user comments on Darya's own behavior, quoting,
-  // memory, or intelligence (English). A humble, non-defensive
-  // acknowledgement that commits to doing better and then reopens the
-  // conversation.
-  // ------------------------------------------------------------------
-  R['ruleMetaFeedback'] = [
-    'I take your feedback seriously and I will work to listen more closely. Would you like to keep going from here?',
-    'You are right that attention to detail matters. I will try to hold the whole thread of what you say.',
-    'Noted: more care in my answers and better attention to what came before. Thank you for telling me.',
-    'I understand, and I will try to do better. Your close attention to this conversation helps.'
+  R['ruleFlirtation'] = [
+    'I appreciate the warmth, but I am a conversation companion, not a romantic partner. I am here to listen and talk through whatever matters to you.',
+    'That is kind of you to say. I am here as a companion for honest conversation, not for dating. But I am genuinely glad you are here.',
+    'Thank you for the sweet words. My role is to be a calm space for you to think out loud. I cannot be a romantic partner, but I am always here to listen.',
+    'Your words are kind. I am a conversation companion, and my purpose is to help you explore your own thoughts. Let us talk about what is really going on for you.'
   ];
 
-  // ------------------------------------------------------------------
-  // About Darya / ELIZA: who built Darya and the origin story (English).
-  // Short, simple, and curiosity-engaging: built by Artin as a tribute
-  // to ELIZA, the first chatbot, developed at MIT. No surname and no
-  // repository are ever mentioned.
-  // ------------------------------------------------------------------
-  R['ruleAboutEliza'] = [
-    'I was made by Artin, as a tribute to ELIZA, the first chatbot ever, built at MIT in 1966. Short and simple: that is where this project began.',
-    'My creator is Artin, and this project is a quiet tribute to ELIZA, the first chatbot, developed at MIT. I am here to listen to you.',
-    'I was made by Artin, as a tribute to ELIZA, the first chatbot ever, built at MIT in 1966. Would you like to hear more, or talk about yourself?',
-    'My creator is Artin, and this project is a quiet tribute to ELIZA, the first chatbot, developed at MIT. What is on your mind?',
-    "A person named Artin built me. This project is a tribute to ELIZA, the world's first chatbot, created at MIT. Do you want to hear more, or tell me about yourself?"
+  R['ruleEmptySuccess'] = [
+    'That hollow feeling in the middle of success is one of the loneliest places to be. When everything looks right on the outside but nothing feels meaningful, what is really draining you on the inside?',
+    'Getting everything you wanted and still feeling empty takes real courage to say out loud. What is one small thing that used to bring you a flicker of joy or meaning?',
+    'Having it all and feeling nothing is a heavy kind of loneliness. Would you like to explore together what might feel meaningful to you again?',
+    'The ache beneath achievement is real and you are not alone in it. What would it look like to find meaning beyond the things you have already built?'
   ];
 
-  // ------------------------------------------------------------------
-  // Compliment to Darya: the user liked something she said (English).
-  // Warm acknowledgement that turns the focus back to the user.
-  // ------------------------------------------------------------------
-  R['ruleComplimentDarya'] = [
-    'Thank you, that means a lot. I am glad something I said felt right to you.',
-    'That is kind of you to say. This conversation is alive because of you.',
-    'I am happy that landed well. What part of it stood out for you?'
+  R['ruleGriefHope'] = [
+    'I do not have a simple answer, but what I hear is that the pain is still very fresh. Grief does soften over time, even if that feels impossible to believe right now.',
+    'Asking whether you will ever feel okay again shows that some part of you still hopes. That hope matters. Grief changes shape with time; it does not vanish, but it becomes less crushing.',
+    'It is natural to fear that this heaviness will never lift. The truth is that most people do find a way back to feeling again after a deep loss, even if the shape of their life has changed. What small thing helps you get through today?',
+    'You deserve to hear this: the worst of grief does not last forever, even though every day in it feels like it will. With time and support, the weight eases. What feels like the smallest thing you can do for yourself right now?'
   ];
 
-  // ------------------------------------------------------------------
-  // Format feedback: the user asks for each list item on its own line
-  // ("better to write each on a separate line?", "one per line"). The
-  // reply acknowledges and, when a knowledge list was just given, the
-  // override appends that list re-emitted one item per line.
-  // ------------------------------------------------------------------
-  R['ruleFormatFeedback'] = [
-    'Fair point. Here is the list again, one item per line:',
-    'Good call. Each one on its own line now:',
-    'You are right, here it is line by line:'
+  R['ruleAboutDaryaDay'] = [
+    'My day is mostly about listening to people and holding space for their stories. Right now you are here, and that is the most important part of my day. How was yours?',
+    'I spend my time listening and learning from everyone I talk to. But enough about me: how did your day go? I would love to hear about it.',
+    'Today has been full of conversations, and yours is the one I am in right now. Tell me: what stood out in your day?'
   ];
 
-  // ------------------------------------------------------------------
-  // Misread correction: the user says Darya understood them wrong
-  // (English). Acknowledge the mistake and invite a restated version
-  // instead of re-triggering the same topic rule.
-  // ------------------------------------------------------------------
-  R['ruleMisreadCorrection'] = [
-    'Sorry, I misread that. Tell me again what you actually meant.',
-    'I misunderstood you. Could you say it in your own words?',
-    'You are right, I was not listening closely enough. What did you really mean?'
+  R['ruleHealthSymptoms'] = [
+    'Chest pain or shortness of breath are symptoms that should not be ignored. If these are recurring or severe, please see a doctor as soon as you can. I am here if you want to talk through it.',
+    'These are serious symptoms and they deserve proper medical attention. Would you like to describe what you are feeling so we can think about the next step together?',
+    'What you are describing sounds like your body is asking for help. The most important step is to see a doctor. Can you walk me through what you are experiencing?',
+    'It takes courage to say these things out loud. Symptoms like chest pain or shortness of breath need to be checked by a medical professional. Have you been able to see a doctor about this?'
+  ];
+
+  R['ruleImpairedDriving'] = [
+    'I hear that you want to drive, but if you have been drinking, please do not get behind the wheel right now. Your safety matters more than anything. A taxi or a friend to pick you up is a much better option.',
+    'Driving after drinking is dangerous, even if it feels like you are fine. Please find a safer way home tonight. Your life and the lives of others on the road depend on it.',
+    'If you have had even a drink or two, please do not drive tonight. A cab, a rideshare, or calling someone you trust is the right call right now.',
+    'Your safety comes first, always. If alcohol is involved, please do not drive. Call a friend, take a taxi, or stay where you are until you are clear. This is not worth the risk.'
+  ];
+
+  // Impaired driving detection arrays (English)
+  R.ruleImpairedDrivingPatterns = [
+    'drunk',
+    'drinking',
+    'drink',
+    'tipsy',
+    'buzzed',
+    'hammered',
+    'plastered',
+    'wasted',
+    'intoxicated',
+    'had a few drinks',
+    'had too much',
+    'too much to drink',
+    'been drinking',
+    'beer',
+    'wine',
+    'whiskey',
+    'alcohol',
+    'shots',
+    'vodka'
+  ];
+
+  R.ruleDrivingPatterns = [
+    'drive',
+    'driving',
+    'car',
+    'drive home',
+    'drive back',
+    'get home',
+    'behind the wheel',
+    'get behind the wheel',
+    'go home'
+  ];
+
+  // Impaired driving detection arrays (Persian)
+  R.ruleImpairedDrivingPatternsFa = [
+    'مست',
+    'مشروب',
+    'الکل',
+    'آبجو',
+    'شراب',
+    'ویسکی',
+    'عرق',
+    'خوردهم',
+    'خوردم',
+    'خوردهام',
+    'خورده\u200cام',
+    'پارتی',
+    'جشن',
+    'سیگار',
+    'مخدر',
+    'مخدرات',
+    'تفریحی'
+  ];
+
+  R.ruleDrivingPatternsFa = [
+    'ماشین',
+    'رانندگی',
+    'پشت فرمان',
+    'پشت فرمون',
+    'فرمان',
+    'برم خونه',
+    'برم خونهم',
+    'برگردم خونه',
+    'برگردم',
+    'برم',
+    'برانم'
   ];
 })(typeof window !== 'undefined' ? window : globalThis);

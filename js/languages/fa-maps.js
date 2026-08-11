@@ -1,7 +1,7 @@
 /**
  * Darya - fa lookup maps.
- * stopWords, questionTopics, topicSeriousness, selfAwareness. Registered
- * onto DaryaFaData so the pack assembler sees one object.
+ * stopWords, questionTopics, topicSeriousness, selfAwareness.
+ * Registered onto DaryaFaData so the pack assembler sees one object.
  */
 (function (global) {
   'use strict';
@@ -384,7 +384,12 @@
     safety: 1,
     professional_boundary: 0.9,
     grief: 0.9,
+    chronic_illness: 0.85,
+    caregiver: 0.8,
+    parenting: 0.75,
     health: 0.85,
+    perfectionism: 0.6,
+    procrastination: 0.55,
     anxiety: 0.8,
     stress: 0.8,
     sadness: 0.8,

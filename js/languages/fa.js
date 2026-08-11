@@ -86,6 +86,7 @@
     questionPattern,
     pronounMap,
     exitKeywords,
+    exitStoryPattern,
     wellBeingPattern,
     insultPattern,
     dateTimeTimePattern,
@@ -105,7 +106,11 @@
     dir: 'rtl',
     botName: BOT_NAME,
     scriptRange: SCRIPT_RANGE,
-    minScriptRatio: 0.85,
+    // A sentence stays Persian as long as the majority of its letters are
+    // Persian: everyday speech freely borrows English words ("tired",
+    // "ok", "باشه"), so only a message that is mostly foreign script
+    // gets the polite redirect to write in Persian.
+    minScriptRatio: 0.6,
     normalize,
     bindPrefixesForMatching,
     rules,
@@ -118,6 +123,10 @@
     questionFallbacks: R.questionFallbacks,
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
+    unknownTopicResponses: R.unknownTopicResponses,
+    promiseAcknowledgedResponses: R.promiseAcknowledgedResponses,
+    promiseCircleBackResponses: R.promiseCircleBackResponses,
+    promiseReleasedResponses: R.promiseReleasedResponses,
     topicCallbacks: R.topicCallbacks,
     quotedCallbackTemplates: R.quotedCallbackTemplates,
     distressNudges: R.distressNudges,
@@ -160,7 +169,7 @@
     // کدوم رو در یک خط جداگانه بنویسی؟"). Matches the format-feedback
     // override, which re-emits the last knowledge list line by line.
     formatFeedbackPattern:
-      /(?:هر کدوم.{0,14}(?:خط|بنویس|بنویسی)|هر کدام.{0,14}(?:خط|بنویس|بنویسی)|تک تک.{0,10}(?:خط|بنویس)|یکی یکی.{0,10}(?:خط|بنویس)|جدا بنویس|جداگانه بنویس|در یک خط جدا|خط به خط|خط جداگانه)/u,
+      /(?:هر کدوم.{0,14}(?:خط|بنویس|بنویسی)|هر کدام.{0,14}(?:خط|بنویس|بنویسی)|تک تک.{0,10}(?:خط|بنویس)|یکی یکی.{0,10}(?:خط|بنویس)|جدا بنویس|جداگانه بنویس|در یک خط جدا|خط به خط|خط جداگانه|خط فاصله|بهتر نبود.{0,30}(?:خط|فاصله)|فاصله.{0,8}(?:بنویسی|نوشتی|بذاری|بگذاری))/u,
     formatFeedbackResponses: R['ruleFormatFeedback'],
     // Near-peer young-adult crush detection: an 18-20 year old with
     // romantic feelings for a 16-17 year old gets warm practical guidance
@@ -191,6 +200,7 @@
     professionalBoundary: R.professionalBoundary,
     selfAwareness,
     exitKeywords,
+    exitStoryPattern,
     exitConfirmMessages: R.exitConfirmMessages,
     greetings: R.greetings,
     greetingsPhase1: R.greetingsPhase1,
@@ -242,16 +252,318 @@
     sexualHarassmentResponses: R.sexualHarassmentResponses,
     ruleTellJoke: R.ruleTellJoke,
     ruleShoppingHelp: R.ruleShoppingHelp,
+    // Recommendation follow-ups ("anything similar but darker?", «بهتره
+    // انیمیشن هم باشه») continue the same shelf warmly when the follow-up
+    // names no genre word (see the sequential-refinement block).
+    recFollowupResponses: R.ruleRecFollowup,
+    // Pronoun-referencing follow-ups on the last knowledge topic (see
+    // the sequential-refinement block).
+    knowledgeFollowupResponses: R.ruleKnowledgeFollowup,
     // Short yes/no/maybe answers to a question Darya just asked continue
     // the pending thread contextually (see _resolveShortAnswerContext).
     shortAnswerAffirmContext: R.shortAnswerAffirmContext,
     shortAnswerNegateContext: R.shortAnswerNegateContext,
     shortAnswerMaybeContext: R.shortAnswerMaybeContext,
+    echoAnswerResponses: R.echoAnswerResponses,
     rulePrivacyBoundary: R.rulePrivacyBoundary,
     ruleSmalltalkCapability: R.ruleSmalltalkCapability,
     ruleAgeGap: R.ruleAgeGap,
     ruleDepression: R.ruleDepression,
     emotionCalibration: R.emotionCalibration,
+    // Question recall (see responder-recall.js): «یادته آخرین سوالی که
+    // ازت پرسیدم چی بود؟!» answers from conversation memory by quoting
+    // the user's last question back, never an evasive "I do not have an
+    // answer" line. questionRecallFoundResponses carries the {question}
+    // placeholder; questionRecallNoneResponses is the honest reply when
+    // no question has been asked yet. Recall questions end with ؟/؟! in
+    // everyday typing, so the pattern deliberately ignores the trailing
+    // punctuation (the normalizer strips it for matching anyway).
+    questionRecallPattern:
+      /(?<![\p{L}۰-۹])(?:یادت(?:ه| میاد| می‌آد| هست| هستش| میمونه| می‌مونه)?\s*(?:اصلا|اصلاً)?\s*(?:آخرین|اخرین)\s*سوالی|آخرین\s*سوالی\s*که\s*(?:ازت|از تو|تو)\s*پرسیدم|آخرین\s*سوالم|آخرین\s*سوال\s*من|سوالی\s*که\s*(?:ازت|از تو|تو)\s*پرسیدم|چی\s*پرسیدم|چی\s*ازت\s*پرسیدم|چی\s*از\s*تو\s*پرسیدم)(?![\p{L}۰-۹])/iu,
+    questionRecallFoundResponses: R.questionRecallFoundResponses,
+    questionRecallNoneResponses: R.questionRecallNoneResponses,
+    // Knowledge-expansion request (see responder-recall.js): the long
+    // transcript turn asking Darya to build a richer dataset (good
+    // questions, movies, games, books, anime, traditional medicine, study
+    // help, general knowledge, fun facts). The strong signal (دیتاست) is
+    // enough on its own; otherwise content words must co-occur with a
+    // build/learn/expand framing so a plain movie or fact request is
+    // never hijacked. All variants are the normalized forms (ئ→یی,
+    // ZWNJ→space) so both spellings match.
+    knowledgeExpansionSignals: {
+      strong: /(?<![\p{L}۰-۹])(?:دیتاست|دیتاستی|دانش عمومی)(?![\p{L}۰-۹])/u,
+      content:
+        /(?<![\p{L}۰-۹])(?:فکت|فیلم|فیلم های|کتاب|کتاب های|بازی|بازی های|انیمه|انیمیشن|طب سنتی|کمک تحصیلی|دانش)(?![\p{L}۰-۹])/u,
+      framing:
+        // «باشه» stays OUT: an agreement particle like «بهتره انیمیشن
+        // هم باشه» is a recommendation follow-up, not a dataset request.
+        /(?<![\p{L}۰-۹])(?:داشته باشی|داشته باشم|یاد بگیری|اضافه کنی|بسازی|بسازم|بسازیم|انجام بدی|گسترش|بیشتر کنی|فهمیدی)(?![\p{L}۰-۹])/u
+    },
+    knowledgeExpansionResponses: R.knowledgeExpansionResponses,
+    // Session user profile: patterns that detect age/name disclosures
+    // ("من ۲۴ سالمه", "اسمم آریاه") and recall questions ("چند سالمه؟",
+    // "اسمم چیه؟"), plus the reply pools. Values live only on the
+    // engine instance and are never persisted (see _handleUserProfileTurn).
+    // The name statement rejects question words (چیه/چیست/کیه) so a
+    // recall question is never misread as a disclosure. nameCopulaStrip
+    // removes the attached spoken copula ("آریاه" -> "آریا").
+    userProfilePatterns: {
+      ageStatement:
+        // The colloquial «۲۴ سالمه» carries its own copula (سال + م + ه)
+        // and «سالم» (سال + م) does too, so both are matched alongside the
+        // longer «N ساله هستم» / «N سال دارم» forms. Without them, the
+        // combined disclosure «اسمم آریاست و ۲۴ سالمه» stored the name but
+        // silently dropped the age. Note: «سالم» also means "healthy", so
+        // a bare «سالم» without a preceding number can never match (the
+        // pattern always requires the digits first); a digit + «سالم» is
+        // read as the age form, which is the natural reading.
+        /(?<!\p{L})(?:(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)|(?:و\s*)?([۰-۹0-9]{1,3})\s*(?:(?:سال(?:ه|م|مه)?)\s*(?:دارم|هستم|ام)|سالمه|سالم))(?![\p{L}۰-۹])/iu,
+      ageQuestion:
+        /(?<!\p{L})(?:چند سالمه|سنم چنده|سنم چند|چند ساله‌ام|چند ساله ام|یادت.{0,10}چند سالمه|یادت.{0,10}سنم)(?!\p{L})/iu,
+      // Both the "اسمم X" form and the copular "من X هستم" form are
+      // matched. The copular form is the natural Persian self-introduction
+      // ("من آرتین هستم") and is deliberately constrained to letters
+      // only, so "من خسته هستم" (I am tired) can never store an emotion
+      // as a name: nameStopwords lists the common adjectives that follow
+      // the copula, and the handler rejects any captured candidate on it.
+      // The third branch catches the attached first-person copula
+      // («من بارانم», «من کوروشم») where the final «م» glues to the name
+      // with no space, the most common informal self-introduction.
+      nameStatement:
+        // Recall fragments after «اسمم» («رو یادته», «رو گفتم», «چی بود»,
+        // «یادت رفته») must not be captured as names: they mark a
+        // question about the stored name, which nameQuestion handles.
+        // Only «اسمم»/«اسم من» carries these fragments; the copular
+        // branches have no recall ambiguity. The «اسممو سارا بذار»
+        // branch covers the preposed form only (name before بذار); the
+        // postposed «اسممو بذار سارا» is deliberately out of scope.
+        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?|من\s+(?!چیه|چیست|چی|کیه|کیست)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
+      // Group 3 of nameStatement is the glued first-person copula
+      // («من بارانم»); the handler reads this flag instead of hardcoding
+      // the group index (see responder-profile.js).
+      nameAttachedGroup: 3,
+      nameStopwords: [
+        // States and emotions: "من خسته هستم" is a feeling, not a name.
+        // The ئ→یی normalizer turns «مطمئن» into «مطمین», so the
+        // normalized form must be listed too or «اسمم مطمینه» would be
+        // captured as a name.
+        'خسته',
+        'مطمئن',
+        'مطمین',
+        'آماده',
+        'خوشحال',
+        'ناراحت',
+        'عصبانی',
+        'نگران',
+        'موافق',
+        'مخالف',
+        'حاضر',
+        'منتظر',
+        'تنها',
+        'متاسف',
+        'شرمنده',
+        'راضی',
+        'مقصر',
+        'بیگناه',
+        'مشتاق',
+        'سردرگم',
+        'گیج',
+        'غمگین',
+        'افسرده',
+        'مضطرب',
+        'دلخور',
+        'معتقد',
+        'امیدوار',
+        'ممنون',
+        'آرام',
+        'راحت',
+        'قوی',
+        'ضعیف',
+        'سالم',
+        'مریض',
+        'بیمار',
+        'گرسنه',
+        'تشنه',
+        // Gender and role self-descriptions: "من مرد هستم" is a
+        // disclosure of identity, never a name.
+        'مرد',
+        'زن',
+        'خانم',
+        'آقا',
+        'پسر',
+        'دختر',
+        'بچه',
+        'پدر',
+        'مادر',
+        'برادر',
+        'خواهر',
+        'پدربزرگ',
+        'مادربزرگ',
+        'عمو',
+        'دایی',
+        'خاله',
+        'عمه',
+        'دوست',
+        'رفیق',
+        'همکار',
+        'همسایه',
+        // Professions: "من دکتر هستم" states a job, not a name.
+        'دکتر',
+        'مهندس',
+        'معلم',
+        'دبیر',
+        'استاد',
+        'دانشجو',
+        'دانشآموز',
+        'کارمند',
+        'پرستار',
+        'بیکار',
+        'بازنشسته',
+        'مدیر',
+        'نویسنده',
+        'هنرمند',
+        'نقاش',
+        'خواننده',
+        'فوتبالیست',
+        'ورزشکار',
+        'تاجر',
+        'کشاورز',
+        'سرباز',
+        'وکیل',
+        'قاضی',
+        'محقق',
+        'پژوهشگر',
+        'روانشناس',
+        'مشاور',
+        'پزشک',
+        // Everyday self-descriptions that glue to the attached first-person
+        // copula: «من خوبم», «من بدم», «من جوانم» state how the speaker
+        // is, never who they are.
+        'خوب',
+        'بد',
+        'بزرگ',
+        'کوچک',
+        'جوان',
+        'پیر',
+        'شجاع',
+        'ترسو',
+        // Pronouns and reflexives: «من خودم رو واکاوی کنم» is "myself",
+        // never a name. «خود» is what the attached-copula branch captures
+        // from «من خودم».
+        'خود',
+        // First-person verb stems that glue to the attached copula:
+        // «من میرم», «من میخوام», «من هستم» say what the speaker does or
+        // is, never who they are. The stems are the forms captured before
+        // the final «م» (میخوام -> میخوا, میرم -> میر). The normalizer
+        // maps ئ to یی, so «مطمئنم» arrives as «مطمینم» and needs its
+        // normalized stem here.
+        'میخوا',
+        'میگ',
+        'میر',
+        'میدون',
+        'میا',
+        'میفهم',
+        'میبین',
+        'میخون',
+        'میخوان',
+        // More attached-copula states from the wild persona probes: «من
+        // مستم» (I am drunk), «من سیرم» (I am full), «من کسلم» (I am
+        // bored/lazy), «من خوابم» (I am sleepy), «من آرومم» (I am calm,
+        // colloquial), «من پریشانم» (I am distressed), «من آشفتم» (I am
+        // upset, the ه drops before the copula), «من ترسیدم» (I got
+        // scared), «من گرمم/سردم» (I am hot/cold), «من دلم گرفته» (my
+        // heart is heavy, captures «دل»), «من خمارم» (I am hungover).
+        // Each is a state, never a name, and each glued form the probe
+        // stored as a false name is listed here in its captured stem.
+        'مست',
+        'خمار',
+        'سیر',
+        'کسل',
+        'خواب',
+        'آروم',
+        'پریشان',
+        'آشفت',
+        'آشفته',
+        'ترسید',
+        'ترسیده',
+        'گرم',
+        'سرد',
+        'دل',
+        'هست',
+        'دار',
+        'کن',
+        'بگ',
+        'بر',
+        'بیا',
+        'بذار',
+        'بزار',
+        'بدون',
+        'ببین',
+        'بفهم',
+        'بخوا',
+        'بکن',
+        'بده',
+        'بگیر',
+        'بزن',
+        'بنداز',
+        'ببر',
+        'بیار',
+        'رفت',
+        'اومد',
+        'گفت',
+        'دید',
+        'شنید',
+        'کرد',
+        'گرفت',
+        'خواست',
+        'گذاشت',
+        'فهمید',
+        'مطمین',
+        'مطمئن'
+      ],
+      // The spoken copula after a name: «آریاه» -> «آریا» (the ه of the
+      // colloquial copula), and the glued «ست» form that drops the «ا»
+      // of «است» after a vowel-final name («ساراست» -> «سارا» + «ست»,
+      // «آریاست» -> «آریا», «میناست» -> «مینا»). Stripping the bare
+      // «است» would wrongly eat the name's own final «ا» («ساراست» ->
+      // «سار»), so «ست» must be stripped instead, and «هستم»/«هست» are
+      // handled before «ه» so «مهندس هستم» strips the full copula.
+      nameCopulaStrip: /(?:هستم|هست|ست|ه)$/u,
+      nameQuestion:
+        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,8}اسمم|یادت میمونه اسمم|یادت می‌مونه اسمم)(?!\p{L})/iu
+    },
+    userProfilePools: R.userProfilePools,
+    // Deferred-topic promise memory (see responder-promise.js): the
+    // user says «بعداً می‌گم» (or releases a pending promise with
+    // «ولش کن»), and Darya circles back a few turns later instead of
+    // letting the thread die. Both spaced and half-spaced verb forms
+    // are matched because the normalizer inserts the ZWNJ.
+    promiseLaterPattern:
+      /(?:بعداً|بعدا|بعدن)[^.!؟]{0,40}(?:میگم|می‌گم|بهت میگم|بهت می‌گم|برات میگم|برات می‌گم|حرف میزنیم|حرف می‌زنیم|میگیم|می‌گیم|بگویم|میگویم|می‌گویم)|یه وقت دیگه|یک وقت دیگر|وقت دیگه|فعلاً نه|فعلا نه|الان نه|بذار بعداً|بذار بعدا|بگذار بعداً|بگذار بعدا/u,
+    promiseForgetPattern:
+      /(?:ولش کن|ولش کن دیگه|فراموش کن|فراموشش کن|بی‌خیال|بیخیال|بی خیال|بذار بگذریم|بگذار بگذریم|رهایش کن)/u,
+    // Guided therapeutic exercises (see responder-exercises.js): request
+    // detection, the step libraries, the stop phrasing, and the tappable
+    // yes/no chips shown between steps. All session-only.
+    exerciseRequestPattern: R.exerciseRequestPattern,
+    exerciseStopPattern: R.exerciseStopPattern,
+    exerciseLibrary: R.exerciseLibrary,
+    exerciseYesNoChips: R.exerciseYesNoChips,
+    // Session mood tracker (see responder-mood.js): request/summary
+    // patterns, the 1..10 scale, reflection pools per band, and the
+    // summary/release lines. All session-only.
+    moodRequestPattern: R.moodRequestPattern,
+    moodSummaryPattern: R.moodSummaryPattern,
+    moodAskResponses: R.moodAskResponses,
+    moodReflectionPools: R.moodReflectionPools,
+    moodSummaryResponses: R.moodSummaryResponses,
+    moodNoDataResponse: R.moodNoDataResponse,
+    moodReleaseResponses: R.moodReleaseResponses,
+    moodScaleChips: R.moodScaleChips,
+    moodDirectionUp: R.moodDirectionUp,
+    moodDirectionDown: R.moodDirectionDown,
+    moodDirectionSame: R.moodDirectionSame,
+    moodLogSize: R.moodLogSize,
     ui: {
       appTitle: 'دریا · همراه گفتگوی آرام',
       appDescription: 'دریا، همراه گفتگوی فارسی‌زبان برای گوش دادن و همراهی.',
@@ -269,6 +581,7 @@
       newChatTitle: 'گفت‌وگوی تازه',
       themeGroupLabel: 'انتخاب پوسته',
       typingLabel: 'دریا در حال فکر کردن',
+      quickRepliesLabel: 'پاسخ‌های سریع',
       menuNewChat: 'گفت‌وگوی تازه',
       menuExportLabel: 'دانلود گفتگو',
       menuExportTitle: 'دانلود گفتگو',
@@ -296,8 +609,6 @@
       newChatConfirmNo: 'انصراف',
       soundOnTitle: 'پخش صدای محیطی: روشن',
       soundOffTitle: 'پخش صدای محیطی: خاموش',
-      soundAutoplayBlockedMsg:
-        'صدای محیطی نتوانست به\u200cطور خودکار پخش شود؛ برای فعال کردن، روی آیکون صدا بزنید.',
       soundFallbackMsg:
         'فایل‌های صدای محیطی بارگذاری نشدند. از صدای تولیدشده به‌جای آن استفاده می‌شود.',
       engineErrorHint: 'یک مشکل کوچک پیش آمد، اما گفتگو می‌تواند ادامه یابد.',

@@ -1,6 +1,25 @@
 /**
- * Darya classic script - en response pool.
+ * Darya classic script - en response pools (base).
+ *
+ * Initializes the shared DaryaEnResponses object and fills in the base
+ * conversation pools every turn can use: generic and strategy-shift
+ * fallbacks, question fallbacks and acknowledgements, source
+ * suggestions, session check-ins, smalltalk, humor, gratitude, emoji
+ * replies, greetings (phase 1/2, open, inviting, returning), idle
+ * openers, professional-boundary lines, and the empty-input and
+ * engine-error replies. The topic pools live in
+ * en-responses-topics.js and the feature pools in
+ * en-responses-features.js; the three part files fill the same object
+ * in load order, so it is complete before en-rules.js and the en.js
+ * pack assembler read from it.
  */
+
+(function (global) {
+  'use strict';
+
+  global.DaryaEnResponses = {};
+})(typeof window !== 'undefined' ? window : globalThis);
+
 (function (global) {
   'use strict';
 
@@ -240,14 +259,20 @@
     'That came through loudly. I am still here and listening. Can you tell me what is underneath that feeling?',
     'I hear the strength in your words. It is okay to feel that way. What is the heart of it?',
     'That energy is important. Let me sit with you in it rather than rushing past it.',
-    'I notice the emphasis. Take your time. There is no need to shout for me to hear you.'
+    'I notice the emphasis. Take your time. There is no need to shout for me to hear you.',
+    'I can hear how much you are holding. There is no need to shout for me to understand you.',
+    'I am not here to argue with you. Tell me what is really bothering you, and I will listen.',
+    'It sounds like you are carrying a lot of frustration. What has been building up?',
+    'I can take the strong words. What matters to me is what is underneath them.'
   ];
   R.factualQuestionFollowups = [
     'Now, what is really on your mind today?',
     'Does that answer help, or is there something deeper you want to talk about?',
     'Numbers aside, what is the question that has been following you around?',
     'Happy to help with that. What else is present for you right now?',
-    'Happy to help. What is next on your mind?'
+    'Happy to help. What is next on your mind?',
+    'Happy to help. Is there another question, or something else you want to share?',
+    'That is one down. Anything else on your mind?'
   ];
   R.spamNoiseResponses = [
     'It looks like that might have been accidental. Whenever you are ready, I am here to listen.',

@@ -1,6 +1,8 @@
 /**
  * Darya - en patterns and vocabulary.
- * Registered on DaryaEnData; the maps live in en-lookups.js.
+ * Entity-extractor vocabulary, trivial-capture patterns, and related
+ * pattern data. Registered on DaryaEnData; the lookup maps live in
+ * en-maps.js.
  */
 (function (global) {
   'use strict';
@@ -151,6 +153,10 @@
     'i must go',
     'take care',
     'bye for now',
+    // "bai"/"bay" are the Latin-alphabet spellings of the Persian بای
+    // (bye), common when Persian speakers write in the Latin script.
+    'bai',
+    'bay',
     'time to go',
     'time to say goodbye',
     'i should go',
@@ -160,11 +166,41 @@
     'leaving now',
     'have to leave',
     'i have to leave',
+    // "I want to leave" mirrors the Persian "میخوام ترکت کنم" exit fix:
+    // the user is ending the conversation, and the exit confirmation must
+    // recognize it instead of treating it as a topic to explore.
+    'i want to leave',
+    'i wanna leave',
     'ciao',
     'bye bye',
     'exit',
     'quit'
   ];
+
+  // A story that merely mentions a farewell ("I said goodbye to my friend
+  // today") is not a leave request. isExitCommand skips exit detection when
+  // this matches, so the app layer never shows the exit-confirm bar for a
+  // past-tense report. Present-tense "say goodbye" is deliberately NOT
+  // listed: "I have to say goodbye now" is a real farewell.
+  const exitStoryPattern =
+    /\b(?:said|saying|waved|waving|told|bid(?:ding)?)\s+(?:goodbye|good bye|bye)\b/i;
+
+  // The "take care" farewell keyword also opens everyday caregiving
+  // sentences ("i take care of my mother", "i should take care of the
+  // kids") that are not leave requests. A "take care of" followed by
+  // someone OTHER than the reader marks the whole message as a false
+  // positive, so isExitCommand skips exit detection for it. "take care"
+  // alone, and the warm "take care of yourself" farewell, still exit.
+  // The bare "quit" keyword likewise opens habit-breaking and
+  // career-change sentences ("i want to quit smoking", "trying to
+  // quit drinking", "i want to quit my job") that are not leave
+  // requests: the exit bar must never hijack a habit or job
+  // disclosure into the two-step goodbye flow. Only the specific
+  // habit/activity/work objects count as false positives, so a real
+  // "i want to quit" (ending the chat) still exits.
+  const exitFalsePositivePattern =
+    // eslint-disable-next-line max-len
+    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my position|my career|this job|the job|working|work|the team|the company)\b/i;
 
   // Phase 1 (warm presence): the very first greeting should establish Darya
   // as a calm, non-judgmental presence with a gentle opening.
@@ -208,7 +244,7 @@
 
   const insultPattern =
     // eslint-disable-next-line max-len
-    /\b(?:stupid|dumb|idiot|moron|foolish|retard|dummy|loser|jerk|ass(?:hole|hat|bag|clown|face|wipe)?|arse(?:hole)?|bitch(?:ing)?|bastard|bullshit|shit(?:head|hole|ty|fuck)?|dipshit|shite|crap(?:head|py)?|damn|goddamn(?:it)?|dick(?:head|wad)?|prick|knob(?:head)?|twat|wanker|tosser|cock(?:sucker)?|cunt|fuck(?:er|ing|tard|wit|face|nut|ed)?|motherfucker|dumbfuck|shitfuck|horseshit|piss(?:ant|ed off)?|slut|whore|skank|slag|scum(?:bag)?|jackass|dumbass|douche(?:bag)?|bugger|bollocks|screw|disgusting|despicable|contemptible|vile|obnoxious|repulsive|pathetic|useless|ignorant|worthless|hopeless|wretched|pedo|pedophile|paedophile|you suck|you (?:are )?(?:an? )?(?:ass|idiot|moron|joke|fool|cretin|bastard|bitch|dick|dumbass|fucker|loser|pathetic|worthless|piece of shit|jerk|cunt|twat|wanker|stupid|dumb|pedo|pedophile|paedophile))\b/i;
+    /\b(?:stupid|dumb|idiot|moron|foolish|retard|dummy|loser|jerk|ass(?:hole|hat|bag|clown|face|wipe)?|arse(?:hole)?|bitch(?:ing)?|bastard|bullshit|shit(?:head|hole|ty|fuck)|dipshit|shite|crap(?:head|py)?|damn|goddamn(?:it)?|dick(?:head|wad)?|prick|knob(?:head)?|twat|wanker|tosser|cock(?:sucker)?|cunt|fuck(?:er|ing|tard|wit|face|nut|ed)?|motherfucker|dumbfuck|shitfuck|horseshit|piss(?:ant|ed off)?|slut|whore|skank|slag|scum(?:bag)?|jackass|dumbass|douche(?:bag)?|bugger|bollocks|screw|disgusting|despicable|contemptible|vile|obnoxious|repulsive|pathetic|useless|ignorant|worthless|hopeless|wretched|pedo|pedophile|paedophile|you suck|you (?:are )?(?:an? )?(?:ass|idiot|moron|joke|fool|cretin|bastard|bitch|dick|dumbass|fucker|loser|pathetic|worthless|piece of shit|jerk|cunt|twat|wanker|stupid|dumb|pedo|pedophile|paedophile)|full of shit|this shit is|that shit is)\b/i;
 
   // Date/time question patterns for the _handleDateTimeQuestion engine
   // method. Time queries: asking the current time. Date queries: asking
@@ -245,6 +281,8 @@
     questionPattern,
     pronounMap,
     exitKeywords,
+    exitStoryPattern,
+    exitFalsePositivePattern,
     wellBeingPattern,
     insultPattern,
     dateTimeTimePattern,

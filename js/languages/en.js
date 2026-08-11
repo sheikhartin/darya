@@ -50,6 +50,8 @@
     questionPattern,
     pronounMap,
     exitKeywords,
+    exitStoryPattern,
+    exitFalsePositivePattern,
     wellBeingPattern,
     insultPattern,
     dateTimeTimePattern,
@@ -69,7 +71,11 @@
     dir: 'ltr',
     botName: BOT_NAME,
     scriptRange: SCRIPT_RANGE,
-    minScriptRatio: 0.85,
+    // A sentence stays English as long as the majority of its letters
+    // are Latin: one borrowed Arabic-script word in an English sentence
+    // is code-switching, not a language switch, and only a mostly
+    // foreign-script message gets the polite redirect.
+    minScriptRatio: 0.6,
     normalize,
     rules,
     trivialCaptures,
@@ -81,6 +87,10 @@
     questionFallbacks: R.questionFallbacks,
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
+    unknownTopicResponses: R.unknownTopicResponses,
+    promiseAcknowledgedResponses: R.promiseAcknowledgedResponses,
+    promiseCircleBackResponses: R.promiseCircleBackResponses,
+    promiseReleasedResponses: R.promiseReleasedResponses,
     topicCallbacks: R.topicCallbacks,
     quotedCallbackTemplates: R.quotedCallbackTemplates,
     distressNudges: R.distressNudges,
@@ -122,7 +132,7 @@
     // separate line", "one per line"). Matches the format-feedback
     // override, which re-emits the last knowledge list line by line.
     formatFeedbackPattern:
-      /(?:each (?:one|item|movie|series) (?:on|in) (?:a |its own |separate )?lines?|one per line|separate lines?|line by line|write (?:each|them) (?:on|in|as) (?:a |separate )?lines?|put (?:each|them) on (?:a |their own |separate )?lines?|list (?:them|it) separately)/i,
+      /(?:each (?:one|item|movie|series) (?:on|in) (?:a |its own |separate )?lines?|one per line|separate lines?|line by line|write (?:each|them) (?:on|in|as) (?:a |separate )?lines?|put (?:each|them) on (?:a |their own |separate )?lines?|list (?:them|it) separately|on (?:a |its own |a separate |a new |their own )line\b|space between|line spacing|(?:add|put|leave|insert) (?:a |an )?blank line\b|blank line (?:between|before|after))/i,
     formatFeedbackResponses: R['ruleFormatFeedback'],
     // Near-peer young-adult crush detection: an 18-20 year old with
     // romantic feelings for a 16-17 year old gets warm practical guidance
@@ -152,6 +162,8 @@
     professionalBoundary: R.professionalBoundary,
     selfAwareness,
     exitKeywords,
+    exitStoryPattern,
+    exitFalsePositivePattern,
     exitConfirmMessages: R.exitConfirmMessages,
     greetings: R.greetings,
     greetingsPhase1: R.greetingsPhase1,
@@ -192,11 +204,19 @@
     sexualHarassmentPattern,
     ruleTellJoke: R.ruleTellJoke,
     ruleShoppingHelp: R.ruleShoppingHelp,
+    // Recommendation follow-ups ("anything similar but darker?") continue
+    // the same shelf warmly when the follow-up names no genre word (see
+    // the sequential-refinement block).
+    recFollowupResponses: R.ruleRecFollowup,
+    // Pronoun-referencing follow-ups on the last knowledge topic (see
+    // the sequential-refinement block).
+    knowledgeFollowupResponses: R.ruleKnowledgeFollowup,
     // Short yes/no/maybe answers to a question Darya just asked continue
     // the pending thread contextually (see _resolveShortAnswerContext).
     shortAnswerAffirmContext: R.shortAnswerAffirmContext,
     shortAnswerNegateContext: R.shortAnswerNegateContext,
     shortAnswerMaybeContext: R.shortAnswerMaybeContext,
+    echoAnswerResponses: R.echoAnswerResponses,
     rulePrivacyBoundary: R.rulePrivacyBoundary,
     ruleSmalltalkCapability: R.ruleSmalltalkCapability,
     ruleAgeGap: R.ruleAgeGap,
@@ -210,6 +230,178 @@
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
     emotionCalibration: R.emotionCalibration,
+    // Question recall (see responder-recall.js): "do you remember what
+    // the last question I asked you was?" answers from conversation
+    // memory by quoting the user's last question back, never an evasive
+    // "I do not have an answer" line. questionRecallFoundResponses
+    // carries the {question} placeholder; questionRecallNoneResponses is
+    // the honest reply when no question has been asked yet.
+    questionRecallPattern:
+      /\b(?:do you (?:even )?remember (?:what|the last question)|what was (?:my|the) last question|what did i (?:ask|ask you)(?: last| before| earlier)?|last question i asked|remember (?:the question|what) i asked)\b/i,
+    questionRecallFoundResponses: R.questionRecallFoundResponses,
+    questionRecallNoneResponses: R.questionRecallNoneResponses,
+    // Knowledge-expansion request (see responder-recall.js): the long
+    // transcript turn asking Darya to build a richer dataset (good
+    // questions, movies, games, books, anime, traditional medicine,
+    // study help, general knowledge, fun facts). The strong signal
+    // (dataset) is enough on its own; otherwise content words must
+    // co-occur with a build/learn/expand framing so a plain movie or
+    // fact request is never hijacked.
+    knowledgeExpansionSignals: {
+      strong: /\b(?:dataset|knowledge base|knowledgebase)\b/i,
+      content:
+        /\b(?:movies|films|games|books|anime|animation|traditional medicine|study help|general knowledge|fun facts|questions|facts)\b/i,
+      framing:
+        /\b(?:you should|you need|you must|have to|learn|improve|build|add|expand|grow|make yourself|understand|got it)\b/i
+    },
+    knowledgeExpansionResponses: R.knowledgeExpansionResponses,
+    // Session user profile: patterns that detect age/name disclosures
+    // ("I'm 24 years old", "my name is Sara") and recall questions
+    // ("how old am I?", "what is my name?"), plus the reply pools.
+    // Values live only on the engine instance and are never persisted
+    // (see _handleUserProfileTurn). The age statement rejects common
+    // non-age quantity phrases ("i am 2 hours late", "100 percent").
+    userProfilePatterns: {
+      ageStatement:
+        /\b(?:(?:i'?m|i am|im|my age is)\s+(?:a\s+)?(\d{1,3})\s*(?:years?|yrs?|yo)?|(?:and\s+)?(\d{1,3})\s+years?\s+old)\b(?!\s*(?:hours?|minutes?|days?|weeks?|months?|times|o'clock|percent|dollars|miles|meters?))/i,
+      ageQuestion:
+        /\b(?:how old am i|what is my age|what about my age|and my age|do you (?:remember|know) my age)\b/i,
+      // At most two words (a first name, or first plus last name), so a
+      // disclosure that continues into a sentence ("my name is Sara and
+      // I am sad") never stores "Sara and I am" as the name. The plain
+      // "I'm X" copular form ("I'm Artin") is also matched: it is a
+      // natural English self-introduction. The guard list keeps common
+      // non-name continuations (states, negations, hedges, intentions)
+      // from being stored, and nameRequiresCapital additionally demands
+      // a capital initial for the copular capture, because the pattern
+      // is case-insensitive: without it, "i'm not sure how to start"
+      // would store the word "not" as a name. The explicit forms
+      // ("my name is x") accept any case. The "call me x" form requires
+      // a capital initial too, so "call me tomorrow" and "call me sara"
+      // are never stored as names. The capture takes up to two words
+      // ("call me Mary Jane"), mirroring the explicit-form branch.
+      nameStatement:
+        /\b(?:my name(?: is|'?s)|i'?m called|i am called)\s+([A-Za-z][A-Za-z']*(?:\s+(?!and\b|or\b)[A-Za-z][A-Za-z']*)?)\b|\b(?:i'?m|i am)\s+(?!(?:a\s+)?(?:ok\b|fine\b|good\b|great\b|tired\b|sad\b|happy\b|angry\b|excited\b|busy\b|bored\b|hungry\b|scared\b|worried\b|confused\b|sorry\b|sure\b|ready\b|here\b|back\b|home\b|not\b|just\b|so\b|really\b|actually\b|kinda\b|sort of|kind of|gonna\b|going\b|trying\b|starting\b|beginning\b|hoping\b|wondering\b|feeling\b|thinking\b|looking\b|done\b|finished\b|almost\b|basically\b|honestly\b|serious\b|kidding\b|joking\b|doing\b|new\b|single\b|alone\b|lost\b|stuck\b|fine\b|better\b|well\b))([A-Z][a-z]+)\b|\b(?:please\s+)?(?<!don'?t\s+)call me\s+([A-Z][a-z]+(?:\s+(?!and\b|or\b)[A-Z][a-z]+)?)\b/i,
+      nameRequiresCapital: true,
+      // Group 3 (the "call me x" branch) must also clear the capital
+      // check: the pattern is case-insensitive, so without it the
+      // lowercase "tomorrow" in "call me tomorrow" would be stored.
+      nameCapitalGroups: [3],
+      // Non-name words that follow "I am" / "I'm" in everyday speech:
+      // states, negations, hedges, intentions, genders, roles, and common
+      // professions. The handler rejects any captured candidate on this
+      // list (case-insensitively), so "I am a Doctor" and "I am a man"
+      // never store a profession or gender as a name.
+      nameStopwords: [
+        'not',
+        'just',
+        'so',
+        'really',
+        'actually',
+        'kind',
+        'sort',
+        'gonna',
+        'going',
+        'trying',
+        'starting',
+        'beginning',
+        'hoping',
+        'wondering',
+        'feeling',
+        'thinking',
+        'looking',
+        'doing',
+        'fine',
+        'good',
+        'great',
+        'ok',
+        'okay',
+        'tired',
+        'sad',
+        'happy',
+        'angry',
+        'excited',
+        'busy',
+        'bored',
+        'hungry',
+        'scared',
+        'worried',
+        'confused',
+        'sorry',
+        'sure',
+        'ready',
+        'here',
+        'back',
+        'home',
+        'man',
+        'woman',
+        'guy',
+        'girl',
+        'boy',
+        'human',
+        'person',
+        'adult',
+        'kid',
+        'father',
+        'mother',
+        'brother',
+        'sister',
+        'son',
+        'daughter',
+        'friend',
+        'doctor',
+        'teacher',
+        'student',
+        'engineer',
+        'nurse',
+        'lawyer',
+        'artist',
+        'writer',
+        'programmer',
+        'manager',
+        'musician',
+        'singer',
+        'player',
+        'new',
+        'single',
+        'alone',
+        'lost',
+        'stuck'
+      ],
+      nameQuestion:
+        /\b(?:what('?s| is) my name|do you (?:remember|know) my name)\b/i
+    },
+    userProfilePools: R.userProfilePools,
+    // Deferred-topic promise memory (see responder-promise.js): the
+    // user says "I'll tell you later" (or releases a pending promise
+    // with "never mind"), and Darya circles back a few turns later
+    // instead of letting the thread die.
+    promiseLaterPattern:
+      /(?:i'?ll (?:tell|talk|show|explain) you[^.!?]{0,60}(?:later|another time|some other time|when i (?:get|come) back|tomorrow|next time)|we'?ll (?:talk|do it|pick this up) later|talk about (?:it|this) later|some other time\b|later ok|later okay|not now\b|let'?s talk about (?:it|this) later)/iu,
+    promiseForgetPattern:
+      /(?<!(?:don'?t|dont|do not)\s)(?:never mind|forget (?:it|about it|that)|forget what i said|skip it|scratch that)/iu,
+    // Guided therapeutic exercises (see responder-exercises.js): request
+    // detection, the step libraries, the stop phrasing, and the tappable
+    // yes/no chips shown between steps. All session-only.
+    exerciseRequestPattern: R.exerciseRequestPattern,
+    exerciseStopPattern: R.exerciseStopPattern,
+    exerciseLibrary: R.exerciseLibrary,
+    exerciseYesNoChips: R.exerciseYesNoChips,
+    // Session mood tracker (see responder-mood.js): request/summary
+    // patterns, the 1..10 scale, reflection pools per band, and the
+    // summary/release lines. All session-only.
+    moodRequestPattern: R.moodRequestPattern,
+    moodSummaryPattern: R.moodSummaryPattern,
+    moodAskResponses: R.moodAskResponses,
+    moodReflectionPools: R.moodReflectionPools,
+    moodSummaryResponses: R.moodSummaryResponses,
+    moodNoDataResponse: R.moodNoDataResponse,
+    moodReleaseResponses: R.moodReleaseResponses,
+    moodScaleChips: R.moodScaleChips,
+    moodDirectionUp: R.moodDirectionUp,
+    moodDirectionDown: R.moodDirectionDown,
+    moodDirectionSame: R.moodDirectionSame,
+    moodLogSize: R.moodLogSize,
     ui: {
       appTitle: 'Darya · A Calm Conversation Companion',
       appDescription:
@@ -228,6 +420,7 @@
       newChatTitle: 'New chat',
       themeGroupLabel: 'Choose a theme',
       typingLabel: 'Darya is thinking',
+      quickRepliesLabel: 'Quick replies',
       menuNewChat: 'New chat',
       menuExportLabel: 'Download conversation',
       menuExportTitle: 'Download conversation',
@@ -256,8 +449,6 @@
       newChatConfirmNo: 'Cancel',
       soundOnTitle: 'Ambient sound: on',
       soundOffTitle: 'Ambient sound: off',
-      soundAutoplayBlockedMsg:
-        'Ambient sound could not start automatically. Tap the sound icon to enable it.',
       soundFallbackMsg:
         'Ambient sound files could not be loaded. Using a generated ambient instead.',
       engineErrorHint: 'A minor issue occurred. The conversation can continue.',

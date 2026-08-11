@@ -1,5 +1,9 @@
 /**
- * Darya classic script - en response pool (part 2).
+ * Darya classic script - en response pools (topics).
+ * Topic-specific follow-up questions, blend responses, the sentiment
+ * lexicon, emotion calibration, human-touch lines, recap templates,
+ * word-repetition and topic-recovery responses, promise-cycle pools,
+ * and unknown-topic responses.
  */
 (function (global) {
   'use strict';
@@ -121,6 +125,12 @@
       'What do you wish they understood about your side?',
       'Is there a small boundary that would make contact easier?'
     ],
+    family_conflict: [
+      'Where did the rift between you begin?',
+      'What do you wish they could see from your side?',
+      'What would a small first step toward mending it look like?',
+      'If talking feels hard right now, what else might help you feel closer?'
+    ],
     work: [
       'What part of the workday has been hardest lately?',
       'Did this pressure begin with a specific change at work?',
@@ -181,12 +191,6 @@
       'What has helped you start something on a low-energy day before?',
       'Would a shorter form of the task feel possible?'
     ],
-    relationship: [
-      'What changed between you and them most recently?',
-      'Are you looking for repair, clarity, or room to breathe?',
-      'Which part of the relationship still feels good or steady?',
-      'What do you need to be able to say plainly?'
-    ],
     health: [
       'What symptom or change is worrying you most?',
       'Have you already spoken with a qualified clinician about it?',
@@ -239,7 +243,9 @@
       'What part of the relationship feels most important to you right now?',
       'Are you looking for repair, clarity, or room to breathe in this connection?',
       'What would a healthier version of this relationship look like?',
-      'What do you need to be able to say, even if it feels hard?'
+      'What do you need to be able to say, even if it feels hard?',
+      'Which part of the relationship still feels good or steady?',
+      'What do you need to be able to say plainly?'
     ],
     career: [
       'What part of your career is asking for the most attention right now?',
@@ -452,9 +458,18 @@
   // --- Rule-specific response pools (extracted from rules[] array) ---
 
   // --- Rule-specific response pools (extracted from rules[] array) ---
+  // Every line in this pool carries the concrete next step because the
+  // turn is safety-critical: a warm probe alone is not enough, the
+  // verified hotline must always be within reach. Numbers per
+  // findahelpline.com and the UNHCR Iran psycho-social support page:
+  // 988 is the free, 24/7 Suicide and Crisis Lifeline in the US and
+  // Canada; 116 123 is the free European emotional-support line. Darya
+  // stays fully offline, so it can never dial a number; the numbers are
+  // simply offered as the immediate next step.
   R['ruleSafety'] = [
-    "What you just shared matters a great deal, and I want you to know you're not alone. Is there someone nearby you could reach out to or be with right now?",
-    "That sounds like a very heavy weight to carry, and it deserves real, immediate support. Please reach out to a crisis line or someone you trust right now. I'm here with you, but I'm not a substitute for urgent professional help."
+    "What you just shared matters a great deal, and I want you to know you're not alone. Please reach out for immediate support right now: in the US and Canada you can call or text 988, the Suicide and Crisis Lifeline, free and 24/7, and in Europe 116 123 is a free emotional support line. You deserve that support; please use it.",
+    "That sounds like a very heavy weight to carry, and it deserves real, immediate support. Please reach out to a crisis line or someone you trust right now: 988 (US/Canada, free 24/7) or 116 123 in Europe. I'm here with you, but I'm not a substitute for urgent professional help.",
+    'I am here with you, and you are not alone. Please reach out for immediate support right now: in the US and Canada you can call or text 988, the Suicide and Crisis Lifeline, free and 24/7. In Europe, 116 123 is a free emotional support line. You deserve that support; please use it.'
   ];
 
   R['ruleGreetingHi'] = [
@@ -510,4 +525,43 @@
   // Each emotional pool mixes open questions with caring statements so
   // the reply stays on-topic even when the question budget is spent
   // (the budget filter keeps only non-question lines then).
+
+  // ------------------------------------------------------------------
+  // Unknown-topic reactions: the honest reply when nothing at all
+  // matched (see _fallbackResponse). Darya admits the subject is
+  // outside what she knows and invites the person to open it up,
+  // instead of a canned therapeutic generic line that reads as
+  // evasive.
+  // ------------------------------------------------------------------
+  R.unknownTopicResponses = [
+    'Honestly, this is beyond what I know well. Could you help me understand it better?',
+    'I have to be honest: I do not know this topic well. What makes it interesting to you?',
+    'This is new territory for me. I would like to understand it. Where would you like to begin?',
+    'I am not familiar with this subject. What is it about, and what makes it matter to you?'
+  ];
+
+  // ------------------------------------------------------------------
+  // Deferred-topic promise memory (see responder-promise.js): warm
+  // replies for "I'll tell you later", gentle circle-backs a few turns
+  // later, and the release when the person says "never mind".
+  // ------------------------------------------------------------------
+  R.promiseAcknowledgedResponses = [
+    'Of course. I will hold that space for you, and I will be here when you are ready.',
+    'No rush at all. I will remember, and we can come back to it whenever you like.',
+    'That is perfectly fine. Take your time, and I will be here whenever you want to share.',
+    'I understand. I will keep it in mind, and you can pick it up whenever you feel ready.'
+  ];
+
+  R.promiseCircleBackResponses = [
+    'Earlier you said you would tell me later. Would now be a good time for it?',
+    'I remembered you were keeping something for later. Is this a good moment for it?',
+    'You mentioned something you wanted to come back to. I am still curious: would you like to share it now?',
+    'I have been holding a space for what you said you would share later. Would you like to share it now?'
+  ];
+
+  R.promiseReleasedResponses = [
+    'Of course. I will let it go, and I am here if you ever want to pick it back up.',
+    'No problem at all. I will not bring it up again unless you do.',
+    'Understood. We will leave it here, and that is perfectly okay.'
+  ];
 })(typeof window !== 'undefined' ? window : globalThis);
