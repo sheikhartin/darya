@@ -29,9 +29,21 @@
     <!-- Persian: Vazirmatn (body) + Lalezar (display wordmark only).
        English: Be Vietnam Pro (body, warm and rounded) + Quicksand (display wordmark only). -->
     <!-- All fonts are self-hosted in fonts/ (see css/style.css @font-face
-       rules) for full offline capability (no CDN dependency). -->
+       rules) for full offline capability (no CDN dependency). Every file
+       is preloaded so the correct weight is ready before first paint:
+       preloading only the Regular weights made Bold/Medium/SemiBold text
+       fetch late, which caused a visible system-to-custom font swap. -->
     <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/Vazirmatn-Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/Vazirmatn-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/BeVietnamPro-Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/BeVietnamPro-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/BeVietnamPro-Bold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/BeVietnamPro-Italic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/Lalezar-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/Quicksand-VF.woff2" as="font" type="font/woff2" crossorigin />
 
     <link rel="stylesheet" href="css/style.css" />
 
@@ -518,33 +530,41 @@
     <script src="js/data/knowledge-facts-entertainment.js"></script>
     <script src="js/data/knowledge-facts-project.js"></script>
     <script src="js/data/knowledge-facts-domains.js"></script>
+    <script src="js/data/knowledge-facts-daily.js"></script>
+    <script src="js/data/knowledge-facts-career.js"></script>
     <script src="js/data/knowledge-fun-facts.js"></script>
     <script src="js/data/knowledge-lists.js"></script>
     <script src="js/data/knowledge-base.js"></script>
     <script src="js/engine/utils-constants.js"></script>
     <script src="js/engine/utils-text.js"></script>
     <script src="js/engine/utils.js"></script>
+    <script src="js/engine/emotion-analyzer.js"></script>
+    <script src="js/engine/context-window.js"></script>
+    <script src="js/engine/personality-engine.js"></script>
+    <script src="js/engine/response-scorer.js"></script>
     <script src="js/engine/time-utils.js"></script>
     <script src="js/engine/recap.js"></script>
     <script src="js/engine/factual-math.js"></script>
     <script src="js/engine/factual-datetime.js"></script>
     <script src="js/engine/factual-fun-facts.js"></script>
     <script src="js/engine/factual.js"></script>
-    <script src="js/languages/en-responses.js"></script>
-    <script src="js/languages/en-responses-pools-a.js"></script>
-    <script src="js/languages/en-responses-pools-b.js"></script>
-    <script src="js/languages/en-responses-pools-c.js"></script>
+    <script src="js/languages/en-responses-base.js"></script>
+    <script src="js/languages/en-responses-topics.js"></script>
+    <script src="js/languages/en-responses-rules.js"></script>
+    <script src="js/languages/en-responses-contexts.js"></script>
+    <script src="js/languages/en-responses-features.js"></script>
     <script src="js/languages/en-rules.js"></script>
-    <script src="js/languages/en-data.js"></script>
-    <script src="js/languages/en-lookups.js"></script>
+    <script src="js/languages/en-vocabulary.js"></script>
+    <script src="js/languages/en-maps.js"></script>
     <script src="js/languages/en.js"></script>
-    <script src="js/languages/fa-responses.js"></script>
-    <script src="js/languages/fa-responses-pools-a.js"></script>
-    <script src="js/languages/fa-responses-pools-b.js"></script>
-    <script src="js/languages/fa-responses-pools-c.js"></script>
+    <script src="js/languages/fa-responses-base.js"></script>
+    <script src="js/languages/fa-responses-topics.js"></script>
+    <script src="js/languages/fa-responses-rules.js"></script>
+    <script src="js/languages/fa-responses-contexts.js"></script>
+    <script src="js/languages/fa-responses-features.js"></script>
     <script src="js/languages/fa-rules.js"></script>
-    <script src="js/languages/fa-data.js"></script>
-    <script src="js/languages/fa-lookups.js"></script>
+    <script src="js/languages/fa-vocabulary.js"></script>
+    <script src="js/languages/fa-maps.js"></script>
     <script src="js/languages/fa.js"></script>
     <script src="js/languages/index.js"></script>
     <script src="js/engine/responder.js"></script>
@@ -555,7 +575,12 @@
     <script src="js/engine/responder-phase.js"></script>
     <script src="js/engine/responder-rules.js"></script>
     <script src="js/engine/responder-entity.js"></script>
+    <script src="js/engine/responder-profile.js"></script>
     <script src="js/engine/responder-overrides.js"></script>
+    <script src="js/engine/responder-recall.js"></script>
+    <script src="js/engine/responder-promise.js"></script>
+    <script src="js/engine/responder-exercises.js"></script>
+    <script src="js/engine/responder-mood.js"></script>
     <script src="js/engine/index.js"></script>
     <script src="js/ui/core.js"></script>
     <script src="js/ui/logger.js"></script>

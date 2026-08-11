@@ -70,6 +70,13 @@
     pendingExit: false,
     /** @type {boolean} Prevents double-confirmation of exit. */
     exitConfirmBusy: false,
+    /** @type {boolean} True once an exit confirmation has been shown this
+     * conversation. A second farewell command ("بدرود" then "بای") then
+     * goes straight to goodbye instead of asking again: the user has
+     * already been asked once, and re-asking reads as Darya not letting
+     * them leave (a real-transcript complaint). Reset when the user
+     * cancels the exit or starts a new chat. */
+    exitConfirmShown: false,
     /** @type {boolean} True when a conversation is actually in progress. */
     chatActive: false,
     /** @type {number} Monotonic counter to invalidate stale async replies. */
@@ -380,7 +387,8 @@
   /**
    * Appends a message bubble to the chat container with the given sender
    * and text content. The message is timestamped and added to the internal
-   * transcript array.
+   * transcript array. A user message also clears any quick-reply chips
+   * from the previous turn: typing (or tapping a chip) dismisses them.
    * @param {string} sender - 'user' or 'bot'
    * @param {string} text - Message text content
    */
@@ -389,6 +397,10 @@
     var msgId = 'msg-' + state.messageCount;
     state.transcript.push({ sender: sender, text: text, time: time });
     state.messageCount += 1;
+
+    if (sender === 'user') {
+      clearQuickReplies();
+    }
 
     var row = document.createElement('div');
     row.className = 'bubble-row bubble-row--' + sender;
@@ -420,6 +432,56 @@
     scrollToBottom();
   }
 
+  /**
+   * Removes any quick-reply chip row from the chat. Safe to call when
+   * none exists.
+   */
+  function clearQuickReplies() {
+    if (elements.chat) {
+      var old = elements.chat.querySelector('.quick-replies');
+      if (old) {
+        old.remove();
+      }
+    }
+  }
+
+  /**
+   * Renders tappable quick-reply chips after the latest bot message
+   * (exercise yes/no answers, mood scale ratings). Each chip is a real
+   * button with a 44px hit target; tapping it calls the provided pick
+   * callback with the chip's label, which the app routes through
+   * sendMessage so the engine sees it as a normal user turn. A stale
+   * chip row from a previous turn is removed first.
+   * @param {string[]} chips - Labels to render
+   * @param {function(string): void} onPick - Called with the chosen label
+   */
+  function renderQuickReplies(chips, onPick) {
+    clearQuickReplies();
+    if (!elements.chat || !chips || chips.length === 0) {
+      return;
+    }
+    var row = document.createElement('div');
+    row.className = 'quick-replies';
+    var groupLabel =
+      state.lang && state.lang.ui
+        ? state.lang.ui.quickRepliesLabel
+        : 'Quick replies';
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', groupLabel);
+    chips.forEach(function (label) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'quick-reply';
+      chip.textContent = label;
+      chip.addEventListener('click', function () {
+        onPick(label);
+      });
+      row.appendChild(chip);
+    });
+    elements.chat.appendChild(row);
+    scrollToBottom();
+  }
+
   const DaryaUI = {
     elements: elements,
     state: state,
@@ -443,7 +505,9 @@
       saveScrollPosition: saveScrollPosition,
       restoreScrollPosition: restoreScrollPosition,
       scrollToBottom: scrollToBottom,
-      appendMessage: appendMessage
+      appendMessage: appendMessage,
+      clearQuickReplies: clearQuickReplies,
+      renderQuickReplies: renderQuickReplies
     }
   };
 

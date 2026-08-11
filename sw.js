@@ -5,16 +5,33 @@
  * which are self-hosted specifically so this can be true offline
  * caching rather than depending on a CDN staying reachable.
  *
+ * Two-tier cache strategy:
+ *
+ *   - The app shell (HTML, CSS, JS, data, manifest) lives in a
+ *     versioned cache named after the package.json version. Shipping an
+ *     update bumps that version, so the install re-fetches exactly the
+ *     code that changed and old shell caches are cleared on activate.
+ *
+ *   - Immutable static assets (fonts, icons, ambient audio) live in a
+ *     separate, long-lived cache that is filled on the FIRST install
+ *     only. Version bumps never re-download them: fonts and audio are
+ *     content-stable across releases, so keeping them in the same
+ *     versioned cache as the code would waste ~2MB of bandwidth on
+ *     every update for no benefit.
+ *
  * Cache-first strategy: once cached, an asset is served from the cache
- * without touching the network at all. To ship an update, bump the
- * version in package.json; that creates a new cache name, so the
- * install step re-fetches everything fresh, and old caches are cleared
- * out on activate, but only after the install has fully succeeded.
+ * without touching the network at all. The runtime fetch handler also
+ * opportunistically caches any same-origin GET that was not precached,
+ * so a second visit to any URL this app ever requests is offline-ready.
  */
 
 'use strict';
 
 let CACHE_NAME = 'darya-cache-fallback';
+
+// Long-lived cache for immutable assets (fonts, icons, audio). Named
+// once and reused across app versions; see the header comment.
+const STATIC_CACHE_NAME = 'darya-static-v1';
 
 // Set to true only after the current install has fully precached the
 // new app shell. The activate handler uses this to avoid purging old
@@ -42,6 +59,10 @@ const PRECACHE_URLS = [
   './js/engine/factual-fun-facts.js',
   './js/engine/factual.js',
   './js/engine/recap.js',
+  './js/engine/emotion-analyzer.js',
+  './js/engine/context-window.js',
+  './js/engine/personality-engine.js',
+  './js/engine/response-scorer.js',
   './js/engine/responder.js',
   './js/engine/responder-public.js',
   './js/engine/responder-detect.js',
@@ -51,6 +72,11 @@ const PRECACHE_URLS = [
   './js/engine/responder-rules.js',
   './js/engine/responder-entity.js',
   './js/engine/responder-overrides.js',
+  './js/engine/responder-recall.js',
+  './js/engine/responder-profile.js',
+  './js/engine/responder-promise.js',
+  './js/engine/responder-exercises.js',
+  './js/engine/responder-mood.js',
   './js/ui/core.js',
   './js/ui/ambient-visuals.js',
   './js/ui/ambient-sound-data.js',
@@ -72,6 +98,8 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-entertainment.js',
   './js/data/knowledge-facts-project.js',
   './js/data/knowledge-facts-domains.js',
+  './js/data/knowledge-facts-daily.js',
+  './js/data/knowledge-facts-career.js',
   './js/data/knowledge-fun-facts.js',
   './js/data/knowledge-lists.js',
   './js/data/knowledge-base.js',
@@ -82,21 +110,37 @@ const PRECACHE_URLS = [
   './js/text/entity-extractor.js',
   './js/languages/fa.js',
   './js/languages/en.js',
-  './js/languages/fa-responses.js',
-  './js/languages/fa-responses-pools-a.js',
-  './js/languages/fa-responses-pools-b.js',
-  './js/languages/fa-responses-pools-c.js',
+  './js/languages/fa-responses-base.js',
+  './js/languages/fa-responses-topics.js',
+  './js/languages/fa-responses-rules.js',
+  './js/languages/fa-responses-contexts.js',
+  './js/languages/fa-responses-features.js',
   './js/languages/fa-rules.js',
-  './js/languages/fa-data.js',
-  './js/languages/fa-lookups.js',
-  './js/languages/en-responses.js',
-  './js/languages/en-responses-pools-a.js',
-  './js/languages/en-responses-pools-b.js',
-  './js/languages/en-responses-pools-c.js',
+  './js/languages/fa-vocabulary.js',
+  './js/languages/fa-maps.js',
+  './js/languages/en-responses-base.js',
+  './js/languages/en-responses-topics.js',
+  './js/languages/en-responses-rules.js',
+  './js/languages/en-responses-contexts.js',
+  './js/languages/en-responses-features.js',
   './js/languages/en-rules.js',
-  './js/languages/en-data.js',
-  './js/languages/en-lookups.js',
+  './js/languages/en-vocabulary.js',
+  './js/languages/en-maps.js',
   './js/engine/time-utils.js',
+  './assets/favicon.ico',
+  './assets/icons/favicon-16x16.png',
+  './assets/icons/favicon-32x32.png',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/android-chrome-192x192.png',
+  './assets/icons/android-chrome-512x512.png'
+];
+
+// Immutable assets that never change between app versions: fonts (the
+// self-hosted typefaces), and the ambient sound files (both themes,
+// together about 2MB, a deliberate trade for true offline parity with
+// the bundled APK). Icons are also immutable but tiny; they stay here
+// so the shell list only carries code that can actually change.
+const STATIC_URLS = [
   './fonts/BeVietnamPro-Regular.woff2',
   './fonts/BeVietnamPro-Medium.woff2',
   './fonts/BeVietnamPro-SemiBold.woff2',
@@ -108,16 +152,6 @@ const PRECACHE_URLS = [
   './fonts/Vazirmatn-Bold.woff2',
   './fonts/Lalezar-Regular.woff2',
   './fonts/Quicksand-VF.woff2',
-  './assets/favicon.ico',
-  './assets/icons/favicon-16x16.png',
-  './assets/icons/favicon-32x32.png',
-  './assets/icons/apple-touch-icon.png',
-  './assets/icons/android-chrome-192x192.png',
-  './assets/icons/android-chrome-512x512.png',
-  // Ambient sound files: precached so the PWA can play sound fully
-  // offline (both themes) even before the runtime cache ever sees a
-  // fetch. Together about 2MB, a deliberate trade for true offline
-  // parity with the bundled APK.
   './assets/audio/manifest.json',
   './assets/audio/ocean/stormy-sea-waves-loop.mp3',
   './assets/audio/beach/sea-waves-with-birds-loop.mp3'
@@ -140,7 +174,20 @@ self.addEventListener('install', (event) => {
         return caches.open(CACHE_NAME);
       })
       .then(function (cache) {
-        return cache.addAll(PRECACHE_URLS);
+        return Promise.all([
+          cache.addAll(PRECACHE_URLS),
+          // Fill the static-assets cache on the first install only:
+          // re-adding ~2MB of fonts and audio on every version bump
+          // would waste bandwidth for content that never changes.
+          caches.has(STATIC_CACHE_NAME).then(function (exists) {
+            if (exists) {
+              return Promise.resolve();
+            }
+            return caches.open(STATIC_CACHE_NAME).then(function (staticCache) {
+              return staticCache.addAll(STATIC_URLS);
+            });
+          })
+        ]);
       })
       .then(function () {
         // The new app shell is fully precached. Only now is it safe to
@@ -174,9 +221,18 @@ self.addEventListener('activate', (event) => {
         }
         return Promise.all(
           keys
-            .filter(
-              (key) => key !== CACHE_NAME && key.startsWith('darya-cache-')
-            )
+            .filter((key) => {
+              // Purge old versioned app-shell caches...
+              if (key !== CACHE_NAME && key.startsWith('darya-cache-')) {
+                return true;
+              }
+              // ...and old static-assets caches (kept across versions,
+              // but a future bump of STATIC_CACHE_NAME must still retire
+              // its predecessor instead of stacking caches forever).
+              return (
+                key !== STATIC_CACHE_NAME && key.startsWith('darya-static-')
+              );
+            })
             .map((key) => caches.delete(key))
         );
       })
