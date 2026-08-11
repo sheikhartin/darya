@@ -238,6 +238,15 @@
     // eslint-disable-next-line max-len
     /(?<!\p{L})(?:تاریخ (?:امروز|چنده|چیست|رو بگو|رو می‌گی)|امروز (?:چندمه|چه روزیه|چه تاریخی|چند شنبه)|چند شنبه ایم|تاریخ شمسی|تاریخ ایرانی|تاریخ امروز چنده|what('?s| is) the date in iran|jalali date|persian date)(?!\p{L})/iu;
 
+  // Year-only question (Persian): «امسال چه سالیه؟», «چه سالی
+  // هستیم؟», «سال چندمه؟». The transcript failure «میتونی بگی امسال چه
+  // سالیه؟» got the "interesting question" pool because the date pattern
+  // only knew the full-date forms; the year answer reports both the
+  // Jalali and Gregorian years.
+  const dateTimeYearPattern =
+    // eslint-disable-next-line max-len
+    /(?<!\p{L})(?:امسال (?:چه سالیه|چه سالی|چندمه|چنده|چیست|رو بگو|رو می‌گی)|چه سالی (?:هستیم|هستیم|ام|ایم)|سال چندم|سال چنده|امسال چند|what year is it in iran|jalali year|persian year|سال شمسی)(?!\p{L})/iu;
+
   // Darya-targeted harassment (Persian): insults and bullying
   // specifically directed at Darya.
   const daryaHarassmentPattern =
@@ -271,6 +280,7 @@
     insultPattern,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern
   };

@@ -500,6 +500,89 @@
     'It takes courage to say these things out loud. Symptoms like chest pain or shortness of breath need to be checked by a medical professional. Have you been able to see a doctor about this?'
   ];
 
+  // Everyday body pain ("my left hand hurts a lot"): a caring reply that
+  // takes the complaint seriously without diagnosing (Darya is not a
+  // clinician), asks a gentle follow-up, and points to a doctor for
+  // severe or persistent pain.
+  R['ruleHealthPain'] = [
+    'That sounds uncomfortable and tiring. When did it start, and is there a time of day when it bothers you the most?',
+    'I hear you. Pain is your body sending a message. If it is severe, sudden, or has been going on for a while, please see a doctor; but if you want to talk through what it feels like, I am here.',
+    'That must be wearing you down. How much has it been affecting your daily routine? If it is getting worse day by day, seeing a doctor is the right next step.',
+    'Pain can be exhausting, and I want to take it seriously. I am not a doctor, so for anything sharp or persistent please get a professional opinion. Until then, what helps a little: rest, warmth, or just talking about it?',
+    // A non-question line so even under heavy budget pressure the pain
+    // complaint is acknowledged, never bounced to a generic fallback.
+    'I hear your pain and I take it seriously. If it is severe or has been going on for a while, please do bring it to a trusted doctor.'
+  ];
+
+  // Fatigue phrasings ("why am i always tired", "i am always exhausted")
+  // route through the health_pain rule but must never read as physical
+  // pain ("I hear your pain"): the engine detects the fatigue branch and
+  // picks from this exhaustion-aware pool instead (see
+  // responder-rules.js).
+  R['ruleFatigue'] = [
+    'Constant tiredness can be your body trying to tell you something. What has been draining the most energy out of your days lately?',
+    'When your body stays tired, it is usually worth listening to. How have your sleep and rest been these days?',
+    'Feeling tired all the time is heavy. If it has lasted a while or comes with other symptoms, a trusted doctor can take a look. But right now, what is wearing you out the most?'
+  ];
+
+  // Questions about Darya herself ("do you have parents?", "why were you
+  // made?"): transparent, self-aware answers about being an offline
+  // rule-based companion, her limits, and her origin. Honest per AGENTS.md:
+  // never implies being human, never overclaims knowledge.
+  R['ruleDaryaSelf'] = [
+    'A fair question. I am an offline conversation companion: I have no parents, no birthday, and no home. I am a set of hand-written rules and responses, built for listening and thinking together, following the trail ELIZA blazed in the 1960s. I do not replace a person or a professional, and I will honestly tell you what I know and what I do not.',
+    'To be straight with you, I am a bot. That means no family, no age, and no birthday. My knowledge is whatever was written into me offline: everyday topics, facts, and practical guidance. Whenever I do not know something, I say so plainly and point to a reliable source.',
+    'My purpose is simple: to listen without judgment and to think alongside you. That is why I was made. My shelf is broad but limited, and whenever I do not know something, I say so, so you never have to guess.',
+    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?'
+  ];
+
+  // Joke-count question ("how many jokes do you know?"): a real answer
+  // with the pool size, plus the honest promise of session variety.
+  R['ruleJokeCount'] = [
+    'I have {count} jokes in my shelf, and I try not to repeat them within a conversation. Want to hear one?',
+    'About {count} jokes, and each session I pick fresh ones so you do not hear the same line twice. Shall I tell you one?',
+    '{count} jokes on file, with session memory so repeats stay out. Care to test me?'
+  ];
+
+  // The user's birthday ("today is my birthday"): celebrate warmly.
+  R['ruleBirthday'] = [
+    'Happy birthday! Today is your day. How would you like to spend it, or what would make it feel special?',
+    'Happy birthday! I hope this year is kind to you. Do you have anything planned for the day?',
+    'Many happy returns! How does this new year of yours feel so far?'
+  ];
+
+  // A new baby in the family ("we just had a baby"): share the joy.
+  R['ruleNewBaby'] = [
+    'Congratulations! A new baby fills the house with joy and, yes, sleepless nights. How are these early days feeling for you?',
+    'What wonderful news! A newborn means sweet, exhausting days. What part of it has been the most joyful so far?',
+    'Congratulations! Little ones show us the world all over again. How are things going, and what has been taking the most energy?'
+  ];
+
+  // IQ test request ("give me an IQ test"): honest that a real
+  // standardized test cannot run here, then a light logic question.
+  R['ruleIqTest'] = [
+    'Honestly, a real IQ test is a psychologist job and I cannot run one. But here is a quick riddle to stretch your mind: what gets broken every time it is spoken?',
+    'A real IQ test needs a qualified professional and proper tools, which I do not have. Instead, here is a logic teaser: if three cats catch three mice in three minutes, how many cats catch ninety mice in ninety minutes?',
+    'I cannot administer a valid IQ test, but I would love to solve a few brain teasers with you. Ready?'
+  ];
+
+  // Sharing a secret ("can I tell you a secret?"): a safe-space
+  // reassurance that opens the door.
+  R['ruleSecret'] = [
+    'This conversation stays right here between us. Nothing you say is stored or sent anywhere, and it disappears when you close the tab. Go ahead, I am listening.',
+    'Whatever you share with me is safe: this chat never leaves your browser. Take your time.',
+    'I am not here to judge. If you have been carrying a secret, this is a safe place to start putting it into words. What has been weighing on you?'
+  ];
+
+  // Treatment request ("can you help me get better?"): honest about not
+  // being a clinician, gently pointing to a professional while keeping
+  // the door open.
+  R['ruleTherapyHelp'] = [
+    'I cannot provide treatment, and it is a skilled job that belongs with qualified professionals. But I can walk alongside you and help you see the path more clearly. If you think you need professional help, the first step is talking to a trusted psychologist or doctor. Where would you like to start?',
+    'Healing is a real journey, and I am with you. But real treatment needs a professional by your side; I can be a patient listener and help you sort your thoughts. What feels heaviest these days?',
+    'To be honest, I am not a stand-in for professional care and I should not be. But we can talk through what is happening and help you find the right way forward. Where do we begin?'
+  ];
+
   R['ruleImpairedDriving'] = [
     'I hear that you want to drive, but if you have been drinking, please do not get behind the wheel right now. Your safety matters more than anything. A taxi or a friend to pick you up is a much better option.',
     'Driving after drinking is dangerous, even if it feels like you are fine. Please find a safer way home tonight. Your life and the lives of others on the road depend on it.',

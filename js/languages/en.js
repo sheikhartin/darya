@@ -56,6 +56,7 @@
     insultPattern,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
     stopWords,
@@ -156,6 +157,7 @@
     smalltalk: R.smalltalk,
     emojiResponses: R.emojiResponses,
     gratitudeResponses: R.gratitudeResponses,
+    fatigueResponses: R['ruleFatigue'],
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
     humanTouch: R.humanTouch,
@@ -200,6 +202,7 @@
     topicRecoveryResponses: R.topicRecoveryResponses,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
     ruleTellJoke: R.ruleTellJoke,
@@ -265,7 +268,10 @@
       ageStatement:
         /\b(?:(?:i'?m|i am|im|my age is)\s+(?:a\s+)?(\d{1,3})\s*(?:years?|yrs?|yo)?|(?:and\s+)?(\d{1,3})\s+years?\s+old)\b(?!\s*(?:hours?|minutes?|days?|weeks?|months?|times|o'clock|percent|dollars|miles|meters?))/i,
       ageQuestion:
-        /\b(?:how old am i|what is my age|what about my age|and my age|do you (?:remember|know) my age)\b/i,
+        // "do you remember how old i am" (with the subject between the
+        // recall cue and the age phrase) was missed, so the transcript
+        // recall probe fell to the evasive unknown pool.
+        /\b(?:how old am i|what is my age|what about my age|and my age|do you (?:remember|know) my age|do you remember how old i am|remember how old i am|how old did i say i was)\b/i,
       // At most two words (a first name, or first plus last name), so a
       // disclosure that continues into a sentence ("my name is Sara and
       // I am sad") never stores "Sara and I am" as the name. The plain
@@ -366,10 +372,25 @@
         'single',
         'alone',
         'lost',
-        'stuck'
+        'stuck',
+        // Question/identity words that must never be stored as names:
+        // "who am i" and "what am i" are self-identity questions, not
+        // disclosures.
+        'who',
+        'what',
+        'where',
+        'when',
+        'why',
+        'someone',
+        'somebody',
+        'nobody',
+        'anyone',
+        'anybody',
+        'everyone',
+        'no one'
       ],
       nameQuestion:
-        /\b(?:what('?s| is) my name|do you (?:remember|know) my name)\b/i
+        /\b(?:what('?s| is) my name|do you (?:remember|know) my name|who am i|what did i say my name was)\b/i
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the

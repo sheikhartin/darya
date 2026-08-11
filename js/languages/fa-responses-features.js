@@ -252,6 +252,18 @@
     nameUnknown: [
       'راستش هنوز نگفته‌ای اسمت چیست؛ اگر دوست داری بگویی، یادم می‌ماند.',
       'هنوز اسمت را نمی‌دانم؛ اسمت چیست؟'
+    ],
+    // Combined recall («یادته که گفتم من کی هستم و چند سالمه؟»): answer
+    // honestly from the stored profile. The transcript's worst failure
+    // stored «کی» as a name; these pools prove real memory for what was
+    // disclosed and plainly admit what was not, never inventing facts.
+    bothKnown: [
+      'آره، یادم هست: اسمت {name} است و {age} سالته. اینها را همین گفتگو گفتی و پیش خودم نگه داشته‌ام.',
+      'یادم است: {name}، {age} سال. هر دو را در این گفتگو گفتی و من نگهشان داشته‌ام.'
+    ],
+    noneKnown: [
+      'هر چیزی که در همین گفتگو بگویی، پیشم می‌ماند. هنوز نه اسمت را گفته‌ای نه سنت را؛ هر وقت خواستی بگو تا یادم بماند.',
+      'راستش هنوز چیزی درباره‌ی اسم یا سنت نگفتی؛ اگر بگویی، همین‌جا نگهش می‌دارم.'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

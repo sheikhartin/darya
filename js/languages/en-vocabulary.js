@@ -256,6 +256,14 @@
     // eslint-disable-next-line max-len
     /\b(what('?s| is) (the date|today(?:'s date)?|the day(?: today)?)|what day is it|tell me the date|what is today(?:'s date)?|what date is it|whats today)\b/i;
 
+  // Year-only question (English): "what year is it now?", "what year are
+  // we in?". The transcript probe "what year is it now?" fell to the
+  // source-suggestion pool because the date pattern only knew the
+  // full-date forms.
+  const dateTimeYearPattern =
+    // eslint-disable-next-line max-len
+    /\b(what year (?:is it|are we in|is this|is it now|are we)|what year is it now|current year|the year now|tell me the year)\b/i;
+
   // Darya-targeted harassment: insults and name-calling directed at
   // Darya specifically (using her name or "you" with degrading labels).
   // These are distinct from general insults in insultPattern because
@@ -287,6 +295,7 @@
     insultPattern,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern
   };

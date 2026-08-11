@@ -31,43 +31,60 @@
     rule(
       'greeting',
       65,
-      /^(?:hi|hiya|howdy)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hi|hiya|howdy)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHi']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:hello)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hello)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHello']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHey']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good morning)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good morning)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodMorning']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good evening)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good evening)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodEvening']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good afternoon)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good afternoon)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodAfternoon']
+    ),
+
+    // The user explains, sometimes frustrated, that they were just
+    // greeting Darya ("stupid, i am just greeting you! hello!"). The
+    // anchored families above cannot match a longer message, so without
+    // this rule the frustration override answered the greeting with
+    // de-escalation (a transcript failure). It mirrors the greeting
+    // warmly and apologizes for the mix-up.
+    rule(
+      'greeting',
+      61,
+      // eslint-disable-next-line max-len
+      /\b(?:i'?m (?:just )?(?:greeting you|saying (?:hi|hello)|trying to say hi|saying hi to you)|i (?:was|am) (?:just )?greeting|just greeting you|i said (?:hi|hello|good morning)|i(?:'?ve| have) been greeting you|just saying hello)\b/i,
+      R['ruleGreetingHello']
     ),
 
     rule(
@@ -756,6 +773,93 @@
       // eslint-disable-next-line max-len
       /\b(?:chest pain|my chest (?:hurts|is hurting|feels tight|is tight|is sore)|heart racing|heart (?:is )?racing|shortness of breath|difficulty breathing|trouble breathing|hard to breathe|severe headache|migraine|stomach (?:pain|ache|hurts|cramps?)|fever|very dizzy|dizziness|nausea|vomiting|blood (?:in|from|coming from)|coughing blood|can'?t breathe|can not breathe|cannot breathe|wheezing|palpitations)\b/i,
       R['ruleHealthSymptoms']
+    ),
+
+    // Everyday body pain ("my left hand hurts a lot", "i have a pain in
+    // my knee"): a caring reply that takes the complaint seriously
+    // without diagnosing (Darya is not a clinician), asks a gentle
+    // follow-up, and points to a doctor for severe or persistent pain.
+    // Also beats the word-repetition override that used to quote the
+    // word back across turns.
+    rule(
+      'health_pain',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|tooth|teeth|stomach|belly|wrist|ankle|elbow|finger|toe|eye|eyes|ear|ears|muscle|muscles|joint|jaw) (?:hurts|is hurting|aches|is aching|is sore|is stiff|is numb|is painful|is killing me|has been hurting)|(?:i'?ve got|i have|i'?ve|i'?m feeling) (?:a )?(?:pain|ache|soreness) in my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|stomach|belly|wrist|ankle|elbow|finger|toe|eye|ear|jaw)|my (?:eyes|hands|legs|feet|knees|shoulders|wrists|ankles) (?:are|feel) (?:sore|tired|stiff|aching|numb|swollen)|(?:i'?m|i am) (?:always|so|really|constantly) (?:tired|exhausted)(?!\s+(?:of|with)\b)|why (?:am i|do i|is it that i'?m|is it that i am) (?:always|so|constantly|this) (?:tired|exhausted)|i'?m exhausted all the time|i (?:feel|am feeling) (?:exhausted|tired) (?:all the time|these days|every day|always)|my head is (?:pounding|throbbing)|(?:i have|i'?ve got|i'?m getting) (?:a )?headache)\b/i,
+      R['ruleHealthPain']
+    ),
+
+    // Questions about Darya herself ("do you have parents?", "why were
+    // you made?", "what are your weaknesses?"): transparent, self-aware
+    // answers about being an offline rule-based companion, her limits,
+    // and her origin - never pretending to be human. Outranks the family
+    // and work rules so "do you have parents" stays about Darya.
+    rule(
+      'darya_self',
+      66,
+      // eslint-disable-next-line max-len
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die))\b/i,
+      R['ruleDaryaSelf']
+    ),
+
+    // Joke-count question ("how many jokes do you know?"): a real answer
+    // instead of another joke. Runs above the joke rule.
+    rule(
+      'joke_count',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(?:how many jokes (?:do you (?:know|have|tell)|can you (?:tell|make up))|what(?:'s| is) your (?:best|favourite|favorite) joke|number of jokes you (?:know|have)|how many (?:jokes?|funny stories|one liners)|what is the joke count)\b/i,
+      R['ruleJokeCount']
+    ),
+
+    // The user's birthday ("today is my birthday"): celebrate warmly.
+    rule(
+      'birthday',
+      45,
+      // eslint-disable-next-line max-len
+      /\b(?:today is my birthday|it'?s my birthday|my birthday is (?:today|this week)|i have a birthday (?:today|coming up)|celebrat(?:e|ing) (?:my|our) birthday|birthday (?:today|this week)|i(?:'?ve| have) turned \d+|i(?:'?m| am) turning \d+)\b/i,
+      R['ruleBirthday']
+    ),
+
+    // A new baby in the family ("we just had a baby"): share the joy.
+    // Mirrors the FA new_baby rule so both packs recognize the same
+    // topics (bilingual parity lock).
+    rule(
+      'new_baby',
+      45,
+      // eslint-disable-next-line max-len
+      /\b(?:we had a baby|just had a baby|baby was born|had a newborn|new baby in (?:the family|our family|my family)|i(?:'?m| am) (?:now )?(?:a mother|a father|a mom|a dad|a parent)|just became (?:a mother|a father|a mom|a dad|a parent)|my (?:wife|sister|daughter|daughter-in-law) (?:gave birth|had a baby)|gave birth (?:to a baby|to a girl|to a boy)|we(?:'re| are) expecting (?:a baby|our first)|my (?:daughter|son) was born|i(?:'?ve| have) a (?:newborn|new baby))\b/i,
+      R['ruleNewBaby']
+    ),
+
+    // IQ test request ("give me an IQ test"): honest that a real
+    // standardized test cannot run here, then a light logic question.
+    rule(
+      'iq_test',
+      42,
+      /\b(?:iq test|intelligence test|test my iq|what is my iq|give me an iq test|measure my iq|check my iq)\b/i,
+      R['ruleIqTest']
+    ),
+
+    // Sharing a secret ("can I tell you a secret?"): a safe-space
+    // reassurance that opens the door.
+    rule(
+      'secret',
+      42,
+      // eslint-disable-next-line max-len
+      /\b(?:can i tell you a secret|i want to tell you a secret|i have a secret|i'?ll tell you a secret|a secret to tell|i want to share a secret|do you keep secrets|let me tell you a secret|i'?m going to tell you a secret)\b/i,
+      R['ruleSecret']
+    ),
+
+    // Treatment request ("can you help me get better?"): honest that
+    // Darya is not a clinician, gently pointing to a professional while
+    // keeping the door open.
+    rule(
+      'therapy_help',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:help me (?:get|getting) (?:better|treated|healed)|i want (?:to get|to be|to become) (?:better|treated|healed)|can you (?:treat|cure|heal) me|help me with (?:my )?(?:treatment|recovery|healing)|i need (?:treatment|therapy|to get better)|how can i get (?:better|treated|healed))\b/i,
+      R['ruleTherapyHelp']
     ),
 
     // Pet loss: the user mentions the death of a pet.
