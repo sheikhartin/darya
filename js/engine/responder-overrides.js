@@ -110,7 +110,14 @@
     'harassment_threat',
     'divorce',
     'tech_frustration',
-    'generalization'
+    'generalization',
+    // Short-story requests ("tell me a horror story", «یه داستان
+    // ترسناک بگو») are answered from the genre pools of the story rule
+    // (see _respondWithRule for topic 'smalltalk_story'), never from the
+    // knowledge shelf: the shelf has a single horror story and would
+    // replace the pool reply, which breaks genre selection and the
+    // "another one" follow-up.
+    'smalltalk_story'
   ]);
 
   Object.assign(global.DaryaResponseEngine.prototype, {
@@ -410,7 +417,80 @@
         const factsReply = handleFunFactsRequest(this, matchingText);
         if (factsReply) {
           reply = factsReply;
+          // Remember that the last entertainment reply was a fun fact so
+          // the sequential follow-up ("another one", «یکی دیگه») can
+          // re-answer from the same fun-fact shelf instead of bouncing to
+          // a generic fallback.
+          this._lastEntertainmentKind = 'fact';
+          this._lastEntertainmentTurn = this.memory.turnCount;
           _overrideFired = true;
+        }
+      }
+
+      // Sequential entertainment follow-up: a bare "another one"/«یکی
+      // دیگه»/«بازم» right after a joke, story, or fun-fact reply must
+      // continue that same kind from its remembered pool, not fall to a
+      // generic fallback (the "another one -> another joke" context
+      // requirement). The kind and turn are remembered when the original
+      // reply was generated (see _respondWithRule and the fun-facts
+      // override above). The follow-up phrase is matched only when no
+      // rule already claimed the turn, and only within a few turns of the
+      // original reply, so a mid-conversation "one more" that means
+      // something else stays untouched.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !_overrideFired &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !matchedRule &&
+        this._lastEntertainmentKind &&
+        this.memory.turnCount - this._lastEntertainmentTurn <= 3 &&
+        (this.lang.code === 'fa'
+          ? // eslint-disable-next-line max-len
+            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|دوباره|یه بار دیگه|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
+              matchingText
+            )
+          : /^(?:another one|one more|another|again|once more|one more time|more please|another please)[.!?]*$/i.test(
+              matchingText
+            ))
+      ) {
+        const kind = this._lastEntertainmentKind;
+        if (kind === 'joke' && this.lang.ruleTellJoke) {
+          reply = this._pickVaried(this.lang.ruleTellJoke, {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          });
+          this._lastEntertainmentTurn = this.memory.turnCount;
+          _overrideFired = true;
+        } else if (kind === 'story') {
+          const genre = this._lastStoryGenre;
+          const pool =
+            genre === 'horror'
+              ? this.lang.ruleTellStoryHorror
+              : genre === 'comedy'
+                ? this.lang.ruleTellStoryComedy
+                : this.lang.ruleTellStory;
+          if (pool && pool.length > 0) {
+            reply = this._pickVaried(pool, {
+              ignoreQuestionBudget: true,
+              trackQuestions: false
+            });
+            this._lastEntertainmentTurn = this.memory.turnCount;
+            _overrideFired = true;
+          }
+        } else if (kind === 'fact') {
+          // Re-run the fun-facts handler with a request framing that
+          // passes its gate ("another fact", «یه حقیقت دیگه»).
+          const followupText =
+            this.lang.code === 'fa' ? 'یه حقیقت دیگه' : 'another fact';
+          const factsReply = handleFunFactsRequest(this, followupText);
+          if (factsReply) {
+            reply = factsReply;
+            this._lastEntertainmentTurn = this.memory.turnCount;
+            _overrideFired = true;
+          }
         }
       }
 
@@ -456,7 +536,7 @@
               // personal report («ماه پیش هوش مصنوعی شغلم رو گرفت»),
               // which stays on the empathetic work thread.
               // eslint-disable-next-line max-len
-              /(?:هوش مصنوعی|ربات).{0,14}(?:می‌گیره|میگیره|بگیره|نشه|شه|بشه|کنم|کنه|می‌کنه|میکنه|جایگزین)|(?:آینده‌پذیر|آینده‌پذیر|آینده دار|بیکار شدنم|بیکار شم|بیکار نشم)(?!\p{L})/iu.test(
+              /(?:هوش مصنوعی|ربات).{0,14}(?:می‌گیره|میگیره|بگیره|نشه|شه|بشه|کنم|کنه|می‌کنه|میکنه|جایگزین)|(?:آینده‌پذیر|آینده‌پذیر|آینده دار|بیکار شدنم|بیکار شم|بیکار نشم|آینده شغلی|بازار کار|چه شغلی|چطوره|چگونه است|چطور است|چطوری)(?!\p{L})/iu.test(
                 matchingText
               ) ||
               // A salary question about a profession ("درآمد یه
@@ -467,6 +547,27 @@
               // than \b because \b is ASCII-only in JavaScript: after
               // Persian letters like «درآمد» it never fires.
               /(?:درآمد|حقوق|پول|قیمت|دستمزد|earn|earning|income|salary|wage|pay)(?!\p{L})/iu.test(
+                matchingText
+              ))) ||
+          // The money rule is deliberately personal (poverty, debt, no
+          // money), so its topic sits in KNOWLEDGE_BLOCKED_PERSONAL.
+          // But its keyword list also catches world-economics questions
+          // («چرا تورم بالاست», "why is inflation high") because
+          // «تورم»/"inflation" are both a personal worry word and a
+          // world topic. When the message names an external economic
+          // topic (inflation, prices, market, gold, oil, crypto) and
+          // reads as a question, the shelf must answer instead of the
+          // financial-stress pool. The lookup itself still gates the
+          // answer, and personal disclosures («پول ندارم», «قرضم
+          // زیاده») never name those markers, so they stay empathetic.
+          (matchedRule?.topic === 'money' && // eslint-disable-next-line max-len
+            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate)\b/i.test(
+              matchingText
+            ) ||
+              // Persian world-economics markers (normalized forms for
+              // تورم/بورس/بیت‌کوین/کریپتو/صندوق بین‌المللی).
+              // eslint-disable-next-line max-len
+              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول)(?!\p{L})/iu.test(
                 matchingText
               )))) &&
         DaryaKnowledge &&
@@ -833,6 +934,12 @@
         // would double the acknowledgment and read as noise.
         !LIVED_TOPICS.has(matchedRule?.topic) &&
         matchedRule?.topic !== 'joy' &&
+        // Entertainment requests are not disclosures: asking for a scary
+        // story or a joke must never be answered with a worried "that
+        // sounds frightening" prefix, which reads as if Darya missed the
+        // request for entertainment.
+        matchedRule?.topic !== 'smalltalk_story' &&
+        matchedRule?.topic !== 'smalltalk_joke' &&
         !blendKey &&
         !isRepeatedGreeting &&
         !isSpamNoise

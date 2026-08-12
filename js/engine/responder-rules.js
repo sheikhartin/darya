@@ -317,6 +317,57 @@
           ignoreQuestionBudget: true
         }).replace(/\{count\}/gu, String(this.lang.ruleTellJoke.length));
       }
+      if (matchedRule.topic === 'smalltalk_joke') {
+        // Remember that the last entertainment reply was a joke so the
+        // sequential follow-up ("another one", «یکی دیگه», «بازم») can
+        // re-pick from the same pool instead of bouncing to a generic
+        // fallback (see _applySmartOverrides).
+        this._lastEntertainmentKind = 'joke';
+        this._lastEntertainmentTurn = this.memory.turnCount;
+        return this._pickVaried(this.lang.ruleTellJoke, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
+      if (matchedRule.topic === 'smalltalk_story') {
+        // Short-story requests are answered from the genre pools. The
+        // genre word in the request picks the pool (horror, comedy, or
+        // the general pool when no genre is named), and the chosen genre
+        // is remembered so the follow-up ("another one") stays in the
+        // same vein. The knowledge shelf is blocked for this topic (see
+        // KNOWLEDGE_BLOCKED_PERSONAL), so the pool reply always stands.
+        const storyText = this._currentNormalizedInput || captured || '';
+        const horror =
+          /(?:ترسناک|وحشتناک|وحشت|scary|horror|creepy|spooky)/iu.test(
+            storyText
+          );
+        const comedy =
+          /(?:خنده‌دار|خنده دار|بامزه|طنز|funny|comedy|humorous)/iu.test(
+            storyText
+          );
+        const pool = horror
+          ? this.lang.ruleTellStoryHorror
+          : comedy
+            ? this.lang.ruleTellStoryComedy
+            : this.lang.ruleTellStory;
+        this._lastEntertainmentKind = 'story';
+        this._lastStoryGenre = horror
+          ? 'horror'
+          : comedy
+            ? 'comedy'
+            : 'general';
+        this._lastEntertainmentTurn = this.memory.turnCount;
+        if (pool && pool.length > 0) {
+          return this._pickVaried(pool, {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          });
+        }
+        return this._pickVaried(this.lang.ruleTellStory, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
       if (matchedRule.topic === 'health_pain') {
         // Every new pain report deserves the caring pool, even right
         // after another question was asked: the pool lines end with a
