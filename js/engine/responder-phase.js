@@ -388,7 +388,7 @@
       // gates the answer, so these framings only open the door.
       const en =
         // eslint-disable-next-line max-len
-        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we|chatbots?|robots?|automation)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply|name (?:some|a few|me|the|your)|list (?:some|a few|me|the))\b/i;
+        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we|chatbots?|robots?|automation)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply|name (?:some|a few|me|the|your)|list (?:some|a few|me|the)|jobs? (?:in|by|of) 20\d\d|will exist in 20\d\d|in 203\d|by 203\d|careers? in 20\d\d|what (?:jobs|careers|skills) (?:will|would|should))\b/i;
       // Only genre words that commonly appear without a فیلم/سریال prefix
       // are listed here (انیمیشن, مستند). Thriller queries ("فیلم هیجانی",
       // "تریلر معرفی کن") already carry فیلم/پیشنهاد/معرفی, and standalone
@@ -405,9 +405,12 @@
       // کن"), and a «یه/یک داستان» noun phrase marks a story request;
       // the lookup itself still gates the answer, so a compliment like
       // "از من تعریف کن" (no fact matches) never reaches the shelf.
+      // «چرا» (why) is the Persian twin of the English "why" framing
+      // («چرا تورم بالاست»), guarded with (?!\p{L}) so it never opens
+      // the door from inside a word like «چراغ» (lamp).
       const fa =
         // eslint-disable-next-line max-len
-        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است|(?:کدوم|کدام).{0,6}بهتر|تعریف کن|تعریف بکن|(?:یه|یک).{0,4}داستان|داستان.{0,10}(?:بگو|تعریف کن|برام)|اسم.{0,8}(?:چند|چندتا|یه|یک|برام|بگو)|چندتا.{0,10}(?:یوتیوبر|کانال|بازی|فیلم|سریال|آهنگ|کتاب))/u;
+        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است|(?:کدوم|کدام).{0,6}بهتر|تعریف کن|تعریف بکن|(?:یه|یک).{0,4}داستان|داستان.{0,10}(?:بگو|تعریف کن|برام)|اسم.{0,8}(?:چند|چندتا|یه|یک|برام|بگو)|چندتا.{0,10}(?:یوتیوبر|کانال|بازی|فیلم|سریال|آهنگ|کتاب)|طرز تهیه|طرز پخت|چطور درست|چگونه درست|چطور پخته|چگونه پخته|چه کاری (?:می‌کنه|میکنه|می کند)|چیکار (?:می‌کنه|میکنه)|کارش چیه|وظیفه‌اش چیه|چه نقشی دارد|چرا(?!\p{L}))/u;
       return en.test(text) || fa.test(text);
     },
 
