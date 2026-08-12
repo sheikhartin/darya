@@ -73,7 +73,7 @@
         'مغز در حالت استراحت هم فعال است؛ به همین دلیل بهترین ایده‌ها گاهی در حمام یا پیاده‌روی می‌آیند.',
         'محدودکردن انتخاب‌ها تصمیم‌گیری را آسان‌تر می‌کند؛ مغز با گزینه‌های زیاد خسته می‌شود.',
         'خواب کافی حافظه را تقویت می‌کند: آنچه قبل از خواب مرور می‌کنی، بهتر تثبیت می‌شود.',
-        'گفتن «نمی‌دانم» یک مهارت است؛ دانستن محدودیت‌هایت، یادگیری واقعی را ممکن می‌کند.',
+        'پذیرفتن اینکه چیزی را نمی‌دانی یک مهارت است؛ دانستن محدودیت‌هایت، یادگیری واقعی را ممکن می‌کند.',
         'اثر «شروع تازه»: مردم در شروع یک هفته، ماه یا سال جدید انگیزه‌ی بیشتری برای شروع عادت‌ها دارند.',
         'انجام چند کار هم‌زمان معمولاً سریع‌تر نیست؛ جابه‌جایی توجه، هم زمان می‌گیرد هم دقت.'
       ],
@@ -198,7 +198,7 @@
         'Your brain stays active at rest, which is why great ideas sometimes arrive in the shower or on a walk.',
         'Fewer choices make decisions easier; the brain gets tired when options pile up.',
         'Good sleep strengthens memory: what you review before bed gets consolidated better.',
-        'Saying "I do not know" is a skill; knowing your limits is what makes real learning possible.',
+        'Admitting uncertainty is a skill; knowing your limits is what makes real learning possible.',
         'The fresh start effect: people feel more motivated to start habits at the start of a new week, month, or year.',
         'Multitasking is usually not faster; switching attention costs both time and accuracy.'
       ],
