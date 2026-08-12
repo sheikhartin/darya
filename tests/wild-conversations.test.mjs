@@ -1785,3 +1785,166 @@ test('wild: EN and FA fun-fact and horror requests answer without evading', () =
   assert.doesNotMatch(faReply, EVASIVE, `FA horror: "${faReply}"`);
   assert.match(faReply, /داستان|اتاق|ترسناک/iu, 'FA horror story');
 });
+
+test('wild: 2026 AI-job anxiety is answered with the jobs reality, not evaded', () => {
+  // "will ai take my job" and its Persian twin used to fall to the
+  // unknown pool (EN) or a work-question misroute (FA). The ai fact now
+  // carries a jobs note (AI reshapes careers, it rarely erases them),
+  // and the knowledge gate admits chatbot/robot/automation framing.
+  const cases = [
+    [EN, 'will ai take my job?', 'work'],
+    [FA, 'هوش مصنوعی شغلم رو می‌گیره', 'work'],
+    [FA, 'ربات‌ها کارم رو خودکار می‌کنن', 'work']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} ai-job`);
+  }
+  // "will chatbots replace X jobs" has no personal frame, so it is
+  // answered from the knowledge shelf directly (no conversational rule
+  // topic is set); the reply must still be the factual jobs answer.
+  const shelf = freshEngine(EN);
+  const shelfReply = shelf.respond(
+    'will chatbots replace customer service jobs?'
+  );
+  assert.doesNotMatch(
+    shelfReply,
+    EVASIVE,
+    `EN chatbots evasive: "${shelfReply}"`
+  );
+  assert.match(
+    shelfReply,
+    /reshape|rarely erases|creates new roles|automation/iu,
+    `EN chatbots must answer with the jobs reality: "${shelfReply}"`
+  );
+  // Past-tense personal report stays a personal disclosure, never the
+  // encyclopedia: "ماه پیش هوش مصنوعی شغلم رو گرفت" asks for support.
+  const past = freshEngine(FA);
+  const pastReply = past.respond('ماه پیش هوش مصنوعی شغلم رو گرفت');
+  assert.doesNotMatch(
+    pastReply,
+    /آینده/iu,
+    `FA past-tense must not lecture: "${pastReply}"`
+  );
+});
+
+test('wild: gig-economy talk routes to the gig pool, never the exit flow', () => {
+  // "should i quit my gig job" used to trip the exit-confirm flow
+  // ("quit" keyword) and the rest of the 2026 gig phrasings fell to
+  // evasive fallbacks. The exit false-positive pattern now ignores
+  // "quit X job/company", and a dedicated gig rule owns the topic.
+  const cases = [
+    [EN, 'should i quit my gig job?', 'gig_economy'],
+    [EN, 'is the gig economy worth it in 2026?', 'gig_economy'],
+    [EN, 'i do delivery gigs and the pay is unpredictable', 'gig_economy'],
+    [FA, 'کارهای آزاد دیگه صرفه نداره', 'gig_economy'],
+    [FA, 'کار آزاد خسته‌م کرده', 'gig_economy']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} gig`);
+  }
+  // The exit-confirm flow must never open for a gig-career question.
+  const exitProbe = freshEngine(EN);
+  const exitReply = exitProbe.respond('should i quit my gig job?');
+  assert.doesNotMatch(
+    exitReply,
+    /are you sure|say goodbye|finish the conversation/iu,
+    `gig quit must not open exit flow: "${exitReply}"`
+  );
+});
+
+test('wild: housing-cost pressure routes to the housing pool, not money generic', () => {
+  // Rent and deposit pressure are 2026-specific money stress that used
+  // to land in the broad money pool ("needs, budget, compare") or the
+  // evasive fallback. A dedicated housing rule speaks to the squeeze.
+  const cases = [
+    [EN, 'rent is eating half my salary', 'housing'],
+    [EN, 'i cannot afford to move out of my parents house', 'housing'],
+    [EN, 'the deposit for any apartment is impossible', 'housing'],
+    [FA, 'اجاره‌خونه خیلی گرون شده', 'housing'],
+    [FA, 'حقوقم نصفش می‌ره برای اجاره', 'housing'],
+    [FA, 'واسه پول پیش خونه هیچی ندارم', 'housing']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} housing`);
+  }
+});
+
+test('wild: young-adult loneliness phrasings route to the loneliness thread', () => {
+  // 2026 loneliness: no close friends at 26, followers with nobody to
+  // call, online-only friendships in both languages. These used to fall
+  // to the depression shelf or the evasive fallback; each must stay on
+  // the loneliness thread.
+  const cases = [
+    [EN, 'i am 26 and i have no close friends', 'loneliness'],
+    [EN, 'i have 200 followers but no one to call', 'loneliness_online'],
+    [EN, 'we only talk online these days', 'loneliness_online'],
+    [FA, 'هیچ دوست صمیمی ندارم', 'loneliness'],
+    [FA, 'دوستی‌هام همه آنلاین شدن', 'loneliness_online'],
+    [
+      FA,
+      'دویست تا دنبال‌کننده دارم ولی هیچ‌کس نیست زنگ بزنم',
+      'loneliness_online'
+    ]
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} loneliness`);
+  }
+  // A plain online-friendship statement is not a depression disclosure.
+  const online = freshEngine(FA);
+  const onlineReply = online.respond('دوستام همه آنلاین شدن');
+  assert.ok(
+    online.currentTurnTopics.includes('loneliness_online'),
+    `FA online friends must not hit depression, got: ${online.currentTurnTopics.join(',')}`
+  );
+});
+
+test('wild: new-city loneliness beats the work thread in both languages', () => {
+  // "moved for work and know nobody" is a loneliness disclosure first;
+  // the dedicated new-city rule (51) outranks work (50).
+  const cases = [
+    [
+      EN,
+      'i moved to a new city for a job and i know nobody here',
+      'loneliness_new_city'
+    ],
+    [FA, 'برای کار اومدم یه شهر جدید و کسی رو نمی‌شناسم', 'loneliness_new_city']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} new-city`);
+  }
+});
