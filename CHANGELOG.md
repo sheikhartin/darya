@@ -5,6 +5,75 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.2.1] - 2026-08-12
+
+### Added
+
+- **World knowledge shelf.** A new curated fact base covering finance and
+  investing (bitcoin and blockchain, the stock market, dollar-cost
+  averaging, gold, OPEC, the IMF, inflation), politics basics, and
+  Persian cooking (fesenjan, jujeh kabab, tahdig, ash reshteh, mirza
+  ghasemi), answered directly in both languages and guarded by an
+  honest financial-risk disclaimer.
+- **Short-story pools.** "Tell me a story" / «یه داستان بگو» now serves
+  original mini-stories in three genres (general, horror, comedy), with
+  genre selection from the request and a "another one" / «یکی دیگه»
+  follow-up that continues the same kind.
+- **Social comparison thread.** Comparing yourself to the highlight reel
+  of friends, classmates, siblings, or social media (Instagram,
+  TikTok, LinkedIn) gets its own warm pool instead of a generic line,
+  in both languages.
+- **Overwork-and-stuck thread.** Working two jobs or a salary that
+  barely covers the month gets empathy that names the exhaustion, not
+  a philosophy essay or an evasive fallback.
+- **2033 career horizon.** Future-of-jobs questions ("what jobs will
+  exist in 2033", «توی سال ۲۰۳۳ چه شغل‌هایی هست») route to the same
+  curated career facts as the 2026-2030 decade.
+- **Modern Persian openers.** Time-prefixed how-are-you greetings
+  («امروز چطوری»), the formal «چطورید», and affectionate tails like
+  «جیگرم», «زیبارو», and «خوشگله» are recognized as greetings.
+
+### Changed
+
+- The Persian knowledge gate now opens for «چرا» questions
+  («چرا تورم بالاست») without firing from inside words like «چراغ»,
+  and for cooking how-to framings («طرز تهیه»).
+- World-economics questions that share keywords with the personal money
+  rule («تورم», "inflation", «بورس», "stock market") reach the
+  knowledge shelf instead of the financial-stress pool; personal
+  disclosures («پول ندارم», «قرضم زیاده») stay empathetic.
+- Entertainment replies (jokes, stories, fun facts) remember their kind
+  for a few turns so a bare "another one" continues the same thread.
+- Turkish-origin vulgar slang (سیکیر and its inflections) is treated as
+  an insult with the calm boundary reply, in line with the transcript
+  probe.
+
+### Fixed
+
+- English "feel guilty" now matches the self-esteem rule (a spacing bug
+  in the pattern required two spaces and silently dropped the phrase).
+- Persian «خانوادم» (colloquial possessive, missing the ه) is caught by
+  the family rule, so family money pressure and comparisons stay on the
+  family thread.
+- Persian mood-recall questions («حالم چطوره») with no recorded data
+  answer honestly instead of evasively.
+- Bare "falling behind" no longer hijacks workaholic anxiety; it needs
+  a comparison target ("falling behind everyone") to reach the social
+  comparison thread.
+
+### Validated
+
+- 852/852 tests pass, including the new knowledge-world and
+  wild-conversation routing coverage.
+- 291/291 smoke checks pass.
+- Zero evasive fallbacks across the 60-phrase daily-life probe
+  (financial anxiety, family pressure, social comparison) in both
+  languages.
+- ESLint (0 warnings), Stylelint, and Prettier are clean.
+- Offline and PWA behavior verified in a real browser: the service
+  worker precaches the new fact file, quick-reply chips render with
+  44px touch targets, and knowledge answers work fully offline.
+
 ## [1.2.0] - 2026-08-11
 
 ### Added

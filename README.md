@@ -457,8 +457,9 @@ The `android/` platform folder is committed. Pushing a version tag (for
 example `1.2.1`, no `v` prefix) triggers the
 `.github/workflows/build-android.yml` workflow, which:
 
-1. runs the smoke check and syncs the web bundle into the platform
-   (`npm run sync:web && npx cap sync android`),
+1. runs the full CI gate (`npm run test:full`: lint, CSS lint, format
+   check, and the 852-test suite), then syncs the web bundle into the
+   platform (`npm run sync:web && npx cap sync android`),
 2. stamps the app version from the tag (`1.2.1` becomes `versionCode`
    121, `versionName "1.2.1"`),
 3. builds a **signed release AAB** (`app-release.aab`, required by

@@ -1,0 +1,9 @@
+# Generated output, never linted (mirrors .prettierignore and the
+# eslint flat-config ignores). These folders are gitignored and
+# recreated by tooling (www/ by scripts/sync-web.sh, dist/ by
+# external build tools, and the Capacitor web bundle inside
+# android/app/src/main/assets/public), so they must never break the
+# CSS lint gate when present on a working tree.
+www/
+dist/
+android/app/src/main/assets/public

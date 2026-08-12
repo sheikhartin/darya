@@ -53,7 +53,7 @@ jobs:
 
       - name: Run the full CI gate
         # The repo's own release gate (lint, CSS lint, format check, and
-        # the 822-test suite). Store builds are long-lived, so an engine
+        # the 852-test suite). Store builds are long-lived, so an engine
         # regression must never ship inside an APK; ~30s here is cheap
         # next to the multi-minute Gradle build.
         run: npm run test:full
