@@ -478,6 +478,27 @@
       R['ruleJoy']
     ),
 
+    // Being new in a place with nobody known («برای کار اومدم یه شهر
+    // جدید و کسی رو نمی‌شناسم») is a loneliness disclosure, not a work
+    // complaint, even when the move happened for a job: the user's
+    // point is the loneliness of the new city. This narrow rule sits
+    // ABOVE the work thread (51 > 50) so the mixed framing routes to
+    // the loneliness care instead of the job pool. The main loneliness
+    // rule stays at 40 so a plain homesickness or grief line never gets
+    // pulled into the new-city pool.
+    rule(
+      'loneliness_new_city',
+      51,
+      pw(
+        'تازه.{0,12}(?:شهر|جا|محله|شهرستان|دیار).{0,16}(?:اومدم|امدم|آمدم|رفتم)|کسی رو نمی‌شناسم|کسی را نمی‌شناسم|هیچ‌کس رو نمی‌شناسم|هیچ کسی رو نمی‌شناسم|جدید.{0,6}(?:اومدم|امدم)|غریبم|غریبه‌ام|تازه.{0,8}(?:رفتم|اومدم).{0,12}(?:شهر|جا)' +
+          // New place AND nobody known: the loneliness is explicit even
+          // when the sentence mentions work first («برای کار اومدم
+          // یه شهر جدید»).
+          '|(?:برای کار|سر کار).{0,10}(?:اومدم|امدم|رفتم).{0,12}(?:شهر|جا)|(?:اومدم|امدم|رفتم).{0,10}(?:شهر|جا).{0,12}(?:کسی|هیچ‌کس|هیچکس|هیچ کس)'
+      ),
+      R['ruleLoneliness']
+    ),
+
     rule(
       'loneliness',
       40,
@@ -502,9 +523,34 @@
           'همه.{0,20}(?:منو|مرا)\\s*(?:دوست ندارن|دوست ندارند|ترک کردن|ترک کردند|ترک کرده|ترک می‌کنن|ترک می‌کنند|ترک میکنن|ترک میکنن|رها کردن|رها کردند|رها کرده|رها می‌کنن|رها می‌کنند|تنها گذاشتن|تنها گذاشتند|تنها گذاشته|تنها می‌ذارن|تنها می‌گذارن|مسخره می‌کنن|مسخره می‌کنند|مسخره می کنن|مسخره می کنند|مسخره میکنن|مسخره کردن|مسخره کرده)|' +
           'همه.{0,20}(?:به من|بهم|به ام)\\s*(?:می‌خندن|میخندن|می خندن)|' +
           'هیچ.{0,4}کس.{0,16}(?:منو|مرا)\\s*(?:دوست نداره|دوست ندارد|نمی‌خواد|نمیخواد|نمی خواد|نمی‌خواهد|نمیخواهد|نمی خواهد)|' +
-          'هیچ.{0,4}(?:کس|کسی)\\s*دوستم نداره|هیچ.{0,4}کس.{0,10}منو\\s*نمی‌خواد|هیچ.{0,4}کس.{0,10}منو\\s*نمی خواد'
+          'هیچ.{0,4}(?:کس|کسی)\\s*دوستم نداره|هیچ.{0,4}کس.{0,10}منو\\s*نمی‌خواد|هیچ.{0,4}کس.{0,10}منو\\s*نمی خواد|' +
+          // No close friends («۲۶ سالمه و هیچ دوست صمیمی ندارم») and the
+          // busy-everyone variant («همه غرق زندگی خودشونن و هیچ‌کس
+          // نمی‌پرسه حالم چطوره») are 2026-era loneliness openings that
+          // fell to the unknown pool or were swallowed by the age
+          // disclosure; «تنهاتر از همیشه» (lonelier than ever) covers
+          // the statistics-style claim without needing the fact shelf.
+          'هیچ دوست صمیمی ندارم|هیچ.{0,4}دوست.{0,4}صمیمی ندارم|دوست صمیمی ندارم|دوست صمیمی.{0,4}ندارم|هیچ دوست نزدیک ندارم|' +
+          'همه غرق زندگی|همه غرق|هیچ‌کس نمی‌پرسه حالم|هیچکس نمی‌پرسه حالم|کسی نمی‌پرسه حالم|نمی‌پرسه حالم چطوره|حالم رو نمی‌پرسه|کسی حالمو نمی‌پرسه|' +
+          'تنهاتر از همیشه|تنهاتر از قبل|تنهایی.{0,6}(?:جوان|امروز)'
       ),
       R['ruleLoneliness']
+    ),
+
+    // Digital/parasocial loneliness («دوستی‌هام همه آنلاین شدن و حس
+    // پوچی دارم», «دویست تا دنبال‌کننده دارم ولی هیچ‌کس نیست زنگ
+    // بزنم»): friendships that only exist online. Sits ABOVE the
+    // depression rule (57 > 56) with a narrow online-only pattern, so
+    // «حس پوچی» next to «آنلاین» routes to the digital-loneliness pool
+    // instead of the depression shelf, while a plain «حس پوچی دارم»
+    // keeps the depression care.
+    rule(
+      'loneliness_online',
+      57,
+      pw(
+        'دوستی.{0,12}آنلاین(?:ن|ند)?|آنلاین.{0,8}دوستی|دوست(?:ام|ای|هام|هامون|هایم|های من|ای من|ها).{0,10}آنلاین(?:ن|ند)?|آنلاین.{0,12}(?:پوچی|پوچ)|(?:پوچی|پوچ).{0,12}آنلاین|دنبال‌کننده|دنبالکننده|فالوور|کسی نیست زنگ بزنم|هیچ‌کس نیست زنگ بزنم|هیچکس نیست زنگ بزنم|هیچ کس نیست زنگ بزنم'
+      ),
+      R['ruleLonelinessOnline']
     ),
 
     // Blanket generalizations and stereotypes («همه زن‌ها مثل هم هستن»,
@@ -731,6 +777,34 @@
         'پول ندارم|پولی ندارم|پولم نیست|پولم نیس|هیچ پولی ندارم|مشکل مالی|بدهکار|قسط|هزینه‌ها|هزینهها|هزینه ها|پولم تموم شده|پولم تمام شده|بی‌پول|بی پول|بیپول|فلس|فلسم|حقوق|وام|قرض|خرج‌ها|خرج ها|بودجه|مدیریت مالی|مدیریت پول|پس‌انداز|پس انداز|فکرای پول|فکر پول|قیمتا|قیمت ها|قیمتها|تورم|گرونی|خرج‌ها بالا رفته|درآمدم.{0,6}کمه|حقوقم.{0,6}کمه|پول.{0,8}ندارم'
       ),
       R['ruleMoney']
+    ),
+
+    // Gig economy: ride-hailing, food delivery, freelance platforms,
+    // unpredictable gig income. These 2026-era disclosures («پیک موتوری
+    // می‌شدم», «برای یه اپ درخواست خودرو رانندگی می‌کنم», «درآمدم
+    // نامنظمه», «پلتفرم‌های فریلنس») fell to the unknown pool, so they
+    // get a dedicated pool above the work thread (51 > 50).
+    rule(
+      'gig_economy',
+      51,
+      pw(
+        'پیک موتوری|درخواست خودرو|رانندگی.{0,10}(?:اپ|اسنپ|تپسی)|اسنپ|تپسی|پیک.{0,8}(?:کار|می‌کنم|میکنم)|شغل گیگ|کار گیگ|اقتصاد گیگ|فریلنس|فریلنسر|کار آزاد|کارهای آزاد|کار های آزاد|شغل آزاد|درآمد نامنظم|درآمدم نامنظم|دستمزد.{0,6}کم|پلتفرم.{0,8}فریلنس|پلتفرم.{0,8}(?:کار|شغل)|پاره‌وقت|پاره وقت'
+      ),
+      R['ruleGig']
+    ),
+
+    // Housing costs: rent, deposit (ودیعه/رهن), landlord, moving out,
+    // house prices. «اجاره» (rent) and «صاحب‌خونه» (landlord) were the
+    // most common everyday openings and used to fall to the unknown pool;
+    // «قیمت مسکن» (house prices) is the market-level version. Sits
+    // above work and money (51 > 50, 35).
+    rule(
+      'housing',
+      51,
+      pw(
+        'اجاره|ودیعه|رهن|پول پیش|صاحب‌خونه|صاحبخونه|صاحب خونه|مالک خونه|قیمت مسکن|قیمت خونه|قیمت خانه|قیمت‌های مسکن|بحران مسکن|مسکن.{0,6}(?:گرون|قیمت)|خونه بخرم|خانه بخرم|خرید خونه|خرید خانه|برن بیرون|بیرون برن|نصف حقوقم.{0,8}اجاره|اجاره.{0,8}(?:بالا|زیاد|گرون)'
+      ),
+      R['ruleHousing']
     ),
 
     rule(

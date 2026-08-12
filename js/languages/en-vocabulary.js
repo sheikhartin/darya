@@ -193,14 +193,17 @@
   // alone, and the warm "take care of yourself" farewell, still exit.
   // The bare "quit" keyword likewise opens habit-breaking and
   // career-change sentences ("i want to quit smoking", "trying to
-  // quit drinking", "i want to quit my job") that are not leave
-  // requests: the exit bar must never hijack a habit or job
-  // disclosure into the two-step goodbye flow. Only the specific
-  // habit/activity/work objects count as false positives, so a real
-  // "i want to quit" (ending the chat) still exits.
+  // quit drinking", "i want to quit my job", "should i quit my gig
+  // job for a regular job?") that are not leave requests: the exit
+  // bar must never hijack a habit or job disclosure into the two-step
+  // goodbye flow. Only the specific habit/activity/work objects count
+  // as false positives, so a real "i want to quit" (ending the chat)
+  // still exits. Gig, freelance, and delivery work are included so
+  // the 2026 gig-economy questions never bounce into the farewell
+  // confirmation.
   const exitFalsePositivePattern =
     // eslint-disable-next-line max-len
-    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my position|my career|this job|the job|working|work|the team|the company)\b/i;
+    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b/i;
 
   // Phase 1 (warm presence): the very first greeting should establish Darya
   // as a calm, non-judgmental presence with a gentle opening.

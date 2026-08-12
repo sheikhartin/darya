@@ -342,6 +342,40 @@
     'Worrying about money is completely human; a great many people feel the same weight.'
   ];
 
+  // Gig economy work: ride-hailing, delivery, freelance platforms,
+  // side hustles. The pool acknowledges the instability (no steady
+  // hours, no benefits, unpredictable income) and gently opens the
+  // practical side without lecturing.
+  R['ruleGig'] = [
+    'Gig work carries a lot of uncertainty: the hours shift, the income shifts, and the safety net does not exist. What part of it is weighing on you most right now?',
+    'Unpredictable income makes it hard to plan anything, even the basics. How long have you been doing this kind of work?',
+    'Working without benefits or a steady paycheck takes a real toll, even when the work itself is fine. What would need to change for you to feel more stable?',
+    'It is completely reasonable to feel stretched when the platform sets the rules and you carry the risk. Which part feels least fair to you?',
+    'Plenty of people in gig work feel exactly this: busy all the time and still not secure. Would it help to look at the numbers together, income versus expenses?'
+  ];
+
+  // Housing costs: rent, deposits, landlords, moving out, house prices.
+  // Acknowledges the weight and opens a practical thread without
+  // pretending Darya can fix housing markets.
+  R['ruleHousing'] = [
+    'Housing costs have climbed so fast that rent can swallow half a paycheck. What does your situation look like right now?',
+    'Rent pressure is heavy and it seeps into everything else. How long have you been carrying this?',
+    'A landlord raising the rent or a deposit that eats your savings is genuinely stressful. What options have you considered so far?',
+    'When housing eats that much of your income, the rest of life gets squeezed. Would it help to talk through what is actually changeable versus not?',
+    'So many people are stuck between rent and a loan these days; it is not a personal failure. What would make the next few months feel more manageable?'
+  ];
+
+  // Digital/parasocial loneliness: online-only friendships, follower
+  // counts with nobody to call. Acknowledges the hollow feeling without
+  // dismissing the real connections that do exist online.
+  R['ruleLonelinessOnline'] = [
+    'Having people around online and still feeling alone is real, not imaginary. What does your online circle give you these days?',
+    'Follower counts do not call you when things get hard. When did you last talk to someone who truly listened?',
+    'Online friendships can be meaningful and still leave a hollow space. Which part feels most empty right now?',
+    'It is a strange loneliness: surrounded by notifications and still no one to sit with. How long has this feeling been building?',
+    'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
+  ];
+
   R['ruleKnowledge'] = [];
 
   R['ruleProfessionalBoundary'] = [];

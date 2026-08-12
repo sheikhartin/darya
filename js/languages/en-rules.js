@@ -288,8 +288,39 @@
       'loneliness',
       40,
       // eslint-disable-next-line max-len
-      /\b(lonely|alone|no one to talk to|nobody understands|isolated|no one .{0,18}(?:likes|wants to talk to|talks to) me|nobody .{0,18}(?:likes|wants to talk to|talks to) me|no friends|moved on without me|everyone (?:has|is) (?:moved|gone) on|no one (?:needs|wants|is there for) me|no one cares (?:about|for) me|nobody cares(?!\s+(?:about|for))|no one cares(?!\s+(?:about|for))|everyone (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everybody (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everyone has (?:left|abandoned|forgotten|ignored) me|everyone is against me|all my [\w'-]+ (?:left|abandoned|forgot|ignored|hate|hated) me|nobody (?:loves|wants|needs|understands|cares about|likes) me|no one (?:loves|wants|needs|understands|cares about|likes) me|(?:everyone|everybody|they) (?:are all|all) (?:laughing at|making fun of) me|everyone laughs at me|they all (?:hate|left|abandoned|ignored|hated) me)\b/i,
+      /\b(lonely|alone|no one to talk to|nobody understands|isolated|no one .{0,18}(?:likes|wants to talk to|talks to) me|nobody .{0,18}(?:likes|wants to talk to|talks to) me|no friends|no close friends?|moved on without me|everyone (?:has|is) (?:moved|gone) on|no one (?:needs|wants|is there for) me|no one cares (?:about|for) me|nobody cares(?!\s+(?:about|for))|no one cares(?!\s+(?:about|for))|everyone (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everybody (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everyone has (?:left|abandoned|forgotten|ignored) me|everyone is against me|all my [\w'-]+ (?:left|abandoned|forgot|ignored|hate|hated) me|nobody (?:loves|wants|needs|understands|cares about|likes) me|no one (?:loves|wants|needs|understands|cares about|likes) me|(?:everyone|everybody|they) (?:are all|all) (?:laughing at|making fun of) me|everyone laughs at me|they all (?:hate|left|abandoned|ignored|hated) me|no one asks (?:how|about) me|nobody asks (?:how|about) me|everyone (?:is|are) busy with (?:their|his|her) own (?:life|lives)|lonelier than ever)\b/i,
       R['ruleLoneliness']
+    ),
+
+    // Being new in a place with nobody known ("I moved to a new city
+    // for work and know nobody") is a loneliness disclosure, not a work
+    // complaint, even when the move happened for a job. This narrow
+    // rule sits ABOVE the work thread (51 > 50) so the mixed framing
+    // routes to the loneliness care instead of the job pool. The main
+    // loneliness rule stays at 40 so a plain homesickness or grief line
+    // never gets pulled into the new-city pool.
+    rule(
+      'loneliness_new_city',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(moved to a (?:new|different) (?:city|town)|new in (?:this|the) (?:city|town)|know nobody|knows nobody|don'?t know (?:anyone|a soul|a single person) (?:here|in this city|in this town|in the city)|just moved (?:here|to the city)|(?:for work|for a job).{0,15}(?:moved|know nobody)|nobody (?:i )?know)\b/i,
+      R['ruleLoneliness']
+    ),
+
+    // Digital/parasocial loneliness: friendships that only exist online,
+    // a follower count with nobody to call, "no one to call" when the
+    // evening comes. These are 2026-era loneliness disclosures that used
+    // to fall through to the unknown pool or the depression rule. They
+    // sit ABOVE the depression rule (57 > 56) with a narrow online-only
+    // pattern, so "حس پوچی" next to "آنلاین" routes to the digital
+    // loneliness pool instead of the depression shelf, while a plain
+    // "حس پوچی دارم" keeps the depression care.
+    rule(
+      'loneliness_online',
+      57,
+      // eslint-disable-next-line max-len
+      /\b(friendships? .{0,14}online|friends .{0,12}online|online friends?|followers? but (?:no one|nobody)|[0-9,]+ followers? (?:but|yet|and) no one|no one to call|nobody to call|hollow (?:friendships?|online)|friendships? .{0,12}hollow|friends .{0,12}hollow|only talk online|talk to my friends .{0,10}(?:online|through (?:the internet|discord|text|a screen))|social life .{0,10}(?:on my phone|online))\b/i,
+      R['ruleLonelinessOnline']
     ),
 
     // Blanket generalizations and stereotypes ("all women are the same",
@@ -537,6 +568,32 @@
       // eslint-disable-next-line max-len
       /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
       R['ruleMoney']
+    ),
+
+    // Gig economy work: ride-hailing, food delivery, freelance
+    // platforms, side hustles, unpredictable gig income. These 2026-era
+    // disclosures used to fall to the unknown pool (or the exit bar for
+    // "should i quit my gig job"), so they get a dedicated empathetic +
+    // practical pool. Sits above work (51 > 50) so a gig disclosure is
+    // never swallowed by the generic job thread.
+    rule(
+      'gig_economy',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(gig(?: economy| work| job|s)?|side hustles?|ride[- ]hail(?:ing)?|rideshare|ridesharing|food delivery|delivery gigs?|gig worker|gig income|gig pay|freelanc(?:e|ing|er)|freelance platforms?|the platforms? (?:take|takes)|delivery driver|working for (?:an app|apps)|app[- ]based (?:work|job|jobs))\b/i,
+      R['ruleGig']
+    ),
+
+    // Housing costs: rent, landlord, deposit, mortgage, moving out,
+    // house prices. These everyday 2026 disclosures used to bounce off
+    // the unknown pool or the money shelf, so they get a dedicated
+    // pool that sits above work and money (51 > 50, 35).
+    rule(
+      'housing',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(rent|rental|landlord|deposit|mortgage|move out|moving out|house prices?|home prices?|apartment prices?|housing (?:costs|prices|crisis|market|affordability)|afford a house|afford a home|can'?t afford (?:a house|a home|housing|to move)|half (?:my|our|your) salary (?:goes|on)|eviction|evicted)\b/i,
+      R['ruleHousing']
     ),
 
     rule(
