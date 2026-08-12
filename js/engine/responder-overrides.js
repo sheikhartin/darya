@@ -447,6 +447,18 @@
             (/\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
               matchingText
             ) ||
+              // Persian AI/future-proofing phrasing («هوش مصنوعی شغلم رو
+              // بگیره», «آینده‌پذیر کنم») never contains the ASCII word
+              // "ai", so the English bypass above cannot fire for it:
+              // the Unicode-aware alternative opens the work block for
+              // the same world-question intent. Only future/question
+              // forms count («بگیره/می‌گیره/بشه/کنم»), never a past-tense
+              // personal report («ماه پیش هوش مصنوعی شغلم رو گرفت»),
+              // which stays on the empathetic work thread.
+              // eslint-disable-next-line max-len
+              /(?:هوش مصنوعی|ربات).{0,14}(?:می‌گیره|میگیره|بگیره|نشه|شه|بشه|کنم|کنه|می‌کنه|میکنه|جایگزین)|(?:آینده‌پذیر|آینده‌پذیر|آینده دار|بیکار شدنم|بیکار شم|بیکار نشم)(?!\p{L})/iu.test(
+                matchingText
+              ) ||
               // A salary question about a profession ("درآمد یه
               // برنامه‌نویس تو ایران چقدره؟", "how much does a developer
               // earn?") is a genuine factual question, not a work-stress

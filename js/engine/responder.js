@@ -79,7 +79,13 @@ const LIVED_TOPICS = new Set([
   // the feeling; without this entry the FA text above was reordered to
   // the work rule (also in the set) because the knowledge shelf outranks
   // fitness, producing a jarring work question.
-  'fitness'
+  'fitness',
+  // 2026 loneliness specializations (new city with no circle, digital/
+  // online-only friendships) reuse the loneliness pool lines, which
+  // already name the feeling, so the generic empathy prefix must never
+  // stack on top of them either.
+  'loneliness_new_city',
+  'loneliness_online'
 ]);
 
   // Shared across the responder part files (see responder-*.js).
