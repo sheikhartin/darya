@@ -344,8 +344,43 @@
       'self_esteem',
       40,
       // eslint-disable-next-line max-len
-      /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure|feel(?:ing)? (?:so|really|very|too|extremely|incredibly)? guilty|guilt|comparing myself|compare myself|am nothing|i'?m nothing|not as good as (?:them|others|anyone))\b/i,
+      /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure|feel(?:ing)? (?:so |really |very |too |extremely |incredibly )?guilty|guilt|comparing myself|compare myself|am nothing|i'?m nothing|not as good as (?:them|others|anyone))\b/i,
       R['ruleSelfEsteem']
+    ),
+
+    // Social comparison: measuring your life against the highlight reel
+    // of friends, schoolmates, siblings, or social media ("everyone on
+    // instagram is living a better life", "my high school friends are
+    // all successful", "i envy my friends who have it all together",
+    // «همه توی اینستاگرام زندگی بهتری از من دارن»). The 2026 probe
+    // showed these falling to the unknown pool, the vague "that gives
+    // the day color" line, or the self-esteem rule missing the envy
+    // forms. Sits above self_esteem (40) and generalization (35) so the
+    // comparison reading wins; family (50) still outranks it, keeping a
+    // sibling rivalry that names "my sister" on the family thread.
+    rule(
+      'social_comparison',
+      46,
+      // eslint-disable-next-line max-len
+      /\b(everyone (?:on|from) (?:instagram|social media|facebook|tiktok|linkedin)|social media|comparing (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|compare (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|my (?:friends|classmates|cousins?|siblings?|high school friends) (?:are|seem|look) (?:all |so |really )?(?:successful|better|ahead|happy|happier)|everyone (?:else )?(?:is|are|seems?) (?:more successful|happier|better(?: off)?|ahead of me|doing better)|i envy|envious of|jealous of|fall(?:ing)? behind (?:everyone|everyone else|others|them|my (?:friends|classmates|cousins?|peers))|left behind (?:everyone|others|them)|behind everyone|at my age everyone|everyone my age|feel(?:ing)? (?:so |really |very )?inadequate|inadequate (?:compared|next to)|not as (?:good|successful) as (?:them|everyone|my friends))\b/i,
+      R['ruleSocialComparison']
+    ),
+
+    // Overwork without progress: two jobs, a salary that barely covers
+    // the month, bills piling up, working hard and still not getting
+    // ahead ("i work two jobs and still cant get ahead", «دو تا شغل
+    // کار می‌کنم ولی بازم نمی‌تونم جلو برم», «حقوقم آخر ماه تموم
+    // میشه»). The probe showed the FA forms being swallowed by the
+    // knowledge rule (the bare «شغل» keyword) into a stoicism essay,
+    // and the EN forms falling to the unknown pool. Sits above the
+    // knowledge rule (55) so a money-disclosure with «شغل» stays
+    // empathetic, and above work (50) and money (35).
+    rule(
+      'overwork_stuck',
+      56,
+      // eslint-disable-next-line max-len
+      /\b(two jobs|second job|can'?t get ahead|cannot get ahead|barely (?:covers|cover) (?:the month|my bills|bills)|salary barely|bills (?:are )?piling|behind on (?:my )?bills|work(?:ing)? (?:so|too|really) hard (?:and|but) (?:still|just) (?:can'?t|cannot|barely))\b/i,
+      R['ruleOverworkStuck']
     ),
 
     rule(
@@ -412,6 +447,21 @@
       // eslint-disable-next-line max-len
       /\b(tell me (?:a |some |any )?jokes?|tell me (?:a |some |any )?funny jokes?|make me laugh|make me smile|say something funny|say a joke|any jokes|joke for me|know any jokes|crack me up|cheer me up|give me a laugh|give me a (?:funny )?joke|another jokes? please|one more joke|tell me another (?:one )?joke|give me another (?:one )?joke|joke please|i (?:want|need) (?:to hear )?a (?:funny )?joke)\b/i,
       R['ruleTellJoke']
+    ),
+
+    // The user asks for a short story, optionally in a genre. The reply
+    // comes from the genre pools (see responder-rules.js), so a comedy
+    // request never gets a horror list and vice versa. "Another story"
+    // (a bare follow-up after a story) lands here too, so the follow-up
+    // stays on the story thread instead of bouncing to the generic
+    // fallback. Life-story disclosures ("my life story is hard") carry
+    // no request verb and fall through untouched.
+    rule(
+      'smalltalk_story',
+      58,
+      // eslint-disable-next-line max-len
+      /\b(tell me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|tell me a story|any (?:good )?stories?|story (?:please|time)|share a story|give me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|i (?:want|need) (?:to hear )?a story|another story|one more story|another (?:scary|funny|comedy|horror|sad) story)\b/i,
+      R['ruleTellStory']
     ),
 
     // The user asks Darya to buy something ("buy me a laptop", "where can

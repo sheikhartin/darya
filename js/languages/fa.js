@@ -254,6 +254,9 @@
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
     ruleTellJoke: R.ruleTellJoke,
+    ruleTellStory: R.ruleTellStory,
+    ruleTellStoryHorror: R.ruleTellStoryHorror,
+    ruleTellStoryComedy: R.ruleTellStoryComedy,
     ruleShoppingHelp: R.ruleShoppingHelp,
     // Recommendation follow-ups ("anything similar but darker?", «بهتره
     // انیمیشن هم باشه») continue the same shelf warmly when the follow-up

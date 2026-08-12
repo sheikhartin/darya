@@ -192,6 +192,22 @@
     'Those kind of thoughts about yourself can feel very convincing, even when they are not the full picture.'
   ];
 
+  R['ruleSocialComparison'] = [
+    'It is easy to measure yourself against a highlight reel. What you see of others is rarely the full story of their days.',
+    'Comparing your chapter one to someone else chapter twenty is never a fair fight. What do you actually want more of?',
+    'That comparison hurts because it matters to you. If you stopped measuring for a moment, what would you notice about your own path?',
+    'Everyone posts the good moments. The quiet struggles behind them are usually invisible; please do not grade yourself on what you cannot see.',
+    'Feeling behind is real and painful. What would you like your next small step to be, without comparing it to anyone else pace?'
+  ];
+
+  R['ruleOverworkStuck'] = [
+    'Working that hard and still feeling stuck is exhausting in a way few people name. When did you last have a day off from it?',
+    'It sounds like you are carrying a lot to make ends meet. What would one honest look at your budget tell you?',
+    'Two jobs is a lot of life to trade for survival. What keeps you going, and what would need to change for it to ease?',
+    'Running hard without getting ahead wears people down. Is there any support, benefit, or help you might not have asked for yet?',
+    'You are working harder than many people ever will. The system should not require this of you; it is not a personal failure that it does.'
+  ];
+
   R['ruleGrief'] = [
     'Losing someone is one of the hardest things a person can go through. Do you want to talk about it a little?',
     "Whatever you're feeling about this loss is valid. How have you been coping with it lately?",
@@ -622,6 +638,31 @@
     'Driving after drinking is dangerous, even if it feels like you are fine. Please find a safer way home tonight. Your life and the lives of others on the road depend on it.',
     'If you have had even a drink or two, please do not drive tonight. A cab, a rideshare, or calling someone you trust is the right call right now.',
     'Your safety comes first, always. If alcohol is involved, please do not drive. Call a friend, take a taxi, or stay where you are until you are clear. This is not worth the risk.'
+  ];
+
+  // Short-story requests ("tell me a story", "tell me a horror story",
+  // "another story"): original, safe, self-contained mini-stories in
+  // three genre pools. The rule handler (see _respondWithRule for topic
+  // 'smalltalk_story') picks the pool from genre words in the request;
+  // the follow-up override re-picks from the same pool on "another one".
+  // Every entry carries a request-safe opening so a life-story disclosure
+  // ("my life story is hard") can never reach these pools.
+  R['ruleTellStory'] = [
+    'Here is a short story: a baker in a small town made bread so good that people queued before dawn. One morning a stranger paid with a handful of seeds and asked for one loaf a day for a year. The baker kept the promise, and years later the seeds had become a grove of trees around the bakery, planted one per loaf. When asked why he had trusted the stranger, the baker said: the seeds had to be worth more than the bread, or nobody would offer them.',
+    'Here is a short story: an old watchmaker repaired clocks for a living, but his own watch had been stopped for twenty years. A girl came every week to watch him work, and one day she asked why he never fixed his own. He said it was a gift from his son who had left; fixing it would mean the waiting was over. The girl paid him a coin and said: then it is mine now, and she handed him back the watch, ticking. He never knew her name, but his waiting ended that afternoon.',
+    'Here is a short story: two neighbors shared a wall and never shared a word, until one winter a pipe burst and the water crossed from one apartment to the other. They argued over who owed what for days, then laughed when the bill arrived, because the plumber had billed them a single amount. They split it, started greeting each other, and by spring the wall felt thinner. Sometimes repairs fix more than the pipe.'
+  ];
+
+  R['ruleTellStoryHorror'] = [
+    'A short horror story: every night at exactly 3:03 AM, the door of the spare room knocked three times, soft and steady. The room had been empty for months and the key was hidden under the rug. Last night, instead of the knock, a voice came through the wall and asked: did you hide the key this time? I have not answered yet, because I am not sure my mother heard it too.',
+    'A short horror story: the town library had a book with no title that was always on the same shelf, no matter how many times it was returned. One evening a reader finally opened it and found every page blank except the last, which carried the sentence: you are reading this inside the book now. The reader looked up, and every shelf in the library was made of paper.',
+    'A short horror story: the mirror in the hallway was new, but it always showed the room as it had looked years ago, with a door that had been bricked over. One night the reflected door was open, and a figure waved slowly from the dark. The next morning the mirror showed the room as it was, but the figure stood in it, waving slowly, waiting for the owner to wave back.'
+  ];
+
+  R['ruleTellStoryComedy'] = [
+    'A funny short story: a man bought a plant that was guaranteed to be impossible to kill. He watered it, sang to it, and moved it to the sunniest window. Two weeks later it died anyway, and the receipt at the bottom of the pot read: this plant dies if cared for too well. He framed the receipt and now keeps it under a glass dome, where it is thriving.',
+    'A funny short story: a woman tried to teach her parrot to say please. For a month the parrot said nothing, so she gave up and started eating breakfast alone. One morning the parrot asked, politely, whether it could have the last slice of toast, and when she said yes, it added: that is the first nice thing anyone has done for me in here. She laughed so hard she had to sit down, and the parrot asked for the jam.',
+    'A funny short story: a man joined a gym, and the trainer asked what his goal was. He said he wanted to be able to open a jar without asking his neighbor. They trained for months, and on the big day he opened the jar so easily he felt unstoppable. He then realized the jar had been empty, so he bought a bigger jar, filled it with pickles, and spent the afternoon deciding whether opening it would count as a second goal.'
   ];
 
   // Impaired driving detection arrays (English)

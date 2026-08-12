@@ -206,6 +206,9 @@
     daryaHarassmentPattern,
     sexualHarassmentPattern,
     ruleTellJoke: R.ruleTellJoke,
+    ruleTellStory: R.ruleTellStory,
+    ruleTellStoryHorror: R.ruleTellStoryHorror,
+    ruleTellStoryComedy: R.ruleTellStoryComedy,
     ruleShoppingHelp: R.ruleShoppingHelp,
     // Recommendation follow-ups ("anything similar but darker?") continue
     // the same shelf warmly when the follow-up names no genre word (see
