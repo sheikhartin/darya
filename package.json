@@ -15,6 +15,7 @@
     "android:add": "npm run sync:web && npx cap add android",
     "android:sync": "npm run sync:web && npx cap sync android",
     "android:open": "npx cap open android",
+    "android:icons": "python3 scripts/generate-android-icons.py",
     "format": "npx prettier --write \"**/*.{js,mjs,css,html}\"",
     "format:check": "npx prettier --check \"**/*.{js,mjs,css,html}\"",
     "lint": "npx eslint --max-warnings 0 \"**/*.{js,mjs}\"",
