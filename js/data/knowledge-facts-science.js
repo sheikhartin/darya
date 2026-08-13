@@ -424,6 +424,21 @@
       en: 'Neptune is the eighth and most distant planet from the Sun, a blue ice giant with extremely strong winds, the fastest in the solar system, exceeding 2000 kilometers per hour in its atmosphere. Remarkably, Neptune was discovered through mathematical calculation before it was seen directly: Urbain Le Verrier predicted its position, and it was observed in 1846. One Neptune year lasts about 165 Earth years, and it has at least 14 moons.'
     },
     {
+      id: 'second_heart',
+      keywords: [
+        'قلب دوم',
+        'قلب دوم بدن',
+        'second heart',
+        'second heart of the body',
+        'what is the second heart'
+      ],
+      weak: ['کف پا', 'ساق پا', 'calf'],
+      weakSafe: false,
+      hints: ['بدن', 'body', 'قلب', 'heart', 'عضله'],
+      fa: 'عبارت «قلب دوم» در فرهنگ عامه به عضله‌ی ساق پا اشاره دارد؛ ماهیچه‌های ساق پا هنگام راه رفتن، خون وریدی را به سمت قلب پمپ می‌کنند و به همین دلیل نقش کمک‌پمپ دارند. پس فعالیت مثل پیاده‌روی برای گردش خون مفید است. در بدن یک قلب واقعی بیشتر وجود ندارد؛ این یک لقب استعاره‌ای برای ساق پاست.',
+      en: 'The phrase second heart is a popular nickname for the calf muscles: as you walk, the calf muscles pump venous blood back toward the heart, acting like a secondary pump. That is why regular walking helps circulation. There is only one real heart in the body; this is a metaphorical title for the calves.'
+    },
+    {
       id: 'tardigrade',
       keywords: [
         'عجیب‌ترین حیوان',

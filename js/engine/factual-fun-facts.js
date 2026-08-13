@@ -42,7 +42,16 @@
       // A trailing politeness marker is part of the request, not the
       // statement tail: "facts about space please" must match while "the
       // facts about my life are clear" still falls through.
-      '(?:\\s+please)?[.!?]*\\s*$',
+      '(?:\\s+please)?[.!?]*\\s*$' +
+      // Content requests without the word "fact": "tell me something
+      // interesting", "say something fun", "name something surprising"
+      // are the same fun-fact ask, and previously fell to the EN pronoun
+      // reflection echo ("So tell you something interesting"). Each
+      // adjective carries a trailing word boundary so joke requests
+      // ("say something funny", "something funnier") never match the
+      // "fun" prefix and stay on the joke rule.
+      '|(?:something|anything|a thing)\\s+(?:fun\\b|interesting\\b|shocking\\b|surprising\\b|weird\\b|amazing\\b|mind-blowing\\b|cool\\b|crazy\\b)' +
+      '|say\\s+something\\s+(?:fun\\b|interesting\\b|shocking\\b|surprising\\b|weird\\b|amazing\\b|cool\\b|crazy\\b)',
     'i'
   );
 
@@ -56,7 +65,7 @@
   );
   const FACT_REQUEST_FA =
     // eslint-disable-next-line max-len
-    /(?:حداقل|فقط)?\s*(?:حقیقت|حقایق|واقعیت جالب|واقعیت‌های جالب|فکت)(?:\s*(?:درباره|راجع به|در مورد|از|برام|بگو|بگویید|بهم))?|(?:بگو|بگویید|برام|بهم)\s+(?:حداقل|فقط)?\s*(?:یک|یه|چند تا|چند|سه تا|دو تا|پنج تا|۴|۵|۳|۲)?\s*(?:حقیقت|واقعیت جالب|فکت)|(?:یک|یه|چند تا|چند)?\s*فکت\s*.{0,20}?\s*(?:بگو|بگویید|برام|بهم)/u;
+    /(?:حداقل|فقط)?\s*(?:حقیقت|حقایق|واقعیت جالب|واقعیت‌های جالب|فکت)(?:\s*(?:درباره|راجع به|در مورد|از|برام|بگو|بگویید|بهم))?|(?:بگو|بگویید|برام|بهم)\s+(?:حداقل|فقط)?\s*(?:یک|یه|چند تا|چند|سه تا|دو تا|پنج تا|۴|۵|۳|۲)?\s*(?:حقیقت|واقعیت جالب|فکت)|(?:یک|یه|چند تا|چند)?\s*فکت\s*.{0,20}?\s*(?:بگو|بگویید|برام|بهم)|(?:یه|یک|چیزی)\s*(?:چیز)?\s*(?:جالب|عجیب|شگفت‌انگیز|بامزه)\s*(?:بگو|بگویید|بگید|بهم|برام)?|(?:بگو|بگویید|بگید|بهم|برام)\s*(?:یه|یک)?\s*چیزی\s*(?:جالب|عجیب|بامزه)/u;
   const SHOCKING_EN =
     /\b(?:shocking|surprising|weird|random|amazing|mind-blowing)\b/i;
   const SHOCKING_FA =

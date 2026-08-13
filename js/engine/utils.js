@@ -87,6 +87,10 @@
     ECHO_FRAGMENT_MAX_WORDS,
     ECHO_ANSWER_MIN_WORDS,
     FILLER_TOPICS,
+    GENERIC_ADVICE_TOPICS,
+    OPENER_SUBJECT_TOPICS,
+    SUBJECT_CONTINUATION_WINDOW,
+    SUBJECT_CONTINUATION_MAX_REFRESHES,
     PROMISE_CIRCLEBACK_DELAY_TURNS,
     PROMISE_EXPIRY_TURNS,
     EXERCISE_ACTIVE_WINDOW,
@@ -236,7 +240,42 @@
       // becomes 'affirmation'), so the next follow-up loses the thread.
       // They keep the current subject instead.
       const isFiller = topic !== null && FILLER_TOPICS.has(topic);
-      if (topic !== this.currentSubject.topic && !isFiller) {
+      // A generic advice topic (procrastination, what_do_i_do,
+      // friendship) must not hijack a FRESH, more specific subject:
+      // "How do adults make friends?" right after a new-city loneliness
+      // disclosure is still the loneliness thread, and «چه کار کنم
+      // راحت‌تر بشه» inside a pet thread is still about the pet. When
+      // the incoming topic is such a generic rule and the current
+      // subject is a real content thread within the continuation
+      // window, keep the current subject so the subject-preference
+      // guard in responder-rules.js can answer with the thread
+      // continuation. Conversational openers are NOT content threads
+      // and never block a generic topic from taking over.
+      const isGenericAdvice =
+        topic !== null && GENERIC_ADVICE_TOPICS.has(topic);
+      // A generic advice subject (procrastination, what_do_i_do,
+      // friendship) is NOT a content thread worth preserving: if the
+      // current subject is itself generic and another generic advice
+      // topic fires, the new one should take over so «چه کار کنم»
+      // inside a generic thread answers generic advice instead of being
+      // pinned to a stale friendship/procrastination label. Only a
+      // specific content subject (pet_care, dating_apps, grief) blocks
+      // a generic hijacker.
+      const currentIsReal =
+        this.currentSubject.topic &&
+        !OPENER_SUBJECT_TOPICS.has(this.currentSubject.topic) &&
+        !GENERIC_ADVICE_TOPICS.has(this.currentSubject.topic);
+      const keepSpecificSubject =
+        isGenericAdvice &&
+        currentIsReal &&
+        this.currentSubject.topic !== topic &&
+        this.turnCount - this.currentSubject.since <=
+          SUBJECT_CONTINUATION_WINDOW;
+      if (
+        topic !== this.currentSubject.topic &&
+        !isFiller &&
+        !keepSpecificSubject
+      ) {
         this.currentSubject = { topic, entityRefs: [], since: this.turnCount };
       }
       const refs = (entities || []).map(
@@ -567,6 +606,10 @@
     MOOD_SCALE_MAX,
     MOOD_LOW_MAX,
     MOOD_HIGH_MIN,
+    SUBJECT_CONTINUATION_WINDOW,
+    SUBJECT_CONTINUATION_MAX_REFRESHES,
+    GENERIC_ADVICE_TOPICS,
+    OPENER_SUBJECT_TOPICS,
     scriptRatio,
     isValidScript,
     truncateExcerpt,

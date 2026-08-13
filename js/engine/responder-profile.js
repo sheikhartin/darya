@@ -215,8 +215,41 @@
         return pickPool(pools.nameStored).replace('{name}', rawName);
       }
 
-      if (patterns.ageQuestion.test(matchingText)) {
-        if (this._userProfile.age !== null) {
+      // Combined recall («یادته که گفتم من کی هستم و چند سالمه؟», "do you
+      // remember who I am and how old I am?"): both the age and the name
+      // question fire on one turn, so the reply must answer from whatever
+      // was actually stored - both, one, or honestly none (the pools
+      // never invent facts). This was the transcript's worst failure: the
+      // recall question was misread as a disclosure and «کی» was stored
+      // as a name.
+      const ageQuestion = patterns.ageQuestion.test(matchingText);
+      const nameQuestion = patterns.nameQuestion.test(matchingText);
+      const hasAge = this._userProfile.age !== null;
+      const hasName = this._userProfile.name !== null;
+      if (ageQuestion && nameQuestion) {
+        if (hasAge && hasName && pools.bothKnown) {
+          return pickPool(pools.bothKnown)
+            .replace('{age}', this._userProfile.age)
+            .replace('{name}', this._userProfile.name);
+        }
+        if (hasAge) {
+          return pickPool(pools.ageKnown).replace(
+            '{age}',
+            this._userProfile.age
+          );
+        }
+        if (hasName) {
+          return pickPool(pools.nameKnown).replace(
+            '{name}',
+            this._userProfile.name
+          );
+        }
+        if (pools.noneKnown) {
+          return pickPool(pools.noneKnown);
+        }
+      }
+      if (ageQuestion) {
+        if (hasAge) {
           return pickPool(pools.ageKnown).replace(
             '{age}',
             this._userProfile.age
@@ -224,8 +257,8 @@
         }
         return pickPool(pools.ageUnknown);
       }
-      if (patterns.nameQuestion.test(matchingText)) {
-        if (this._userProfile.name !== null) {
+      if (nameQuestion) {
+        if (hasName) {
           return pickPool(pools.nameKnown).replace(
             '{name}',
             this._userProfile.name

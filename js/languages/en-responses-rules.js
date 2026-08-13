@@ -192,6 +192,22 @@
     'Those kind of thoughts about yourself can feel very convincing, even when they are not the full picture.'
   ];
 
+  R['ruleSocialComparison'] = [
+    'It is easy to measure yourself against a highlight reel. What you see of others is rarely the full story of their days.',
+    'Comparing your chapter one to someone else chapter twenty is never a fair fight. What do you actually want more of?',
+    'That comparison hurts because it matters to you. If you stopped measuring for a moment, what would you notice about your own path?',
+    'Everyone posts the good moments. The quiet struggles behind them are usually invisible; please do not grade yourself on what you cannot see.',
+    'Feeling behind is real and painful. What would you like your next small step to be, without comparing it to anyone else pace?'
+  ];
+
+  R['ruleOverworkStuck'] = [
+    'Working that hard and still feeling stuck is exhausting in a way few people name. When did you last have a day off from it?',
+    'It sounds like you are carrying a lot to make ends meet. What would one honest look at your budget tell you?',
+    'Two jobs is a lot of life to trade for survival. What keeps you going, and what would need to change for it to ease?',
+    'Running hard without getting ahead wears people down. Is there any support, benefit, or help you might not have asked for yet?',
+    'You are working harder than many people ever will. The system should not require this of you; it is not a personal failure that it does.'
+  ];
+
   R['ruleGrief'] = [
     'Losing someone is one of the hardest things a person can go through. Do you want to talk about it a little?',
     "Whatever you're feeling about this loss is valid. How have you been coping with it lately?",
@@ -273,10 +289,22 @@
   // honest, reflective answer that turns the choice back into a
   // conversation instead of faking certainty about "which is better".
   R['ruleLearningAdvice'] = [
-    'There is no single right answer to "which is better": it depends on your taste and your goal. What draws you to one over the other?',
-    'Before any advice, tell me: what would choosing this path mean for you, and where do you hope it leads?',
-    'Whichever path you take, practice and genuine interest open the doors. Which part of this work actually excites you?',
-    'This choice depends on your own situation. We can figure out together what fits you best.'
+    'Real learning starts with small steps: twenty focused minutes every day beats a few long sessions every so often. What is the smallest first step you can take today?',
+    'For any skill, active practice with quick feedback beats passive learning. Where are you on the path right now, and what still feels unclear?',
+    'Consistency beats intensity: a small routine you actually keep outpaces an ambitious plan you abandon. What time of day works best for you?',
+    'The right learning path depends on your goal and your situation; your own curiosity is the best guide. Which part of this genuinely excites you?'
+  ];
+
+  // Two-option comparison ("which is better, X or Y?", "X or Y?"):
+  // keeps the comparison frame and asks for the criterion that
+  // matters, instead of the generic "depends on your situation" dodge.
+  R['ruleComparison'] = [
+    'Comparing two options only becomes meaningful once we know what you are comparing them for; each is built for something different. Which one aligns more with what you want these days?',
+    'Both sides have their arguments; the real question is your criterion. In this choice, what matters most to you: performance, cost, enjoyment, or something else?',
+    'There is no fixed answer, but we can clarify your criteria together. If only one thing could decide it, what would that one thing be?',
+    'Instead of asking which is "better", ask which is closer to your life today; the comparison gets easier from there. What keeps circling in your mind about this choice?',
+    'There is no universal "better": every option trades something off, and the right pick is the one that fits your actual criteria rather than its reputation.',
+    'When two options look equal on paper, the deciding factor is usually which one you can live with on a bad day, not on a good one.'
   ];
 
   // Recommendation follow-ups ("anything similar but darker?") that name
@@ -340,6 +368,40 @@
     'Is there anyone you can talk this through with?',
     'Financial worry is heavy and it can quietly affect your sleep and your peace. I hear that.',
     'Worrying about money is completely human; a great many people feel the same weight.'
+  ];
+
+  // Gig economy work: ride-hailing, delivery, freelance platforms,
+  // side hustles. The pool acknowledges the instability (no steady
+  // hours, no benefits, unpredictable income) and gently opens the
+  // practical side without lecturing.
+  R['ruleGig'] = [
+    'Gig work carries a lot of uncertainty: the hours shift, the income shifts, and the safety net does not exist. What part of it is weighing on you most right now?',
+    'Unpredictable income makes it hard to plan anything, even the basics. How long have you been doing this kind of work?',
+    'Working without benefits or a steady paycheck takes a real toll, even when the work itself is fine. What would need to change for you to feel more stable?',
+    'It is completely reasonable to feel stretched when the platform sets the rules and you carry the risk. Which part feels least fair to you?',
+    'Plenty of people in gig work feel exactly this: busy all the time and still not secure. Would it help to look at the numbers together, income versus expenses?'
+  ];
+
+  // Housing costs: rent, deposits, landlords, moving out, house prices.
+  // Acknowledges the weight and opens a practical thread without
+  // pretending Darya can fix housing markets.
+  R['ruleHousing'] = [
+    'Housing costs have climbed so fast that rent can swallow half a paycheck. What does your situation look like right now?',
+    'Rent pressure is heavy and it seeps into everything else. How long have you been carrying this?',
+    'A landlord raising the rent or a deposit that eats your savings is genuinely stressful. What options have you considered so far?',
+    'When housing eats that much of your income, the rest of life gets squeezed. Would it help to talk through what is actually changeable versus not?',
+    'So many people are stuck between rent and a loan these days; it is not a personal failure. What would make the next few months feel more manageable?'
+  ];
+
+  // Digital/parasocial loneliness: online-only friendships, follower
+  // counts with nobody to call. Acknowledges the hollow feeling without
+  // dismissing the real connections that do exist online.
+  R['ruleLonelinessOnline'] = [
+    'Having people around online and still feeling alone is real, not imaginary. What does your online circle give you these days?',
+    'Follower counts do not call you when things get hard. When did you last talk to someone who truly listened?',
+    'Online friendships can be meaningful and still leave a hollow space. Which part feels most empty right now?',
+    'It is a strange loneliness: surrounded by notifications and still no one to sit with. How long has this feeling been building?',
+    'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
   ];
 
   R['ruleKnowledge'] = [];
@@ -459,6 +521,17 @@
     'Feeling anxious about your body in a gym is far more common than you might think. What kind of encouragement would help you most?'
   ];
 
+  // Cooking care: fixing a failed dish and gentle guidance for new
+  // cooks. Distinct from the knowledge shelf's encyclopedic food
+  // facts: a burnt dinner gets a concrete fix, not a lecture.
+  R['ruleCooking'] = [
+    'A bitter ghormeh sabzi usually comes from not browning the herbs properly or simmering too long; next time fry the herbs slowly over low heat and caramelize the tomato paste well. For right now, a spoon of browned tomato paste or a little sugar can balance the bitterness.',
+    'Fesenjan turns dark and glossy when the walnuts are toasted well and the pomegranate paste is cooked separately until the oil separates. Which part felt hardest for you?',
+    'Persian cooking rewards patience more than speed; one failed attempt just means the heat or the amounts need a small adjustment. What exactly went wrong?',
+    'To start, simpler dishes (plain rice, a chicken stew, a soup) build confidence before you move to the stews. What are you in the mood to cook today?',
+    'Add salt and sour gradually; you can always add more, but you cannot take it back. What did you learn from that first try?'
+  ];
+
   R['ruleAffection'] = [
     'That means a lot to me. This is your space; whatever you are feeling, I am here to listen.',
     'I appreciate you sharing that. I am here as a companion for this conversation, and I am glad you feel comfortable enough to say it.',
@@ -500,11 +573,119 @@
     'It takes courage to say these things out loud. Symptoms like chest pain or shortness of breath need to be checked by a medical professional. Have you been able to see a doctor about this?'
   ];
 
+  // Everyday body pain ("my left hand hurts a lot"): a caring reply that
+  // takes the complaint seriously without diagnosing (Darya is not a
+  // clinician), asks a gentle follow-up, and points to a doctor for
+  // severe or persistent pain.
+  R['ruleHealthPain'] = [
+    'That sounds uncomfortable and tiring. When did it start, and is there a time of day when it bothers you the most?',
+    'I hear you. Pain is your body sending a message. If it is severe, sudden, or has been going on for a while, please see a doctor; but if you want to talk through what it feels like, I am here.',
+    'That must be wearing you down. How much has it been affecting your daily routine? If it is getting worse day by day, seeing a doctor is the right next step.',
+    'Pain can be exhausting, and I want to take it seriously. I am not a doctor, so for anything sharp or persistent please get a professional opinion. Until then, what helps a little: rest, warmth, or just talking about it?',
+    // A non-question line so even under heavy budget pressure the pain
+    // complaint is acknowledged, never bounced to a generic fallback.
+    'I hear your pain and I take it seriously. If it is severe or has been going on for a while, please do bring it to a trusted doctor.'
+  ];
+
+  // Fatigue phrasings ("why am i always tired", "i am always exhausted")
+  // route through the health_pain rule but must never read as physical
+  // pain ("I hear your pain"): the engine detects the fatigue branch and
+  // picks from this exhaustion-aware pool instead (see
+  // responder-rules.js).
+  R['ruleFatigue'] = [
+    'Constant tiredness can be your body trying to tell you something. What has been draining the most energy out of your days lately?',
+    'When your body stays tired, it is usually worth listening to. How have your sleep and rest been these days?',
+    'Feeling tired all the time is heavy. If it has lasted a while or comes with other symptoms, a trusted doctor can take a look. But right now, what is wearing you out the most?'
+  ];
+
+  // Questions about Darya herself ("do you have parents?", "why were you
+  // made?"): transparent, self-aware answers about being an offline
+  // rule-based companion, her limits, and her origin. Honest per AGENTS.md:
+  // never implies being human, never overclaims knowledge.
+  R['ruleDaryaSelf'] = [
+    'A fair question. I am an offline conversation companion: I have no parents, no birthday, and no home. I am a set of hand-written rules and responses, built for listening and thinking together, following the trail ELIZA blazed in the 1960s. I do not replace a person or a professional, and I will honestly tell you what I know and what I do not.',
+    'To be straight with you, I am a bot. That means no family, no age, and no birthday. My knowledge is whatever was written into me offline: everyday topics, facts, and practical guidance. Whenever I do not know something, I say so plainly and point to a reliable source.',
+    'My purpose is simple: to listen without judgment and to think alongside you. That is why I was made. My shelf is broad but limited, and whenever I do not know something, I say so, so you never have to guess.',
+    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?'
+  ];
+
+  // Joke-count question ("how many jokes do you know?"): a real answer
+  // with the pool size, plus the honest promise of session variety.
+  R['ruleJokeCount'] = [
+    'I have {count} jokes in my shelf, and I try not to repeat them within a conversation. Want to hear one?',
+    'About {count} jokes, and each session I pick fresh ones so you do not hear the same line twice. Shall I tell you one?',
+    '{count} jokes on file, with session memory so repeats stay out. Care to test me?'
+  ];
+
+  // The user's birthday ("today is my birthday"): celebrate warmly.
+  R['ruleBirthday'] = [
+    'Happy birthday! Today is your day. How would you like to spend it, or what would make it feel special?',
+    'Happy birthday! I hope this year is kind to you. Do you have anything planned for the day?',
+    'Many happy returns! How does this new year of yours feel so far?'
+  ];
+
+  // A new baby in the family ("we just had a baby"): share the joy.
+  R['ruleNewBaby'] = [
+    'Congratulations! A new baby fills the house with joy and, yes, sleepless nights. How are these early days feeling for you?',
+    'What wonderful news! A newborn means sweet, exhausting days. What part of it has been the most joyful so far?',
+    'Congratulations! Little ones show us the world all over again. How are things going, and what has been taking the most energy?'
+  ];
+
+  // IQ test request ("give me an IQ test"): honest that a real
+  // standardized test cannot run here, then a light logic question.
+  R['ruleIqTest'] = [
+    'Honestly, a real IQ test is a psychologist job and I cannot run one. But here is a quick riddle to stretch your mind: what gets broken every time it is spoken?',
+    'A real IQ test needs a qualified professional and proper tools, which I do not have. Instead, here is a logic teaser: if three cats catch three mice in three minutes, how many cats catch ninety mice in ninety minutes?',
+    'I cannot administer a valid IQ test, but I would love to solve a few brain teasers with you. Ready?'
+  ];
+
+  // Sharing a secret ("can I tell you a secret?"): a safe-space
+  // reassurance that opens the door.
+  R['ruleSecret'] = [
+    'This conversation stays right here between us. Nothing you say is stored or sent anywhere, and it disappears when you close the tab. Go ahead, I am listening.',
+    'Whatever you share with me is safe: this chat never leaves your browser. Take your time.',
+    'I am not here to judge. If you have been carrying a secret, this is a safe place to start putting it into words. What has been weighing on you?'
+  ];
+
+  // Treatment request ("can you help me get better?"): honest about not
+  // being a clinician, gently pointing to a professional while keeping
+  // the door open.
+  R['ruleTherapyHelp'] = [
+    'I cannot provide treatment, and it is a skilled job that belongs with qualified professionals. But I can walk alongside you and help you see the path more clearly. If you think you need professional help, the first step is talking to a trusted psychologist or doctor. Where would you like to start?',
+    'Healing is a real journey, and I am with you. But real treatment needs a professional by your side; I can be a patient listener and help you sort your thoughts. What feels heaviest these days?',
+    'To be honest, I am not a stand-in for professional care and I should not be. But we can talk through what is happening and help you find the right way forward. Where do we begin?'
+  ];
+
   R['ruleImpairedDriving'] = [
     'I hear that you want to drive, but if you have been drinking, please do not get behind the wheel right now. Your safety matters more than anything. A taxi or a friend to pick you up is a much better option.',
     'Driving after drinking is dangerous, even if it feels like you are fine. Please find a safer way home tonight. Your life and the lives of others on the road depend on it.',
     'If you have had even a drink or two, please do not drive tonight. A cab, a rideshare, or calling someone you trust is the right call right now.',
     'Your safety comes first, always. If alcohol is involved, please do not drive. Call a friend, take a taxi, or stay where you are until you are clear. This is not worth the risk.'
+  ];
+
+  // Short-story requests ("tell me a story", "tell me a horror story",
+  // "another story"): original, safe, self-contained mini-stories in
+  // three genre pools. The rule handler (see _respondWithRule for topic
+  // 'smalltalk_story') picks the pool from genre words in the request;
+  // the follow-up override re-picks from the same pool on "another one".
+  // Every entry carries a request-safe opening so a life-story disclosure
+  // ("my life story is hard") can never reach these pools.
+  R['ruleTellStory'] = [
+    'Here is a short story: a baker in a small town made bread so good that people queued before dawn. One morning a stranger paid with a handful of seeds and asked for one loaf a day for a year. The baker kept the promise, and years later the seeds had become a grove of trees around the bakery, planted one per loaf. When asked why he had trusted the stranger, the baker said: the seeds had to be worth more than the bread, or nobody would offer them.',
+    'Here is a short story: an old watchmaker repaired clocks for a living, but his own watch had been stopped for twenty years. A girl came every week to watch him work, and one day she asked why he never fixed his own. He said it was a gift from his son who had left; fixing it would mean the waiting was over. The girl paid him a coin and said: then it is mine now, and she handed him back the watch, ticking. He never knew her name, but his waiting ended that afternoon.',
+    'Here is a short story: two neighbors shared a wall and never shared a word, until one winter a pipe burst and the water crossed from one apartment to the other. They argued over who owed what for days, then laughed when the bill arrived, because the plumber had billed them a single amount. They split it, started greeting each other, and by spring the wall felt thinner. Sometimes repairs fix more than the pipe.'
+  ];
+
+  R['ruleTellStoryHorror'] = [
+    'A short horror story: every night at exactly 3:03 AM, the door of the spare room knocked three times, soft and steady. The room had been empty for months and the key was hidden under the rug. Last night, instead of the knock, a voice came through the wall and asked: did you hide the key this time? I have not answered yet, because I am not sure my mother heard it too.',
+    'A short horror story: the town library had a book with no title that was always on the same shelf, no matter how many times it was returned. One evening a reader finally opened it and found every page blank except the last, which carried the sentence: you are reading this inside the book now. The reader looked up, and every shelf in the library was made of paper.',
+    'A short horror story: the mirror in the hallway was new, but it always showed the room as it had looked years ago, with a door that had been bricked over. One night the reflected door was open, and a figure waved slowly from the dark. The next morning the mirror showed the room as it was, but the figure stood in it, waving slowly, waiting for the owner to wave back.'
+  ];
+
+  R['ruleTellStoryComedy'] = [
+    'A funny short story: a man bought a plant that was guaranteed to be impossible to kill. He watered it, sang to it, and moved it to the sunniest window. Two weeks later it died anyway, and the receipt at the bottom of the pot read: this plant dies if cared for too well. He framed the receipt and now keeps it under a glass dome, where it is thriving.',
+    'A funny short story: a woman tried to teach her parrot to say please. For a month the parrot said nothing, so she gave up and started eating breakfast alone. One morning the parrot asked, politely, whether it could have the last slice of toast, and when she said yes, it added: that is the first nice thing anyone has done for me in here. She laughed so hard she had to sit down, and the parrot asked for the jam.',
+    'A funny short story: a man joined a gym, and the trainer asked what his goal was. He said he wanted to be able to open a jar without asking his neighbor. They trained for months, and on the big day he opened the jar so easily he felt unstoppable. He then realized the jar had been empty, so he bought a bigger jar, filled it with pickles, and spent the afternoon deciding whether opening it would count as a second goal.'
   ];
 
   // Impaired driving detection arrays (English)
@@ -575,5 +756,63 @@
     'برگردم',
     'برم',
     'برانم'
+  ];
+  R['ruleGaming'] = [
+    'Burnout from one style of game is real. A cozy indie or a short session-based game can feel like a different world entirely. What kind of pace are you craving these days?',
+    'When a genre stops giving you joy, it is often a signal to vary the pace: shorter sessions, a different genre, or a week away from the screen. What draws you to cozy games?',
+    'A good recommendation depends on the mood you are in. Do you want something story-driven, something creative, or something you can play in short bursts?',
+    'Gaming balance is about guilt-free play: set a timer, enjoy it fully, and close it when the time is up. What has been stealing the fun lately?',
+    'If gaming is keeping you up all night, a small boundary helps: one hour before bed, the screen goes off. What is the hardest part of stopping for you?'
+  ];
+
+  // Setting boundaries: how-to about limits with family or friends.
+  R['ruleBoundaries'] = [
+    'Boundaries are not walls, they are instructions for how you want to be treated. A calm "no" said early prevents a resentful "yes" said forever. Which relationship feels hardest to set a limit in?',
+    'A boundary is clearer when it is concrete: what you will do, not just what they should stop doing. For example, "I can talk until 10, then I need quiet." What would your version sound like?',
+    'You can be kind and firm at the same time. The kindness is in the tone, the firmness is in not backing down. What is the smallest boundary you could practice first?',
+    'Setting a limit with someone you love often brings guilt before it brings relief. That guilt is a sign you care, not a sign you are wrong. What is the worry underneath?',
+    'Start small: one boundary, said clearly, repeated calmly. It gets easier the second time. What has made saying no feel so hard so far?'
+  ];
+
+  // Pet care: behavior worries about a living pet (hiding, not eating,
+  // being alone, vet costs). Practical reassurance, never grief; the
+  // knowledge shelf answers the encyclopedic "why do cats hide"
+  // questions.
+  R['rulePetCare'] = [
+    'A pet acting differently is usually a phase, not a crisis. After a move, cats often hide for a few days: give them one safe room, keep their food and water in the same spot, and let them come out on their own time. How long has this been going on?',
+    'Not eating is worth watching. Try a quiet spot, their usual bowl, and a little patience; if it lasts more than a day or two, a vet is the right call. I am not a substitute. What does a typical day look like for them right now?',
+    'Pets feel our routines changing too. A stable feeding time and a calm corner go a long way. What changed recently in your home?',
+    'Worrying about your pet shows how much you care. Small consistent care helps: same bowl, same corner, same rhythm. Is there a specific behavior that worries you most?',
+    'If vet costs are the worry, ask the clinic about payment plans or pet insurance before giving up on care. How are they doing otherwise?'
+  ];
+
+  // Apology advice: practical steps for apologizing well, distinct from
+  // accepting an apology the user just made.
+  R['ruleApologyAdvice'] = [
+    'A good apology names what happened, owns the impact without excuses, and ends with how you will change the behavior. It helps to stay on their feelings, not your own. What are you hoping to make right?',
+    'Keep it specific: what you did, why it mattered, and what you will do differently. A short sincere apology beats a long defensive one. Who is this apology for?',
+    'An apology is about the other person, so resist the urge to explain your side first. Say it, pause, and let them respond. What feels hardest about that?',
+    'If you are not sure how they took it, ask: "Is there anything you need from me to feel better?" Repair is a conversation, not a speech. What happened between you two?',
+    'Apologizing well is a skill like any other. A clear structure helps: what you did, the impact, and the change. Would it help to practice the words with me first?'
+  ];
+
+  // Adult friendship: making friends after school, drifting apart, the
+  // effort real friendship takes.
+  R['ruleFriendship'] = [
+    'Adult friendship takes a different kind of effort: shared time has to be scheduled, not stumbled into. Small consistent gestures build real closeness. What kind of friend are you hoping to find?',
+    'Making friends as an adult is genuinely harder, and it is not a sign anything is wrong with you. Recurring low-stakes contact does the work: a class, a hobby group, a weekly call. Where could you show up repeatedly?',
+    'Friendship after school is built on repeated small interactions. Picking one activity you already like and going regularly is a real strategy. What do you enjoy doing with others?',
+    'It can feel like a job interview because everyone is cautious at first. The shortcut is common ground: do something together, not just talk. What is something you have always wanted to try with someone?',
+    'One meaningful connection is worth more than many acquaintances. Which existing friendship could you deepen this month?'
+  ];
+
+  // Sports banter: match complaints, referee rants, team losses. Light,
+  // companionable, never clinical.
+  R['ruleSportsTalk'] = [
+    'That sounds like a painful watch. Some matches just do not go to plan; the fans feel it more than the players. Do you think it was the tactics or the luck?',
+    'You have my sympathies. There is nothing like a bad call to ruin an evening. What was the worst moment of it?',
+    'Every fan has a list of grievances a mile long. The comeback talk starts tomorrow, right? What would you change about the lineup?',
+    'Teams have bad nights; the real fans stick around anyway. Are you watching the next match too, or taking a break?',
+    'A loss like that stings for exactly one night, then the next fixture comes around. Which game are you looking forward to next?'
   ];
 })(typeof window !== 'undefined' ? window : globalThis);

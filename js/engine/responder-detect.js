@@ -131,6 +131,21 @@
       return /^[\p{Emoji}\u200d\ufe0f\s]+$/u.test(trimmed);
     },
 
+    // How many times a word is repeated WITHIN a single message (not
+    // across turns). The word-repetition override uses this to decide
+    // whether a pure in-message repetition («غمگین غمگین غمگین غمگین»)
+    // should still name the word even when a broad rule like sadness
+    // also matches, while a word merely echoed from an earlier turn
+    // («دلم درد میکنه» after «دستم درد میکنه») keeps the rule's reply.
+    _withinMessageRepetition(word, normalizedText) {
+      const clean = String(normalizedText || '').replace(
+        /[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu,
+        ' '
+      );
+      const words = clean.toLowerCase().split(/\s+/u).filter(Boolean);
+      return words.filter((w) => w === word).length;
+    },
+
     _detectWordRepetition(normalizedText) {
       const recent = [...this.memory.recentUtterances];
       const stopWords =
@@ -444,10 +459,38 @@
       const foreignLetters = letters.filter(
         (ch) => !this.lang.scriptRange.test(ch)
       );
-      return (
-        foreignLetters.length >= MIXED_SCRIPT_FOREIGN_MIN &&
-        foreignLetters.length / letters.length >= MIXED_SCRIPT_FOREIGN_RATIO
+      if (
+        foreignLetters.length < MIXED_SCRIPT_FOREIGN_MIN ||
+        foreignLetters.length / letters.length < MIXED_SCRIPT_FOREIGN_RATIO
+      ) {
+        return false;
+      }
+      // A title-cased foreign run embedded in native text («انیمه Witch
+      // Hat Atelier رو دیدی») is a proper-noun title, not a language
+      // switch: anime/game/book titles and brand names are everyday
+      // loanwords in both directions. When the message also contains
+      // native letters and every foreign word starts uppercase, treat
+      // the run as a title and skip the redirect. Real bilingual input
+      // ("سلام سلام hello friend", "My manager خیلی باهاش مشکل دارم")
+      // has lowercase foreign words and still redirects.
+      const nativeLetters = letters.filter((ch) =>
+        this.lang.scriptRange.test(ch)
       );
+      if (nativeLetters.length > 0) {
+        const foreignWords = [...String(text).matchAll(/[\p{L}]+/gu)].map(
+          (m) => m[0]
+        );
+        const allForeignWords = foreignWords.filter((word) =>
+          [...word].some((ch) => !this.lang.scriptRange.test(ch))
+        );
+        if (
+          allForeignWords.length > 0 &&
+          allForeignWords.every((word) => /^\p{Lu}/u.test(word))
+        ) {
+          return false;
+        }
+      }
+      return true;
     }
   });
 })(typeof window !== 'undefined' ? window : globalThis);

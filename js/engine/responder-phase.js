@@ -174,10 +174,75 @@
           topic === 'about_eliza' ||
           topic === 'compliment_darya' ||
           topic === 'misread_correction' ||
+          // The health_pain pool already opens with a caring line
+          // ("دردت را میشنوم و جدی می‌گیرم"); a generic warmth prefix on
+          // top stacked "اشکالی ندارد برای این موضوع وقت بگذاری." onto a
+          // pain complaint (the «میتونی یه راه‌حل برای درد دستم بگی؟»
+          // transcript failure). The birthday pool is similarly
+          // self-sufficient and never needs a heavy warmth line.
+          topic === 'health_pain' ||
+          topic === 'birthday' ||
           // The generalization pool gently challenges a blanket belief
           // with its own acknowledging opener; humor or a heavy warmth
           // prefix would undercut the challenge and read as flippant.
           topic === 'generalization' ||
+          // The comparison and crush pools ship self-sufficient openers;
+          // a generic warmth line ("You don't have to solve it all at
+          // once") prepended to "which car is better" reads as a canned
+          // dodge, the exact «لازم نیست همه‌چیز را یک‌باره حل کنی»
+          // transcript failure. The procrastination, dating-apps, and
+          // pet-loss pools also open with their own validating lines
+          // ("آن کشش به سمت گوشی واقعی است و تنبلی نیست"), so the same
+          // warmth prefix would stack onto them too.
+          topic === 'comparison' ||
+          topic === 'crush' ||
+          topic === 'procrastination' ||
+          topic === 'dating_apps' ||
+          topic === 'pet_loss' ||
+          // The pet-care, parenting, gaming, friendship, sports-talk, and
+          // apology-advice pools each open with their own concrete line
+          // ("After a move, cats often hide for a few days"), so a generic
+          // warmth prefix would stack tones and read as noise.
+          topic === 'pet_care' ||
+          topic === 'parenting' ||
+          topic === 'gaming' ||
+          topic === 'friendship' ||
+          topic === 'sports_talk' ||
+          topic === 'apology_advice' ||
+          topic === 'boundaries' ||
+          // Every lived-experience and advice pool opens with its own
+          // validating line (the gig pool names the insecurity, the
+          // fitness pool names the fear, the cooking pool offers a fix),
+          // so a generic warmth prefix would stack tones onto them the
+          // same way it did on comparison. Listed explicitly so the
+          // warmth prefix never re-breaks those threads (the «لازم نیست
+          // همه‌چیز را یک‌باره حل کنی» + pool-line transcript failures).
+          topic === 'gig_economy' ||
+          topic === 'cooking' ||
+          topic === 'fitness' ||
+          topic === 'social_comparison' ||
+          topic === 'loneliness_online' ||
+          topic === 'loneliness_new_city' ||
+          topic === 'money' ||
+          topic === 'sleep' ||
+          topic === 'work' ||
+          topic === 'sadness' ||
+          topic === 'grief' ||
+          topic === 'grief_hope' ||
+          topic === 'grieving' ||
+          topic === 'anxiety' ||
+          topic === 'stress' ||
+          topic === 'self_esteem' ||
+          topic === 'motivation' ||
+          topic === 'anger' ||
+          topic === 'fear' ||
+          topic === 'overwhelmed' ||
+          topic === 'health' ||
+          topic === 'school' ||
+          topic === 'need' ||
+          topic === 'family' ||
+          topic === 'family_conflict' ||
+          topic === 'knowledge' ||
           // App-command pool lines already carry the honest pointer to the
           // real UI control; humor or warmth coloring would replace the
           // "turn on ambient sound" reply with a tone line and re-break
@@ -380,7 +445,7 @@
       // gates the answer, so these framings only open the door.
       const en =
         // eslint-disable-next-line max-len
-        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we)|is it|is there|is .{0,18} really|really (?:the|a|an|real)|actually work|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply)\b/i;
+        /\b(?:tell me|explain|how (?:can|do|should|to|long|much|many|does|did)|advice|tips|learn|what (?:is|are)|who (?:is|was|has|won)|teach me|guide me|ways? to|strategies? for|manage|practice|recommend|suggest|which|should i (?:buy|get|use|start|learn|try)|buying guide|buying advice|best (?:camera|cameras|laptop|laptops|phone|phones|headphones?|earbuds?|vpn)|where (?:can|to|do|does|is|are|did|was|were) (?:i )?buy|where to buy|where (?:should|can|do) i (?:put|park|keep|store|start|begin)|compare prices|which site|marketplace|app store|cafe bazaar|myket|download apps|price comparison|movies?|games?|series|anime|career|major|profession|about|why|does it|did it|do you think|will (?:it|they|this|that|ai|we|chatbots?|robots?|automation)|is it|is there|is .{0,10} normal|is .{0,18} really|really (?:the|a|an|real)|actually (?:close|real|possible|here)|actually work|worth (?:it|my|your) time|worthwhile|ask (?:her|him|someone|them) out|ask out|exactly|in simple terms|in simpler|simplify|make it simpler|like that|similar|another|one more|what about|so how|but how|how do we|how do they|best stack|best language|simply|name (?:some|a few|me|the|your)|list (?:some|a few|me|the)|jobs? (?:in|by|of) 20\d\d|will exist in 20\d\d|in 203\d|by 203\d|        careers? in 20\d\d|what (?:jobs|careers|skills) (?:will|would|should)|what .{0,18}? skills (?:matter|will|would|should))\b/i;
       // Only genre words that commonly appear without a فیلم/سریال prefix
       // are listed here (انیمیشن, مستند). Thriller queries ("فیلم هیجانی",
       // "تریلر معرفی کن") already carry فیلم/پیشنهاد/معرفی, and standalone
@@ -390,10 +455,19 @@
       // generic shopping boundary pool. Bare "کدوم/کدام" stays OUT on
       // purpose: it is too common in personal disclosures ("استرس دارم
       // کدوم مسیر رو برم") and would let the knowledge rule hijack lived
-      // emotions.
+      // emotions. A comparison suffix ("کدوم بهتره", "کدام بهتر است")
+      // turns it into a genuine either-or question ("بین ری اکت و ویو
+      // کدوم بهتره؟"), which the facts answer. "تعریف کن"/"تعریف بکن"
+      // open story and definition requests ("یه داستان ترسناک تعریف
+      // کن"), and a «یه/یک داستان» noun phrase marks a story request;
+      // the lookup itself still gates the answer, so a compliment like
+      // "از من تعریف کن" (no fact matches) never reaches the shelf.
+      // «چرا» (why) is the Persian twin of the English "why" framing
+      // («چرا تورم بالاست»), guarded with (?!\p{L}) so it never opens
+      // the door from inside a word like «چراغ» (lamp).
       const fa =
         // eslint-disable-next-line max-len
-        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است)/u;
+        /(?:درباره|راجع به|توضیح|چطور|چگونه|چیست|چیه|چند|چقدر|کجاست|کجا|کی بود|کیه|کی هست|چیا هستن|چی هستن|چیاست|راهنمایی|یاد بگیرم|کنترل کنم|مدیریت کنم|برام بگو|نظرت|روش|آموزش|معرفی|پیشنهاد|فیلم|سریال|بازی|شغل|رشته|مهارت|مهارت ها|مهارتها|مهارت های|مهارت‌های|دانشگاه|انیمیشن|مستند|بخرم|بگیرم|هندزفری|فیلترشکن|وی پی ان|مقایسه|قیمت|کافه بازار|مایکت|اپ استور|دانلود اپ|نصب اپ|ساده بگو|ساده بگی|ساده‌تر بگو|ساده تر بگو|ساده‌تر بگی|ساده توضیح|واقعیه|یعنی چی|کدومه|کدام است|(?:کدوم|کدام).{0,6}بهتر|تعریف کن|تعریف بکن|(?:یه|یک).{0,4}داستان|داستان.{0,10}(?:بگو|تعریف کن|برام)|اسم.{0,8}(?:چند|چندتا|یه|یک|برام|بگو)|چندتا.{0,10}(?:یوتیوبر|کانال|بازی|فیلم|سریال|آهنگ|کتاب)|طرز تهیه|طرز پخت|چطور درست|چگونه درست|چطور پخته|چگونه پخته|چه کاری (?:می‌کنه|میکنه|می کند)|چیکار (?:می‌کنه|میکنه)|کارش چیه|وظیفه‌اش چیه|چه نقشی دارد|انیمه|دیدی|دیدم|شنیدی|شنیدم|بیکار میکنه|بیکار کنه|خواستگاری|(?:بچه|نوزاد|نوزادم|بچهم|کودکم).{0,14}(?:نمی‌خوابه|نمیخوابه|نخوابیده)|ارزش داره|ارزششو داره|دوست پیدا کردن|چرا(?!\p{L}))/u;
       return en.test(text) || fa.test(text);
     },
 
@@ -413,7 +487,7 @@
     _isPersonalProcessQuestion(text) {
       const en =
         // eslint-disable-next-line max-len
-        /\b(?:how (?:can|do|should|could|would) i\b|how to\b|what (?:should|can|do) i\b|what (?:should|can|do) we\b|can you help me\b|do you think i can\b|will i\b|can i\b)/iu;
+        /\b(?:how (?:can|do|should|could|would) i\b|how to\b|what (?:should|can|do) i\b|what (?:should|can|do) we\b|can you help me\b|do you think i can\b|will i\b|can i\b|should i\b|could i\b|would i\b|do i need to\b|is that (?:a|an|ok|okay|normal|bad|true|enough|fair|too much)\b|is this (?:normal|ok|okay|bad|safe|worth|too much)\b|is it (?:ok|okay|normal|bad|too much|worth it|safe)\b|right\?|isn'?t it\?)/iu;
       // Only first-person subjunctive forms count: «شه/بشه/شود» are
       // third-person and would let a genuine new question like «چطور
       // میشه؟» (how is that possible?) be hijacked by an old subject.
@@ -422,7 +496,7 @@
       // «باید برم» (I have to go).
       const fa =
         // eslint-disable-next-line max-len
-        /(?:چطور|چگونه|چجوری|چی جوری|چه جوری|چطوری)\s*.{0,40}?(?:کنم|بکنم|بزنم|برم|بیام|بگم|بگویم|بگیرم|بدم|بردارم|بذارم|بگذارم|بشوم|بشم|بخوام|بخواهم|ببینم|بفهمم)|(?:می‌خوام|میخوام|دلم می‌خواد|دلم میخواد).{0,20}(?:کنم|بکنم)|(?:باید|می‌تونم|میتونم|بتونم).{0,14}(?:بدم|بکنم|کنم|جبران کنم|درستش کنم)/u;
+        /(?:چطور|چگونه|چجوری|چی جوری|چه جوری|چطوری)\s*.{0,40}?(?:کنم|بکنم|بزنم|برم|بیام|بگم|بگویم|بگیرم|بدم|بردارم|بذارم|بگذارم|بشوم|بشم|بخوام|بخواهم|ببینم|بفهمم|ببرم|ببرمش|صبر کنم|صبرکنم|برگردم|برگردم سر کار)|(?:می‌خوام|میخوام|دلم می‌خواد|دلم میخواد).{0,20}(?:کنم|بکنم)|(?:باید|می‌تونم|میتونم|بتونم).{0,18}(?:بدم|بکنم|کنم|جبران کنم|درستش کنم|ببرم|ببرمش|صبر کنم|صبرکنم|نگهش دارم|نگهشدارم|برم|بروم|برگردم)|(?:طبیعیه|طبیعی(?:ه|ست| هست| نیست)|عادی(?:ه|ست| هست| نیست)|نرماله)\s*.{0,14}(?:این|که|برام|من|الان)|(?:کنم|بکنم|بذارم|بزنم|برم|ببرمش|برگردم|بروم)[؟?]$|(?:کنم|بکنم|بذارم|بزنم|ببرمش|برگردم|بروم).{0,8}(?:بهتره|بهتر است|عاقلانه|خوبه|خوب است|درسته|به درد می‌خوره)[؟?]?$|(?:برگردم|بروم|برم|بیام).{0,16}?(?:بهتره|بهتر است|عاقلانه|خوبه|درسته)[؟?]?$|(?:درسته|درست نیست|مگه نه|بله نه)[؟?]?$/u;
       return en.test(text) || fa.test(text);
     },
 

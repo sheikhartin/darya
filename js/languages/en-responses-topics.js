@@ -312,6 +312,103 @@
       'Has one of those topics become more important since you mentioned it?',
       'Which detail from the conversation feels clearest to you now?',
       'Where would you like the recap to lead next?'
+    ],
+    // Follow-up questions for the 2026 persona round: every new topic
+    // (pet care, gaming, sports talk, boundaries, friendship, apology
+    // advice, dating apps, fitness, comparison, gig economy, parenting,
+    // health pain, grief hope, learning advice) needs a topic-specific
+    // question so a pronoun-drop follow-up ("she stopped eating", "I
+    // used to play until 3am") keeps its thread instead of falling to
+    // the unknown pool (see _subjectContinuationReply).
+    pet_care: [
+      'Has her behavior changed suddenly, or has it been building up?',
+      'What does she do differently now compared to before?',
+      'Have you been able to talk to a vet about what you are seeing?',
+      'What does she seem to need most when she is like this?'
+    ],
+    gaming: [
+      'What does gaming give you that feels hard to find elsewhere?',
+      'Is the time spent on games becoming a source of stress for you?',
+      'What would a healthier balance with gaming look like for you?',
+      'Do you feel in control of when you play, or does it decide for you?'
+    ],
+    sports_talk: [
+      'Was the result the frustrating part, or something about how the team played?',
+      'What do you wish the manager or the players had done differently?',
+      'Does the game stay with you after the final whistle?',
+      'What keeps you coming back to watch even after losses like that?'
+    ],
+    boundaries: [
+      'Which relationship makes setting a boundary feel hardest right now?',
+      'What do you fear might happen if you said no?',
+      'What would a first small boundary look like, one you could actually keep?',
+      'How does your body react when you imagine asserting that boundary?'
+    ],
+    friendship: [
+      'What kind of friendship are you missing most right now?',
+      'Where have you looked for connection so far, and how did it feel?',
+      'What makes someone feel easy to be around for you?',
+      'Is there one person you could reach out to this week, even briefly?'
+    ],
+    apology_advice: [
+      'What do you most want them to hear when you apologize?',
+      'Are you more worried about the words or about how they might react?',
+      'What would a sincere apology need to include for you to feel it landed?',
+      'How important is this relationship to you compared with being right?'
+    ],
+    dating_apps: [
+      'What do you actually want from dating right now?',
+      'How do you feel about yourself after a long swipe session?',
+      'Would a break change anything, or is the feeling the same offline?',
+      'What kind of connection would make the effort feel worth it?'
+    ],
+    fitness: [
+      'What changed your mind about wanting to start now?',
+      'What feels like the biggest barrier between you and the gym?',
+      'What kind of movement would you actually look forward to?',
+      'Who or what could make the first visit feel less intimidating?'
+    ],
+    comparison: [
+      'What do you hope the better option will give you?',
+      'When you compare like this, what is really at stake for you?',
+      'Is there a choice that feels right in your gut despite the specs?',
+      'What would you tell a friend making the same comparison?'
+    ],
+    social_comparison: [
+      'Whose life are you measuring yours against?',
+      'What do you assume about their life that you cannot actually see?',
+      'What would it feel like to compare yourself to who you were a year ago?',
+      'What part of your own life gets forgotten when you look at theirs?'
+    ],
+    gig_economy: [
+      'What drew you to this kind of work in the first place?',
+      'What is the hardest part of the uncertainty for you?',
+      'What would make the income feel a little more predictable?',
+      'What do you want this work to make possible for you?'
+    ],
+    parenting: [
+      'What part of parenting has surprised you the most?',
+      'When do you feel most like you are doing it right?',
+      'What support would make the hard moments feel lighter?',
+      'What do you need for yourself to refuel as a parent?'
+    ],
+    health_pain: [
+      'When did the pain first show up, and has it changed since?',
+      'Does anything make it better or worse during the day?',
+      'Have you been able to check in with a doctor about it?',
+      'How is it affecting the rest of your day-to-day life?'
+    ],
+    grief_hope: [
+      'What gives you a small thread of hope right now?',
+      'Is there a version of feeling better that feels believable to you?',
+      'What helped you through a hard time before?',
+      'What would one gentle step forward look like for you?'
+    ],
+    learning_advice: [
+      'Which skill feels most exciting to learn first?',
+      'How much time could you realistically give each week?',
+      'What has helped you learn things well in the past?',
+      'What would a first small win in this skill look like?'
     ]
   };
   R.blendResponses = {

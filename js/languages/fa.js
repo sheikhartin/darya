@@ -87,10 +87,12 @@
     pronounMap,
     exitKeywords,
     exitStoryPattern,
+    exitFalsePositivePattern,
     wellBeingPattern,
     insultPattern,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
     stopWords,
@@ -194,6 +196,7 @@
     smalltalk: R.smalltalk,
     emojiResponses: R.emojiResponses,
     gratitudeResponses: R.gratitudeResponses,
+    fatigueResponses: R['ruleFatigue'],
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
     humanTouch: R.humanTouch,
@@ -201,6 +204,7 @@
     selfAwareness,
     exitKeywords,
     exitStoryPattern,
+    exitFalsePositivePattern,
     exitConfirmMessages: R.exitConfirmMessages,
     greetings: R.greetings,
     greetingsPhase1: R.greetingsPhase1,
@@ -238,6 +242,7 @@
     topicRecoveryResponses: R.topicRecoveryResponses,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
     // Persian test-input signals ("دارم تستت می‌کنم"). The English
@@ -251,6 +256,9 @@
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
     ruleTellJoke: R.ruleTellJoke,
+    ruleTellStory: R.ruleTellStory,
+    ruleTellStoryHorror: R.ruleTellStoryHorror,
+    ruleTellStoryComedy: R.ruleTellStoryComedy,
     ruleShoppingHelp: R.ruleShoppingHelp,
     // Recommendation follow-ups ("anything similar but darker?", «بهتره
     // انیمیشن هم باشه») continue the same shelf warmly when the follow-up
@@ -319,7 +327,10 @@
         // read as the age form, which is the natural reading.
         /(?<!\p{L})(?:(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)|(?:و\s*)?([۰-۹0-9]{1,3})\s*(?:(?:سال(?:ه|م|مه)?)\s*(?:دارم|هستم|ام)|سالمه|سالم))(?![\p{L}۰-۹])/iu,
       ageQuestion:
-        /(?<!\p{L})(?:چند سالمه|سنم چنده|سنم چند|چند ساله‌ام|چند ساله ام|یادت.{0,10}چند سالمه|یادت.{0,10}سنم)(?!\p{L})/iu,
+        // «یادته که گفتم ... چند سالمه» (with up to 30 chars between the
+        // recall cue and the age phrase) was missed by the old 10-char
+        // gap, so the transcript recall fell through to the name capture.
+        /(?<!\p{L})(?:چند سالمه|سنم چنده|سنم چند|چند ساله‌ام|چند ساله ام|یادت.{0,30}?(?:چند سالمه|سنم|سن من|چند ساله)|یادت.{0,30}?سالم)(?!\p{L})/iu,
       // Both the "اسمم X" form and the copular "من X هستم" form are
       // matched. The copular form is the natural Persian self-introduction
       // ("من آرتین هستم") and is deliberately constrained to letters
@@ -337,7 +348,11 @@
         // branches have no recall ambiguity. The «اسممو سارا بذار»
         // branch covers the preposed form only (name before بذار); the
         // postposed «اسممو بذار سارا» is deliberately out of scope.
-        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?|من\s+(?!چیه|چیست|چی|کیه|کیست)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
+        // Question words (کی/کسی/آدم/آد) are also rejected up front so a
+        // recall like «من کی هستم» can never store «کی» as a name (the
+        // transcript's worst failure); the nameStopwords list below is
+        // the belt-and-suspenders second guard.
+        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
       // Group 3 of nameStatement is the glued first-person copula
       // («من بارانم»); the handler reads this flag instead of hardcoding
       // the group index (see responder-profile.js).
@@ -451,6 +466,23 @@
         // never a name. «خود» is what the attached-copula branch captures
         // from «من خودم».
         'خود',
+        // Question/identity words that must never be stored as names:
+        // «من کی هستم» captured «کی», and «فکر میکنی من آدم خوبیم؟»
+        // captured «آد» (the attached copula ate the tail). Both were
+        // top transcript failures.
+        'کی',
+        'کیه',
+        'کیست',
+        'کیا',
+        'کسی',
+        'آد',
+        'آدم',
+        'انسان',
+        'بشر',
+        'خوبیم',
+        'آدم خوب',
+        'آدم خوبی',
+        'آدم‌خوب',
         // First-person verb stems that glue to the attached copula:
         // «من میرم», «من میخوام», «من هستم» say what the speaker does or
         // is, never who they are. The stems are the forms captured before
@@ -530,7 +562,11 @@
       // handled before «ه» so «مهندس هستم» strips the full copula.
       nameCopulaStrip: /(?:هستم|هست|ست|ه)$/u,
       nameQuestion:
-        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,8}اسمم|یادت میمونه اسمم|یادت می‌مونه اسمم)(?!\p{L})/iu
+        // «من کی هستم» and «من کی بودم» are self-identity questions, not
+        // disclosures; combined with the recall cues they must answer from
+        // the stored profile (or honestly admit nothing is stored), never
+        // capture «کی» as a name.
+        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the

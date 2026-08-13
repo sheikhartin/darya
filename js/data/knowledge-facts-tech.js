@@ -181,6 +181,11 @@
         'راه کسب درآمد',
         'کسب درآمد از برنامه نویسی',
         'درآمد از اینترنت',
+        'پول دربیارم',
+        'پول در بیارم',
+        'پول درآرم',
+        'پول در بیارم از اینترنت',
+        'از اینترنت پول دربیارم',
         'how to make money online',
         'side income for developers',
         'how to earn money as a programmer',
@@ -587,6 +592,59 @@
       ],
       fa: 'الیزا (ELIZA) نخستین چت‌بات تاریخ است که جوزف وایزنبام در سال ۱۹۶۶ در آزمایشگاه هوش مصنوعی MIT ساخت. الیزا با الگوهای ساده کار می‌کرد: برنامه‌ی DOCTOR جمله‌ی کاربر را با جابه‌جایی ضمیرها به یک سؤال بازمی‌گرداند، مثلاً «غمگینم» به «چرا غمگینی؟» تبدیل می‌شد. نکته‌ی جالب تاریخ: خود وایزنبام از اینکه خیلی از کاربران به الیزا وابسته می‌شدند و با آن مثل یک درمانگر واقعی حرف می‌زدند شگفت‌زده شد. همان دلیلی است که دریا هم با روش بازتاباندن حرف‌های تو طراحی شده است.',
       en: 'ELIZA was the first chatbot in history, built by Joseph Weizenbaum at the MIT AI lab in 1966. It worked with simple pattern matching: the DOCTOR script turned the user sentence into a question by swapping pronouns, so "I am sad" became "Why are you sad?". The fascinating part of the story is that Weizenbaum was genuinely surprised how emotionally attached users became, opening up to ELIZA about their lives. That is exactly why Darya is designed around reflecting your own words back to you.'
+    },
+    {
+      id: 'developer_salary',
+      keywords: [
+        'درآمد برنامه‌نویس',
+        'درآمد برنامه نویس',
+        'حقوق برنامه‌نویس',
+        'حقوق برنامه نویس',
+        'درآمد برنامه نویسی',
+        'برنامه‌نویس تو ایران چقدر',
+        'برنامه نویس تو ایران چقدر',
+        'developer salary',
+        'developer salary in iran',
+        'programmer salary',
+        'how much do developers earn',
+        'how much do programmers earn',
+        'how much does a developer earn',
+        'how much does a programmer earn'
+      ],
+      weak: ['برنامه‌نویس', 'برنامه نویس', 'developer', 'programmer'],
+      weakSafe: false,
+      hints: ['درآمد', 'حقوق', 'دستمزد', 'salary', 'income', 'earning', 'چقدر'],
+      fa: 'درآمد برنامه‌نویس‌ها در ایران خیلی متفاوت است و به شهر، سطح تجربه و نوع همکاری بستگی دارد: کارمند حقوق‌بگیر (شرکت‌های داخلی)، دورکاری با شرکت‌های خارجی (که معمولاً بیشترین درآمد را دارد) و فریلنسری. به‌جای عدد ثابت، بهتر است به دو اصل نگاه کنی: اول، حقوق دلاری و ریموت برای توسعه‌دهنده‌های باتجربه می‌تواند چند برابر حقوق داخلی باشد؛ دوم، در هر مسیری، نمونه‌کار و سابقه‌ی پروژه واقعی تعیین‌کننده‌ی پیشنهاد مالی است، نه فقط مدرک.',
+      en: 'Developer salaries in Iran vary widely depending on the city, experience level, and type of engagement: salaried roles at local companies, remote work for foreign companies (usually the highest earning path), and freelancing. Instead of one fixed number, two principles matter more: remote USD-paying roles for experienced developers can be several times local salaries, and in every path a portfolio of real projects, not just a degree, determines the offer.'
+    },
+    {
+      id: 'react_vs_vue',
+      keywords: [
+        'ری اکت یا ویو',
+        'ری‌اکت یا ویو',
+        'ری اکت و ویو',
+        'ری‌اکت و ویو',
+        'بین ری اکت و ویو',
+        'بین ری‌اکت و ویو',
+        'react or vue',
+        'react vs vue',
+        'vue or react',
+        'vue vs react',
+        'react and vue',
+        'which is better react or vue'
+      ],
+      weak: ['ری‌اکت', 'ری اکت', 'react', 'vue', 'ویو'],
+      weakSafe: false,
+      hints: [
+        'کدوم بهتره',
+        'کدام بهتر',
+        'بهتره',
+        'یاد بگیرم',
+        'فریم‌ورک',
+        'framework'
+      ],
+      fa: 'ری‌اکت و ویو هر دو فریم‌ورک‌های جاوااسکریپتی قدرتمند برای رابط کاربری‌اند و «بهتر» به هدف تو بستگی دارد. ری‌اکت اکوسیستم بزرگ‌تری دارد، شغل‌های بیشتری برایش هست و انعطاف بالا می‌دهد (خودت کتابخانه‌ها را انتخاب می‌کنی). ویو یادگیری آسان‌تری دارد، مستندات روان‌تری دارد و برای شروع سریع و پروژه‌های متوسط عالی است. اگر هدف‌ات استخدام سریع است: ری‌اکت. اگر تازه‌کاری و می‌خواهی سریع نتیجه ببینی: ویو. هر دو مسیر درستی‌اند و هیچ‌کدام اشتباه نیست.',
+      en: 'React and Vue are both powerful JavaScript frameworks for building user interfaces, and better depends on your goal. React has a larger ecosystem and more job openings, with high flexibility since you pick the libraries yourself. Vue is easier to learn, has friendlier documentation, and is excellent for a quick start and medium projects. If your goal is fast hiring: React. If you are a beginner who wants to see results quickly: Vue. Both are valid paths, and neither is a wrong choice.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

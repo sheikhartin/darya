@@ -15,7 +15,8 @@
     BOREDOM_SKIP_CHANCE,
     WELLBEING_CHECK_TURNS,
     BOREDOM_CHECK_INTERVAL,
-    BOREDOM_MIN_TURNS
+    BOREDOM_MIN_TURNS,
+    WORD_REPETITION_THRESHOLD
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
@@ -38,6 +39,18 @@
     'professional_boundary'
   ]);
 
+  // The frustration/insult and word-repetition overrides must never
+  // replace the reply of a matched substantive rule. The transcript's
+  // top complaint was that a health complaint with an insult attached
+  // («میگم دستم درد میکنه... الاغ»), a greeting wrapped in frustration
+  // («احمق، سلام کردم»), or an angry real question all got a canned
+  // "I see you are frustrated" line instead of an answer. When ANY rule
+  // matched, the engine already has a substantive reply ready (health,
+  // greeting, knowledge, money, ...); the de-escalation overrides are
+  // reserved for turns where NO rule matched (pure insults, venting).
+  // A turn that matched a rule is never "topic-less", so gating on
+  // matchedRule is deterministic and language-agnostic.
+
   // Personal/emotional topics that must never be hijacked by the
   // knowledge-shelf override. A disclosure like "sorry. I am stressed
   // about my business" matched the apology rule and should stay with
@@ -53,6 +66,13 @@
     'self_esteem',
     'motivation',
     'health',
+    // health_pain joins the blocked set: a pain or fatigue complaint
+    // ("my hand hurts", "why am i always tired", «دستم درد میکنه»,
+    // «چرا همیشه خسته‌ام؟») is a lived body disclosure with its own
+    // empathetic pool, so the knowledge shelf must never replace it with
+    // a generic health fact. The "why" framing in the EN request pattern
+    // used to let the shelf hijack fatigue questions.
+    'health_pain',
     'need',
     'feeling',
     'joy',
@@ -90,7 +110,14 @@
     'harassment_threat',
     'divorce',
     'tech_frustration',
-    'generalization'
+    'generalization',
+    // Short-story requests ("tell me a horror story", «یه داستان
+    // ترسناک بگو») are answered from the genre pools of the story rule
+    // (see _respondWithRule for topic 'smalltalk_story'), never from the
+    // knowledge shelf: the shelf has a single horror story and would
+    // replace the pool reply, which breaks genre selection and the
+    // "another one" follow-up.
+    'smalltalk_story'
   ]);
 
   Object.assign(global.DaryaResponseEngine.prototype, {
@@ -390,7 +417,80 @@
         const factsReply = handleFunFactsRequest(this, matchingText);
         if (factsReply) {
           reply = factsReply;
+          // Remember that the last entertainment reply was a fun fact so
+          // the sequential follow-up ("another one", «یکی دیگه») can
+          // re-answer from the same fun-fact shelf instead of bouncing to
+          // a generic fallback.
+          this._lastEntertainmentKind = 'fact';
+          this._lastEntertainmentTurn = this.memory.turnCount;
           _overrideFired = true;
+        }
+      }
+
+      // Sequential entertainment follow-up: a bare "another one"/«یکی
+      // دیگه»/«بازم» right after a joke, story, or fun-fact reply must
+      // continue that same kind from its remembered pool, not fall to a
+      // generic fallback (the "another one -> another joke" context
+      // requirement). The kind and turn are remembered when the original
+      // reply was generated (see _respondWithRule and the fun-facts
+      // override above). The follow-up phrase is matched only when no
+      // rule already claimed the turn, and only within a few turns of the
+      // original reply, so a mid-conversation "one more" that means
+      // something else stays untouched.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !_overrideFired &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !matchedRule &&
+        this._lastEntertainmentKind &&
+        this.memory.turnCount - this._lastEntertainmentTurn <= 3 &&
+        (this.lang.code === 'fa'
+          ? // eslint-disable-next-line max-len
+            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|بازم بگو|باز هم بگو|دوباره|دوباره بگو|یه بار دیگه|یه بار دیگه بگو|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
+              matchingText
+            )
+          : /^(?:another one|one more|another|again|once more|one more time|more please|another please)[.!?]*$/i.test(
+              matchingText
+            ))
+      ) {
+        const kind = this._lastEntertainmentKind;
+        if (kind === 'joke' && this.lang.ruleTellJoke) {
+          reply = this._pickVaried(this.lang.ruleTellJoke, {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          });
+          this._lastEntertainmentTurn = this.memory.turnCount;
+          _overrideFired = true;
+        } else if (kind === 'story') {
+          const genre = this._lastStoryGenre;
+          const pool =
+            genre === 'horror'
+              ? this.lang.ruleTellStoryHorror
+              : genre === 'comedy'
+                ? this.lang.ruleTellStoryComedy
+                : this.lang.ruleTellStory;
+          if (pool && pool.length > 0) {
+            reply = this._pickVaried(pool, {
+              ignoreQuestionBudget: true,
+              trackQuestions: false
+            });
+            this._lastEntertainmentTurn = this.memory.turnCount;
+            _overrideFired = true;
+          }
+        } else if (kind === 'fact') {
+          // Re-run the fun-facts handler with a request framing that
+          // passes its gate ("another fact", «یه حقیقت دیگه»).
+          const followupText =
+            this.lang.code === 'fa' ? 'یه حقیقت دیگه' : 'another fact';
+          const factsReply = handleFunFactsRequest(this, followupText);
+          if (factsReply) {
+            reply = factsReply;
+            this._lastEntertainmentTurn = this.memory.turnCount;
+            _overrideFired = true;
+          }
         }
       }
 
@@ -424,9 +524,52 @@
         // question. The lookup itself still gates the answer.
         (!KNOWLEDGE_BLOCKED_PERSONAL.has(matchedRule?.topic) ||
           (matchedRule?.topic === 'work' &&
-            /\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
+            (/\b(?:ai\b|artificial intelligence|robots?|automation|automated|take my job|replace me)\b/i.test(
               matchingText
-            ))) &&
+            ) ||
+              // Persian AI/future-proofing phrasing («هوش مصنوعی شغلم رو
+              // بگیره», «آینده‌پذیر کنم») never contains the ASCII word
+              // "ai", so the English bypass above cannot fire for it:
+              // the Unicode-aware alternative opens the work block for
+              // the same world-question intent. Only future/question
+              // forms count («بگیره/می‌گیره/بشه/کنم»), never a past-tense
+              // personal report («ماه پیش هوش مصنوعی شغلم رو گرفت»),
+              // which stays on the empathetic work thread.
+              // eslint-disable-next-line max-len
+              /(?:هوش مصنوعی|ربات).{0,14}(?:می‌گیره|میگیره|بگیره|نشه|شه|بشه|کنم|کنه|می‌کنه|میکنه|جایگزین)|(?:آینده‌پذیر|آینده‌پذیر|آینده دار|بیکار شدنم|بیکار شم|بیکار نشم|آینده شغلی|بازار کار|چه شغلی|چطوره|چگونه است|چطور است|چطوری)(?!\p{L})/iu.test(
+                matchingText
+              ) ||
+              // A salary question about a profession ("درآمد یه
+              // برنامه‌نویس تو ایران چقدره؟", "how much does a developer
+              // earn?") is a genuine factual question, not a work-stress
+              // disclosure: the work rule must not block the dev-salary
+              // fact from answering it. The boundary is (?!\p{L}) rather
+              // than \b because \b is ASCII-only in JavaScript: after
+              // Persian letters like «درآمد» it never fires.
+              /(?:درآمد|حقوق|پول|قیمت|دستمزد|earn|earning|income|salary|wage|pay)(?!\p{L})/iu.test(
+                matchingText
+              ))) ||
+          // The money rule is deliberately personal (poverty, debt, no
+          // money), so its topic sits in KNOWLEDGE_BLOCKED_PERSONAL.
+          // But its keyword list also catches world-economics questions
+          // («چرا تورم بالاست», "why is inflation high") because
+          // «تورم»/"inflation" are both a personal worry word and a
+          // world topic. When the message names an external economic
+          // topic (inflation, prices, market, gold, oil, crypto) and
+          // reads as a question, the shelf must answer instead of the
+          // financial-stress pool. The lookup itself still gates the
+          // answer, and personal disclosures («پول ندارم», «قرضم
+          // زیاده») never name those markers, so they stay empathetic.
+          (matchedRule?.topic === 'money' && // eslint-disable-next-line max-len
+            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate)\b/i.test(
+              matchingText
+            ) ||
+              // Persian world-economics markers (normalized forms for
+              // تورم/بورس/بیت‌کوین/کریپتو/صندوق بین‌المللی).
+              // eslint-disable-next-line max-len
+              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول)(?!\p{L})/iu.test(
+                matchingText
+              )))) &&
         DaryaKnowledge &&
         DaryaKnowledge.lookup &&
         this._isKnowledgeRequest(matchingText);
@@ -527,6 +670,14 @@
           this._lastKnowledgeTopic = refined.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           this._lastKnowledgeText = refined.text;
+          // Keep the knowledge thread as the active subject (see the rule
+          // path in responder-rules.js) so short follow-up statements
+          // continue it instead of bouncing to the unknown pool.
+          this.memory.currentSubject = {
+            topic: 'knowledge',
+            entityRefs: [refined.topic],
+            since: this.memory.turnCount
+          };
           _overrideFired = true;
         } else if (
           // A recommendation follow-up that names no genre word
@@ -534,13 +685,17 @@
           // the genre lookup misses) still deserves a warm continuation
           // of the same shelf instead of a generic fallback. Question
           // words like «کدوم/بهترین» and format-feedback requests stay
-          // out: they are genuine questions, not rec refinements.
+          // out: they are genuine questions, not rec refinements. The
+          // not-too branch catches a refinement of the LAST answer
+          // ("something not too gory though", «ولی خیلی خونین نباشه»)
+          // that names no new topic word of its own.
           (!this.lang.formatFeedbackPattern?.test(matchingText) &&
             // eslint-disable-next-line max-len
-            /(?:similar|like that|another|one more|more like|darker|best story|which one|any other|others|in that (?:style|vein|tone)|same (?:style|tone|vibe)|recommend (?:me )?another)/iu.test(
+            /(?:similar|like that|another|one more|more like|darker|best story|which one|any other|others|in that (?:style|vein|tone)|same (?:style|tone|vibe)|recommend (?:me )?another|not too|nothing too|something (?:less|more|not)|anything but|a bit (?:less|more)|a little (?:less|more)|not as|less (?:scary|dark|violent|gory)|kinder|gentler|softer|lighter|shorter|a shorter|something like)/iu.test(
               matchingText
             )) ||
-          /(?:مشابه|شبیه|مثل همین|یکی دیگه|یکی دیگر|همینطور|همین طور)/u.test(
+          // eslint-disable-next-line max-len
+          /(?:مشابه|شبیه|مثل همین|یکی دیگه|یکی دیگر|همینطور|همین طور|خیلی.{0,6}نباشه|خیلی.{0,6}نشه|خیلی.{0,6}نشد|کمی.{0,6}تر|کوتاه‌تر|سبک‌تر|کوتاه‌تر باشه|سبک‌تر باشه|ترسناک نباشه|خونین نباشه|همون.{0,6}باشه|همون.{0,6}نباشه|ولی.{0,10}(?:نباشه|نشه|نشد))/u.test(
             matchingText
           )
         ) {
@@ -554,10 +709,16 @@
           // («فکر می‌کنی جایگزین کامپیوترای معمولی بشه؟», "do you think
           // it would replace them?") that has no topic word of its own:
           // acknowledge the thread explicitly instead of an evasive line.
-          /(?:will it|it will|they exist|actually|instead|rather than|what about|so if|so how|but how)/iu.test(
+          // "what did it show us" / «چی نشون داد به ما» are the same
+          // move right after a telescope or science answer: they carry no
+          // keyword of their own and must continue the last topic, never
+          // bounce to the honest-unknown pool.
+          // eslint-disable-next-line max-len
+          /(?:will it|it will|they exist|actually|instead|rather than|what about|so if|so how|but how|what did (?:it|they|that|we|you) (?:show|tell|find|see|learn|reveal)|what (?:has|have) (?:it|they|that) (?:shown|revealed|told|found)|what is (?:it|that) (?:showing|doing|about))/iu.test(
             matchingText
           ) ||
-          /(?:بشه|میشه|می‌شه|جایگزین|واقعا|واقعاً|وجود دارن)/u.test(
+          // eslint-disable-next-line max-len
+          /(?:بشه|میشه|می‌شه|جایگزین|واقعا|واقعاً|وجود دارن|چی (?:نشون|نشان) (?:داد|میده|می‌ده)|چه چیزی (?:نشون|نشان) (?:داد|میده|می‌ده)|چی دیدیم|چی (?:یاد گرفتیم|فهمیدیم)|چی رو (?:نشون|نشان) (?:داد|میده))/u.test(
             matchingText
           )
         ) {
@@ -613,7 +774,20 @@
         this.lang.wordRepetitionResponses
       ) {
         const repetition = this._detectWordRepetition(matchingText);
-        if (repetition) {
+        // A matched substantive rule (health, loneliness, ...) already
+        // has a caring reply ready; the repeated-word quote must never
+        // eat it («دلم درد میکنه» after «دستم درد میکنه» was quoted
+        // back as "you keep saying pain" instead of being heard). The
+        // one exception is a word repeated many times WITHIN this same
+        // message («غمگین غمگین غمگین غمگین»): that is a pure
+        // repetition signal, so naming the word still wins over the
+        // broad sadness reply.
+        if (
+          repetition &&
+          (!matchedRule ||
+            this._withinMessageRepetition(repetition.word, matchingText) >=
+              WORD_REPETITION_THRESHOLD)
+        ) {
           const pool = this.lang.wordRepetitionResponses;
           const template = this._pickVaried(pool);
           reply = template
@@ -639,6 +813,12 @@
         // about ELIZA or Darya's origin ("is ELIZA also dumb?"): a real
         // answer beats another canned "I see you are frustrated" line,
         // which was a top complaint from real transcripts.
+        // A matched substantive rule (health, greeting, knowledge, ...)
+        // likewise means the engine has a real answer ready: an insult
+        // attached to a question must never replace the answer with a
+        // de-escalation lecture (the transcript's «دستم درد میکنه الاغ»
+        // failure). Pure insults that match no rule still de-escalate.
+        !matchedRule &&
         matchedRule?.topic !== 'meta_feedback' &&
         matchedRule?.topic !== 'self_improvement' &&
         matchedRule?.topic !== 'about_eliza' &&
@@ -772,6 +952,20 @@
         // would double the acknowledgment and read as noise.
         !LIVED_TOPICS.has(matchedRule?.topic) &&
         matchedRule?.topic !== 'joy' &&
+        // Entertainment requests are not disclosures: asking for a scary
+        // story or a joke must never be answered with a worried "that
+        // sounds frightening" prefix, which reads as if Darya missed the
+        // request for entertainment.
+        matchedRule?.topic !== 'smalltalk_story' &&
+        matchedRule?.topic !== 'smalltalk_joke' &&
+        // Comparison questions ("تویوتا بهتره یا بوگاتی؟", "which is
+        // better, football or wrestling?") and crush confessions are
+        // opinion/experience questions, not emotional disclosures: a
+        // "من اینجا با تو هستم." grieving prefix on a car comparison
+        // reads as if Darya missed the question. Their pools ship their
+        // own strong openers, so no calibration prefix is needed.
+        matchedRule?.topic !== 'comparison' &&
+        matchedRule?.topic !== 'crush' &&
         !blendKey &&
         !isRepeatedGreeting &&
         !isSpamNoise

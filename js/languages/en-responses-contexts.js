@@ -280,6 +280,17 @@
     'What does this conflict feel like for you, and what would you most like to change?'
   ];
 
+  // A crush confession: falling for someone, often a friend or a
+  // relative of a friend. Non-judgmental, curious, and warm: the
+  // feeling itself is worth naming before any advice about confessing.
+  R['ruleCrush'] = [
+    'A crush is a sweet, slightly dizzying feeling, especially when it is someone you see often. What part of it feels closest to your heart?',
+    'When you feel this way, what goes through your mind: telling them, or keeping it to yourself?',
+    'This feeling is completely natural, even when it gets a little complicated. Where would you like to start?',
+    'Having this feeling means something in your heart has stirred. What draws you to this person?',
+    'Confessing might feel scary, but maybe the first step is understanding what you really want. What would that first step look like for you?'
+  ];
+
   // Harassment or threats directed at the USER (not at Darya herself): a
   // threatening DM, a stalker, blackmail, a hacked account. The reply
   // validates the fear, names safe concrete steps (block, report, tell

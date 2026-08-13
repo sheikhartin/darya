@@ -408,9 +408,13 @@ test('repetition: seeded deterministic run has fixed variety count', () => {
     for (let i = 0; i < 10; i += 1) {
       seen.add(engine.respond('I feel anxious and stressed'));
     }
+    // The anxiety pool grew during the 1.2.0 content expansion (rule
+    // lines plus topic-specific follow-ups), so the deterministic seed
+    // now surfaces 8 distinct replies; the lock tracks regressions that
+    // shrink variety back down.
     assert.ok(
-      seen.size >= 5 && seen.size <= 6,
-      `expected 5-6, got ${seen.size}`
+      seen.size >= 7 && seen.size <= 9,
+      `expected 7-9, got ${seen.size}`
     );
   } finally {
     restore();
@@ -6924,7 +6928,11 @@ test('FA family conflict gets family-specific care, not a work question', () => 
   const reply = freshEngine(FA).respond('من با مامانم قهر هستم... چی کار کنم؟');
   assert.match(
     reply,
-    /قهر|مامان|مادر|خانواده|دلخوری|کدورت|نزدیک/iu,
+    // Every pool variant names the rift: the falling-out feeling
+    // (قهر/دلخوری/کدورت), the family bond (مامان/مادر/خانواده), or the
+    // fight itself (دعوا/زخمی). The bare «دعوا»/«زخمی» line must match
+    // too, or the unseeded pool pick flakes one run in four.
+    /قهر|مامان|مادر|خانواده|دلخوری|کدورت|نزدیک|دعوا|زخمی/iu,
     `family conflict should get family care, got: ${reply}`
   );
 });
@@ -7776,14 +7784,84 @@ test('genuine new questions are never hijacked by the active subject', () => {
   const en = freshEngine(EN);
   en.entityCallbackProbability = 0;
   en.respond('my girlfriend and I keep fighting');
-  const enReply = en.respond('what is the capital of France?');
+  const enReply = en.respond(
+    'what is the capital of the fictional planet Zorbus?'
+  );
   assert.ok(
     !topicPool(EN, 'relationship').some((line) => line === enReply),
     `a concrete new EN question must not be answered with a relationship follow-up, got: ${enReply}`
   );
+  // The question is deliberately fictional: the capitals fact answers
+  // real countries ("capital of France"), so a make-believe planet must
+  // keep the honest fallback and prove no subject hijack happens.
   assert.match(
     enReply,
     /answer|don'?t|not sure|interesting|worth|wiki|understand/iu,
     `a concrete new EN question keeps the honest fallback, got: ${enReply}`
+  );
+});
+
+test('continuation refreshes are bounded: a chatty unmatched user cannot keep a subject immortal', () => {
+  // The continuation refresh is capped (SUBJECT_CONTINUATION_MAX_REFRESHES)
+  // so a user who keeps adding unmatched statements cannot pin the
+  // conversation to one subject forever. After the cap the since stamp
+  // stops moving and the window check ages the thread out into the
+  // honest-unknown pool.
+  const engine = freshEngine(EN);
+  engine.respond('I am so lonely since my partner left me');
+  let refreshesSeen = engine.memory.currentSubject.continuationRefreshes || 0;
+  let sinceFroze = false;
+  let agedOut = false;
+  for (let i = 0; i < 14; i += 1) {
+    const before = engine.memory.currentSubject.since;
+    const reply = engine.respond(
+      'the silence keeps growing and the nights feel so long'
+    );
+    const after = engine.memory.currentSubject.since;
+    const refreshes = engine.memory.currentSubject.continuationRefreshes || 0;
+    if (after > before) {
+      refreshesSeen = refreshes;
+    }
+    if (refreshes >= 6) {
+      sinceFroze = true;
+    }
+    // The window check expires the subject into the unknown pool once
+    // the since stamp stops being refreshed: the reply is then no
+    // longer a loneliness follow-up.
+    if (sinceFroze && !topicPool(EN, 'loneliness').includes(reply)) {
+      agedOut = true;
+      break;
+    }
+  }
+  assert.ok(
+    refreshesSeen <= 6,
+    `the refresh budget must be capped, saw ${refreshesSeen} refreshes`
+  );
+  assert.ok(
+    agedOut,
+    'a chatty unmatched user must eventually age the subject out of the continuation pool'
+  );
+});
+
+test('a generic advice subject never blocks a fresh generic advice topic', () => {
+  // When the current subject is ITSELF generic (friendship), a
+  // subsequent "what should I do" turn must route to the what_do_i_do
+  // rule reply instead of being pinned to the stale friendship thread
+  // by the subject-preference guard.
+  const engine = freshEngine(EN);
+  engine.respond(
+    'why does making friends as an adult feel like a job interview'
+  );
+  assert.equal(engine.memory.currentSubject.topic, 'friendship');
+  const reply = engine.respond('what should I do');
+  const whatToDo = topicPool(EN, 'what_do_i_do');
+  assert.ok(
+    whatToDo.some((line) => reply.includes(line) || line.includes(reply)),
+    `a generic advice turn after a generic subject answers the advice pool, got: ${reply}`
+  );
+  assert.equal(
+    engine.memory.currentSubject.topic,
+    'what_do_i_do',
+    'the generic advice topic takes over the generic subject'
   );
 });

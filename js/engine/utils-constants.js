@@ -100,6 +100,20 @@
   // a disclosed subject ("سه ماه پیش از دنیا رفت" after a grief disclosure)
   // keeps the thread alive instead of being treated as an unknown topic.
   const SUBJECT_CONTINUATION_WINDOW = 4;
+
+  /**
+   * How many times a single subject may be extended by served
+   * continuations. Each extension refreshes the subject's since stamp,
+   * keeping a long-lived thread alive across many turns of unmatched
+   * statements. Without a cap, a chatty unmatched user could keep a
+   * subject immortal by never letting the window age out; with a cap,
+   * the thread lives for at most this many extensions plus the window
+   * (roughly 10 turns of active engagement), then the window check
+   * expires it and the engine falls back to the honest-unknown pool.
+   * A fresh subject (topic change) starts with a fresh budget, so
+   * legitimately long conversations are unaffected.
+   */
+  const SUBJECT_CONTINUATION_MAX_REFRESHES = 6;
   /**
    * Rule topics that are pure acknowledgments (yes/no/thanks/sorry) and
    * carry no conversational substance. They must never become the
@@ -113,6 +127,35 @@
     'negation',
     'gratitude',
     'apology'
+  ]);
+  /**
+   * Rule topics that are generic advice rules (procrastination
+   * "what should I do", what_do_i_do, friendship "how do adults make
+   * friends"). They can hijack a FRESH, more specific thread: inside
+   * a dating-app conversation «هر شب یه ساعت اسکرول میکنم» is about the
+   * app, and inside a pet thread «چه کار کنم راحت‌تر بشه» is about the
+   * pet. updateSubject keeps the specific subject while such a generic
+   * rule fires, and the subject-preference guard in responder-rules.js
+   * answers with the thread continuation instead of the generic line.
+   */
+  const GENERIC_ADVICE_TOPICS = new Set([
+    'procrastination',
+    'what_do_i_do',
+    'friendship'
+  ]);
+  /**
+   * Conversational openers (greeting and smalltalk exchanges). They are
+   * NOT content threads: "I keep thinking about my old apartment" right
+   * after a greeting is a fresh disclosure, so it must never be pinned
+   * to a "let us return to the topic" line. Shared by updateSubject and
+   * the subject-continuation path in responder-rules.js.
+   */
+  const OPENER_SUBJECT_TOPICS = new Set([
+    'greeting',
+    'smalltalk_howareyou',
+    'smalltalk_identity',
+    'smalltalk_capability',
+    'repeated_greeting'
   ]);
   const MIXED_SCRIPT_FOREIGN_MIN = 3;
   // A bilingual sentence must have a substantial foreign-script chunk
@@ -258,7 +301,10 @@
     ECHO_FRAGMENT_MAX_WORDS,
     ECHO_ANSWER_MIN_WORDS,
     SUBJECT_CONTINUATION_WINDOW,
+    SUBJECT_CONTINUATION_MAX_REFRESHES,
     FILLER_TOPICS,
+    GENERIC_ADVICE_TOPICS,
+    OPENER_SUBJECT_TOPICS,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,
     PERSIAN_DIGITS,

@@ -31,7 +31,18 @@
         'how to learn cooking',
         'how do i learn to cook',
         'beginner cooking',
-        'easy cooking'
+        'easy cooking',
+        // Beginner-at-cooking phrasings: "I am a beginner at cooking" and
+        // «تازه آشپزی رو شروع کردم» used to fall to opener_help or the
+        // generic learning_advice pool, not the cooking shelf.
+        'beginner at cooking',
+        'i am a beginner at cooking',
+        'where do i start cooking',
+        'start cooking',
+        'تازه آشپزی',
+        'آشپزی رو شروع کردم',
+        'آشپزی رو شروع',
+        'شروع کنم آشپزی'
       ],
       weak: ['آشپزی', 'پختن', 'پخت', 'غذا', 'cooking', 'cook'],
       weakSafe: true,
@@ -270,7 +281,15 @@
         'meet new people',
         'find new friends',
         'lonely with no friends',
-        'why do i have no friends'
+        'why do i have no friends',
+        // Adult-friendship phrasings: «دوست پیدا کردن توی بزرگسالی»
+        // (making friends in adulthood) is a recurring 2026 concern that
+        // previously fell to the unknown-topic pool.
+        'دوست پیدا کردن',
+        'دوست پیدا کردن توی بزرگسالی',
+        'دوست پیدا کردن توی سن',
+        'بزرگسالی',
+        'بزرگسال'
       ],
       weak: [
         'تنها',
@@ -458,6 +477,112 @@
       ],
       fa: 'سؤال‌ها و نگرانی‌های مربوط به صمیمیت جنسی کاملاً طبیعی‌اند و هیچ شرمی ندارد. کم شدن میل یا نگرانی جنسی معمولاً یک دلیل واحد ندارد: استرس و خستگی، داروها، تغییرات هورمونی، کیفیت رابطه یا تجربه‌های گذشته. قدم اول گفتگوی صادقانه و بدون سرزنش با همسرت است؛ از «تو» شروع نکن، از «من» شروع کن («من این روزها خیلی خسته‌ام و دلم می‌خواهد درباره‌ش حرف بزنیم»). برای نگرانی‌های پزشکی (هورمون، عوارض دارو) به پزشک یا مرکز بهداشت مراجعه کن و برای جنبه‌های روانی، درمانگر متخصص کمک می‌کند. رضایت در هر قدم، اساس هر رابطه‌ی جنسی سالم است. من جای متخصص را نمی‌گیرم.',
       en: 'Questions and worries about sexual intimacy are completely natural and nothing to be ashamed of. A drop in desire or sexual anxiety usually has no single cause: stress and fatigue, medications, hormonal changes, relationship quality, or past experiences. The first step is an honest, blame-free conversation with your partner; start with "I" instead of "you" ("I have been so exhausted lately and I would love to talk about it"). For medical concerns like hormones or medication side effects, see a doctor or a health clinic, and for the psychological side, a specialist in mental health helps. Consent at every step is the foundation of any healthy sexual relationship. I am not a substitute for a professional.'
+    },
+    {
+      id: 'pet_care',
+      keywords: [
+        'سگم',
+        'گربه‌ام',
+        'گربهم',
+        'حیوان خانگی',
+        'حیوان خونگی',
+        'دامپزشکی',
+        'my dog',
+        'my cat',
+        'my pet',
+        'pet care',
+        'dog alone',
+        'cat hides',
+        'vet bills'
+      ],
+      weak: ['سگ', 'گربه', 'پت', 'حیوان', 'pet', 'dog', 'cat'],
+      weakSafe: true,
+      hints: [
+        'تنها',
+        'تنهایی',
+        'نگران',
+        'اضطراب',
+        'قایم',
+        'alone',
+        'anxious',
+        'hide',
+        'normal',
+        'bill'
+      ],
+      fa: 'وقتی حیوان خانگی‌ات رفتار غیرعادی دارد، اول بدان که معمولاً جای نگرانی نیست. بعد از جابه‌جایی یا تغییر خانه، گربه‌ها ممکن است چند روز قایم شوند: به‌شان فضای امن بده، جعبه و آب همیشگی‌شان را در همان نقطه بگذار و عجله نکن. سگ‌ها هم وقتی تنها می‌مانند ممکن است واق واق یا ناله کنند؛ تمرین جدا شدن با چند دقیقه شروع می‌شود و کم‌کم بیشتر می‌شود، همراه با جایزه بعد از برگشتن. اگر هزینه‌ی دامپزشکی سنگین است، بپرس کلینیک طرح قسط یا بیمه دارد؛ سلامتی حیوان اولویت است اما باید برایت قابل‌تحمل باشد. اگر رفتار خطرناک یا مداوم بود، با دامپزشک مشورت کن؛ من جای او را نمی‌گیرم.',
+      en: 'When your pet behaves oddly, the first thing to know is that it is usually not a problem. After a move or a new home, cats may hide for days: give them a safe room, keep their food and water in the same spot, and do not rush them. Dogs left alone may bark or whine; start separation training with a few minutes at a time, slowly lengthening it, and reward calmness when you return. If vet bills feel heavy, ask the clinic about payment plans or pet insurance; your pet matters, but the cost must stay manageable for you. For dangerous or persistent behavior, talk to a veterinarian; I am not a substitute.'
+    },
+    {
+      id: 'parenting_newborn',
+      keywords: [
+        'بچه‌ام شب‌ها',
+        'بچهم شب‌ها',
+        'بچهم شب ها',
+        'بچه‌ام شب ها',
+        'نوزاد',
+        'شب‌ها نمی‌خوابه',
+        'شب ها نمیخوابه',
+        'شب‌ها نمی‌خوابد',
+        'شب ها نمی خوابد',
+        'شبها نمیخوابه',
+        'پدر جدید',
+        'تازه مادر',
+        'baby will not sleep',
+        'baby wont sleep',
+        'newborn',
+        'new parent',
+        'baby sleep'
+      ],
+      weak: ['بچه', 'نوزاد', 'خواب', 'baby', 'newborn', 'sleep'],
+      weakSafe: true,
+      hints: ['شب', 'خسته', 'گریه', 'شیر', 'night', 'tired', 'cry', 'feed'],
+      fa: 'شب‌بیداری نوزاد طبیعی است: در ماه‌های اول نوزاد برای شیر خوردن هر دو سه ساعت بیدار می‌شود و «خوابیدن در طول شب» کم‌کم و بعد از چند ماه‌گی شکل می‌گیرد. برای امنیت خواب: نوزاد را همیشه به پشت و در جای خودش بخوابان، بالش و پتو اضافه نگذار و دمای اتاق را متعادل نگه دار. پدر و مادر بودن تازه، خستگی واقعی می‌آورد؛ اگر می‌توانید، نوبتی بیدار شوید و وقتی نوزاد خواب است شما هم استراحت کنید. اگر نگران وزن، تنفس یا گریه‌های بی‌وقفه هستی، با پزشک کودکان صحبت کن؛ من جای او را نمی‌گیرم.',
+      en: 'Newborn night waking is normal: in the first months a baby wakes every two to three hours to feed, and sleeping through the night develops gradually after a few months. For safe sleep: always place the baby on their back in their own space, skip extra pillows and blankets, and keep the room temperature comfortable. Being a new parent brings real exhaustion; if you can, take shifts, and rest when the baby sleeps. If you are worried about weight, breathing, or nonstop crying, talk to a pediatrician; I am not a substitute.'
+    },
+    {
+      id: 'gaming_balance',
+      keywords: [
+        'بازی معتاد',
+        'معتاد به بازی',
+        'اعتیاد به بازی',
+        'بازی زیاد',
+        'بازی‌ها خسته',
+        'بازیها خسته',
+        'از بازی ها خسته',
+        'از بازی‌ها خسته',
+        'خسته شدم از بازی',
+        'بازی های جهان باز',
+        'بازی‌های جهان‌باز',
+        'addicted to gaming',
+        'game addiction',
+        'too much gaming',
+        'spend too much time gaming',
+        'games all night',
+        'playing all night',
+        'burned out on games',
+        'burned out on open world',
+        'tired of games',
+        'cozy game',
+        'indie game'
+      ],
+      weak: ['بازی', 'گیم', 'gaming', 'game'],
+      weakSafe: true,
+      hints: [
+        'معتاد',
+        'وقت',
+        'ساعت',
+        'خسته',
+        'زیاد',
+        'شب',
+        'addicted',
+        'hours',
+        'too much',
+        'night',
+        'worth',
+        'time'
+      ],
+      fa: 'وقتی بازی از سرگرمی به چیزی تبدیل می‌شود که شب‌ها بیدار نگهت می‌دارد یا کار و درس را عقب می‌اندازد، ارزش دارد با خودت روراست باشی. حد و مرز کوچک تعیین کن: مثلاً یک ساعت بعد از شام خاموش کن، یا بازی را جایزه‌ی کارهای تمام‌شده بگذار، نه جایگزین آن‌ها. خستگی از یک بازی یا سبک بازی هم طبیعی است؛ تنوع و استراحت باعث می‌شود بازی دوباره لذت‌بخش باشد. اگر حتی با تعیین حد نمی‌توانی کنترلش کنی و زندگی‌ات آسیب دیده، صحبت با یک مشاور کمک می‌کند؛ این شجاعت است، نه ضعف.',
+      en: 'When gaming shifts from fun to something that keeps you up all night or pushes aside work and study, it is worth being honest with yourself. Set small boundaries: turn it off one hour after dinner, or treat gaming as a reward for finished tasks rather than a replacement for them. Burnout from a game or a genre is normal too; variety and rest make gaming fun again. If even with limits you cannot regain control and your life is suffering, getting professional help can guide you back; that is courage, not weakness.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

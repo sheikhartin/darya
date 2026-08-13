@@ -12,7 +12,10 @@
     const dateMatch =
       engine.lang.dateTimeDatePattern &&
       engine.lang.dateTimeDatePattern.test(text);
-    if (!timeMatch && !dateMatch) {
+    const yearMatch =
+      engine.lang.dateTimeYearPattern &&
+      engine.lang.dateTimeYearPattern.test(text);
+    if (!timeMatch && !dateMatch && !yearMatch) {
       return null;
     }
 
@@ -126,6 +129,39 @@
             }).format(timeInfo.localTime);
             answer += ' (your device shows ' + localFormatted + ')';
           }
+        }
+      } else if (yearMatch) {
+        // Year-only answer («امسال چه سالیه؟», "what year is it now?"):
+        // Persian users get both the Jalali and the Gregorian year, each
+        // formatted through Intl so the script and digits stay correct;
+        // English gets the Gregorian year.
+        if (isPersian) {
+          const jalaliYearFormat = new Intl.DateTimeFormat(
+            'fa-IR-u-ca-persian',
+            {
+              year: 'numeric',
+              timeZone: tz
+            }
+          );
+          const gregorianYearFormat = new Intl.DateTimeFormat(
+            'fa-IR-u-ca-gregory',
+            {
+              year: 'numeric',
+              timeZone: tz
+            }
+          );
+          answer =
+            'سال ' +
+            jalaliYearFormat.format(now) +
+            ' شمسی یعنی سال ' +
+            gregorianYearFormat.format(now) +
+            ' میلادی';
+        } else {
+          const yearFormat = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            timeZone: tz
+          });
+          answer = 'It is ' + yearFormat.format(now) + ' right now.';
         }
       }
 

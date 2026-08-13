@@ -31,43 +31,60 @@
     rule(
       'greeting',
       65,
-      /^(?:hi|hiya|howdy)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hi|hiya|howdy)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHi']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:hello)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hello)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHello']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again))?[!.?]*$/i,
+      // eslint-disable-next-line max-len
+      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHey']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good morning)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good morning)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodMorning']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good evening)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good evening)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodEvening']
     ),
 
     rule(
       'greeting',
       65,
-      /^(?:good afternoon)(?:\s+(?:there|darya|friend|again))?[!.?]*$/i,
+      /^(?:good afternoon)(?:\s+(?:there|darya|friend|again|honey|darling|sweetheart|love))?[!.?]*$/i,
       R['ruleGreetingGoodAfternoon']
+    ),
+
+    // The user explains, sometimes frustrated, that they were just
+    // greeting Darya ("stupid, i am just greeting you! hello!"). The
+    // anchored families above cannot match a longer message, so without
+    // this rule the frustration override answered the greeting with
+    // de-escalation (a transcript failure). It mirrors the greeting
+    // warmly and apologizes for the mix-up.
+    rule(
+      'greeting',
+      61,
+      // eslint-disable-next-line max-len
+      /\b(?:i'?m (?:just )?(?:greeting you|saying (?:hi|hello)|trying to say hi|saying hi to you)|i (?:was|am) (?:just )?greeting|just greeting you|i said (?:hi|hello|good morning)|i(?:'?ve| have) been greeting you|just saying hello)\b/i,
+      R['ruleGreetingHello']
     ),
 
     rule(
@@ -89,6 +106,36 @@
       // eslint-disable-next-line max-len
       /\b(?:fell out|falling out|not talking to|feud|feuding|mad at|really angry at|upset with)\b(?:(?:\s+\w+){0,4})\s*\b(?:mom|mother|dad|father|parents?|family|sister|brother)\b/i,
       R['ruleFamilyConflict']
+    ),
+
+    // Setting boundaries with family ("how do I set boundaries with my
+    // family without a fight"): a how-to about limits, distinct from the
+    // family_conflict "falling out" pool below. Sits above family_conflict
+    // (53) so the word "family" near "fight" never hijacks the boundary
+    // question into the estrangement pool.
+    rule(
+      'boundaries',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:set|setting|draw|drawing|establish|establishing|enforce|enforcing) (?:healthy |clear |personal )?(?:boundaries|limits)\b.{0,30}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\b(?:boundaries|limits) (?:with|for)\b.{0,20}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\bhow (?:do|can|should) i (?:set|draw|establish|enforce) boundaries\b|\b(?:how (?:do|can|should) i (?:say no to|tell|learn to tell))\b.{0,12}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b.{0,8}\bno\b|\b(?:saying no to|say no to)\b.{0,15}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b/i,
+      R['ruleBoundaries']
+    ),
+
+    // A crush confession: "i have a crush on my friend's sister". The
+    // family rule (50) matched on the kinship noun and echoed the capture
+    // back, which read broken and missed the actual confession. Sits
+    // between family (50) and family_conflict (53) so a crush that names
+    // a relative keeps the crush thread.
+    rule(
+      'crush',
+      52,
+      // The age-gap guard rejects any message that mentions an age
+      // difference: those get the balanced age_gap guidance (45) instead
+      // of the generic crush pool, which must never answer "crush on
+      // someone 30 years older" (the age-gap-crush tests pin this).
+      // eslint-disable-next-line max-len
+      /^(?!.*\b(?:age gap|years older|years younger|much older|much younger|older than me|younger than me)\b).*\b(crush(?:ing)? on|have a crush|had a crush|crush on|got a crush|i (?:like|love) (?:my )?friend'?s (?:sister|brother|mom|dad)|confess(?:ing)? (?:to|my) crush)\b/i,
+      R['ruleCrush']
     ),
 
     rule(
@@ -120,7 +167,7 @@
       // are everyday openings that previously fell through to the
       // unknown pool.
       // eslint-disable-next-line max-len
-      /\b(can'?t sleep|cannot sleep|cannot fall asleep|can'?t fall asleep|insomnia|nightmares?|sleeping badly|trouble sleeping|waking up|wake up at night|hard to sleep|difficult to sleep|lie in bed|lying in bed|mind races|sleepless|sleep problems?|not sleeping well|sleeping poorly|bad sleep|poor sleep|my sleep schedule|sleep schedule (?:is )?(?:ruined|broken|a mess)|sleep (?:is )?(?:ruined|broken)|ruined my sleep)\b/i,
+      /\b(can'?t sleep|cannot sleep|cannot fall asleep|can'?t fall asleep|insomnia|nightmares?|sleeping badly|trouble sleeping|waking up|wake up at night|hard to sleep|difficult to sleep|lie in bed|lying in bed|mind races|sleepless|sleep problems?|not sleeping well|sleeping poorly|(?:haven'?t|have not|not) slept well|bad sleep|poor sleep|my sleep schedule|sleep schedule (?:is )?(?:ruined|broken|a mess)|sleep (?:is )?(?:ruined|broken)|ruined my sleep)\b/i,
       R['ruleSleep']
     ),
 
@@ -213,7 +260,7 @@
       'parenting',
       57,
       // eslint-disable-next-line max-len
-      /\b(my (?:baby|newborn|toddler|infant) (?:has been up|keeps me up|is up all|wakes up all|won'?t sleep|is not sleeping|keeps waking)|up every two hours|exhausted (?:with|from) (?:my|the) (?:baby|newborn|toddler|infant)|my (?:baby|newborn|child) (?:was )?just born|just had a baby|postpartum|post-partum|new (?:mom|mother|dad|father)|feel(?:ing)? like (?:a|an) (?:bad|terrible|awful) (?:mother|mom|father|dad|parent)|not a good (?:father|mother|mom|dad|parent)|can'?t (?:stop|help) crying|keep(?:s)? crying)\b/i,
+      /\b(my (?:baby|newborn|toddler|infant|kid|son|daughter|child) (?:has been up|keeps me up|is up all|wakes up all|won'?t sleep|will not sleep|is not sleeping|keeps waking|is up all night|keeps me awake)|up every two hours|exhausted (?:with|from) (?:my|the) (?:baby|newborn|toddler|infant|kid)|tired (?:as|being) a new parent|exhausted (?:as|being) a new parent|my (?:baby|newborn|child) (?:was )?just born|just had a baby|postpartum|post-partum|new (?:mom|mother|dad|father|parent)|feel(?:ing)? like (?:a|an) (?:bad|terrible|awful) (?:mother|mom|father|dad|parent)|not a good (?:father|mother|mom|dad|parent)|can'?t (?:stop|help) crying|keep(?:s)? crying|sleep training|toddler (?:tantrum|tantrums|won'?t eat)|teething|colic)\b/i,
       R['ruleParenting']
     ),
 
@@ -224,7 +271,7 @@
       // emotion adjective, so the bare-sadness words missed them; the
       // day-quality phrases open the same thread.
       // eslint-disable-next-line max-len
-      /\b(sad|down|depressed|heartbroken|crying|low|bad day|terrible day|awful day|rough day|horrible day|worst day|day has been (?:awful|terrible|rough|horrible)|today was (?:terrible|awful|horrible|rough|the worst)|my day was (?:terrible|awful|horrible)|heavy heart|heart is heavy|heart feels heavy|feel so heavy|feeling so heavy)\b/i,
+      /\b(sad|down|depressed|heartbroken|crying|low|quiet sadness|this sadness|sadness lately|sad all day|bad day|terrible day|awful day|rough day|horrible day|worst day|day has been (?:awful|terrible|rough|horrible)|today was (?:terrible|awful|horrible|rough|the worst)|my day was (?:terrible|awful|horrible)|heavy heart|heart is heavy|heart feels heavy|feel so heavy|feeling so heavy)\b/i,
       R['ruleSadness']
     ),
 
@@ -271,8 +318,39 @@
       'loneliness',
       40,
       // eslint-disable-next-line max-len
-      /\b(lonely|alone|no one to talk to|nobody understands|isolated|no one .{0,18}(?:likes|wants to talk to|talks to) me|nobody .{0,18}(?:likes|wants to talk to|talks to) me|no friends|moved on without me|everyone (?:has|is) (?:moved|gone) on|no one (?:needs|wants|is there for) me|no one cares (?:about|for) me|nobody cares(?!\s+(?:about|for))|no one cares(?!\s+(?:about|for))|everyone (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everybody (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everyone has (?:left|abandoned|forgotten|ignored) me|everyone is against me|all my [\w'-]+ (?:left|abandoned|forgot|ignored|hate|hated) me|nobody (?:loves|wants|needs|understands|cares about|likes) me|no one (?:loves|wants|needs|understands|cares about|likes) me|(?:everyone|everybody|they) (?:are all|all) (?:laughing at|making fun of) me|everyone laughs at me|they all (?:hate|left|abandoned|ignored|hated) me)\b/i,
+      /\b(lonely|alone|no one to talk to|nobody understands|isolated|no one .{0,18}(?:likes|wants to talk to|talks to) me|nobody .{0,18}(?:likes|wants to talk to|talks to) me|no friends|no close friends?|moved on without me|everyone (?:has|is) (?:moved|gone) on|no one (?:needs|wants|is there for) me|no one cares (?:about|for) me|nobody cares(?!\s+(?:about|for))|no one cares(?!\s+(?:about|for))|everyone (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everybody (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everyone has (?:left|abandoned|forgotten|ignored) me|everyone is against me|all my [\w'-]+ (?:left|abandoned|forgot|ignored|hate|hated) me|nobody (?:loves|wants|needs|understands|cares about|likes) me|no one (?:loves|wants|needs|understands|cares about|likes) me|(?:everyone|everybody|they) (?:are all|all) (?:laughing at|making fun of) me|everyone laughs at me|they all (?:hate|left|abandoned|ignored|hated) me|no one asks (?:how|about) me|nobody asks (?:how|about) me|everyone (?:is|are) busy with (?:their|his|her) own (?:life|lives)|lonelier than ever)\b/i,
       R['ruleLoneliness']
+    ),
+
+    // Being new in a place with nobody known ("I moved to a new city
+    // for work and know nobody") is a loneliness disclosure, not a work
+    // complaint, even when the move happened for a job. This narrow
+    // rule sits ABOVE the work thread (51 > 50) so the mixed framing
+    // routes to the loneliness care instead of the job pool. The main
+    // loneliness rule stays at 40 so a plain homesickness or grief line
+    // never gets pulled into the new-city pool.
+    rule(
+      'loneliness_new_city',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(moved to a (?:new|different) (?:city|town)|new in (?:this|the) (?:city|town)|know nobody|knows nobody|don'?t know (?:anyone|a soul|a single person) (?:here|in this city|in this town|in the city)|just moved (?:here|to the city)|(?:for work|for a job).{0,15}(?:moved|know nobody)|nobody (?:i )?know)\b/i,
+      R['ruleLoneliness']
+    ),
+
+    // Digital/parasocial loneliness: friendships that only exist online,
+    // a follower count with nobody to call, "no one to call" when the
+    // evening comes. These are 2026-era loneliness disclosures that used
+    // to fall through to the unknown pool or the depression rule. They
+    // sit ABOVE the depression rule (57 > 56) with a narrow online-only
+    // pattern, so "حس پوچی" next to "آنلاین" routes to the digital
+    // loneliness pool instead of the depression shelf, while a plain
+    // "حس پوچی دارم" keeps the depression care.
+    rule(
+      'loneliness_online',
+      57,
+      // eslint-disable-next-line max-len
+      /\b(friendships? .{0,14}online|friends .{0,12}online|online friends?|followers? but (?:no one|nobody)|[0-9,]+ followers? (?:but|yet|and) no one|no one to call|nobody to call|hollow (?:friendships?|online)|friendships? .{0,12}hollow|friends .{0,12}hollow|only talk online|talk to my friends .{0,10}(?:online|through (?:the internet|discord|text|a screen))|social life .{0,10}(?:on my phone|online))\b/i,
+      R['ruleLonelinessOnline']
     ),
 
     // Blanket generalizations and stereotypes ("all women are the same",
@@ -296,8 +374,43 @@
       'self_esteem',
       40,
       // eslint-disable-next-line max-len
-      /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure|feel(?:ing)? (?:so|really|very|too|extremely|incredibly)? guilty|guilt|comparing myself|compare myself|am nothing|i'?m nothing|not as good as (?:them|others|anyone))\b/i,
+      /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure|feel(?:ing)? (?:so |really |very |too |extremely |incredibly )?guilty|guilt|comparing myself|compare myself|am nothing|i'?m nothing|not as good as (?:them|others|anyone))\b/i,
       R['ruleSelfEsteem']
+    ),
+
+    // Social comparison: measuring your life against the highlight reel
+    // of friends, schoolmates, siblings, or social media ("everyone on
+    // instagram is living a better life", "my high school friends are
+    // all successful", "i envy my friends who have it all together",
+    // «همه توی اینستاگرام زندگی بهتری از من دارن»). The 2026 probe
+    // showed these falling to the unknown pool, the vague "that gives
+    // the day color" line, or the self-esteem rule missing the envy
+    // forms. Sits above self_esteem (40) and generalization (35) so the
+    // comparison reading wins; family (50) still outranks it, keeping a
+    // sibling rivalry that names "my sister" on the family thread.
+    rule(
+      'social_comparison',
+      46,
+      // eslint-disable-next-line max-len
+      /\b(everyone (?:on|from) (?:instagram|social media|facebook|tiktok|linkedin)|social media|comparing (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|compare (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|my (?:friends|classmates|cousins?|siblings?|high school friends) (?:are|seem|look) (?:all |so |really )?(?:successful|better|ahead|happy|happier)|everyone (?:else )?(?:is|are|seems?) (?:more successful|happier|better(?: off)?|ahead of me|doing better)|i envy|envious of|jealous of|fall(?:ing)? behind (?:everyone|everyone else|others|them|my (?:friends|classmates|cousins?|peers))|left behind (?:everyone|others|them)|behind everyone|at my age everyone|everyone my age|feel(?:ing)? (?:so |really |very )?inadequate|inadequate (?:compared|next to)|not as (?:good|successful) as (?:them|everyone|my friends))\b/i,
+      R['ruleSocialComparison']
+    ),
+
+    // Overwork without progress: two jobs, a salary that barely covers
+    // the month, bills piling up, working hard and still not getting
+    // ahead ("i work two jobs and still cant get ahead", «دو تا شغل
+    // کار می‌کنم ولی بازم نمی‌تونم جلو برم», «حقوقم آخر ماه تموم
+    // میشه»). The probe showed the FA forms being swallowed by the
+    // knowledge rule (the bare «شغل» keyword) into a stoicism essay,
+    // and the EN forms falling to the unknown pool. Sits above the
+    // knowledge rule (55) so a money-disclosure with «شغل» stays
+    // empathetic, and above work (50) and money (35).
+    rule(
+      'overwork_stuck',
+      56,
+      // eslint-disable-next-line max-len
+      /\b(two jobs|second job|can'?t get ahead|cannot get ahead|barely (?:covers|cover) (?:the month|my bills|bills)|salary barely|bills (?:are )?piling|behind on (?:my )?bills|work(?:ing)? (?:so|too|really) hard (?:and|but) (?:still|just) (?:can'?t|cannot|barely))\b/i,
+      R['ruleOverworkStuck']
     ),
 
     rule(
@@ -366,6 +479,21 @@
       R['ruleTellJoke']
     ),
 
+    // The user asks for a short story, optionally in a genre. The reply
+    // comes from the genre pools (see responder-rules.js), so a comedy
+    // request never gets a horror list and vice versa. "Another story"
+    // (a bare follow-up after a story) lands here too, so the follow-up
+    // stays on the story thread instead of bouncing to the generic
+    // fallback. Life-story disclosures ("my life story is hard") carry
+    // no request verb and fall through untouched.
+    rule(
+      'smalltalk_story',
+      58,
+      // eslint-disable-next-line max-len
+      /\b(tell me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|tell me a story|any (?:good )?stories?|story (?:please|time)|share a story|give me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|i (?:want|need) (?:to hear )?a story|another story|one more story|another (?:scary|funny|comedy|horror|sad) story)\b/i,
+      R['ruleTellStory']
+    ),
+
     // The user asks Darya to buy something ("buy me a laptop", "where can
     // I buy X"). Darya cannot make purchases, so the reply is honest
     // about the limit and then helps think the purchase through.
@@ -427,6 +555,19 @@
       // eslint-disable-next-line max-len
       /\b(?:working out|work out|workout|gym|at the gym|go(?:ing)? to the gym|start(?:ing)? at (?:a |the )?gym|embarrassed to (?:work out|exercise)|too embarrassed to (?:work out|exercise)|scared (?:to go|of going) (?:to )?the gym|anxious about (?:the |a )?gym|nervous about (?:the |a )?gym|everyone (?:will|would) (?:stare|look)|new at the gym|new to (?:working out|the gym)|beginner (?:at the gym|at working out))\b/i,
       R['ruleFitness']
+    ),
+
+    // Cooking: making a dish, a failed attempt ("my ghormeh sabzi was
+    // bitter"), asking how to cook something. Hands-on kitchen care
+    // distinct from the encyclopedic knowledge shelf: a burnt dinner
+    // deserves a fix, not a lecture. Priority sits below the gym and
+    // work threads so food words never steal a body or job disclosure.
+    rule(
+      'cooking',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:cook(?:ing|ed|er)?|recipe|ghormeh|fesenjan|kebab|kabab|stew|soup|baking|bake|frying|boil|simmer|kitchen|meal prep|tasted (?:bitter|salty)|tastes (?:bitter|salty)|was (?:bitter|salty|burned)|too salty|burnt the|burned the|fix (?:the|my) (?:stew|soup|food|meal|recipe|dish)|fix (?:it|that) (?:next time|tomorrow|tonight)|went wrong (?:with the|in the|while)|ruined the|messed up (?:the|my|a) (?:stew|soup|food|meal|recipe|dish|dinner))\b/i,
+      R['ruleCooking']
     ),
 
     rule(
@@ -518,8 +659,34 @@
       'money',
       35,
       // eslint-disable-next-line max-len
-      /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
+      /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|budgeting|start budgeting|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|groceries (?:keep|are) (?:getting|going) (?:pricier|more expensive)|groceries|pricier|more expensive|feel(?:ing)? (?:so |really |completely )?broke|broke all the time|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
       R['ruleMoney']
+    ),
+
+    // Gig economy work: ride-hailing, food delivery, freelance
+    // platforms, side hustles, unpredictable gig income. These 2026-era
+    // disclosures used to fall to the unknown pool (or the exit bar for
+    // "should i quit my gig job"), so they get a dedicated empathetic +
+    // practical pool. Sits above work (51 > 50) so a gig disclosure is
+    // never swallowed by the generic job thread.
+    rule(
+      'gig_economy',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(gig(?: economy| work| job|s)?|side hustles?|ride[- ]hail(?:ing)?|rideshare|ridesharing|food delivery|delivery gigs?|gig worker|gig income|gig pay|freelanc(?:e|ing|er)|freelance platforms?|the platforms? (?:take|takes)|delivery driver|working for (?:an app|apps)|app[- ]based (?:work|job|jobs))\b/i,
+      R['ruleGig']
+    ),
+
+    // Housing costs: rent, landlord, deposit, mortgage, moving out,
+    // house prices. These everyday 2026 disclosures used to bounce off
+    // the unknown pool or the money shelf, so they get a dedicated
+    // pool that sits above work and money (51 > 50, 35).
+    rule(
+      'housing',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(rent|rental|landlord|deposit|mortgage|move out|moving out|house prices?|home prices?|apartment prices?|housing (?:costs|prices|crisis|market|affordability)|afford a house|afford a home|can'?t afford (?:a house|a home|housing|to move)|half (?:my|our|your) salary (?:goes|on)|eviction|evicted)\b/i,
+      R['ruleHousing']
     ),
 
     rule(
@@ -647,6 +814,26 @@
       R['ruleLearningAdvice']
     ),
 
+    // A direct comparison question ("which is better, football or
+    // wrestling?", "toyota or bugatti?"). The probe showed these
+    // falling to the generic "depends on your situation" line; a
+    // dedicated rule keeps the comparison frame and asks for the
+    // criterion that matters, which is more useful than an evasive
+    // dodge. Sits above learning_advice (60) so a two-option
+    // comparison never gets the generic line, and below meta_feedback
+    // (62).
+    rule(
+      'comparison',
+      61,
+      // Comparison structures: "X or Y which is better", "which is
+      // better, X or Y", "between X and Y", "X vs Y". Only fires when
+      // two options are actually being weighed, so a plain preference
+      // question never trips it.
+      // eslint-disable-next-line max-len
+      /\b(?:which is better|which (?:do you think|would you say) is better|better (?:choice|option|pick)|(?:is|are) (?:a|an|the) better|(?:is|are) .{1,30} better than .{1,30}|between .{0,28} and .{0,28} (?:which|better)|.{1,24} or .{1,24} (?:which|better)|compare .{0,20} (?:with|to) .{0,20}|compare .{0,8} vs|vs\.? (?:which|better)|better,? .{1,20} or .{1,20})\b/i,
+      R['ruleComparison']
+    ),
+
     rule(
       'professional_boundary',
       90,
@@ -696,7 +883,7 @@
       'meta_feedback',
       62,
       // eslint-disable-next-line max-len
-      /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you (?:even )?listening|paying attention|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning|you are dodging|you dodged|dodging the question|you did not answer|you didn'?t answer|avoiding my question|not answering me|you are deflecting|you are not listening|you are ignoring me|you (?:are|'?re|keep|always) (?:harassing|threatening|scaring|annoying|bothering) me|stop (?:harassing|threatening|scaring|annoying|bothering) me|you (?:are|'?re|sound|seem) (?:vague|unfriendly)|vague (?:answers?|replies?|responses?)|talk(?:ing)? to yourself|going off (?:on a tangent|topic)|off on a tangent)\b/i,
+      /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you (?:even )?listening|paying attention|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning|you are dodging|you dodged|dodging the question|you did not answer|you didn'?t answer|avoiding my question|not answering me|you are deflecting|you are not listening|you are ignoring me|you (?:are|'?re|keep|always) (?:harassing|threatening|scaring|annoying|bothering) me|stop (?:harassing|threatening|scaring|annoying|bothering) me|you (?:are|'?re|sound|seem) (?:vague|unfriendly)|vague (?:answers?|replies?|responses?)|talk(?:ing)? to yourself|going off (?:on a tangent|topic)|off on a tangent|used to be (?:so much |way |a lot |much |so )?smarter|used to be (?:much |way |a lot )?better|you were (?:much |way |a lot |so )?smarter (?:before|earlier|back then)|you were better (?:before|earlier|back then)|you are (?:getting|becoming) (?:dumber|worse)|you got (?:dumber|worse)|you have gotten (?:dumber|worse))\b/i,
       R['ruleMetaFeedback']
     ),
 
@@ -758,6 +945,93 @@
       R['ruleHealthSymptoms']
     ),
 
+    // Everyday body pain ("my left hand hurts a lot", "i have a pain in
+    // my knee"): a caring reply that takes the complaint seriously
+    // without diagnosing (Darya is not a clinician), asks a gentle
+    // follow-up, and points to a doctor for severe or persistent pain.
+    // Also beats the word-repetition override that used to quote the
+    // word back across turns.
+    rule(
+      'health_pain',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|tooth|teeth|stomach|belly|wrist|ankle|elbow|finger|toe|eye|eyes|ear|ears|muscle|muscles|joint|jaw) (?:hurts|is hurting|aches|is aching|is sore|is stiff|is numb|is painful|is killing me|has been hurting)|(?:i'?ve got|i have|i'?ve|i'?m feeling) (?:a )?(?:pain|ache|soreness) in my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|stomach|belly|wrist|ankle|elbow|finger|toe|eye|ear|jaw)|my (?:eyes|hands|legs|feet|knees|shoulders|wrists|ankles) (?:are|feel) (?:sore|tired|stiff|aching|numb|swollen)|(?:i'?m|i am) (?:always|so|really|constantly) (?:tired|exhausted)(?!\s+(?:of|with)\b)|why (?:am i|do i|is it that i'?m|is it that i am) (?:always|so|constantly|this) (?:tired|exhausted)|i'?m exhausted all the time|i (?:feel|am feeling) (?:exhausted|tired) (?:all the time|these days|every day|always)|my head is (?:pounding|throbbing)|(?:i have|i'?ve got|i'?m getting) (?:a )?headache)\b/i,
+      R['ruleHealthPain']
+    ),
+
+    // Questions about Darya herself ("do you have parents?", "why were
+    // you made?", "what are your weaknesses?"): transparent, self-aware
+    // answers about being an offline rule-based companion, her limits,
+    // and her origin - never pretending to be human. Outranks the family
+    // and work rules so "do you have parents" stays about Darya.
+    rule(
+      'darya_self',
+      66,
+      // eslint-disable-next-line max-len
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die))\b/i,
+      R['ruleDaryaSelf']
+    ),
+
+    // Joke-count question ("how many jokes do you know?"): a real answer
+    // instead of another joke. Runs above the joke rule.
+    rule(
+      'joke_count',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(?:how many jokes (?:do you (?:know|have|tell)|can you (?:tell|make up))|what(?:'s| is) your (?:best|favourite|favorite) joke|number of jokes you (?:know|have)|how many (?:jokes?|funny stories|one liners)|what is the joke count)\b/i,
+      R['ruleJokeCount']
+    ),
+
+    // The user's birthday ("today is my birthday"): celebrate warmly.
+    rule(
+      'birthday',
+      45,
+      // eslint-disable-next-line max-len
+      /\b(?:today is my birthday|it'?s my birthday|my birthday is (?:today|this week)|i have a birthday (?:today|coming up)|celebrat(?:e|ing) (?:my|our) birthday|birthday (?:today|this week)|i(?:'?ve| have) turned \d+|i(?:'?m| am) turning \d+)\b/i,
+      R['ruleBirthday']
+    ),
+
+    // A new baby in the family ("we just had a baby"): share the joy.
+    // Mirrors the FA new_baby rule so both packs recognize the same
+    // topics (bilingual parity lock).
+    rule(
+      'new_baby',
+      45,
+      // eslint-disable-next-line max-len
+      /\b(?:we had a baby|just had a baby|baby was born|had a newborn|new baby in (?:the family|our family|my family)|i(?:'?m| am) (?:now )?(?:a mother|a father|a mom|a dad|a parent)|just became (?:a mother|a father|a mom|a dad|a parent)|my (?:wife|sister|daughter|daughter-in-law) (?:gave birth|had a baby)|gave birth (?:to a baby|to a girl|to a boy)|we(?:'re| are) expecting (?:a baby|our first)|my (?:daughter|son) was born|i(?:'?ve| have) a (?:newborn|new baby))\b/i,
+      R['ruleNewBaby']
+    ),
+
+    // IQ test request ("give me an IQ test"): honest that a real
+    // standardized test cannot run here, then a light logic question.
+    rule(
+      'iq_test',
+      42,
+      /\b(?:iq test|intelligence test|test my iq|what is my iq|give me an iq test|measure my iq|check my iq)\b/i,
+      R['ruleIqTest']
+    ),
+
+    // Sharing a secret ("can I tell you a secret?"): a safe-space
+    // reassurance that opens the door.
+    rule(
+      'secret',
+      42,
+      // eslint-disable-next-line max-len
+      /\b(?:can i tell you a secret|i want to tell you a secret|i have a secret|i'?ll tell you a secret|a secret to tell|i want to share a secret|do you keep secrets|let me tell you a secret|i'?m going to tell you a secret)\b/i,
+      R['ruleSecret']
+    ),
+
+    // Treatment request ("can you help me get better?"): honest that
+    // Darya is not a clinician, gently pointing to a professional while
+    // keeping the door open.
+    rule(
+      'therapy_help',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:help me (?:get|getting) (?:better|treated|healed)|i want (?:to get|to be|to become) (?:better|treated|healed)|can you (?:treat|cure|heal) me|help me with (?:my )?(?:treatment|recovery|healing)|i need (?:treatment|therapy|to get better)|how can i get (?:better|treated|healed))\b/i,
+      R['ruleTherapyHelp']
+    ),
+
     // Pet loss: the user mentions the death of a pet.
     rule(
       'pet_loss',
@@ -765,6 +1039,19 @@
       // eslint-disable-next-line max-len
       /\b(?:my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot|snake|turtle|guinea pig|budgie|chinchilla).{0,20}(?:died|passed away|was put down|is dead|has died|had to be put to sleep|was killed|i lost my))|(?:i (?:lost|had to put to sleep|had to say goodbye to|lost) my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot|snake|turtle|guinea pig|budgie|chinchilla))|(?:my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot) (?:is gone|passed))\b/i,
       R['rulePetLoss']
+    ),
+
+    // Pet care and behavior worries ("my cat hides after we moved",
+    // "my dog stopped eating"): practical reassurance, not grief (the
+    // pet_loss rule above owns death) and not the unknown pool. Sits
+    // just under pet_loss so a living-pet worry about hiding, eating,
+    // or vet costs gets the caring pet-care reply.
+    rule(
+      'pet_care',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:cat|dog|pet|kitten|puppy|parrot|bird|hamster|rabbit|fish|snake|turtle|guinea pig)\b.{0,25}\b(?:hide|hides|hiding|stopped eating|won'?t eat|not eating|acting weird|anxious|alone|lonely|sick|vet|hiding|scared|growl|bark|barking|whine|scratch|bite|peed|pooped|runny|vomit|threw up))|(?:my (?:cat|dog|pet)\b.{0,15}\b(?:after|since)\b.{0,12}\b(?:move|moved|moving))\b/i,
+      R['rulePetCare']
     ),
 
     // Affection: direct expressions of love toward Darya.
@@ -810,6 +1097,59 @@
       // eslint-disable-next-line max-len
       /\b(?:what did you (?:do|get up to) (?:today|this morning|this afternoon|this evening)|how was your day|how'?s your day|what have you been (?:doing|up to)|how did (?:your )?day (?:go|goes|went)|what was your day like)\b/i,
       R['ruleAboutDaryaDay']
+    ),
+
+    // Apology advice: "how do I apologize without making it about
+    // myself", "how to apologize properly", "should I apologize?".
+    // These ask for guidance on apologizing, which is NOT the same as
+    // the user apologizing now: the apology rule (64) would accept the
+    // (nonexistent) apology, so this rule sits one point above it and
+    // answers with practical steps instead of acceptance.
+    rule(
+      'apology_advice',
+      65,
+      // eslint-disable-next-line max-len
+      /\b(?:how (?:do|can|should|to) i (?:apologize|apologise|say sorry|make it up)|how to apologize|apologize without|apologise without|apologize properly|should i apologize|apologize to (?:her|him|them|my|your)|make a (?:good|real|proper|genuine) apology|say sorry properly|how do i say sorry)\b/i,
+      R['ruleApologyAdvice']
+    ),
+
+    // Adult friendship: making friends as an adult feels hard, "why does
+    // making friends feel like a job interview", drifting from friends.
+    // Sits above the work rule so "making friends as an adult feels
+    // like a job interview" is never read as a work-stress disclosure
+    // (the "job interview" phrase used to hijack it).
+    rule(
+      'friendship',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:mak(?:ing|e) friends (?:as an adult|as an older|again|is (?:so|really|this) (?:hard|difficult)|hard)|hard(?:er)? to (?:make|find) friends|make new friends as an adult|find friends as an adult|friends as an adult|making friends .{0,12}(?:hard|difficult)|why (?:is|are) friends .{0,10}(?:hard|difficult)|drifting apart from (?:my|our) friends|adults (?:make|find) friends|people (?:make|find) friends|make friends|how (?:do|can|should) (?:adults|people) (?:make|find) friends)\b/i,
+      R['ruleFriendship']
+    ),
+
+    // Sports banter and match venting ("the manager bottled the
+    // midfield", "our team lost again", "the referee was blind"):
+    // light, not emotional disclosures, so a match complaint is never
+    // read as grief or work stress. Sits above work (50) so "manager"
+    // talk about a match stays sports.
+    rule(
+      'sports_talk',
+      53,
+      // eslint-disable-next-line max-len
+      /\b(?:the (?:manager|coach|referee|umpire)|our team|my team|the team)\b.{0,25}\b(?:lost|bottled|terrible|awful|useless|blind|sacked|sold|midfield|defense|defence|tactics|formation|penalty|offside|red card|pitch|keeper|striker)\b|\b(?:midfield|offside|red card|penalty shootout|extra time)\b.{0,20}\b(?:terrible|awful|robbed|unfair|disaster)\b/i,
+      R['ruleSportsTalk']
+    ),
+
+    // Gaming: burnout from a genre ("I am burned out on open world
+    // games"), a recommendation request ("recommend a cozy indie
+    // game"), or balance worries. Sits above the stress rule (40) so
+    // "burned out on games" is read as gaming talk, not a generic
+    // burnout disclosure.
+    rule(
+      'gaming',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:recommend|suggest)\b.{0,25}\b(?:game|games|indie|cozy)\b|\b(?:burned? out|burnout)\b.{0,20}\b(?:game|games|gaming)\b|\b(?:tired|sick) of (?:open world )?games?\b|addicted to gaming|game addiction|games all night|playing all night\b/i,
+      R['ruleGaming']
     ),
 
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, R['ruleAffirmation']),

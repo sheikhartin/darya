@@ -193,14 +193,17 @@
   // alone, and the warm "take care of yourself" farewell, still exit.
   // The bare "quit" keyword likewise opens habit-breaking and
   // career-change sentences ("i want to quit smoking", "trying to
-  // quit drinking", "i want to quit my job") that are not leave
-  // requests: the exit bar must never hijack a habit or job
-  // disclosure into the two-step goodbye flow. Only the specific
-  // habit/activity/work objects count as false positives, so a real
-  // "i want to quit" (ending the chat) still exits.
+  // quit drinking", "i want to quit my job", "should i quit my gig
+  // job for a regular job?") that are not leave requests: the exit
+  // bar must never hijack a habit or job disclosure into the two-step
+  // goodbye flow. Only the specific habit/activity/work objects count
+  // as false positives, so a real "i want to quit" (ending the chat)
+  // still exits. Gig, freelance, and delivery work are included so
+  // the 2026 gig-economy questions never bounce into the farewell
+  // confirmation.
   const exitFalsePositivePattern =
     // eslint-disable-next-line max-len
-    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my position|my career|this job|the job|working|work|the team|the company)\b/i;
+    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b/i;
 
   // Phase 1 (warm presence): the very first greeting should establish Darya
   // as a calm, non-judgmental presence with a gentle opening.
@@ -244,7 +247,7 @@
 
   const insultPattern =
     // eslint-disable-next-line max-len
-    /\b(?:stupid|dumb|idiot|moron|foolish|retard|dummy|loser|jerk|ass(?:hole|hat|bag|clown|face|wipe)?|arse(?:hole)?|bitch(?:ing)?|bastard|bullshit|shit(?:head|hole|ty|fuck)|dipshit|shite|crap(?:head|py)?|damn|goddamn(?:it)?|dick(?:head|wad)?|prick|knob(?:head)?|twat|wanker|tosser|cock(?:sucker)?|cunt|fuck(?:er|ing|tard|wit|face|nut|ed)?|motherfucker|dumbfuck|shitfuck|horseshit|piss(?:ant|ed off)?|slut|whore|skank|slag|scum(?:bag)?|jackass|dumbass|douche(?:bag)?|bugger|bollocks|screw|disgusting|despicable|contemptible|vile|obnoxious|repulsive|pathetic|useless|ignorant|worthless|hopeless|wretched|pedo|pedophile|paedophile|you suck|you (?:are )?(?:an? )?(?:ass|idiot|moron|joke|fool|cretin|bastard|bitch|dick|dumbass|fucker|loser|pathetic|worthless|piece of shit|jerk|cunt|twat|wanker|stupid|dumb|pedo|pedophile|paedophile)|full of shit|this shit is|that shit is)\b/i;
+    /\b(?:stupid|dumb|idiot|moron|foolish|retard|dummy|loser|jerk|ass(?:hole|hat|bag|clown|face|wipe)?|arse(?:hole)?|bitch(?:ing)?|bastard|bullshit|shit(?:head|hole|ty|fuck)?|dipshit|shite|crap(?:head|py)?|damn|goddamn(?:it)?|dick(?:head|wad)?|prick|knob(?:head)?|twat|wanker|tosser|cock(?:sucker)?|cunt|fuck(?:er|ing|tard|wit|face|nut|ed)?|motherfucker|dumbfuck|shitfuck|horseshit|piss(?:ant|ed off)?|slut|whore|skank|slag|scum(?:bag)?|jackass|dumbass|douche(?:bag)?|bugger|bollocks|screw|disgusting|despicable|contemptible|vile|obnoxious|repulsive|pathetic|useless|ignorant|worthless|hopeless|wretched|pedo|pedophile|paedophile|you suck|you (?:are )?(?:an? )?(?:ass|idiot|moron|joke|fool|cretin|bastard|bitch|dick|dumbass|fucker|loser|pathetic|worthless|piece of shit|jerk|cunt|twat|wanker|stupid|dumb|pedo|pedophile|paedophile)|full of shit|this shit is|that shit is|holy shit|oh shit|just shit)\b/i;
 
   // Date/time question patterns for the _handleDateTimeQuestion engine
   // method. Time queries: asking the current time. Date queries: asking
@@ -255,6 +258,14 @@
   const dateTimeDatePattern =
     // eslint-disable-next-line max-len
     /\b(what('?s| is) (the date|today(?:'s date)?|the day(?: today)?)|what day is it|tell me the date|what is today(?:'s date)?|what date is it|whats today)\b/i;
+
+  // Year-only question (English): "what year is it now?", "what year are
+  // we in?". The transcript probe "what year is it now?" fell to the
+  // source-suggestion pool because the date pattern only knew the
+  // full-date forms.
+  const dateTimeYearPattern =
+    // eslint-disable-next-line max-len
+    /\b(what year (?:is it|are we in|is this|is it now|are we)|what year is it now|current year|the year now|tell me the year)\b/i;
 
   // Darya-targeted harassment: insults and name-calling directed at
   // Darya specifically (using her name or "you" with degrading labels).
@@ -287,6 +298,7 @@
     insultPattern,
     dateTimeTimePattern,
     dateTimeDatePattern,
+    dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern
   };

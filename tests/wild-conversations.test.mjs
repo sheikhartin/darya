@@ -1608,3 +1608,665 @@ test('wild: non-career want-to-be wishes never hijack learning advice', () => {
     );
   }
 });
+
+test('wild: affectionate FA greetings are welcomed, never read as noise', () => {
+  // «سلاااامممم عسلم», «درود خانمم», and «سلام خانومی» from the real
+  // transcript are warm openers, not spam or frustration. Each must get
+  // a friendly greeting reply, never the honest-unknown line or the
+  // repeated-greeting dismissal.
+  const openers = [
+    'سلاااامممم عسلم',
+    'درود خانمم',
+    'سلام خانومی',
+    'سلام عزیز دلم'
+  ];
+  for (const line of openers) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.ok(reply.length > 10, `${line}: reply too short: "${reply}"`);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive line: "${reply}"`);
+    assert.match(
+      reply,
+      /سلام|درود|خوش|خوشحال|حضور|آمدی|خبر/iu,
+      `${line}: should welcome the greeting: "${reply}"`
+    );
+  }
+});
+
+test('wild: FA story requests reach the curated horror story, not the unknown pool', () => {
+  // «یه داستان ترسناک تعریف کن» and «داستان ترسناک بگو» used to fall
+  // through to the honest-unknown pool (the FA knowledge-request pattern
+  // lacked a story framing). Both must return the curated short horror
+  // story.
+  for (const line of ['یه داستان ترسناک تعریف کن', 'داستان ترسناک بگو']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(
+      reply,
+      /داستان|اتاق|ترسناک|ساعت|در می‌زد/iu,
+      `${line}: should tell the horror story: "${reply}"`
+    );
+  }
+  // A life-story disclosure is NOT a story request: it must never be
+  // answered with the fiction shelf.
+  const life = freshEngine(FA);
+  const lifeReply = life.respond('داستان زندگیم خیلی سخته');
+  assert.doesNotMatch(
+    lifeReply,
+    /اتاق کناری|3:03|ساعت سه/iu,
+    `life disclosure must not trigger the fiction shelf: "${lifeReply}"`
+  );
+});
+
+test('wild: FA dev-salary and framework-comparison questions reach the facts', () => {
+  // «درآمد یه برنامه‌نویس تو ایران چقدره؟» used to be swallowed by the
+  // work rule (the salary bypass used an ASCII-only \b that never fires
+  // after Persian letters), and «بین ری اکت و ویو کدوم بهتره؟» by
+  // learning_advice (the FA request pattern lacked a comparison
+  // framing). Both must now answer from the factual shelf.
+  const cases = [
+    [
+      'درآمد یه برنامه‌نویس تو ایران چقدره؟',
+      'برنامه‌نویس|درآمد|حقوق|شهر|تجربه'
+    ],
+    ['بین ری اکت و ویو کدوم بهتره؟', 'ری‌اکت|ری اکت|ویو|فریم‌ورک|جاوااسکریپت'],
+    ['چند تا یوتیوبر خوب بهم معرفی کن', 'یوتیوبر|کانال|آموزش']
+  ];
+  for (const [line, must] of cases) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(
+      reply,
+      new RegExp(must, 'iu'),
+      `${line}: should answer from the shelf: "${reply}"`
+    );
+  }
+  // The comparison framing must not drag in a bare «کدوم مسیر» disclosure.
+  const path = freshEngine(FA);
+  const pathReply = path.respond('کدوم مسیر رو برم؟');
+  assert.doesNotMatch(
+    pathReply,
+    /ری‌اکت|ویو|فریم‌ورک/iu,
+    `bare which-path question must not reach the shelf: "${pathReply}"`
+  );
+});
+
+test('wild: FA fatigue phrasings are heard as fatigue, not physical pain', () => {
+  // «چرا همیشه خسته‌ام؟» (ZWNJ) and the no-ZWNJ «چرا همیشه خستهام؟»
+  // both normalize differently; both must route to the health thread and
+  // reply with a fatigue-aware line, never the pain-only wording
+  // («دردت را می‌شنوم») or the unknown pool.
+  for (const line of [
+    'چرا همیشه خسته‌ام؟',
+    'چرا همیشه خستهام؟',
+    'چرا همش خسته‌ام'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.doesNotMatch(
+      reply,
+      /دردت را می‌شنوم|این درد چقدر/iu,
+      `${line}: must not use pain-only wording: "${reply}"`
+    );
+    assert.ok(
+      engine.currentTurnTopics.includes('health_pain') ||
+        engine.currentTurnTopics.includes('health'),
+      `${line}: must route to the health thread, got: ${engine.currentTurnTopics.join(',')}`
+    );
+  }
+});
+
+test('wild: FA new-parent announcements reach the new_baby celebration', () => {
+  // «تازه مامان شدم» used to be swallowed by the family rule (bare
+  // «مامان») and answered with a family follow-up question. The new_baby
+  // rule (51) must outrank family (50) and celebrate the announcement.
+  for (const line of [
+    'تازه مامان شدم',
+    'تازه بابا شدم!',
+    'تازه یه بچه به دنیا اومده تو خونواده‌مون'
+  ]) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.ok(
+      engine.currentTurnTopics.includes('new_baby'),
+      `${line}: must route to new_baby, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `FA new parent: ${line}`);
+  }
+});
+
+test('wild: EN fatigue phrasings get fatigue-aware replies, not pain wording', () => {
+  // EN parity for the FA fatigue fix: "why am i always tired", "i am
+  // always exhausted these days", and the feel-form must route to the
+  // health thread and reply with a tiredness-aware line, never the
+  // pain-only wording ("I hear your pain") or the unknown pool.
+  for (const line of [
+    'why am i always tired?',
+    'i am always exhausted these days',
+    'i feel tired every day'
+  ]) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.doesNotMatch(
+      reply,
+      /I hear your pain|Pain can be exhausting|That sounds painful/iu,
+      `${line}: must not use pain-only wording: "${reply}"`
+    );
+    assert.ok(
+      engine.currentTurnTopics.includes('health_pain') ||
+        engine.currentTurnTopics.includes('health'),
+      `${line}: must route to the health thread, got: ${engine.currentTurnTopics.join(',')}`
+    );
+  }
+  // "tired of" stays a work/feeling disclosure, never health fatigue.
+  const work = freshEngine(EN);
+  const workReply = work.respond('i am tired of my job');
+  assert.doesNotMatch(
+    workReply,
+    /sleep|exhausted all the time/iu,
+    `tired-of must not route to fatigue: "${workReply}"`
+  );
+});
+
+test('wild: EN and FA fun-fact and horror requests answer without evading', () => {
+  // The "something interesting" opener (EN) and the FA horror-story
+  // request both used to bounce to generic fallbacks. Each must answer
+  // from the factual shelf.
+  const en = freshEngine(EN);
+  const enReply = en.respond('tell me something interesting');
+  assert.doesNotMatch(enReply, EVASIVE, `EN interesting: "${enReply}"`);
+  assert.match(enReply, /fact|facts|heart|piano|octopus/iu, 'EN facts');
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('یه داستان ترسناک بگو');
+  assert.doesNotMatch(faReply, EVASIVE, `FA horror: "${faReply}"`);
+  assert.match(faReply, /داستان|اتاق|ترسناک/iu, 'FA horror story');
+});
+
+test('wild: 2026 AI-job anxiety is answered with the jobs reality, not evaded', () => {
+  // "will ai take my job" and its Persian twin used to fall to the
+  // unknown pool (EN) or a work-question misroute (FA). The ai fact now
+  // carries a jobs note (AI reshapes careers, it rarely erases them),
+  // and the knowledge gate admits chatbot/robot/automation framing.
+  const cases = [
+    [EN, 'will ai take my job?', 'work'],
+    [FA, 'هوش مصنوعی شغلم رو می‌گیره', 'work'],
+    [FA, 'ربات‌ها کارم رو خودکار می‌کنن', 'work']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} ai-job`);
+  }
+  // "will chatbots replace X jobs" has no personal frame, so it is
+  // answered from the knowledge shelf directly (no conversational rule
+  // topic is set); the reply must still be the factual jobs answer.
+  const shelf = freshEngine(EN);
+  const shelfReply = shelf.respond(
+    'will chatbots replace customer service jobs?'
+  );
+  assert.doesNotMatch(
+    shelfReply,
+    EVASIVE,
+    `EN chatbots evasive: "${shelfReply}"`
+  );
+  assert.match(
+    shelfReply,
+    /reshape|rarely erases|creates new roles|automation/iu,
+    `EN chatbots must answer with the jobs reality: "${shelfReply}"`
+  );
+  // Past-tense personal report stays a personal disclosure, never the
+  // encyclopedia: "ماه پیش هوش مصنوعی شغلم رو گرفت" asks for support.
+  const past = freshEngine(FA);
+  const pastReply = past.respond('ماه پیش هوش مصنوعی شغلم رو گرفت');
+  assert.doesNotMatch(
+    pastReply,
+    /آینده/iu,
+    `FA past-tense must not lecture: "${pastReply}"`
+  );
+});
+
+test('wild: gig-economy talk routes to the gig pool, never the exit flow', () => {
+  // "should i quit my gig job" used to trip the exit-confirm flow
+  // ("quit" keyword) and the rest of the 2026 gig phrasings fell to
+  // evasive fallbacks. The exit false-positive pattern now ignores
+  // "quit X job/company", and a dedicated gig rule owns the topic.
+  const cases = [
+    [EN, 'should i quit my gig job?', 'gig_economy'],
+    [EN, 'is the gig economy worth it in 2026?', 'gig_economy'],
+    [EN, 'i do delivery gigs and the pay is unpredictable', 'gig_economy'],
+    [FA, 'کارهای آزاد دیگه صرفه نداره', 'gig_economy'],
+    [FA, 'کار آزاد خسته‌م کرده', 'gig_economy']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} gig`);
+  }
+  // The exit-confirm flow must never open for a gig-career question.
+  const exitProbe = freshEngine(EN);
+  const exitReply = exitProbe.respond('should i quit my gig job?');
+  assert.doesNotMatch(
+    exitReply,
+    /are you sure|say goodbye|finish the conversation/iu,
+    `gig quit must not open exit flow: "${exitReply}"`
+  );
+});
+
+test('wild: housing-cost pressure routes to the housing pool, not money generic', () => {
+  // Rent and deposit pressure are 2026-specific money stress that used
+  // to land in the broad money pool ("needs, budget, compare") or the
+  // evasive fallback. A dedicated housing rule speaks to the squeeze.
+  const cases = [
+    [EN, 'rent is eating half my salary', 'housing'],
+    [EN, 'i cannot afford to move out of my parents house', 'housing'],
+    [EN, 'the deposit for any apartment is impossible', 'housing'],
+    [FA, 'اجاره‌خونه خیلی گرون شده', 'housing'],
+    [FA, 'حقوقم نصفش می‌ره برای اجاره', 'housing'],
+    [FA, 'واسه پول پیش خونه هیچی ندارم', 'housing']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} housing`);
+  }
+});
+
+test('wild: young-adult loneliness phrasings route to the loneliness thread', () => {
+  // 2026 loneliness: no close friends at 26, followers with nobody to
+  // call, online-only friendships in both languages. These used to fall
+  // to the depression shelf or the evasive fallback; each must stay on
+  // the loneliness thread.
+  const cases = [
+    [EN, 'i am 26 and i have no close friends', 'loneliness'],
+    [EN, 'i have 200 followers but no one to call', 'loneliness_online'],
+    [EN, 'we only talk online these days', 'loneliness_online'],
+    [FA, 'هیچ دوست صمیمی ندارم', 'loneliness'],
+    [FA, 'دوستی‌هام همه آنلاین شدن', 'loneliness_online'],
+    [
+      FA,
+      'دویست تا دنبال‌کننده دارم ولی هیچ‌کس نیست زنگ بزنم',
+      'loneliness_online'
+    ]
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} loneliness`);
+  }
+  // A plain online-friendship statement is not a depression disclosure.
+  const online = freshEngine(FA);
+  const onlineReply = online.respond('دوستام همه آنلاین شدن');
+  assert.ok(
+    online.currentTurnTopics.includes('loneliness_online'),
+    `FA online friends must not hit depression, got: ${online.currentTurnTopics.join(',')}`
+  );
+});
+
+test('wild: new-city loneliness beats the work thread in both languages', () => {
+  // "moved for work and know nobody" is a loneliness disclosure first;
+  // the dedicated new-city rule (51) outranks work (50).
+  const cases = [
+    [
+      EN,
+      'i moved to a new city for a job and i know nobody here',
+      'loneliness_new_city'
+    ],
+    [FA, 'برای کار اومدم یه شهر جدید و کسی رو نمی‌شناسم', 'loneliness_new_city']
+  ];
+  for (const [lang, line, topic] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${lang}: ${line} evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes(topic),
+      `${lang}: ${line} must route to ${topic}, got: ${engine.currentTurnTopics.join(',')}`
+    );
+    assertQuality(reply, `${lang} new-city`);
+  }
+});
+
+test('wild: story requests pick genre pools and follow-ups continue them', () => {
+  // "tell me a funny story" / «یه داستان خنده‌دار بگو» must answer with
+  // a comedy tale, never the comedy-movie recommendation shelf or an
+  // evasive fallback; and the genre must be respected per request.
+  const cases = [
+    [EN, 'tell me a funny story', 'funny|comedy|story|parrot|gym'],
+    [EN, 'tell me a horror story', 'horror|story|mirror|library'],
+    [EN, 'tell me a story', 'story|baker|watchmaker'],
+    [FA, 'یه داستان خنده‌دار بگو', 'خنده‌دار|داستان|طوطی|گیاه'],
+    [FA, 'یه داستان ترسناک بگو', 'ترسناک|داستان|آینه|کتاب'],
+    [FA, 'یه داستان بگو', 'داستان|ساعت‌ساز|نانوا']
+  ];
+  for (const [lang, line, must] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(reply, new RegExp(must, 'iu'), `${line}: "${reply}"`);
+  }
+  // A follow-up "another one" / «یکی دیگه» after a story keeps telling
+  // stories from the same genre pool instead of bouncing to a generic
+  // fallback or a knowledge answer.
+  const seqs = [
+    [EN, 'tell me a horror story', 'another one'],
+    [EN, 'tell me a funny story', 'one more'],
+    [FA, 'یه داستان ترسناک بگو', 'یکی دیگه'],
+    [FA, 'یه داستان خنده‌دار بگو', 'بازم']
+  ];
+  for (const [lang, first, second] of seqs) {
+    const engine = freshEngine(lang);
+    const firstReply = engine.respond(first);
+    const secondReply = engine.respond(second);
+    assert.doesNotMatch(
+      secondReply,
+      EVASIVE,
+      `${first} then ${second}: evasive follow-up: "${secondReply}"`
+    );
+    assert.match(
+      secondReply,
+      /(?:story|داستان)/iu,
+      `${first} then ${second}: follow-up left the story thread: "${secondReply}"`
+    );
+    assert.notEqual(
+      secondReply,
+      firstReply,
+      `${first} then ${second}: follow-up repeated the same story`
+    );
+    assertQuality(secondReply, `${lang} story follow-up`);
+  }
+});
+
+test('wild: joke and fun-fact follow-ups continue the same kind', () => {
+  // "tell me a joke" then "another one" / «یه جک بگو» then «یکی دیگه»:
+  // the bare follow-up must produce a NEW joke, never a generic line or
+  // a repetition (the context-window requirement). Same for fun facts.
+  const jokeSeqs = [
+    [EN, 'tell me a joke', 'another one'],
+    [EN, 'tell me a joke', 'one more'],
+    [EN, 'make me laugh', 'again'],
+    [FA, 'یه جک بگو', 'یکی دیگه'],
+    [FA, 'یه جک بگو', 'بازم']
+  ];
+  for (const [lang, first, second] of jokeSeqs) {
+    const engine = freshEngine(lang);
+    const firstReply = engine.respond(first);
+    const secondReply = engine.respond(second);
+    assert.doesNotMatch(
+      secondReply,
+      EVASIVE,
+      `${first} then ${second}: evasive follow-up: "${secondReply}"`
+    );
+    assert.notEqual(
+      secondReply,
+      firstReply,
+      `${first} then ${second}: follow-up repeated the same joke`
+    );
+    assertQuality(secondReply, `${lang} joke follow-up`);
+  }
+  const factSeqs = [
+    [EN, 'tell me something interesting', 'another one'],
+    [FA, 'یه چیز جالب بگو', 'یکی دیگه']
+  ];
+  for (const [lang, first, second] of factSeqs) {
+    const engine = freshEngine(lang);
+    const firstReply = engine.respond(first);
+    const secondReply = engine.respond(second);
+    assert.doesNotMatch(
+      secondReply,
+      EVASIVE,
+      `${first} then ${second}: evasive follow-up: "${secondReply}"`
+    );
+    assert.notEqual(
+      secondReply,
+      firstReply,
+      `${first} then ${second}: follow-up repeated the same facts`
+    );
+    assertQuality(secondReply, `${lang} fact follow-up`);
+  }
+});
+
+test('wild: FA affectionate greetings never fall to the unknown pool', () => {
+  // «سلام جیگرم», «درود زیبارو», «خوشگله سلام», «جانم» are everyday
+  // affectionate openers (modern Persian chat slang): they must get a
+  // warm greeting, not an "unknown topic" line (the probe failure).
+  const greetings = [
+    'سلام جیگرم',
+    'سلام جیگر',
+    'درود زیبارو',
+    'سلام زیبا رو',
+    'خوشگله سلام',
+    'جانم',
+    'سلام جانم',
+    'فدات'
+  ];
+  for (const line of greetings) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('greeting'),
+      `${line}: must be a greeting, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+  }
+  // Direct compliments («فدات شم», «چشمات قشنگه», «تو خیلی خوشگلی»)
+  // stay on the flirtation thread with the warm boundary.
+  for (const line of ['فدات شم', 'چشمات قشنگه', 'تو خیلی خوشگلی']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('flirtation'),
+      `${line}: must be flirtation, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+  }
+});
+
+test('wild: Turkish-origin vulgar slang gets the calm boundary reply', () => {
+  // «سیکیر» (from Turkish siktir) is used as a raw insult in Persian
+  // chat; it must receive the calm de-escalation, never a generic
+  // short-input reply.
+  for (const line of ['سیکیر', 'سیکیر بابا', 'سیکیرم']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(reply.length > 10, `${line}: reply too short: "${reply}"`);
+    assertQuality(reply, `FA ${line}`);
+  }
+});
+
+test('wild: 2033 career questions reach the future-of-jobs facts', () => {
+  // The 2026-2033 career shelf answers decade-stamped questions in both
+  // languages instead of the philosophy shelf or an evasive line.
+  const cases = [
+    [
+      EN,
+      'is cybersecurity a good career',
+      'job market|2026|skills|cybersecurity|ai|data'
+    ],
+    [EN, 'what jobs will exist in 2033', 'job market|2026|skills|jobs'],
+    [FA, 'توی سال ۲۰۳۳ چه شغل‌هایی هست', 'بازار کار|مهارت|هوش مصنوعی|شغل'],
+    [FA, 'آینده شغلی هوش مصنوعی چطوره', 'بازار کار|هوش مصنوعی|شغل'],
+    [FA, 'امنیت سایبری شغل خوبیه', 'بازار کار|امنیت سایبری|شغل'],
+    [FA, 'بهترین رشته برای آینده چیه', 'بازار کار|مهارت|رشته']
+  ];
+  for (const [lang, line, must] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.match(reply, new RegExp(must, 'iu'), `${line}: "${reply}"`);
+  }
+});
+
+test('wild: affectionate openers with how-are-you tails stay greetings', () => {
+  // «جیگرم چه خبر» (hey sweetheart, what is up) is a warm modern
+  // Persian opener. The how-are-you tail must stay inside the greeting
+  // family, never fall to the unknown pool or the how-are-you rule.
+  const lines = [
+    'جیگرم چه خبر',
+    'جانم چطوری',
+    'زیبارو خوبی',
+    'خوشگله چه خبری',
+    'قربونت چطوری'
+  ];
+  for (const line of lines) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('greeting'),
+      `${line}: must be greeting, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+    assertQuality(reply, `FA ${line}`);
+  }
+});
+
+test('wild: social comparison reaches its own pool in both languages', () => {
+  // Comparing life to friends, classmates, or the Instagram highlight
+  // reel ("everyone is more successful", «همه شادتر از من میان») is a
+  // distinct emotional disclosure. It must reach the social-comparison
+  // pool, never the unknown pool, the vague "color" reflection, or a
+  // knowledge essay.
+  const cases = [
+    [EN, 'everyone on instagram is living a better life than me'],
+    [EN, 'my high school friends are all successful and im not'],
+    [EN, 'i envy my friends who have it all together'],
+    [EN, 'everyone seems happier than me'],
+    [EN, 'i feel like im falling behind everyone'],
+    [FA, 'همه توی اینستاگرام زندگی بهتری از من دارن'],
+    [FA, 'دوستان دبیرستانیم همه موفق شدن و من نه'],
+    [FA, 'همکلاسی‌هام ترفیع می‌گیرن و من سر جام وایسادم'],
+    [FA, 'همه به نظر شادتر از من میان'],
+    [FA, 'در سن من احساس شکست می‌کنم']
+  ];
+  for (const [lang, line] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('social_comparison'),
+      `${line}: must be social_comparison, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+    assertQuality(reply, `${lang.code} ${line}`);
+  }
+});
+
+test('wild: overwork with no progress gets empathy, not a stoicism essay', () => {
+  // Working two jobs or a salary that barely covers the month is a money
+  // disclosure. The FA form contains «شغل», which the knowledge rule
+  // used to swallow into a philosophy essay; the EN forms fell to the
+  // unknown pool. Both must reach the overwork_stuck pool.
+  const cases = [
+    [EN, 'i work two jobs and still cant get ahead'],
+    [EN, 'my salary barely covers the month'],
+    [EN, 'im behind on my bills and ashamed'],
+    [FA, 'دو تا شغل کار می‌کنم ولی بازم نمی‌تونم جلو برم'],
+    [FA, 'حقوقم آخر ماه تموم میشه']
+  ];
+  for (const [lang, line] of cases) {
+    const engine = freshEngine(lang);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('overwork_stuck'),
+      `${line}: must be overwork_stuck, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+    assertQuality(reply, `${lang.code} ${line}`);
+  }
+});
+
+test('wild: money guilt stays on the money thread', () => {
+  // «وقتی برای خودم پول خرج می‌کنم عذاب وجدان می‌گیرم» (guilt about
+  // spending on oneself) is a financial disclosure, not a vague feeling.
+  const engine = freshEngine(FA);
+  const reply = engine.respond(
+    'وقتی برای خودم پول خرج می‌کنم عذاب وجدان می‌گیرم'
+  );
+  assert.doesNotMatch(reply, EVASIVE, `money guilt: evasive: "${reply}"`);
+  assert.ok(
+    engine.currentTurnTopics.includes('money'),
+    `money guilt: got ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+  );
+});
+
+test('wild: FA how-are-you accepts time prefixes and formal forms', () => {
+  // «امروز چطوری», «چطورید», «این روزا حالت چطوره» are everyday
+  // check-ins; they must stay in the how-are-you family, never fall to
+  // the unknown pool. The bare-word guard must hold: «جمله خوبی گفتی»
+  // (you said a good sentence) must not be hijacked by the word «خوبی».
+  const good = [
+    'امروز چطوری',
+    'چطورید',
+    'امروز حالت چطوره',
+    'این روزا حالت چطوره',
+    'امشب خوبی',
+    'این هفته حالت خوبه'
+  ];
+  for (const line of good) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('smalltalk_howareyou'),
+      `${line}: must be smalltalk_howareyou, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+  }
+  const engine = freshEngine(FA);
+  const reply = engine.respond('جمله خوبی گفتی');
+  assert.ok(
+    !engine.currentTurnTopics.includes('smalltalk_howareyou'),
+    `bare خوبی must not hijack: got ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+  );
+});
+
+test('wild: FA mood recall with no data is honest, never evasive', () => {
+  // «حالم چطوره» (how is my mood) asks for the mood log; with nothing
+  // logged yet Darya says so plainly and invites a check-in, instead of
+  // an evasive line or a how-are-you reply about herself.
+  const engine = freshEngine(FA);
+  const reply = engine.respond('حالم چطوره');
+  assert.doesNotMatch(reply, EVASIVE, `حالم چطوره: evasive: "${reply}"`);
+  assert.match(reply, /ثبت|حال|خلق/u, `حالم چطوره: "${reply}"`);
+});
+
+test('wild: give-me-story requests with a genre reach the story pool', () => {
+  // The "give me X story" form with a genre adjective (scary, funny)
+  // must route to the story pool in English, not the unknown pool.
+  const lines = [
+    'give me a scary story',
+    'give me a funny story',
+    'give me a story'
+  ];
+  for (const line of lines) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('smalltalk_story'),
+      `${line}: must be smalltalk_story, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+    assertQuality(reply, `EN ${line}`);
+  }
+});

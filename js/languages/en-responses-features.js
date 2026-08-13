@@ -261,6 +261,17 @@
     nameUnknown: [
       'Honestly, you have not told me your name yet. If you like, tell me and I will remember it.',
       'I do not know your name yet. What is it?'
+    ],
+    // Combined recall ("do you remember who I am and how old I am?"):
+    // answer honestly from the stored profile. Never invents facts, and
+    // plainly admits what was not disclosed.
+    bothKnown: [
+      'Yes, I remember: your name is {name} and you are {age} years old. You told me both in this conversation and I have kept them.',
+      'I remember: {name}, {age} years old. Both were shared in this chat and I held onto them.'
+    ],
+    noneKnown: [
+      'Anything you share in this conversation stays with me. You have not told me your name or age yet; whenever you like, tell me and I will remember.',
+      'Honestly, you have not told me your name or age yet. If you do, I will keep them right here.'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

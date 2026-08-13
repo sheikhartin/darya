@@ -5,6 +5,94 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.2.1] - 2026-08-12
+
+### Added
+
+- **World knowledge shelf.** A new curated fact base covering finance and
+  investing (bitcoin and blockchain, the stock market, dollar-cost
+  averaging, gold, OPEC, the IMF, inflation), politics basics, and
+  Persian cooking (fesenjan, jujeh kabab, tahdig, ash reshteh, mirza
+  ghasemi), answered directly in both languages and guarded by an
+  honest financial-risk disclaimer.
+- **Short-story pools.** "Tell me a story" / «یه داستان بگو» now serves
+  original mini-stories in three genres (general, horror, comedy), with
+  genre selection from the request and a "another one" / «یکی دیگه»
+  follow-up that continues the same kind.
+- **Social comparison thread.** Comparing yourself to the highlight reel
+  of friends, classmates, siblings, or social media (Instagram,
+  TikTok, LinkedIn) gets its own warm pool instead of a generic line,
+  in both languages.
+- **Overwork-and-stuck thread.** Working two jobs or a salary that
+  barely covers the month gets empathy that names the exhaustion, not
+  a philosophy essay or an evasive fallback.
+- **2033 career horizon.** Future-of-jobs questions ("what jobs will
+  exist in 2033", «توی سال ۲۰۳۳ چه شغل‌هایی هست») route to the same
+  curated career facts as the 2026-2030 decade.
+- **Modern Persian openers.** Time-prefixed how-are-you greetings
+  («امروز چطوری»), the formal «چطورید», and affectionate tails like
+  «جیگرم», «زیبارو», and «خوشگله» are recognized as greetings.
+
+### Changed
+
+- The Persian knowledge gate now opens for «چرا» questions
+  («چرا تورم بالاست») without firing from inside words like «چراغ»,
+  and for cooking how-to framings («طرز تهیه»).
+- World-economics questions that share keywords with the personal money
+  rule («تورم», "inflation", «بورس», "stock market") reach the
+  knowledge shelf instead of the financial-stress pool; personal
+  disclosures («پول ندارم», «قرضم زیاده») stay empathetic.
+- Entertainment replies (jokes, stories, fun facts) remember their kind
+  for a few turns so a bare "another one" continues the same thread.
+- Turkish-origin vulgar slang (سیکیر and its inflections) is treated as
+  an insult with the calm boundary reply, in line with the transcript
+  probe.
+
+### Fixed
+
+- English "feel guilty" now matches the self-esteem rule (a spacing bug
+  in the pattern required two spaces and silently dropped the phrase).
+- Persian «خانوادم» (colloquial possessive, missing the ه) is caught by
+  the family rule, so family money pressure and comparisons stay on the
+  family thread.
+- Persian mood-recall questions («حالم چطوره») with no recorded data
+  answer honestly instead of evasively.
+- Bare "falling behind" no longer hijacks workaholic anxiety; it needs
+  a comparison target ("falling behind everyone") to reach the social
+  comparison thread.
+- Subject-continuation regressions: the subject-preference guard now
+  actually works (its window constant was never exported, making it dead
+  code), keeps a fresh specific subject when a generic advice topic
+  fires, and unions the subject topic with matched topics instead of
+  replacing them.
+- Continuation refreshes are capped, so a chatty unmatched user cannot
+  keep one subject alive forever; an abandoned thread still ages out
+  into the honest-unknown pool.
+- A generic advice subject (friendship) no longer blocks a fresh
+  "what should I do" turn from reaching the advice pool.
+- The wild-daily comparison test asserted only a subset of the
+  comparison pool's variants, making it flaky; its regex now covers the
+  whole pool.
+- The wild-passions and quick-replies e2e suites were written but never
+  wired into `npm test` or the smoke runner; they now run in CI.
+- Added a browser e2e test that proves the offline contract end to end:
+  the service worker precaches every URL it declares, and the app still
+  loads and answers requests after the server is fully shut down.
+
+### Validated
+
+- 921/921 tests pass, including the new knowledge-world,
+  wild-conversation, wild-daily, and wild-passions routing coverage,
+  plus the offline service-worker e2e.
+- 291/291 smoke checks pass.
+- Zero evasive fallbacks across the 60-phrase daily-life probe
+  (financial anxiety, family pressure, social comparison) in both
+  languages.
+- ESLint (0 warnings), Stylelint, and Prettier are clean.
+- Offline and PWA behavior verified in a real browser: the service
+  worker precaches the new fact file, quick-reply chips render with
+  44px touch targets, and knowledge answers work fully offline.
+
 ## [1.2.0] - 2026-08-11
 
 ### Added

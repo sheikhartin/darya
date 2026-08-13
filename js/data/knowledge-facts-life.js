@@ -21,9 +21,24 @@
         'به کسی بگم دوستش دارم',
         'crush',
         'confess to my crush',
-        'how to tell someone i like them'
+        'how to tell someone i like them',
+        'ask her out',
+        'ask him out',
+        'ask someone out',
+        'ask out',
+        'خواستگاری',
+        'خواستگاری کنم',
+        'ازش خواستگاری',
+        'از دختری که دوست دارم'
       ],
-      weak: ['کراش', 'crush', 'اعتراف', 'ابراز احساسات'],
+      weak: [
+        'کراش',
+        'crush',
+        'اعتراف',
+        'ابراز احساسات',
+        'خواستگاری',
+        'دوست دارم'
+      ],
       weakSafe: true,
       hints: [
         'دختر',
@@ -127,7 +142,16 @@
         'manage my money',
         'manage money',
         'how to budget',
-        'how to save money'
+        'how to save money',
+        // Emergency-fund phrasings: «پول اضطراریمو کجا بذارم» (where do
+        // I keep my emergency money) and "park my emergency fund" are
+        // everyday 2026 money questions that used to bounce to the
+        // honest-ignorance fallback.
+        'emergency fund',
+        'emergency savings',
+        'پول اضطراریمو',
+        'پول اضطراری',
+        'اندوخته اضطراری'
       ],
       weak: ['بودجه', 'پس انداز', 'پس‌انداز', 'budget', 'saving'],
       weakSafe: true,
@@ -297,6 +321,67 @@
       ],
       fa: 'وقتی فشار اقتصادی آن‌قدر زیاد می‌شود که ناامیدی می‌آید، اول بدان که این حس تقصیر شخصی تو نیست؛ شرایط اقتصادی روی میلیون‌ها نفر همین اثر را دارد. نفس عمیق بکش و مشکل را کوچک کن: به‌جای «همه‌چیز خراب است»، بنویس دقیقاً چه چیزی فوری است (اجاره؟ قسط؟ خوراک؟) و یک قدم کوچک برای همان یکی بردار. کمک خواستن شرم ندارد: از خانواده، دوستان، نهادهای حمایتی یا مشاور. اگر ناامیدی به فکر آسیب‌زدن به خودت رسید، این یک وضعیت فوری است و باید همین حالا با یک خط بحران یا آدم قابل‌اعتماد تماس بگیری؛ من اینجام تا بشنوم، اما جای کمک حرفه‌ای را نمی‌گیرم.',
       en: 'When financial pressure grows so heavy that hopelessness sets in, first know that this feeling is not your personal fault; economic conditions affect millions of people the same way. Take a deep breath and shrink the problem: instead of everything is ruined, write down exactly what is urgent (rent, a payment, food) and take one small step for that single item. Asking for help is not shameful: reach out to family, friends, support organizations, or a mental health professional. If hopelessness turns into thoughts of harming yourself, that is an urgent situation and you should contact a crisis line or a trusted person right now; I am here to listen, but I do not replace professional help.'
+    },
+    {
+      id: 'weight_loss_safe',
+      keywords: [
+        'چطور وزن کم کنم',
+        'چگونه وزن کم کنم',
+        'چطور لاغر شم',
+        'رژیم لاغری',
+        'کاهش وزن',
+        'لاغری سالم',
+        'how to lose weight',
+        'lose weight safely',
+        'healthy weight loss',
+        'weight loss plan',
+        'how can i lose weight'
+      ],
+      weak: ['لاغر', 'وزن', 'رژیم', 'diet', 'slim'],
+      weakSafe: false,
+      hints: ['کم', 'کنم', 'چطور', 'برنامه', 'plan', 'safe'],
+      fa: 'کاهش وزن سالم یک مسیر تدریجی است، نه رژیم‌های جهشی: اول کمبود کالری ملایم (۵۰۰ کالری کمتر از نیاز روزانه) که حدود نیم کیلو در هفته می‌دهد؛ دوم، پروتئین کافی و سبزیجات تا سیر بمانی؛ سوم، خواب کافی که هورمون گرسنگی را تنظیم می‌کند؛ چهارم، حرکت روزانه حتی پیاده‌روی سریع. کاهش ناگهانی وزن یا رژیم‌های خیلی سخت معمولاً برمی‌گردد و به بدن آسیب می‌زند. اگر بیماری زمینه‌ای یا دارو داری، قبل از هر رژیمی با پزشک مشورت کن.',
+      en: 'Healthy weight loss is a gradual path, not a crash diet: first a mild calorie deficit (about 500 calories below your daily need, roughly half a kilogram per week); second, enough protein and vegetables to stay full; third, enough sleep, which regulates hunger hormones; fourth, daily movement, even brisk walking. Sudden weight loss or extremely strict diets usually rebound and can harm your body. If you have an underlying condition or take medication, check with a doctor before any diet.'
+    },
+    {
+      id: 'confidence_building',
+      keywords: [
+        'اعتماد به نفسم رو زیاد کنم',
+        'اعتماد به نفس',
+        'اعتماد بنفس',
+        'خودباوری',
+        'باور به خودم',
+        'boost my confidence',
+        'build self confidence',
+        'self confidence',
+        'gain confidence',
+        'how to be confident'
+      ],
+      weak: ['مطمئن به خودم', 'اعتماد', 'confidence'],
+      weakSafe: false,
+      hints: ['زیاد', 'کنم', 'بیشتر', 'چطور', 'how', 'more'],
+      fa: 'اعتماد به نفس با عمل ساخته می‌شود، نه با منتظر ماندن برای احساس آمادگی: یک قدم کوچک که کمی از منطقه‌ی امن بیرون می‌زنی (سلام کردن، سؤال پرسیدن، شروع یک مهارت) هر بار مدار اعتماد به نفس را تقویت می‌کند. به‌جای مقایسه با دیگران، با خودِ دیروزت مقایسه کن و پیروزی‌های کوچک را ثبت کن. صدای منتقد درونی را هم نشناس: آن‌چه به یک دوست می‌گویی، به خودت هم بگو. رشد اعتماد به نفس یک مهارت است و تمرین می‌برد.',
+      en: 'Confidence is built through action, not by waiting to feel ready: each small step outside your comfort zone (saying hi, asking a question, starting a new skill) strengthens the confidence circuit. Instead of comparing yourself to others, compare yourself to yesterday and record small wins. Also notice the inner critic: say to yourself what you would say to a friend. Building confidence is a skill, and it takes practice.'
+    },
+    {
+      id: 'cheap_cooking',
+      keywords: [
+        'با کمترین پول غذا',
+        'با کمترین هزینه غذا',
+        'غذا ارزان',
+        'غذای اقتصادی',
+        'پول کم غذا',
+        'cook on a budget',
+        'cheap cooking',
+        'cheap meals',
+        'cooking with little money',
+        'budget meals'
+      ],
+      weak: ['پول', 'ارزان', 'خرج', 'money', 'cheap', 'budget'],
+      weakSafe: false,
+      hints: ['غذا', 'درست', 'بپزم', 'خوراک', 'cook', 'meal', 'food'],
+      fa: 'چند اصل برای آشپزی اقتصادی: اول، بر اساس مواد پایه برنامه بریز (برنج، حبوبات، تخم‌مرغ، سبزیجات فصل) که از هر ماده چند وعده درست می‌کند؛ دوم، پخت دسته‌ای: یک بار بپز و برای چند روز فریز کن؛ سوم، خوراک‌های ایرانی مثل خوراک لوبیا، عدسی، کوکو سبزی و املت خیلی کم‌خرج و مقوی‌اند؛ چهارم، خرید فصلی و از بازار محلی ارزان‌تر از سوپرمارکت است. با یک برنامه‌ی ساده می‌توانی با بودجه‌ی کم، غذای سالم و متنوع داشته باشی.',
+      en: 'A few principles for budget cooking: first, plan around staple ingredients (rice, beans, eggs, seasonal vegetables) so each item stretches across several meals; second, batch cook once and freeze portions for the week; third, simple dishes like lentil soup, bean stew, and omelettes are cheap and nutritious; fourth, buying seasonal produce from local markets costs less than supermarkets. With a simple plan you can eat healthy and varied on a tight budget.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

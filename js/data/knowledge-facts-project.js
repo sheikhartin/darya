@@ -160,6 +160,18 @@
         'نینتندو سوییچ',
         'ps5',
         'xbox',
+        // Recommendation framings: «چندتا بازی بهم معرفی کن» and
+        // «یه بازی آروم معرفی کن» used to fall to the unfamiliar-topic
+        // pool because no keyword matched the colloquial request form.
+        'چندتا بازی',
+        'بازی بهم معرفی کن',
+        'بازی به من معرفی کن',
+        'بازی معرفی کن',
+        'یه بازی معرفی',
+        'یک بازی معرفی',
+        'بازی پیشنهاد',
+        'بازی آروم',
+        'بازی آرام',
         'modern games',
         'new games',
         'playstation 5',
@@ -167,20 +179,43 @@
         'nintendo switch',
         'pc games',
         'best games',
+        'top games',
+        'top 10 games',
         'video game',
-        'video games'
+        'video games',
+        'recommend me a game',
+        'recommend a game',
+        'recommend some games',
+        'suggest some games',
+        'suggest a game',
+        'game recommendations',
+        'relaxing game',
+        'calm game'
       ],
-      weak: ['کنسول', 'ps5', 'xbox', 'console'],
+      // 'بازی' (Persian) stays: it is the only path for bare FA requests
+      // like «بازی خوب چیه». The English 'game'/'games' weak words were
+      // removed on purpose: they made 'suggest some classic ps1 games'
+      // score the modern shelf (via framing + hints) and outrank the
+      // classic-games fact (the "video game recommendations by era"
+      // test pins this). English bare requests still hit this fact
+      // through the explicit 'recommend a game'/'suggest a game'
+      // keywords.
+      weak: ['کنسول', 'ps5', 'xbox', 'console', 'بازی'],
       weakSafe: true,
       hints: [
         'بازی',
         'کنسول',
         'پلی استیشن',
         'کامپیوتر',
+        'گیم',
         'game',
         'console',
         'pc',
-        'ps5'
+        'ps5',
+        'معرفی',
+        'پیشنهاد',
+        'recommend',
+        'suggest'
       ],
       fa: 'بازی‌های مدرن و ارزشمند (کنسول‌ها و رایانه):\n۱. «الدن رینگ» (۲۰۲۲): دنیای باز و چالش‌برانگیزی که استاندارد تازه‌ای برای اکشن نقش‌آفرینی ساخت.\n۲. «بولدور گیت ۳» (۲۰۲۳): نقش‌آفرینی عمیق با آزادی واقعی در تصمیم‌گیری و داستان.\n۳. «افسانه زلدا: اشک‌های پادشاهی» (۲۰۲۳): خلاقیت بی‌پایان در دنیایی که می‌توانی هر چیزش را امتحان کنی.\n۴. «هدز» (۲۰۲۰): روگ‌لایکی اسطوره‌ای یونانی با روایت و موسیقی فوق‌العاده.\n۵. «دسکو الیزیوم» (۲۰۱۹): بازی کارآگاهی بدون مبارزه؛ فقط گفتگو، فکر و انتخاب.',
       en: 'Modern games worth your time (consoles and PC):\n1. Elden Ring (2022): an open world that set a new standard for action RPGs.\n2. Baldur’s Gate 3 (2023): deep role-playing with real freedom in story and choices.\n3. The Legend of Zelda: Tears of the Kingdom (2023): endless creativity in a world you can experiment with.\n4. Hades (2020): a mythic Greek roguelike with brilliant storytelling and music.\n5. Disco Elysium (2019): a detective game with no combat, only dialogue, thought, and choices.'
@@ -252,6 +287,67 @@
       hints: ['بازی', 'گیم', 'game', 'games'],
       fa: 'پیشنهاد بازی بر اساس ژانر:\nترسناک: «سایلنت هیل ۲» (PS2، ۲۰۰۱) و «اوت‌لاست» (۲۰۱۳) برای وحشت روانی و بقا.\nمسابقه‌ای: «نید فور اسپید: آندرگراند ۲» (۲۰۰۴) برای سرگرمی و «گرن توریسمو ۷» (۲۰۲۲) برای واقع‌گرایی.\nنقش‌آفرینی: «ویچر ۳» (۲۰۱۵) و «اسکایریم» (۲۰۱۱)؛ دو دنیای بی‌پایان.\nمعمایی: «پورتال ۲» (۲۰۱۱) و «تتریس افکت» (۲۰۱۸)؛ برای ذهن و آرامش.\nاستراتژی: «سیویلایزیشن ۶» (۲۰۱۶) و «استارکرفت ۲» (۲۰۱۰)؛ برنامه‌ریزی و فکر.\nتیراندازی: «هلف‌لایف ۲» (۲۰۰۴) برای تاریخ و «تیتان‌فال ۲» (۲۰۱۶) برای داستان اکشن.',
       en: 'Game picks by genre:\nHorror: Silent Hill 2 (PS2, 2001) and Outlast (2013) for psychological dread and survival.\nRacing: Need for Speed Underground 2 (2004) for fun and Gran Turismo 7 (2022) for realism.\nRPG: The Witcher 3 (2015) and Skyrim (2011), two endless worlds.\nPuzzle: Portal 2 (2011) and Tetris Effect (2018) for mind and calm.\nStrategy: Civilization 6 (2016) and StarCraft 2 (2010) for planning.\nShooter: Half-Life 2 (2004) for history and Titanfall 2 (2016) for a great action story.'
+    },
+    {
+      id: 'diy_making',
+      keywords: [
+        'پرینتر سه بعدی',
+        'پرینتم',
+        'پرینتم مدام',
+        'پرینت سه بعدی',
+        'چاپ سه بعدی',
+        'سه‌بعدی',
+        'فیلامنت',
+        'petg',
+        'pla',
+        '3d print',
+        '3d printing',
+        'filament',
+        'woodworking',
+        'live edge',
+        'warping',
+        'warp',
+        // Persian woodworking/warping phrasings: «تاب برداشتن» (to
+        // warp), «تاب می‌خوره», and «کج شدن» all describe the same
+        // moisture-driven problem; the gate opens on «چطور», so the
+        // keyword does the routing.
+        'تاب برداشتن',
+        'تاب برداره',
+        'تاب میخوره',
+        'تاب می‌خوره',
+        'کج شدن میز',
+        'میز چوبی تاب'
+      ],
+      weak: [
+        'پرینتر',
+        'پرینت',
+        'چاپ',
+        'ابزار',
+        'میخکوب',
+        'میز چوبی',
+        'wood',
+        'table',
+        'print',
+        'printer',
+        'tool',
+        'workshop'
+      ],
+      weakSafe: true,
+      hints: [
+        'سه بعدی',
+        'سه‌بعدی',
+        'نجاری',
+        'کارگاه',
+        'چوب',
+        'جیگ',
+        '3d',
+        'wood',
+        'woodshop',
+        'jig',
+        'warp'
+      ],
+      fa: 'برای ابزارهای کمکی کارگاه، PETG انتخاب بهتری از PLA است: در برابر حرارت و ضربه مقاوم‌تر است و در فضای باز تاب نمی‌آورد، در حالی که PLA برای نمونه‌های اولیه و قطعات تزئینی عالی است. فیلامنت را خشک نگه دار (رطوبت باعث حباب و ضعف چسبندگی می‌شود) و برای میزهای چوبی لبه‌ی طبیعی، قبل از ساخت چوب را خشک و پایدار کن؛ میز را از نزدیک منبع گرما و نور مستقیم دور نگه دار و دو طرفش را روغن بزن تا رطوبت متعادل بماند. با ابزار ایمنی (عینک، دستکش) و تهویه کار کن؛ اشتباه در ساخت بخشی از یادگیری است.',
+      en: 'For workshop helper prints, PETG is a better choice than PLA: it resists heat and impact better and holds up outdoors, while PLA is perfect for prototypes and decorative parts. Keep your filament dry (moisture causes bubbles and weak layer adhesion), and for live-edge wooden tables, dry and stabilize the wood before building; keep the table away from heat sources and direct sun, and oil both sides so moisture stays balanced. Work with safety gear (glasses, gloves) and ventilation; mistakes in making are part of learning.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

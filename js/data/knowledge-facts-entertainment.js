@@ -15,13 +15,44 @@
         'سریال خوب معرفی کن',
         'ده فیلم خوب',
         'فیلم های خوب',
+        // Colloquial recommendation framings with «بهم» (to me):
+        // «چندتا فیلم بهم معرفی کن» and «فیلم سینمایی بهم معرفی کن`
+        // used to score as weak-only hits below the confidence floor
+        // and fell to the "unfamiliar topic" pool.
+        'فیلم بهم معرفی کن',
+        'فیلم به من معرفی کن',
+        'فیلم سینمایی',
+        'فیلم معرفی',
+        'چندتا فیلم',
+        // "best film" requests (بهترین فیلم تاریخ) used to fall below
+        // the confidence floor and hit the "check Wikipedia" line.
+        'بهترین فیلم',
+        'بهترین فیلم تاریخ',
+        'فیلم تاریخ',
+        'یه فیلم معرفی',
+        'یک فیلم معرفی',
+        'فیلم پیشنهاد',
+        'فیلم بگو',
         'recommend a good movie',
         'suggest movies',
         'good series to watch',
         'best movies you recommend',
-        'what should i watch'
+        'what should i watch',
+        // Multi-word generic phrases like 'recommend a movie' or 'movie
+        // recommendations' are deliberately NOT here: they embed inside
+        // genre queries ("recommend a movie based on true events",
+        // "horror movie recommendations") and outscore the genre facts,
+        // so the general shelf swallowed them (the "expanded genre
+        // lists" test pins this). Bare requests still reach this fact
+        // through the weak 'movie'/'films' words plus framing.
+        'films to watch',
+        'good movies',
+        'best film',
+        'best movie',
+        'best movie of all time',
+        'top movies'
       ],
-      weak: ['فیلم', 'سریال', 'سینما', 'movie', 'movies', 'series'],
+      weak: ['فیلم', 'سریال', 'سینما', 'movie', 'movies', 'series', 'films'],
       weakSafe: true,
       hints: [
         'پیشنهاد',
@@ -69,7 +100,14 @@
         'سریال عاشقانه',
         'romantic movie',
         'romance movie',
-        'romantic film'
+        'romantic film',
+        // Colloquial forms: "romantic comedies" and «فیلم کمدی عاشقانه»
+        // are how the request actually arrives; the bare «عاشقانه» weak
+        // word alone would not unlock the list without a hint.
+        'romantic comed',
+        'romcom',
+        'فیلم کمدی عاشقانه',
+        'کمدی عاشقانه'
       ],
       weak: ['عاشقانه', 'رمانتیک', 'romantic', 'romance'],
       weakSafe: true,
@@ -480,6 +518,110 @@
       ],
       fa: 'پیشنهادهای انیمه برای تازه‌کارها و علاقه‌مندان:\n۱. «نام تو» (Your Name، ۲۰۱۶): عاشقانه‌ای خیال‌انگیز درباره دو نوجوان که خواب‌هایشان را عوض می‌کنند.\n۲. «صدای خاموش» (A Silent Voice، ۲۰۱۶): درباره‌ی قلدری، بخشش و بازگشت به زندگی.\n۳. «فولمتال آلکمیست: برادرهود»: داستانی حماسی درباره برادرانی که قانون تبادل را شکستند.\n۴. «اسپای ایکس فمیلی» (Spy x Family): جاسوس، قاتل و تله‌پات که یک خانواده‌ی نمایشی می‌سازند؛ کمدی گرم و خانوادگی.\n۵. «وایولت اورگاردن» (Violet Evergarden): نامه‌نویسی که احساسات را از خلال نامه‌های دیگران می‌فهمد؛ درخشان و اشک‌آور.\n۶. «شکارچی شیطان» (Demon Slayer): نبرد نوجوانی برای نجات خواهرش؛ انیمیشن فوق‌العاده و هیجانی.',
       en: 'Anime picks for newcomers and fans alike:\n1. Your Name (2016): a dreamlike romance about two teenagers who swap places in their sleep.\n2. A Silent Voice (2016): about bullying, forgiveness, and finding a way back to life.\n3. Fullmetal Alchemist: Brotherhood: an epic story of two brothers who broke the rules of alchemy.\n4. Spy x Family: a spy, an assassin, and a telepath building a fake family; warm, funny, and wholesome.\n5. Violet Evergarden: a letter-writer who learns feelings through the letters of others; gorgeous and tearful.\n6. Demon Slayer: a teenage battle to save a sister, with stunning animation and edge-of-seat action.'
+    },
+    {
+      id: 'youtubers_recommendation',
+      keywords: [
+        'یوتیوبر',
+        'یوتیوبر خوب',
+        'یوتیوبرهای خوب',
+        'یوتیوبر ایرانی',
+        'کانال یوتیوب',
+        'youtuber',
+        'youtubers',
+        'good youtubers',
+        'best youtubers',
+        'youtube channels',
+        'recommend some youtubers',
+        'name some youtubers',
+        'name some good youtubers',
+        'good youtube channels',
+        'best youtube channels'
+      ],
+      weak: ['یوتیوب', 'youtube'],
+      weakSafe: false,
+      hints: ['پیشنهاد', 'معرفی', 'اسم', 'recommend', 'name', 'کانال'],
+      fa: 'چند یوتیوبر خوب بر اساس حوزه (سلایق شخصی متفاوت است، پس این‌ها نقطه‌ی شروع‌اند):\nآموزش و تکنولوژی: فیل‌ایکس (فلکس)، مایکل ریوز و خرسندبلاگ.\nعلم: ورشو و دکتر محسن داوری (علمی و پزشکی ساده).\nتاریخ و فرهنگ: کانال‌های مستندسازی مثل نیم‌روز و سرنخ.\nسرگرمی و لایف‌استایل: پین‌کست و راد.\nسفر و تجربه: کانال‌های ویدیویی مثل سفرنامه‌ی مستند. اگر ژانر مورد علاقه‌ات را بگویی، دقیق‌تر پیشنهاد می‌دهم.',
+      en: 'A few good YouTubers by area (tastes differ, so treat these as starting points):\nEducation and tech: Fireship, Michael Reeves, and NetworkChuck.\nScience: Kurzgesagt and Veritasium.\nHistory and culture: OverSimplified and Vox.\nEntertainment and lifestyle: MrBeast and Yes Theory.\nTravel and documentary: Drew Binsky and Bald and Bankrupt. Tell me a genre you like and I can be more specific.'
+    },
+    {
+      id: 'song_recommendations',
+      keywords: [
+        'آهنگ پیشنهاد',
+        'یه آهنگ پیشنهاد',
+        'یک آهنگ پیشنهاد',
+        'آهنگ خوب',
+        'آهنگ پیشنهاد بده',
+        'موسیقی پیشنهاد',
+        'song recommendation',
+        'recommend a song',
+        'recommend some songs',
+        'good songs to listen',
+        'suggest a song',
+        'suggest some music'
+      ],
+      weak: ['آهنگ', 'موسیقی', 'song', 'music'],
+      weakSafe: false,
+      hints: ['پیشنهاد', 'بده', 'بگو', 'recommend', 'suggest', 'listen'],
+      fa: 'چند آهنگ ماندگار از فرهنگ‌های مختلف (سلیقه شخصی است، پس این‌ها نقطه‌ی شروع‌اند):\nفارسی کلاسیک: «مرغ سحر» با صدای قمرالملوک وزیری یا اجراهای ارکسترال.\nفارسی مدرن: قطعه‌های ماندگار محسن نامجو مثل «آهای مردم».\nدنیا: «بوهمین رپسودی» ملکه (Queen)، «ایمرجین» پینک‌فلوی (Pink Floyd)، «هتل کالیفرنیا» ایگلز (Eagles) و «تایم» هانس زیمر. اگر حال‌وهوای امروزت را بگویی، دقیق‌تر پیشنهاد می‌دهم.',
+      en: 'A few timeless songs from different cultures (taste is personal, so treat these as starting points):\nClassics: Bohemian Rhapsody by Queen and Hotel California by the Eagles.\nAmbient and deep: Time by Hans Zimmer and Shine On You Crazy Diamond by Pink Floyd.\nModern: Blinding Lights by The Weeknd and Viva La Vida by Coldplay. Tell me your current mood and I can be more specific.'
+    },
+    {
+      id: 'horror_story',
+      keywords: [
+        'داستان ترسناک',
+        'داستان وحشت',
+        'داستان ترسناک تعریف کن',
+        'یه داستان ترسناک',
+        'یک داستان ترسناک',
+        'داستان ترسناک بگو',
+        'horror story',
+        'scary story',
+        'tell me a horror story',
+        'tell me a scary story'
+      ],
+      weak: ['ترسناک', 'وحشت', 'scary', 'creepy'],
+      weakSafe: false,
+      hints: ['داستان', 'تعریف', 'بگو', 'story', 'tell'],
+      fa: 'یک داستان کوتاه ترسناک:\nاتاق کناری هر شب ساعت سه دقیقه بامداد، در می‌زد: سه ضربه‌ی آرام و منظم. ماه‌ها بود که آن اتاق خالی بود و کلیدش را مادرم زیر فرش پنهان کرده بود. دیشب به جای صدای در، یک صدای زنانه از پشت دیوار گفت: «این بار کلید را تو پنهان کردی؟» من هنوز جواب ندادم، چون مطمئن نیستم مادرم این جمله را شنیده یا نه. دوست داری همین‌جا تمامش کنم یا ادامه بدهم؟',
+      en: 'A short horror story:\nEvery night at exactly 3:03 AM, the door of the spare room knocked: three soft, steady taps. The room had been empty for months, and my mother had hidden its key under the rug. Last night, instead of the knock, a woman voice whispered through the wall: Did you hide the key this time? I have not answered yet, because I am not sure whether my mother heard it too. Do you want me to end it here, or keep going?'
+    },
+    {
+      id: 'books_recommendations',
+      keywords: [
+        'کتاب معرفی کن',
+        'کتاب بهم معرفی کن',
+        'کتاب به من معرفی کن',
+        'چندتا کتاب',
+        'یه کتاب معرفی',
+        'یک کتاب معرفی',
+        'کتاب پیشنهاد',
+        'کتاب خوب',
+        'recommend a book',
+        'recommend me a book',
+        'recommend some books',
+        'recommend me some books',
+        'suggest some books',
+        'suggest a book',
+        'book recommendations',
+        'book recommendation',
+        'recommendation while',
+        'good books',
+        'books to read'
+      ],
+      weak: ['کتاب', 'book', 'books', 'novel', 'novels'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'معرفی',
+        'بخونم',
+        'خواندن',
+        'recommend',
+        'suggest',
+        'read'
+      ],
+      fa: 'چند کتاب خوب و غیرتکراری، از ادبیات ایران و جهان:\n۱. «بوف کور» (صادق هدایت): رمانی تاریک و تأمل‌برانگیز درباره‌ی تنهایی و کابوس.\n۲. «کلیدر» (محمود دولت‌آبادی): حماسه‌ای بلند از زندگی روستایی ایران.\n۳. «سووشون» (سیمین دانشور): روایت خانواده‌ای شیرازی در سال‌های جنگ و تغییر.\n۴. «کیمیاگر» (پائولو کوئلیو): داستانی ساده و الهام‌بخش درباره‌ی دنبال‌کردن رؤیاها.\n۵. «صد سال تنهایی» (گابریل گارسیا مارکز): شاهکار رئالیسم جادویی.\n۶. «1984» (جورج اورول): هشداری تند درباره‌ی قدرت و نظارت.\n۷. «کتابخانه‌ی نیمه‌شب» (مت هیگ): رمانی گرم درباره‌ی انتخاب‌ها و معنا.\n۸. «کوه جادو» (توماس مان): رمانی عمیق درباره‌ی زمان و بیماری.',
+      en: 'A few good, less-obvious books from Persian and world literature:\n1. The Blind Owl (Sadegh Hedayat): a dark, brooding novel about solitude and nightmare.\n2. Kelidar (Mahmoud Dowlatabadi): an epic of rural Iranian life.\n3. Savushun (Simin Daneshvar): a Shirazi family during years of war and change.\n4. The Alchemist (Paulo Coelho): a simple, inspiring tale about following dreams.\n5. One Hundred Years of Solitude (Gabriel Garcia Marquez): a masterpiece of magical realism.\n6. 1984 (George Orwell): a sharp warning about power and surveillance.\n7. The Midnight Library (Matt Haig): a warm novel about choices and meaning.\n8. The Magic Mountain (Thomas Mann): a deep novel about time and illness.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);
