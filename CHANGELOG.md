@@ -5,6 +5,39 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.2.3] - 2026-08-13
+
+### Changed
+
+- **Android release artifacts carry the version in their filename.**
+  Release AAB and APK downloads are named `Darya-1.2.3-release.aab` and
+  `Darya-1.2.3-release.apk` instead of the module-derived `app-release.*`,
+  so a newer release never silently overwrites an older download on disk.
+- **CI actions upgraded to current majors.** The Android build workflow
+  now pins checkout@v7, setup-node@v7, setup-java@v5, and
+  upload-artifact@v7. The previous v4 pins ran on the deprecated Node 20
+  action runtime, whose support cutoff passed on June 2, 2026.
+
+### Fixed
+
+- The Android workflow's CI-gate comment named an 852-test suite; it now
+  names the real 921-test suite.
+
+### Validated
+
+- 921/921 tests pass, including the browser e2e suites running in a real
+  Chrome.
+- Two verbose stress rounds of the engine suite pass 2/2.
+- actionlint 1.7.12 reports zero issues on the Android build workflow.
+
+## [1.2.2] - 2026-08-13
+
+### Fixed
+
+- **Real launcher icon on Android.** The Capacitor-generated default icon
+  is replaced with the actual Darya launcher icon for the release APK and
+  AAB.
+
 ## [1.2.1] - 2026-08-12
 
 ### Added
@@ -144,7 +177,7 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - **Notifications redesigned.** The toast card is now a centered glow
   badge with per-severity icons, keeping WCAG AA contrast in both
   themes.
-- **Persian normalization audit.** ئ→ی and Arabic look-alike (ي/ك/ة/ؤ)
+- **Persian normalization audit.** ئ to ی and Arabic look-alike (ي/ك/ة/ؤ)
   variants were added across rules, keywords, stopwords, and lexicons;
   every ئ in a matching structure carries its normalized twin.
 - **Question-echo hardening.** Echo answers fire only on short

@@ -658,15 +658,15 @@ No new external dependencies required. All features implemented using:
 
 ---
 
-## 10. Implementation Status (v1.2.1)
+## 10. Implementation Status (v1.2.3)
 
-All scoped phases for v1.2.0 and the v1.2.1 hardening round are complete
-and validated. The
+All scoped phases for v1.2.0, the v1.2.1 hardening round, and the
+v1.2.2-v1.2.3 release-pipeline fixes are complete and validated. The
 implementation deliberately kept the zero-dependency, offline-first
 architecture: every feature below runs in the browser with no network
 calls.
 
-### 10.1 Delivered in v1.2.0 and v1.2.1
+### 10.1 Delivered in v1.2.0 through v1.2.3
 
 | Area | Delivered | Where |
 | --- | --- | --- |
@@ -681,7 +681,7 @@ calls.
 | Response scorer | Reply quality/appropriateness evaluation used by overrides | js/engine/response-scorer.js |
 | Crisis resources | Verified hotlines in safety replies: 123 + 1480 (Iran), 988 (US/CA), 116 123 (Europe); every safety line carries a concrete next step | both language packs' ruleSafety pools |
 | Joke pool | Clean humor pool for «یه جک بگو» / "tell me a joke", with first-person offer guard | both language packs' ruleTellJoke pools |
-| Persian normalization audit | ئ→یی and Arabic look-alike variants added across rules, keywords, stopwords, and lexicons | js/engine/responder-detect.js, fa-rules.js, fa-vocabulary.js, fa.js, knowledge files |
+| Persian normalization audit | ئ to ی and Arabic look-alike variants added across rules, keywords, stopwords, and lexicons | js/engine/responder-detect.js, fa-rules.js, fa-vocabulary.js, fa.js, knowledge files |
 | Echo-answer hardening | Echo fires only on short fragments, never overrides higher-intent rules | js/engine/responder-entity.js |
 | Question recall | «یادته آخرین سوالی که ازت پرسیدم چی بود؟» / "do you remember the last question I asked?" quotes the user's own last question back from memory, or says honestly when nothing was asked | js/engine/responder-recall.js, both language packs |
 | Knowledge-expansion requests | Honest offline acknowledgment for rich-dataset requests («تو باید دیتاست خیلی غنی‌ای داشته باشی») instead of the work-rule hijack | js/engine/responder-recall.js, both language packs |
@@ -696,6 +696,9 @@ calls.
 | 2026 daily-life wild suite | 24 regression tests (80+ assertions) covering the hostile transcript, AI-job anxiety, gig economy, housing, young-adult loneliness, dating-app burnout, and sequential context (jokes vary, topic switches stay fresh) | tests/wild-daily-2026.test.mjs |
 | Learning support | "How can I learn English?" and its Persian equivalent get a structured practical method, not a hand-off | both language packs' ruleLearningAdvice pools |
 | Docs | README rewritten with pipeline, memory, exercises, mood, safety sections; AGENTS.md gained the normalization and Iranian-name conventions; spec reflects delivered scope | README.md, AGENTS.md, this file |
+| Real launcher icon (1.2.2) | The Capacitor-generated default icon is replaced with the actual Darya launcher icon for release APK/AAB builds | android/app/src/main/res/ |
+| CI artifact naming (1.2.3) | Release AAB/APK downloads are version-tagged in their filenames (Darya-1.2.3-release.aab/.apk) so a newer release never silently overwrites an older download | .github/workflows/build-android.yml |
+| CI action hardening (1.2.3) | Workflow actions moved to current majors (checkout@v7, setup-node@v7, setup-java@v5, upload-artifact@v7); the previous v4 pins ran on the deprecated Node 20 action runtime | .github/workflows/build-android.yml |
 
 ### 10.2 Validation
 
@@ -718,8 +721,12 @@ calls.
   failures; the new wild-daily-2026 suite is stable across 8 consecutive
   runs (randomized pool selection never trips a false assertion).
 - ESLint (0 warnings), Stylelint, and Prettier checks are clean.
+- Re-validated for v1.2.3 with the full dev dependencies installed: the
+  browser e2e suites now run against a real Chrome (nothing is skipped),
+  two verbose stress rounds of the engine suite pass 2/2, and actionlint
+  1.7.12 reports zero issues on the Android build workflow.
 
-### 10.3 Not in v1.2.0 or v1.2.1 (per user decisions)
+### 10.3 Not in v1.2.0 through v1.2.3 (per user decisions)
 
 - Persistent memory across sessions (session-only by design).
 - Voice input/output, social features, external integrations,
@@ -728,6 +735,6 @@ calls.
 
 ---
 
-*Document Version: 1.2.1*
-*Last Updated: August 12, 2026*
+*Document Version: 1.2.3*
+*Last Updated: August 13, 2026*
 *Author: Buffy (AI Assistant)*

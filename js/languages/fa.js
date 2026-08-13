@@ -296,8 +296,8 @@
     // help, general knowledge, fun facts). The strong signal (دیتاست) is
     // enough on its own; otherwise content words must co-occur with a
     // build/learn/expand framing so a plain movie or fact request is
-    // never hijacked. All variants are the normalized forms (ئ→یی,
-    // ZWNJ→space) so both spellings match.
+    // never hijacked. All variants are the normalized forms (ئ to ی,
+    // ZWNJ to space) so both spellings match.
     knowledgeExpansionSignals: {
       strong: /(?<![\p{L}۰-۹])(?:دیتاست|دیتاستی|دانش عمومی)(?![\p{L}۰-۹])/u,
       content:
@@ -359,7 +359,7 @@
       nameAttachedGroup: 3,
       nameStopwords: [
         // States and emotions: "من خسته هستم" is a feeling, not a name.
-        // The ئ→یی normalizer turns «مطمئن» into «مطمین», so the
+        // The ئ to ی normalizer turns «مطمئن» into «مطمین», so the
         // normalized form must be listed too or «اسمم مطمینه» would be
         // captured as a name.
         'خسته',

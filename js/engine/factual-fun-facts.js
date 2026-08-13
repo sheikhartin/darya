@@ -105,7 +105,7 @@
     science: /(?:علم|فیزیک|شیمی|زیست|آب)/u,
     space: /(?:فضا|سیاره|ستاره|منظومه|کیهان|ماه|مشتری|زحل|زهره)/u,
     animals: /(?:حیوان|حیوانات|اختاپوس|گاو|فیل|خرس آبی|تنبل|وامبت)/u,
-    // ئ→یی variants included: the normalizer maps «کلئوپاترا» to
+    // ئ to ی variants included: the normalizer maps «کلئوپاترا» to
     // «کلیوپاترا», so both spellings are needed to keep the trigger live.
     history:
       /(?:تاریخ|باستان|امپراتوری|مصر|روم|هرم|کلئوپاترا|کلیوپاترا|ماموت)/u,
@@ -121,7 +121,7 @@
     // pool (the first matching category wins in the lookup loop).
     music:
       /(?:موسیقی|آهنگ|ترانه|خواننده|آهنگساز|نوازنده|پیانو|ویولن|گیتار|بتهوون|موتسارت|ارکستر)/u,
-    // Same dual-spelling rule for «تئاتر» → «تیاتر».
+    // Same dual-spelling rule: «تئاتر» maps to «تیاتر».
     art: /(?:هنر|نقاشی|مجسمه|تئاتر|تیاتر|مونالیزا|لاسکو|ونگوگ|مونک|تابلو|موزه|نقاش)/u,
     money:
       /(?:پول|مالی|دلار|حقوق|کارت اعتباری|طلا|بانک|بانکداری|بهره|اقتصاد|ارز)/u
