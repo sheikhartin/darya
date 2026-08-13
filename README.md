@@ -454,7 +454,7 @@ After the first visit, Darya works fully offline. You can install it on your pho
 ## Android APK Builds
 
 The `android/` platform folder is committed. Pushing a version tag (for
-example `1.2.2`, no `v` prefix) triggers the
+example `1.2.3`, no `v` prefix) triggers the
 `.github/workflows/build-android.yml` workflow, which:
 
 1. runs the full CI gate (`npm run test:full`: lint, CSS lint, format
@@ -462,14 +462,14 @@ example `1.2.2`, no `v` prefix) triggers the
    platform (`npm run sync:web && npx cap sync android`),
 2. regenerates the Android launcher icons from `assets/icons` (see the
    *App icon* note below),
-3. stamps the app version from the tag (`1.2.2` becomes `versionCode`
-   122, `versionName "1.2.2"`),
+3. stamps the app version from the tag (`1.2.3` becomes `versionCode`
+   123, `versionName "1.2.3"`),
 4. builds a **signed release AAB** and a **signed release APK** (the
    AAB is required by Google Play, the APK is used by Iranian stores
    like Cafe Bazaar and Myket),
 5. attaches both to the GitHub Release for the tag, with the version
-   embedded in the filename (e.g. `Darya-1.2.2-release.aab` and
-   `Darya-1.2.2-release.apk`).
+   embedded in the filename (e.g. `Darya-1.2.3-release.aab` and
+   `Darya-1.2.3-release.apk`).
 
 The workflow can also be run manually from the Actions tab; without
 signing secrets it produces a debug APK for testing instead.
