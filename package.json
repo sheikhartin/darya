@@ -1,6 +1,6 @@
 {
   "name": "darya",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Darya - a bilingual Persian/English calm conversation companion. Fully offline: static HTML/CSS/JS, no build step, no backend.",
   "private": true,
   "engines": {

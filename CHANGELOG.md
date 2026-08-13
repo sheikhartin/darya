@@ -5,6 +5,14 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.2.2] - 2026-08-13
+
+### Fixed
+
+- **Real launcher icon on Android.** The Capacitor-generated default icon
+  is replaced with the actual Darya launcher icon for the release APK and
+  AAB.
+
 ## [1.2.1] - 2026-08-12
 
 ### Added
