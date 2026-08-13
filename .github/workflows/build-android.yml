@@ -3,7 +3,7 @@ name: Build Android Release on Tag
 # Builds a signed release AAB (Google Play) and a signed release APK
 # (Iranian stores such as Cafe Bazaar and Myket) from the web bundle, and
 # attaches both to the GitHub Release for every pushed version tag (tags
-# in this repo are bare versions like 1.2.2, no "v" prefix).
+# in this repo are bare versions like 1.2.3, no "v" prefix).
 #
 # The android/ platform folder is committed, so the workflow syncs the
 # web bundle into it with `cap sync` rather than regenerating the
@@ -15,6 +15,11 @@ name: Build Android Release on Tag
 # The signing secrets are mapped into job-level env variables because
 # the `secrets` context cannot be referenced directly in `if:`
 # conditions (GitHub Actions limitation).
+#
+# The pinned action majors are the current releases (checkout@v7,
+# setup-node@v7, setup-java@v5, upload-artifact@v7). The older v4
+# majors ran on the deprecated Node 20 action runtime, whose support
+# cutoff passed on June 2, 2026.
 #
 # Manual runs (workflow_dispatch) build a debug APK unless the secrets
 # are configured, and never attach anything to a release.
@@ -39,10 +44,10 @@ jobs:
       KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Must stay in sync with "engines.node" in package.json
           # (>=22). Capacitor 8's CLI requires Node 22+.
@@ -53,7 +58,7 @@ jobs:
 
       - name: Run the full CI gate
         # The repo's own release gate (lint, CSS lint, format check, and
-        # the 852-test suite). Store builds are long-lived, so an engine
+        # the 921-test suite). Store builds are long-lived, so an engine
         # regression must never ship inside an APK; ~30s here is cheap
         # next to the multi-minute Gradle build.
         run: npm run test:full
@@ -64,7 +69,7 @@ jobs:
           npx cap sync android
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           # Required by Capacitor 8 and AGP 8.13 (this project pins
@@ -86,9 +91,9 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > android/darya-release.jks
 
       - name: Stamp the app version from the git tag
-        # The committed build.gradle ships versionCode 122 / versionName
-        # "1.2.2"; make the build report the tagged version (1.2.2 ->
-        # versionName "1.2.2", versionCode 122) so releases are
+        # The committed build.gradle ships versionCode 123 / versionName
+        # "1.2.3"; make the build report the tagged version (1.2.3 ->
+        # versionName "1.2.3", versionCode 123) so releases are
         # self-describing and versionCode keeps increasing across tags.
         run: |
           TAG="${GITHUB_REF_NAME}"
@@ -125,7 +130,7 @@ jobs:
         # app-release.aab), so without a rename every release would ship
         # identically named assets and a new download would overwrite an
         # older version's file. Copy them under tag-qualified names (e.g.
-        # Darya-1.2.2-release.apk) for the GitHub Release instead.
+        # Darya-1.2.3-release.apk) for the GitHub Release instead.
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           TAG="${GITHUB_REF_NAME}"
@@ -135,7 +140,7 @@ jobs:
              "android/app/build/outputs/apk/release/Darya-${TAG}-release.apk"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: darya-build
           if-no-files-found: ignore
