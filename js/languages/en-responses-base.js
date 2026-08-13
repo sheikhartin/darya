@@ -133,10 +133,10 @@
     ':) Nice. Tell me more when you are ready.'
   ];
   R.gratitudeResponses = [
-    'Of course.',
-    'Anytime.',
-    'I am here.',
-    'That is kind of you to say.'
+    'Of course, that is what I am here for.',
+    'Anytime; this conversation matters to me.',
+    'I am here, and your words are welcome.',
+    'That is kind of you to say, thank you.'
   ];
   R.topicShiftTemplates = [
     'That is a different thread from a moment ago, and it deserves its own space.',

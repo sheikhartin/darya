@@ -178,6 +178,19 @@
   const exitStoryPattern =
     /بدرود\s+گفت(?:م|ی|یم|ید|ند|ه)?|خداحافظ\s+گفت(?:م|ی|یم|ید|ند|ه)?/u;
 
+  // Some exit keywords open everyday sentences that are not leave
+  // requests: «می‌خوام برم» appears in «می‌خوام برم باشگاه ولی همه منو
+  // قضاوت می‌کنن» (gym anxiety), «باید برم» in «باید برم دکتر؟» (health
+  // question) and «برگردم دفتر» in «برگردم دفتر بهتره؟» (work advice).
+  // The destination names the actual intent: going to a place or person
+  // (doctor, gym, pharmacy, hospital, school, work) is not saying
+  // goodbye. isExitCommand skips exit detection when this matches, so
+  // the app layer never shows the exit-confirm bar for these everyday
+  // plans. A bare «باید برم» with no destination stays a real farewell.
+  const exitFalsePositivePattern =
+    // eslint-disable-next-line max-len
+    /(?:برم|بروم|بیام|بریم)\s*.{0,18}?(?:دکتر|پزشک|داروخانه|بیمارستان|باشگاه|ورزشگاه|مدرسه|دانشگاه|کلاس|سر کار|سرکار|اداره|خرید|سفر|مسافرت|خونه|خانه|پیش.{0,6}دکتر)|(?:برگردم|برمی‌گردم|برمیگردم).{0,18}?(?:دفتر|اداره|محل کار|شرکت)/u;
+
   // Phase 1 (warm presence): Darya's first message opens with a calm,
   // gentle invitation.
 
@@ -226,7 +239,7 @@
   // boundary replies that derailed real conversations.
   const insultPattern =
     // eslint-disable-next-line max-len
-    /(?<!\p{L})(?:احمق|احمقی|کودن(?:ت|م|ش|ی)?|دیوونه|دیوونی|بی‌عقل|بیعقل|نادان|نادانم|نادانی|نادون|نادونی|پدوفیل|پدوفیلی|خاک\s*(?:به\s*|تو\s*|بر\s*)?سر(?:ت|م|ش)?|برو گمشو|برو بمیر|برو جهنم|برو به درک|مردک|حرومزاده|حرامزاده|فضول|چرت|چرتی|مزخرف|هذیان|گوه\s*(?:می|م|خوری|خوره|خوریم|خورید|خورم|خورد|خوردی|خوردیم|نخور|بخور|تو|توی)|کثافت|کثیف|بی‌شعور|بیشعور|بی‌شرف|بیشرف|بی‌ادب|بیادب|خار|کون|کونی|دهن|کیری|گایید|کص|کسکش|کس\s*کش|کسم|کست|مادرت|مادرجنده|خواهرت|خفه|جاکش|احمقانه|نفهم|نفهمی|ابله|ابلهی|مسخره|مسخرهای|بی‌سواد|بیسواد|خر|گاو|سگ|خوک|الاغ|گور|پدرسوخته|جنده|قحبه|فاحشه|دیوث|ملعون|لعنتی|نامرد|بی‌غیرت|بیغیرت|ننگ|سیکیر|سیکیرم|سیکیرت|سیکیرش|سیکیرت|سیکتیر|سیکیر|سیکیرو|سیکیرمون)(?!\p{L})/iu;
+    /(?<!\p{L})(?:احمق|احمقی|کودن(?:ت|م|ش|ی)?|دیوونه|دیوونی|بی‌عقل|بیعقل|نادان|نادانم|نادانی|نادون|نادونی|پدوفیل|پدوفیلی|خاک\s*(?:به\s*|تو\s*|بر\s*)?سر(?:ت|م|ش)?|برو گمشو|برو بمیر|برو جهنم|برو به درک|مردک|حرومزاده|حرامزاده|فضول|چرت|چرتی|مزخرف|هذیان|گوه\s*(?:می|م|خوری|خوره|خوریم|خورید|خورم|خورد|خوردی|خوردیم|نخور|بخور|تو|توی)|کثافت|کثیف|بی‌شعور|بیشعور|بی‌شرف|بیشرف|بی‌ادب|بیادب|خار|کون|کونی|دهن|کیری|گایید|کص|کسکش|کس\s*کش|کسم|کست|مادرت|مادرجنده|خواهرت|خفه|جاکش|احمقانه|نفهم|نفهمی|ابله|ابلهی|مسخره|مسخرهای|بی‌سواد|بیسواد|خر|گاو|گاوی|گاوصفت|سگ|سگی|خوک|خوکی|الاغ|الاغی|خری|گور|پدرسوخته|جنده|قحبه|فاحشه|دیوث|ملعون|لعنتی|نامرد|بی‌غیرت|بیغیرت|ننگ|سیکیر|سیکیرم|سیکیرت|سیکیرش|سیکیرت|سیکتیر|سیکیر|سیکیرو|سیکیرمون)(?!\p{L})/iu;
 
   // Date/time question patterns (Persian). Time queries: asking the
   // current time. Date queries: asking the current date.
@@ -245,7 +258,7 @@
   // Jalali and Gregorian years.
   const dateTimeYearPattern =
     // eslint-disable-next-line max-len
-    /(?<!\p{L})(?:امسال (?:چه سالیه|چه سالی|چندمه|چنده|چیست|رو بگو|رو می‌گی)|چه سالی (?:هستیم|هستیم|ام|ایم)|سال چندم|سال چنده|امسال چند|what year is it in iran|jalali year|persian year|سال شمسی)(?!\p{L})/iu;
+    /(?<!\p{L})(?:امسال (?:چه سالیه|چه سالی|چندمه|چنده|چیست|رو بگو|رو می‌گی)|الان چه سالیه|چه سالی (?:هستیم|هستیم|ام|ایم)|سال چندم|سال چنده|امسال چند|what year is it in iran|jalali year|persian year|سال شمسی)(?!\p{L})/iu;
 
   // Darya-targeted harassment (Persian): insults and bullying
   // specifically directed at Darya.
@@ -276,6 +289,7 @@
     pronounMap,
     exitKeywords,
     exitStoryPattern,
+    exitFalsePositivePattern,
     wellBeingPattern,
     insultPattern,
     dateTimeTimePattern,

@@ -108,6 +108,36 @@
       R['ruleFamilyConflict']
     ),
 
+    // Setting boundaries with family ("how do I set boundaries with my
+    // family without a fight"): a how-to about limits, distinct from the
+    // family_conflict "falling out" pool below. Sits above family_conflict
+    // (53) so the word "family" near "fight" never hijacks the boundary
+    // question into the estrangement pool.
+    rule(
+      'boundaries',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:set|setting|draw|drawing|establish|establishing|enforce|enforcing) (?:healthy |clear |personal )?(?:boundaries|limits)\b.{0,30}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\b(?:boundaries|limits) (?:with|for)\b.{0,20}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\bhow (?:do|can|should) i (?:set|draw|establish|enforce) boundaries\b|\b(?:how (?:do|can|should) i (?:say no to|tell|learn to tell))\b.{0,12}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b.{0,8}\bno\b|\b(?:saying no to|say no to)\b.{0,15}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b/i,
+      R['ruleBoundaries']
+    ),
+
+    // A crush confession: "i have a crush on my friend's sister". The
+    // family rule (50) matched on the kinship noun and echoed the capture
+    // back, which read broken and missed the actual confession. Sits
+    // between family (50) and family_conflict (53) so a crush that names
+    // a relative keeps the crush thread.
+    rule(
+      'crush',
+      52,
+      // The age-gap guard rejects any message that mentions an age
+      // difference: those get the balanced age_gap guidance (45) instead
+      // of the generic crush pool, which must never answer "crush on
+      // someone 30 years older" (the age-gap-crush tests pin this).
+      // eslint-disable-next-line max-len
+      /^(?!.*\b(?:age gap|years older|years younger|much older|much younger|older than me|younger than me)\b).*\b(crush(?:ing)? on|have a crush|had a crush|crush on|got a crush|i (?:like|love) (?:my )?friend'?s (?:sister|brother|mom|dad)|confess(?:ing)? (?:to|my) crush)\b/i,
+      R['ruleCrush']
+    ),
+
     rule(
       'work',
       50,
@@ -137,7 +167,7 @@
       // are everyday openings that previously fell through to the
       // unknown pool.
       // eslint-disable-next-line max-len
-      /\b(can'?t sleep|cannot sleep|cannot fall asleep|can'?t fall asleep|insomnia|nightmares?|sleeping badly|trouble sleeping|waking up|wake up at night|hard to sleep|difficult to sleep|lie in bed|lying in bed|mind races|sleepless|sleep problems?|not sleeping well|sleeping poorly|bad sleep|poor sleep|my sleep schedule|sleep schedule (?:is )?(?:ruined|broken|a mess)|sleep (?:is )?(?:ruined|broken)|ruined my sleep)\b/i,
+      /\b(can'?t sleep|cannot sleep|cannot fall asleep|can'?t fall asleep|insomnia|nightmares?|sleeping badly|trouble sleeping|waking up|wake up at night|hard to sleep|difficult to sleep|lie in bed|lying in bed|mind races|sleepless|sleep problems?|not sleeping well|sleeping poorly|(?:haven'?t|have not|not) slept well|bad sleep|poor sleep|my sleep schedule|sleep schedule (?:is )?(?:ruined|broken|a mess)|sleep (?:is )?(?:ruined|broken)|ruined my sleep)\b/i,
       R['ruleSleep']
     ),
 
@@ -230,7 +260,7 @@
       'parenting',
       57,
       // eslint-disable-next-line max-len
-      /\b(my (?:baby|newborn|toddler|infant) (?:has been up|keeps me up|is up all|wakes up all|won'?t sleep|is not sleeping|keeps waking)|up every two hours|exhausted (?:with|from) (?:my|the) (?:baby|newborn|toddler|infant)|my (?:baby|newborn|child) (?:was )?just born|just had a baby|postpartum|post-partum|new (?:mom|mother|dad|father)|feel(?:ing)? like (?:a|an) (?:bad|terrible|awful) (?:mother|mom|father|dad|parent)|not a good (?:father|mother|mom|dad|parent)|can'?t (?:stop|help) crying|keep(?:s)? crying)\b/i,
+      /\b(my (?:baby|newborn|toddler|infant|kid|son|daughter|child) (?:has been up|keeps me up|is up all|wakes up all|won'?t sleep|will not sleep|is not sleeping|keeps waking|is up all night|keeps me awake)|up every two hours|exhausted (?:with|from) (?:my|the) (?:baby|newborn|toddler|infant|kid)|tired (?:as|being) a new parent|exhausted (?:as|being) a new parent|my (?:baby|newborn|child) (?:was )?just born|just had a baby|postpartum|post-partum|new (?:mom|mother|dad|father|parent)|feel(?:ing)? like (?:a|an) (?:bad|terrible|awful) (?:mother|mom|father|dad|parent)|not a good (?:father|mother|mom|dad|parent)|can'?t (?:stop|help) crying|keep(?:s)? crying|sleep training|toddler (?:tantrum|tantrums|won'?t eat)|teething|colic)\b/i,
       R['ruleParenting']
     ),
 
@@ -241,7 +271,7 @@
       // emotion adjective, so the bare-sadness words missed them; the
       // day-quality phrases open the same thread.
       // eslint-disable-next-line max-len
-      /\b(sad|down|depressed|heartbroken|crying|low|bad day|terrible day|awful day|rough day|horrible day|worst day|day has been (?:awful|terrible|rough|horrible)|today was (?:terrible|awful|horrible|rough|the worst)|my day was (?:terrible|awful|horrible)|heavy heart|heart is heavy|heart feels heavy|feel so heavy|feeling so heavy)\b/i,
+      /\b(sad|down|depressed|heartbroken|crying|low|quiet sadness|this sadness|sadness lately|sad all day|bad day|terrible day|awful day|rough day|horrible day|worst day|day has been (?:awful|terrible|rough|horrible)|today was (?:terrible|awful|horrible|rough|the worst)|my day was (?:terrible|awful|horrible)|heavy heart|heart is heavy|heart feels heavy|feel so heavy|feeling so heavy)\b/i,
       R['ruleSadness']
     ),
 
@@ -527,6 +557,19 @@
       R['ruleFitness']
     ),
 
+    // Cooking: making a dish, a failed attempt ("my ghormeh sabzi was
+    // bitter"), asking how to cook something. Hands-on kitchen care
+    // distinct from the encyclopedic knowledge shelf: a burnt dinner
+    // deserves a fix, not a lecture. Priority sits below the gym and
+    // work threads so food words never steal a body or job disclosure.
+    rule(
+      'cooking',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:cook(?:ing|ed|er)?|recipe|ghormeh|fesenjan|kebab|kabab|stew|soup|baking|bake|frying|boil|simmer|kitchen|meal prep|tasted (?:bitter|salty)|tastes (?:bitter|salty)|was (?:bitter|salty|burned)|too salty|burnt the|burned the|fix (?:the|my) (?:stew|soup|food|meal|recipe|dish)|fix (?:it|that) (?:next time|tomorrow|tonight)|went wrong (?:with the|in the|while)|ruined the|messed up (?:the|my|a) (?:stew|soup|food|meal|recipe|dish|dinner))\b/i,
+      R['ruleCooking']
+    ),
+
     rule(
       'health',
       35,
@@ -616,7 +659,7 @@
       'money',
       35,
       // eslint-disable-next-line max-len
-      /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
+      /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|budgeting|start budgeting|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|groceries (?:keep|are) (?:getting|going) (?:pricier|more expensive)|groceries|pricier|more expensive|feel(?:ing)? (?:so |really |completely )?broke|broke all the time|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
       R['ruleMoney']
     ),
 
@@ -771,6 +814,26 @@
       R['ruleLearningAdvice']
     ),
 
+    // A direct comparison question ("which is better, football or
+    // wrestling?", "toyota or bugatti?"). The probe showed these
+    // falling to the generic "depends on your situation" line; a
+    // dedicated rule keeps the comparison frame and asks for the
+    // criterion that matters, which is more useful than an evasive
+    // dodge. Sits above learning_advice (60) so a two-option
+    // comparison never gets the generic line, and below meta_feedback
+    // (62).
+    rule(
+      'comparison',
+      61,
+      // Comparison structures: "X or Y which is better", "which is
+      // better, X or Y", "between X and Y", "X vs Y". Only fires when
+      // two options are actually being weighed, so a plain preference
+      // question never trips it.
+      // eslint-disable-next-line max-len
+      /\b(?:which is better|which (?:do you think|would you say) is better|better (?:choice|option|pick)|(?:is|are) (?:a|an|the) better|(?:is|are) .{1,30} better than .{1,30}|between .{0,28} and .{0,28} (?:which|better)|.{1,24} or .{1,24} (?:which|better)|compare .{0,20} (?:with|to) .{0,20}|compare .{0,8} vs|vs\.? (?:which|better)|better,? .{1,20} or .{1,20})\b/i,
+      R['ruleComparison']
+    ),
+
     rule(
       'professional_boundary',
       90,
@@ -820,7 +883,7 @@
       'meta_feedback',
       62,
       // eslint-disable-next-line max-len
-      /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you (?:even )?listening|paying attention|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning|you are dodging|you dodged|dodging the question|you did not answer|you didn'?t answer|avoiding my question|not answering me|you are deflecting|you are not listening|you are ignoring me|you (?:are|'?re|keep|always) (?:harassing|threatening|scaring|annoying|bothering) me|stop (?:harassing|threatening|scaring|annoying|bothering) me|you (?:are|'?re|sound|seem) (?:vague|unfriendly)|vague (?:answers?|replies?|responses?)|talk(?:ing)? to yourself|going off (?:on a tangent|topic)|off on a tangent)\b/i,
+      /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you (?:even )?listening|paying attention|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning|you are dodging|you dodged|dodging the question|you did not answer|you didn'?t answer|avoiding my question|not answering me|you are deflecting|you are not listening|you are ignoring me|you (?:are|'?re|keep|always) (?:harassing|threatening|scaring|annoying|bothering) me|stop (?:harassing|threatening|scaring|annoying|bothering) me|you (?:are|'?re|sound|seem) (?:vague|unfriendly)|vague (?:answers?|replies?|responses?)|talk(?:ing)? to yourself|going off (?:on a tangent|topic)|off on a tangent|used to be (?:so much |way |a lot |much |so )?smarter|used to be (?:much |way |a lot )?better|you were (?:much |way |a lot |so )?smarter (?:before|earlier|back then)|you were better (?:before|earlier|back then)|you are (?:getting|becoming) (?:dumber|worse)|you got (?:dumber|worse)|you have gotten (?:dumber|worse))\b/i,
       R['ruleMetaFeedback']
     ),
 
@@ -978,6 +1041,19 @@
       R['rulePetLoss']
     ),
 
+    // Pet care and behavior worries ("my cat hides after we moved",
+    // "my dog stopped eating"): practical reassurance, not grief (the
+    // pet_loss rule above owns death) and not the unknown pool. Sits
+    // just under pet_loss so a living-pet worry about hiding, eating,
+    // or vet costs gets the caring pet-care reply.
+    rule(
+      'pet_care',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:cat|dog|pet|kitten|puppy|parrot|bird|hamster|rabbit|fish|snake|turtle|guinea pig)\b.{0,25}\b(?:hide|hides|hiding|stopped eating|won'?t eat|not eating|acting weird|anxious|alone|lonely|sick|vet|hiding|scared|growl|bark|barking|whine|scratch|bite|peed|pooped|runny|vomit|threw up))|(?:my (?:cat|dog|pet)\b.{0,15}\b(?:after|since)\b.{0,12}\b(?:move|moved|moving))\b/i,
+      R['rulePetCare']
+    ),
+
     // Affection: direct expressions of love toward Darya.
     rule(
       'affection',
@@ -1021,6 +1097,59 @@
       // eslint-disable-next-line max-len
       /\b(?:what did you (?:do|get up to) (?:today|this morning|this afternoon|this evening)|how was your day|how'?s your day|what have you been (?:doing|up to)|how did (?:your )?day (?:go|goes|went)|what was your day like)\b/i,
       R['ruleAboutDaryaDay']
+    ),
+
+    // Apology advice: "how do I apologize without making it about
+    // myself", "how to apologize properly", "should I apologize?".
+    // These ask for guidance on apologizing, which is NOT the same as
+    // the user apologizing now: the apology rule (64) would accept the
+    // (nonexistent) apology, so this rule sits one point above it and
+    // answers with practical steps instead of acceptance.
+    rule(
+      'apology_advice',
+      65,
+      // eslint-disable-next-line max-len
+      /\b(?:how (?:do|can|should|to) i (?:apologize|apologise|say sorry|make it up)|how to apologize|apologize without|apologise without|apologize properly|should i apologize|apologize to (?:her|him|them|my|your)|make a (?:good|real|proper|genuine) apology|say sorry properly|how do i say sorry)\b/i,
+      R['ruleApologyAdvice']
+    ),
+
+    // Adult friendship: making friends as an adult feels hard, "why does
+    // making friends feel like a job interview", drifting from friends.
+    // Sits above the work rule so "making friends as an adult feels
+    // like a job interview" is never read as a work-stress disclosure
+    // (the "job interview" phrase used to hijack it).
+    rule(
+      'friendship',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:mak(?:ing|e) friends (?:as an adult|as an older|again|is (?:so|really|this) (?:hard|difficult)|hard)|hard(?:er)? to (?:make|find) friends|make new friends as an adult|find friends as an adult|friends as an adult|making friends .{0,12}(?:hard|difficult)|why (?:is|are) friends .{0,10}(?:hard|difficult)|drifting apart from (?:my|our) friends|adults (?:make|find) friends|people (?:make|find) friends|make friends|how (?:do|can|should) (?:adults|people) (?:make|find) friends)\b/i,
+      R['ruleFriendship']
+    ),
+
+    // Sports banter and match venting ("the manager bottled the
+    // midfield", "our team lost again", "the referee was blind"):
+    // light, not emotional disclosures, so a match complaint is never
+    // read as grief or work stress. Sits above work (50) so "manager"
+    // talk about a match stays sports.
+    rule(
+      'sports_talk',
+      53,
+      // eslint-disable-next-line max-len
+      /\b(?:the (?:manager|coach|referee|umpire)|our team|my team|the team)\b.{0,25}\b(?:lost|bottled|terrible|awful|useless|blind|sacked|sold|midfield|defense|defence|tactics|formation|penalty|offside|red card|pitch|keeper|striker)\b|\b(?:midfield|offside|red card|penalty shootout|extra time)\b.{0,20}\b(?:terrible|awful|robbed|unfair|disaster)\b/i,
+      R['ruleSportsTalk']
+    ),
+
+    // Gaming: burnout from a genre ("I am burned out on open world
+    // games"), a recommendation request ("recommend a cozy indie
+    // game"), or balance worries. Sits above the stress rule (40) so
+    // "burned out on games" is read as gaming talk, not a generic
+    // burnout disclosure.
+    rule(
+      'gaming',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:recommend|suggest)\b.{0,25}\b(?:game|games|indie|cozy)\b|\b(?:burned? out|burnout)\b.{0,20}\b(?:game|games|gaming)\b|\b(?:tired|sick) of (?:open world )?games?\b|addicted to gaming|game addiction|games all night|playing all night\b/i,
+      R['ruleGaming']
     ),
 
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, R['ruleAffirmation']),

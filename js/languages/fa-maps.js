@@ -37,6 +37,19 @@
     'با',
     'در',
     'به',
+    // Colloquial dative/benefactive clitics («بهم», «برام» = to me,
+    // «بهت» = to you, «برات» = for you). They repeat constantly in
+    // everyday Persian («چندتا فیلم بهم معرفی کن» then «چندتا کتاب
+    // بهم معرفی کن»), so the word-repetition override must never
+    // quote them back as if the user were dwelling on a word.
+    'بهم',
+    'برام',
+    'بهت',
+    'برات',
+    'بش',
+    'براش',
+    'بهش',
+    'واسه',
     'از',
     'که',
     'تا',

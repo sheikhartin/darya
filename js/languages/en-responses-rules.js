@@ -289,10 +289,22 @@
   // honest, reflective answer that turns the choice back into a
   // conversation instead of faking certainty about "which is better".
   R['ruleLearningAdvice'] = [
-    'There is no single right answer to "which is better": it depends on your taste and your goal. What draws you to one over the other?',
-    'Before any advice, tell me: what would choosing this path mean for you, and where do you hope it leads?',
-    'Whichever path you take, practice and genuine interest open the doors. Which part of this work actually excites you?',
-    'This choice depends on your own situation. We can figure out together what fits you best.'
+    'Real learning starts with small steps: twenty focused minutes every day beats a few long sessions every so often. What is the smallest first step you can take today?',
+    'For any skill, active practice with quick feedback beats passive learning. Where are you on the path right now, and what still feels unclear?',
+    'Consistency beats intensity: a small routine you actually keep outpaces an ambitious plan you abandon. What time of day works best for you?',
+    'The right learning path depends on your goal and your situation; your own curiosity is the best guide. Which part of this genuinely excites you?'
+  ];
+
+  // Two-option comparison ("which is better, X or Y?", "X or Y?"):
+  // keeps the comparison frame and asks for the criterion that
+  // matters, instead of the generic "depends on your situation" dodge.
+  R['ruleComparison'] = [
+    'Comparing two options only becomes meaningful once we know what you are comparing them for; each is built for something different. Which one aligns more with what you want these days?',
+    'Both sides have their arguments; the real question is your criterion. In this choice, what matters most to you: performance, cost, enjoyment, or something else?',
+    'There is no fixed answer, but we can clarify your criteria together. If only one thing could decide it, what would that one thing be?',
+    'Instead of asking which is "better", ask which is closer to your life today; the comparison gets easier from there. What keeps circling in your mind about this choice?',
+    'There is no universal "better": every option trades something off, and the right pick is the one that fits your actual criteria rather than its reputation.',
+    'When two options look equal on paper, the deciding factor is usually which one you can live with on a bad day, not on a good one.'
   ];
 
   // Recommendation follow-ups ("anything similar but darker?") that name
@@ -507,6 +519,17 @@
     'It takes real courage to show up at a gym when you are unsure of yourself. What would make it feel a little less daunting?',
     'Everyone in that room started somewhere, and most people are too busy with their own workout to judge. What is the first small step that feels doable?',
     'Feeling anxious about your body in a gym is far more common than you might think. What kind of encouragement would help you most?'
+  ];
+
+  // Cooking care: fixing a failed dish and gentle guidance for new
+  // cooks. Distinct from the knowledge shelf's encyclopedic food
+  // facts: a burnt dinner gets a concrete fix, not a lecture.
+  R['ruleCooking'] = [
+    'A bitter ghormeh sabzi usually comes from not browning the herbs properly or simmering too long; next time fry the herbs slowly over low heat and caramelize the tomato paste well. For right now, a spoon of browned tomato paste or a little sugar can balance the bitterness.',
+    'Fesenjan turns dark and glossy when the walnuts are toasted well and the pomegranate paste is cooked separately until the oil separates. Which part felt hardest for you?',
+    'Persian cooking rewards patience more than speed; one failed attempt just means the heat or the amounts need a small adjustment. What exactly went wrong?',
+    'To start, simpler dishes (plain rice, a chicken stew, a soup) build confidence before you move to the stews. What are you in the mood to cook today?',
+    'Add salt and sour gradually; you can always add more, but you cannot take it back. What did you learn from that first try?'
   ];
 
   R['ruleAffection'] = [
@@ -733,5 +756,63 @@
     'برگردم',
     'برم',
     'برانم'
+  ];
+  R['ruleGaming'] = [
+    'Burnout from one style of game is real. A cozy indie or a short session-based game can feel like a different world entirely. What kind of pace are you craving these days?',
+    'When a genre stops giving you joy, it is often a signal to vary the pace: shorter sessions, a different genre, or a week away from the screen. What draws you to cozy games?',
+    'A good recommendation depends on the mood you are in. Do you want something story-driven, something creative, or something you can play in short bursts?',
+    'Gaming balance is about guilt-free play: set a timer, enjoy it fully, and close it when the time is up. What has been stealing the fun lately?',
+    'If gaming is keeping you up all night, a small boundary helps: one hour before bed, the screen goes off. What is the hardest part of stopping for you?'
+  ];
+
+  // Setting boundaries: how-to about limits with family or friends.
+  R['ruleBoundaries'] = [
+    'Boundaries are not walls, they are instructions for how you want to be treated. A calm "no" said early prevents a resentful "yes" said forever. Which relationship feels hardest to set a limit in?',
+    'A boundary is clearer when it is concrete: what you will do, not just what they should stop doing. For example, "I can talk until 10, then I need quiet." What would your version sound like?',
+    'You can be kind and firm at the same time. The kindness is in the tone, the firmness is in not backing down. What is the smallest boundary you could practice first?',
+    'Setting a limit with someone you love often brings guilt before it brings relief. That guilt is a sign you care, not a sign you are wrong. What is the worry underneath?',
+    'Start small: one boundary, said clearly, repeated calmly. It gets easier the second time. What has made saying no feel so hard so far?'
+  ];
+
+  // Pet care: behavior worries about a living pet (hiding, not eating,
+  // being alone, vet costs). Practical reassurance, never grief; the
+  // knowledge shelf answers the encyclopedic "why do cats hide"
+  // questions.
+  R['rulePetCare'] = [
+    'A pet acting differently is usually a phase, not a crisis. After a move, cats often hide for a few days: give them one safe room, keep their food and water in the same spot, and let them come out on their own time. How long has this been going on?',
+    'Not eating is worth watching. Try a quiet spot, their usual bowl, and a little patience; if it lasts more than a day or two, a vet is the right call. I am not a substitute. What does a typical day look like for them right now?',
+    'Pets feel our routines changing too. A stable feeding time and a calm corner go a long way. What changed recently in your home?',
+    'Worrying about your pet shows how much you care. Small consistent care helps: same bowl, same corner, same rhythm. Is there a specific behavior that worries you most?',
+    'If vet costs are the worry, ask the clinic about payment plans or pet insurance before giving up on care. How are they doing otherwise?'
+  ];
+
+  // Apology advice: practical steps for apologizing well, distinct from
+  // accepting an apology the user just made.
+  R['ruleApologyAdvice'] = [
+    'A good apology names what happened, owns the impact without excuses, and ends with how you will change the behavior. It helps to stay on their feelings, not your own. What are you hoping to make right?',
+    'Keep it specific: what you did, why it mattered, and what you will do differently. A short sincere apology beats a long defensive one. Who is this apology for?',
+    'An apology is about the other person, so resist the urge to explain your side first. Say it, pause, and let them respond. What feels hardest about that?',
+    'If you are not sure how they took it, ask: "Is there anything you need from me to feel better?" Repair is a conversation, not a speech. What happened between you two?',
+    'Apologizing well is a skill like any other. A clear structure helps: what you did, the impact, and the change. Would it help to practice the words with me first?'
+  ];
+
+  // Adult friendship: making friends after school, drifting apart, the
+  // effort real friendship takes.
+  R['ruleFriendship'] = [
+    'Adult friendship takes a different kind of effort: shared time has to be scheduled, not stumbled into. Small consistent gestures build real closeness. What kind of friend are you hoping to find?',
+    'Making friends as an adult is genuinely harder, and it is not a sign anything is wrong with you. Recurring low-stakes contact does the work: a class, a hobby group, a weekly call. Where could you show up repeatedly?',
+    'Friendship after school is built on repeated small interactions. Picking one activity you already like and going regularly is a real strategy. What do you enjoy doing with others?',
+    'It can feel like a job interview because everyone is cautious at first. The shortcut is common ground: do something together, not just talk. What is something you have always wanted to try with someone?',
+    'One meaningful connection is worth more than many acquaintances. Which existing friendship could you deepen this month?'
+  ];
+
+  // Sports banter: match complaints, referee rants, team losses. Light,
+  // companionable, never clinical.
+  R['ruleSportsTalk'] = [
+    'That sounds like a painful watch. Some matches just do not go to plan; the fans feel it more than the players. Do you think it was the tactics or the luck?',
+    'You have my sympathies. There is nothing like a bad call to ruin an evening. What was the worst moment of it?',
+    'Every fan has a list of grievances a mile long. The comeback talk starts tomorrow, right? What would you change about the lineup?',
+    'Teams have bad nights; the real fans stick around anyway. Are you watching the next match too, or taking a break?',
+    'A loss like that stings for exactly one night, then the next fixture comes around. Which game are you looking forward to next?'
   ];
 })(typeof window !== 'undefined' ? window : globalThis);
