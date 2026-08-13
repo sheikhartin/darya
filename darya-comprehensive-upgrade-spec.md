@@ -660,8 +660,8 @@ No new external dependencies required. All features implemented using:
 
 ## 10. Implementation Status (v1.2.3)
 
-All scoped phases for v1.2.0 and the v1.2.1 hardening round are complete
-and validated. The
+All scoped phases for v1.2.0, the v1.2.1 hardening round, and the
+v1.2.2-v1.2.3 release-pipeline fixes are complete and validated. The
 implementation deliberately kept the zero-dependency, offline-first
 architecture: every feature below runs in the browser with no network
 calls.
@@ -697,7 +697,7 @@ calls.
 | Learning support | "How can I learn English?" and its Persian equivalent get a structured practical method, not a hand-off | both language packs' ruleLearningAdvice pools |
 | Docs | README rewritten with pipeline, memory, exercises, mood, safety sections; AGENTS.md gained the normalization and Iranian-name conventions; spec reflects delivered scope | README.md, AGENTS.md, this file |
 | Real launcher icon (1.2.2) | The Capacitor-generated default icon is replaced with the actual Darya launcher icon for release APK/AAB builds | android/app/src/main/res/ |
-| CI artifact naming (1.2.2) | Release AAB/APK downloads are version-tagged in their filenames (Darya-1.2.3-release.aab/.apk) so a newer release never silently overwrites an older download | .github/workflows/build-android.yml |
+| CI artifact naming (1.2.3) | Release AAB/APK downloads are version-tagged in their filenames (Darya-1.2.3-release.aab/.apk) so a newer release never silently overwrites an older download | .github/workflows/build-android.yml |
 | CI action hardening (1.2.3) | Workflow actions moved to current majors (checkout@v7, setup-node@v7, setup-java@v5, upload-artifact@v7); the previous v4 pins ran on the deprecated Node 20 action runtime | .github/workflows/build-android.yml |
 
 ### 10.2 Validation
