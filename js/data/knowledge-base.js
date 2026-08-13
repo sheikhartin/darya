@@ -17,6 +17,15 @@
 
   const LOOKUP_MIN_SCORE = 6;
 
+  // Persian weak-word guard: «چند وقته» (for a while), «چند ماهه», and
+  // «چقدر ... دوست دارم» are duration/preference statements, not
+  // questions. Without it the bare «چند»/«چقدر» framing would unlock
+  // weak topic words and «چند وقته فوتبال بازی نکردم» would get the
+  // football encyclopedia entry instead of empathy (the "knowledge:
+  // psychology, sports, history" test pins exactly these statements).
+  const FA_WEAK_STATEMENT =
+    /(?:چند|چقدر)\s*(?:وقته|وقتیه|وقتی|مدته|مدتیه|روزه|ماهه|ساله|سالی)|چقدر\s*.{0,12}(?:دوست\s+دارم|علاقه\s+دارم)/u;
+
   // Where-to-buy phrases boost the marketplace fact so it beats any
   // item-specific buying guide ("where to buy a phone" wants stores).
   const WHERE_TO_BUY_MARKERS = {
@@ -52,15 +61,28 @@
       'معنی',
       'بگو',
       'بگی',
+      // «بهم» and «برام» are the everyday colloquial "to me":
+      // «چندتا فیلم بهم معرفی کن» is a recommendation request, and the
+      // request marker must open the knowledge door exactly like «برام».
+      'بهم',
+      'به من',
       'برام',
       'تعریف',
       'اسم',
       'یاد بده',
       'پیشنهاد',
+      // «معرفی» (introduce/recommend) is the FA twin of "recommend";
+      // without it, «فیلم سینمایی بهم معرفی کن» scores as a bare weak
+      // hit and falls below the override confidence floor.
+      'معرفی',
       'راه',
       'روش',
       'بهترین',
-      'کدام'
+      'کدام',
+      // «چندتا»/«چند» ("a few/some") mark list requests in Persian
+      // («چندتا فیلم بگو»), the same job "some" does in English.
+      'چندتا',
+      'چند'
     ],
     en: [
       'tell',
@@ -78,7 +100,20 @@
       'tips',
       'how to',
       'recommend',
-      'suggest'
+      'suggest',
+      // "name some X" is a common recommendation framing
+      // ("name some good youtubers", "name some video games"); it must
+      // count as framing so the weak topic words reach full weight.
+      'name some',
+      'name a few',
+      'some',
+      // "best"/"top"/"favorite" are the recommendation framings that
+      // «بهترین»/«کدام» cover on the Persian side: "best movie of all
+      // time", "top 10 games", "favorite books" used to fail the
+      // framing gate and fall to the unknown pool.
+      'best',
+      'top',
+      'favorite'
     ]
   };
 
@@ -139,7 +174,8 @@
         const hintHit = (fact.hints || []).some((hint) =>
           lower.includes(hint.toLowerCase())
         );
-        if (hasFraming && fact.weakSafe) {
+        const framedWeakGuard = hasFraming && !FA_WEAK_STATEMENT.test(lower);
+        if (framedWeakGuard && fact.weakSafe) {
           // A framed question ("چطور", "what is") with a topic word is a
           // solid signal even without a hint: "کنکور چطوریه" deserves the
           // konkur answer. Full keyword weight so short topic words like
@@ -355,7 +391,18 @@
       persian_empire: ['کوروش', 'هخامنشی'],
       pyramids: ['اهرام'],
       berlin_wall: ['برلین'],
-      persian_food: ['غذای ایرانی', 'چلو کباب', 'قرمه سبزی'],
+      persian_food: [
+        'غذای ایرانی',
+        'چلو کباب',
+        // Both spellings of the stew must resolve: «قرمه سبزی» (standard
+        // spelling in the fact) and the colloquial «قورمه سبزی» that
+        // users actually type. The normalizer keeps both, so both are
+        // needed here for a bare follow-up like «قورمه» to reach the
+        // food fact.
+        'قرمه سبزی',
+        'قورمه سبزی',
+        'قورمه'
+      ],
       saffron: ['زعفران'],
       tea: ['چای'],
       relationship_plan: ['رابطه سالم', 'رابطه خوب', 'برنامه رابطه', 'رابطه'],

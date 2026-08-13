@@ -212,6 +212,11 @@
         'خوراک ایرانی',
         'چلو کباب',
         'قرمه سبزی',
+        // The colloquial spelling «قورمه» (what users actually type for
+        // قورمه سبزی) must reach the same fact; the standard spelling
+        // alone left «طرز تهیه قورمه سبزی» in the unknown pool.
+        'قورمه سبزی',
+        'قورمه',
         'ته دیگ',
         'persian food',
         'persian cuisine',
@@ -765,6 +770,25 @@
         'automation take',
         'replace my job',
         'replace my career',
+        // 2026-era AI-career phrasings: creative roles (designers,
+        // writers, artists) and the AGI horizon are the questions people
+        // actually ask now. «طراح‌ها و نویسنده‌ها رو بیکار می‌کنه» needed
+        // an explicit keyword so it never bounces to the Wikipedia
+        // pointer or the work pool.
+        'replace designers',
+        'replace writers',
+        'replace artists',
+        'ai tools replace',
+        'artificial general intelligence',
+        'agi',
+        'general intelligence',
+        'بیکار می‌کنه',
+        'بیکار میکنه',
+        'طراح‌ها',
+        'نویسنده‌ها',
+        'هوش مصنوعی عمومی',
+        'استدلال می‌کنه',
+        'استدلال میکنه',
         'is ai going to change',
         'will ai change',
         'ai going to change',

@@ -21,9 +21,24 @@
         'به کسی بگم دوستش دارم',
         'crush',
         'confess to my crush',
-        'how to tell someone i like them'
+        'how to tell someone i like them',
+        'ask her out',
+        'ask him out',
+        'ask someone out',
+        'ask out',
+        'خواستگاری',
+        'خواستگاری کنم',
+        'ازش خواستگاری',
+        'از دختری که دوست دارم'
       ],
-      weak: ['کراش', 'crush', 'اعتراف', 'ابراز احساسات'],
+      weak: [
+        'کراش',
+        'crush',
+        'اعتراف',
+        'ابراز احساسات',
+        'خواستگاری',
+        'دوست دارم'
+      ],
       weakSafe: true,
       hints: [
         'دختر',
@@ -127,7 +142,16 @@
         'manage my money',
         'manage money',
         'how to budget',
-        'how to save money'
+        'how to save money',
+        // Emergency-fund phrasings: «پول اضطراریمو کجا بذارم» (where do
+        // I keep my emergency money) and "park my emergency fund" are
+        // everyday 2026 money questions that used to bounce to the
+        // honest-ignorance fallback.
+        'emergency fund',
+        'emergency savings',
+        'پول اضطراریمو',
+        'پول اضطراری',
+        'اندوخته اضطراری'
       ],
       weak: ['بودجه', 'پس انداز', 'پس‌انداز', 'budget', 'saving'],
       weakSafe: true,

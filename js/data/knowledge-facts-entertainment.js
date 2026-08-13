@@ -15,13 +15,44 @@
         'سریال خوب معرفی کن',
         'ده فیلم خوب',
         'فیلم های خوب',
+        // Colloquial recommendation framings with «بهم» (to me):
+        // «چندتا فیلم بهم معرفی کن» and «فیلم سینمایی بهم معرفی کن`
+        // used to score as weak-only hits below the confidence floor
+        // and fell to the "unfamiliar topic" pool.
+        'فیلم بهم معرفی کن',
+        'فیلم به من معرفی کن',
+        'فیلم سینمایی',
+        'فیلم معرفی',
+        'چندتا فیلم',
+        // "best film" requests (بهترین فیلم تاریخ) used to fall below
+        // the confidence floor and hit the "check Wikipedia" line.
+        'بهترین فیلم',
+        'بهترین فیلم تاریخ',
+        'فیلم تاریخ',
+        'یه فیلم معرفی',
+        'یک فیلم معرفی',
+        'فیلم پیشنهاد',
+        'فیلم بگو',
         'recommend a good movie',
         'suggest movies',
         'good series to watch',
         'best movies you recommend',
-        'what should i watch'
+        'what should i watch',
+        // Multi-word generic phrases like 'recommend a movie' or 'movie
+        // recommendations' are deliberately NOT here: they embed inside
+        // genre queries ("recommend a movie based on true events",
+        // "horror movie recommendations") and outscore the genre facts,
+        // so the general shelf swallowed them (the "expanded genre
+        // lists" test pins this). Bare requests still reach this fact
+        // through the weak 'movie'/'films' words plus framing.
+        'films to watch',
+        'good movies',
+        'best film',
+        'best movie',
+        'best movie of all time',
+        'top movies'
       ],
-      weak: ['فیلم', 'سریال', 'سینما', 'movie', 'movies', 'series'],
+      weak: ['فیلم', 'سریال', 'سینما', 'movie', 'movies', 'series', 'films'],
       weakSafe: true,
       hints: [
         'پیشنهاد',
@@ -69,7 +100,14 @@
         'سریال عاشقانه',
         'romantic movie',
         'romance movie',
-        'romantic film'
+        'romantic film',
+        // Colloquial forms: "romantic comedies" and «فیلم کمدی عاشقانه»
+        // are how the request actually arrives; the bare «عاشقانه» weak
+        // word alone would not unlock the list without a hint.
+        'romantic comed',
+        'romcom',
+        'فیلم کمدی عاشقانه',
+        'کمدی عاشقانه'
       ],
       weak: ['عاشقانه', 'رمانتیک', 'romantic', 'romance'],
       weakSafe: true,
@@ -547,6 +585,43 @@
       hints: ['داستان', 'تعریف', 'بگو', 'story', 'tell'],
       fa: 'یک داستان کوتاه ترسناک:\nاتاق کناری هر شب ساعت سه دقیقه بامداد، در می‌زد: سه ضربه‌ی آرام و منظم. ماه‌ها بود که آن اتاق خالی بود و کلیدش را مادرم زیر فرش پنهان کرده بود. دیشب به جای صدای در، یک صدای زنانه از پشت دیوار گفت: «این بار کلید را تو پنهان کردی؟» من هنوز جواب ندادم، چون مطمئن نیستم مادرم این جمله را شنیده یا نه. دوست داری همین‌جا تمامش کنم یا ادامه بدهم؟',
       en: 'A short horror story:\nEvery night at exactly 3:03 AM, the door of the spare room knocked: three soft, steady taps. The room had been empty for months, and my mother had hidden its key under the rug. Last night, instead of the knock, a woman voice whispered through the wall: Did you hide the key this time? I have not answered yet, because I am not sure whether my mother heard it too. Do you want me to end it here, or keep going?'
+    },
+    {
+      id: 'books_recommendations',
+      keywords: [
+        'کتاب معرفی کن',
+        'کتاب بهم معرفی کن',
+        'کتاب به من معرفی کن',
+        'چندتا کتاب',
+        'یه کتاب معرفی',
+        'یک کتاب معرفی',
+        'کتاب پیشنهاد',
+        'کتاب خوب',
+        'recommend a book',
+        'recommend me a book',
+        'recommend some books',
+        'recommend me some books',
+        'suggest some books',
+        'suggest a book',
+        'book recommendations',
+        'book recommendation',
+        'recommendation while',
+        'good books',
+        'books to read'
+      ],
+      weak: ['کتاب', 'book', 'books', 'novel', 'novels'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'معرفی',
+        'بخونم',
+        'خواندن',
+        'recommend',
+        'suggest',
+        'read'
+      ],
+      fa: 'چند کتاب خوب و غیرتکراری، از ادبیات ایران و جهان:\n۱. «بوف کور» (صادق هدایت): رمانی تاریک و تأمل‌برانگیز درباره‌ی تنهایی و کابوس.\n۲. «کلیدر» (محمود دولت‌آبادی): حماسه‌ای بلند از زندگی روستایی ایران.\n۳. «سووشون» (سیمین دانشور): روایت خانواده‌ای شیرازی در سال‌های جنگ و تغییر.\n۴. «کیمیاگر» (پائولو کوئلیو): داستانی ساده و الهام‌بخش درباره‌ی دنبال‌کردن رؤیاها.\n۵. «صد سال تنهایی» (گابریل گارسیا مارکز): شاهکار رئالیسم جادویی.\n۶. «1984» (جورج اورول): هشداری تند درباره‌ی قدرت و نظارت.\n۷. «کتابخانه‌ی نیمه‌شب» (مت هیگ): رمانی گرم درباره‌ی انتخاب‌ها و معنا.\n۸. «کوه جادو» (توماس مان): رمانی عمیق درباره‌ی زمان و بیماری.',
+      en: 'A few good, less-obvious books from Persian and world literature:\n1. The Blind Owl (Sadegh Hedayat): a dark, brooding novel about solitude and nightmare.\n2. Kelidar (Mahmoud Dowlatabadi): an epic of rural Iranian life.\n3. Savushun (Simin Daneshvar): a Shirazi family during years of war and change.\n4. The Alchemist (Paulo Coelho): a simple, inspiring tale about following dreams.\n5. One Hundred Years of Solitude (Gabriel Garcia Marquez): a masterpiece of magical realism.\n6. 1984 (George Orwell): a sharp warning about power and surveillance.\n7. The Midnight Library (Matt Haig): a warm novel about choices and meaning.\n8. The Magic Mountain (Thomas Mann): a deep novel about time and illness.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

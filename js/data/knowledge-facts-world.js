@@ -117,7 +117,14 @@
         'should i invest in crypto',
         'is crypto worth it',
         'buy bitcoin',
-        'crypto investment advice'
+        'crypto investment advice',
+        // 2026 phrasings: «کریپتو هنوز ارزش داره یا نه» (is crypto still
+        // worth it) reads the «هنوز» (still) qualifier that the bare
+        // «کریپتو ارزش داره» keyword missed.
+        'کریپتو هنوز ارزش داره',
+        'ارزش داره یا نه',
+        'is crypto still worth',
+        'crypto still worth'
       ],
       weak: [
         'کریپتو',

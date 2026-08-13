@@ -115,6 +115,54 @@
       en: 'Carpentry is one of the oldest and most practical hands-on skills, covering everything from furniture and cabinets to wooden structures. To start, vocational courses or an apprenticeship with an experienced carpenter beat just watching videos, because tool safety and measurement precision only come from real practice. With construction and wooden interior work in demand, carpentry has a market both in Iran and abroad. Income depends on your skill and speed, and many carpenters open their own workshop after a few years of apprenticeship.'
     },
     {
+      id: 'hobby_woodworking',
+      keywords: [
+        'میز کار',
+        'میز کار چه چوبی',
+        'چه چوبی',
+        'تاب برداشتن',
+        'workbench',
+        'what wood',
+        'live edge',
+        'woodworking',
+        'wood project'
+      ],
+      weak: ['چوب', 'wood', 'workbench'],
+      weakSafe: true,
+      hints: [
+        'میز',
+        'چوب',
+        'کارگاه',
+        'table',
+        'wood',
+        'workbench',
+        'woodworking'
+      ],
+      fa: 'برای میز کار، چوب‌های سخت مثل راش، بلوط یا افرا برای سطح دوام بیشتری دارند و ضربه و خراش را بهتر تحمل می‌کنند؛ چوب‌های نرم‌تر مثل کاج ارزان‌ترند و برای قاب و پایه خوبند. برای صفحه‌ی میز کار، تخته‌ی چندلایه (پلای‌وود) یا ام‌دی‌اف روکش‌شده هم گزینه‌ی مطمئن و کم‌هزینه است. اگر با یک تخته‌ی زنده (live edge) کار می‌کنی، اجازه بده چوب کاملاً خشک شود (رطوبت حدود ۸ تا ۱۰ درصد) و ترک‌ها را قبل از کار با گوه‌های پروانه‌ای مهار کن؛ در غیر این صورت بعد از مونتاژ تاب برمی‌دارد.',
+      en: 'For a workbench, hardwoods like maple, oak, or beech make a durable surface that handles dings and scratches better; softer woods like pine are cheaper and work well for the frame and legs. For the top, baltic birch plywood or a laminated bench top is a reliable, budget-friendly choice. If you are working with a live edge slab, let it dry to around 8-10% moisture and stabilize any cracks with bow-tie inlays before you build, or it will warp after assembly.'
+    },
+    {
+      id: 'hobby_3d_printing',
+      keywords: [
+        'پرینت سه بعدی',
+        'پرینت سه‌بعدی',
+        'پرینت',
+        'پرینتم',
+        'فیلامنت',
+        '3d print',
+        '3d printing',
+        '3d printer',
+        'pla',
+        'petg',
+        'filament'
+      ],
+      weak: ['فیلامنت', 'filament', 'pla', 'petg'],
+      weakSafe: true,
+      hints: ['پرینت', 'print', 'printing', 'printer', 'filament'],
+      fa: 'تفاوت اصلی PETG و PLA در دما و انعطاف است: PLA ساده‌تر چاپ می‌شود و برای قطعات غیرفعال عالی است، اما نزدیک گرما (مثلاً داخل ماشین یا کارگاه گرم) تاب می‌آورد؛ PETG مقاومت حرارتی و ضربه‌ای بهتری دارد و برای ابزارهای کارگاه انتخاب مطمئن‌تری است. پیچش لایه‌ها (warping) معمولاً از رطوبت فیلامنت یا اختلاف دمای بستر می‌آید: فیلامنت را خشک نگه دار، بستر را خوب تمیز و چسبنده کن و دمای محیط را ثابت نگه دار.',
+      en: 'The key difference between PETG and PLA is heat and flexibility: PLA prints more easily and is great for non-structural parts, but it softens near heat (like a hot garage), while PETG handles heat and impact better and is the safer pick for workshop tools. Layer warping usually comes from damp filament or a temperature difference across the bed: keep your filament dry, clean the bed and make it tacky, and keep the room temperature steady.'
+    },
+    {
       id: 'profession_mechanical_engineering',
       keywords: [
         'مهندسی مکانیک',
