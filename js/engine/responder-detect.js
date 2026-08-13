@@ -420,7 +420,7 @@
       const faAffirm =
         /^(?:بله|آره|اره|باشه|اوکی|حتما|حتماً|چشم|موافقم|بله حتما|بله حتماً)(?!\p{L})/u;
       const faNegate =
-        // The ئ→یی normalizer turns «مطمئنم» into «مطمینم», so the
+        // The ئ to ی normalizer turns «مطمئنم» into «مطمینم», so the
         // refusal must carry both spellings or it never matches.
         /^(?:نه|نخیر|نه نه|نه بابا|الان نه|دوست ندارم|نمیخوام|نمی خوام|مطمئنم نه|مطمینم نه)(?!\p{L})/u;
       const faMaybe =

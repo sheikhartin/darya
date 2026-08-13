@@ -3230,7 +3230,7 @@ test('fun facts: topic requests for sports/art/money stay in category', () => {
   }
 });
 
-test('knowledge and fun-fact triggers carry the ئ→یی normalized spellings', () => {
+test('knowledge and fun-fact triggers carry the ئ to ی normalized spellings', () => {
   // «تئاتر» normalizes to «تیاتر» and «کوئیت» to «کوییت», so keyword
   // lists and category patterns need both forms or the entries become
   // unreachable from typed Persian.
@@ -5878,7 +5878,7 @@ test('FA short negative answer respects the boundary', () => {
   );
 });
 
-test('FA short negative answer matches the ئ→یی normalized spelling', () => {
+test('FA short negative answer matches the ئ to ی normalized spelling', () => {
   // «مطمئنم نه» arrives at the matcher as «مطمینم نه» after the
   // half-space normalizer maps ئ to ی, so the refusal pattern must carry
   // both spellings or the pending thread is never answered as a "no".
@@ -5895,7 +5895,7 @@ test('FA short negative answer matches the ئ→یی normalized spelling', () =>
   );
 });
 
-test('FA short maybe answer matches the ئ→یی normalized spelling', () => {
+test('FA short maybe answer matches the ئ to ی normalized spelling', () => {
   // Same dual-spelling rule for the uncertain branch: «مطمئن نیستم»
   // normalizes to «مطمین نیستم».
   const engine = engineWithPendingQuestion(FA, 'چند وقته خوابم نمیبره');
@@ -6496,7 +6496,7 @@ test('FA profile memory: ه-ending adjectives with the full ام suffix never be
   assert.doesNotMatch(recalled, /خسته|آماده/u);
 });
 
-test('FA profile memory: ئ→یی normalized stopwords never become names', () => {
+test('FA profile memory: ئ to ی normalized stopwords never become names', () => {
   // «مطمئن» normalizes to «مطمین», and the informal copula «ه» glues to
   // the stem («اسمم مطمینه»), so the stripped stem must be a stopword
   // too. Otherwise a user saying they are sure would be stored as a name.

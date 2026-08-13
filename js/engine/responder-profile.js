@@ -142,7 +142,7 @@
           (patterns.nameStopwords.includes(candidate.toLowerCase()) ||
             // «اسمم مطمینه» captures the copula «ه» inside the candidate
             // («مطمینه»); the stripped stem «مطمین» is the stopword the
-            // ئ→یی normalizer produces from «مطمئن», so it must be tested
+            // ئ to ی normalizer produces from «مطمئن», so it must be tested
             // too or the state slips through as a name.
             (patterns.nameCopulaStrip &&
               patterns.nameStopwords.includes(
