@@ -459,10 +459,38 @@
       const foreignLetters = letters.filter(
         (ch) => !this.lang.scriptRange.test(ch)
       );
-      return (
-        foreignLetters.length >= MIXED_SCRIPT_FOREIGN_MIN &&
-        foreignLetters.length / letters.length >= MIXED_SCRIPT_FOREIGN_RATIO
+      if (
+        foreignLetters.length < MIXED_SCRIPT_FOREIGN_MIN ||
+        foreignLetters.length / letters.length < MIXED_SCRIPT_FOREIGN_RATIO
+      ) {
+        return false;
+      }
+      // A title-cased foreign run embedded in native text («انیمه Witch
+      // Hat Atelier رو دیدی») is a proper-noun title, not a language
+      // switch: anime/game/book titles and brand names are everyday
+      // loanwords in both directions. When the message also contains
+      // native letters and every foreign word starts uppercase, treat
+      // the run as a title and skip the redirect. Real bilingual input
+      // ("سلام سلام hello friend", "My manager خیلی باهاش مشکل دارم")
+      // has lowercase foreign words and still redirects.
+      const nativeLetters = letters.filter((ch) =>
+        this.lang.scriptRange.test(ch)
       );
+      if (nativeLetters.length > 0) {
+        const foreignWords = [...String(text).matchAll(/[\p{L}]+/gu)].map(
+          (m) => m[0]
+        );
+        const allForeignWords = foreignWords.filter((word) =>
+          [...word].some((ch) => !this.lang.scriptRange.test(ch))
+        );
+        if (
+          allForeignWords.length > 0 &&
+          allForeignWords.every((word) => /^\p{Lu}/u.test(word))
+        ) {
+          return false;
+        }
+      }
+      return true;
     }
   });
 })(typeof window !== 'undefined' ? window : globalThis);

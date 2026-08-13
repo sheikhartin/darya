@@ -449,7 +449,7 @@
         this.memory.turnCount - this._lastEntertainmentTurn <= 3 &&
         (this.lang.code === 'fa'
           ? // eslint-disable-next-line max-len
-            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|دوباره|یه بار دیگه|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
+            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|بازم بگو|باز هم بگو|دوباره|دوباره بگو|یه بار دیگه|یه بار دیگه بگو|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
               matchingText
             )
           : /^(?:another one|one more|another|again|once more|one more time|more please|another please)[.!?]*$/i.test(
@@ -670,6 +670,14 @@
           this._lastKnowledgeTopic = refined.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           this._lastKnowledgeText = refined.text;
+          // Keep the knowledge thread as the active subject (see the rule
+          // path in responder-rules.js) so short follow-up statements
+          // continue it instead of bouncing to the unknown pool.
+          this.memory.currentSubject = {
+            topic: 'knowledge',
+            entityRefs: [refined.topic],
+            since: this.memory.turnCount
+          };
           _overrideFired = true;
         } else if (
           // A recommendation follow-up that names no genre word
@@ -677,13 +685,17 @@
           // the genre lookup misses) still deserves a warm continuation
           // of the same shelf instead of a generic fallback. Question
           // words like «کدوم/بهترین» and format-feedback requests stay
-          // out: they are genuine questions, not rec refinements.
+          // out: they are genuine questions, not rec refinements. The
+          // not-too branch catches a refinement of the LAST answer
+          // ("something not too gory though", «ولی خیلی خونین نباشه»)
+          // that names no new topic word of its own.
           (!this.lang.formatFeedbackPattern?.test(matchingText) &&
             // eslint-disable-next-line max-len
-            /(?:similar|like that|another|one more|more like|darker|best story|which one|any other|others|in that (?:style|vein|tone)|same (?:style|tone|vibe)|recommend (?:me )?another)/iu.test(
+            /(?:similar|like that|another|one more|more like|darker|best story|which one|any other|others|in that (?:style|vein|tone)|same (?:style|tone|vibe)|recommend (?:me )?another|not too|nothing too|something (?:less|more|not)|anything but|a bit (?:less|more)|a little (?:less|more)|not as|less (?:scary|dark|violent|gory)|kinder|gentler|softer|lighter|shorter|a shorter|something like)/iu.test(
               matchingText
             )) ||
-          /(?:مشابه|شبیه|مثل همین|یکی دیگه|یکی دیگر|همینطور|همین طور)/u.test(
+          // eslint-disable-next-line max-len
+          /(?:مشابه|شبیه|مثل همین|یکی دیگه|یکی دیگر|همینطور|همین طور|خیلی.{0,6}نباشه|خیلی.{0,6}نشه|خیلی.{0,6}نشد|کمی.{0,6}تر|کوتاه‌تر|سبک‌تر|کوتاه‌تر باشه|سبک‌تر باشه|ترسناک نباشه|خونین نباشه|همون.{0,6}باشه|همون.{0,6}نباشه|ولی.{0,10}(?:نباشه|نشه|نشد))/u.test(
             matchingText
           )
         ) {
@@ -697,10 +709,16 @@
           // («فکر می‌کنی جایگزین کامپیوترای معمولی بشه؟», "do you think
           // it would replace them?") that has no topic word of its own:
           // acknowledge the thread explicitly instead of an evasive line.
-          /(?:will it|it will|they exist|actually|instead|rather than|what about|so if|so how|but how)/iu.test(
+          // "what did it show us" / «چی نشون داد به ما» are the same
+          // move right after a telescope or science answer: they carry no
+          // keyword of their own and must continue the last topic, never
+          // bounce to the honest-unknown pool.
+          // eslint-disable-next-line max-len
+          /(?:will it|it will|they exist|actually|instead|rather than|what about|so if|so how|but how|what did (?:it|they|that|we|you) (?:show|tell|find|see|learn|reveal)|what (?:has|have) (?:it|they|that) (?:shown|revealed|told|found)|what is (?:it|that) (?:showing|doing|about))/iu.test(
             matchingText
           ) ||
-          /(?:بشه|میشه|می‌شه|جایگزین|واقعا|واقعاً|وجود دارن)/u.test(
+          // eslint-disable-next-line max-len
+          /(?:بشه|میشه|می‌شه|جایگزین|واقعا|واقعاً|وجود دارن|چی (?:نشون|نشان) (?:داد|میده|می‌ده)|چه چیزی (?:نشون|نشان) (?:داد|میده|می‌ده)|چی دیدیم|چی (?:یاد گرفتیم|فهمیدیم)|چی رو (?:نشون|نشان) (?:داد|میده))/u.test(
             matchingText
           )
         ) {
@@ -940,6 +958,14 @@
         // request for entertainment.
         matchedRule?.topic !== 'smalltalk_story' &&
         matchedRule?.topic !== 'smalltalk_joke' &&
+        // Comparison questions ("تویوتا بهتره یا بوگاتی؟", "which is
+        // better, football or wrestling?") and crush confessions are
+        // opinion/experience questions, not emotional disclosures: a
+        // "من اینجا با تو هستم." grieving prefix on a car comparison
+        // reads as if Darya missed the question. Their pools ship their
+        // own strong openers, so no calibration prefix is needed.
+        matchedRule?.topic !== 'comparison' &&
+        matchedRule?.topic !== 'crush' &&
         !blendKey &&
         !isRepeatedGreeting &&
         !isSpamNoise

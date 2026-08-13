@@ -52,7 +52,13 @@
         {
           name: 'grieving',
           patterns:
-            /\b(?:grief|loss|died|passed away|gone|miss(?:ing)?|mourn)\b|(?:فقدان|فوت|از دست دادن|داغ|سوگ)/iu
+            // The Persian side is wrapped in word-boundary lookarounds:
+            // «فوت» (death) previously matched inside «فوتبال» (football)
+            // and «فوتسال» (futsal), so a "which sport is better"
+            // question was read as grief and got a "من اینجا با تو
+            // هستم." prefix. The lookarounds keep only standalone words.
+            // eslint-disable-next-line max-len
+            /\b(?:grief|loss|died|passed away|gone|miss(?:ing)?|mourn)\b|(?<!\p{L})(?:فقدان|فوت|از دست دادن|داغ|سوگ)(?!\p{L})/iu
         },
         {
           name: 'fear',
