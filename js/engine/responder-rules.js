@@ -14,12 +14,22 @@
     PRONOUN_REFLECTION_PROBABILITY,
     EXCERPT_MAX_LENGTH,
     SUBJECT_CONTINUATION_WINDOW,
+    SUBJECT_CONTINUATION_MAX_REFRESHES,
+    GENERIC_ADVICE_TOPICS,
+    OPENER_SUBJECT_TOPICS,
     reflectPronouns,
     truncateExcerpt
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, SOURCE_SUGGESTION_CHANCE } =
     global.DaryaResponderShared;
+
+  // Long rule captures are verb phrases, not noun subjects, and quoting
+  // them back inside a follow-up template reads broken («خانوادم همش
+  // مقایسه‌م می‌کنن» capturing «همش مقایسه‌م می‌کنن»).
+  // Only captures up to this many words are safe to quote back; longer
+  // ones fall through to the capture-free templates of the same pool.
+  const CAPTURED_MAX_WORDS = 3;
 
   // Imperative request phrases ("tell me something interesting", «یه
   // چیزی جالب بگو», "name some youtubers", «چند تا یوتیوبر بگو»). These
@@ -109,6 +119,43 @@
     },
 
     _respondWithRule(matchedRule, captured) {
+      // Generic advice rules (procrastination "چیکار کنم", what_do_i_do)
+      // can hijack a FRESH, more specific thread: inside a dating-app
+      // conversation, «هر شب یه ساعت اسکرول میکنم» is about the app, and
+      // inside a pet thread, «چه کار کنم راحت‌تر بشه» is about the pet.
+      // When such a generic rule fires while a recent subject with its
+      // own follow-up questions is active, the subject continuation wins
+      // so the thread never bounces to a generic line. With no active
+      // subject the continuation returns null and the rule reply stands.
+      // The friendship rule joins the guard: someone who just disclosed
+      // new-city loneliness and then asks "How do adults make friends?"
+      // is still inside the loneliness thread, so the subject
+      // continuation keeps it there instead of switching topic labels.
+      // updateSubject already kept the specific subject alive when this
+      // generic rule fired (see ConversationMemory.updateSubject), so
+      // the guard only needs to answer with the continuation and report
+      // BOTH labels: the kept thread topic (the quality scenarios assert
+      // loneliness continuity) and the matched rule topic (the passion
+      // suites assert the friendship question itself routed).
+      if (
+        GENERIC_ADVICE_TOPICS.has(matchedRule.topic) &&
+        this.memory.currentSubject &&
+        this.memory.currentSubject.topic &&
+        this.memory.currentSubject.topic !== matchedRule.topic &&
+        this.memory.turnCount - this.memory.currentSubject.since <=
+          SUBJECT_CONTINUATION_WINDOW
+      ) {
+        const continuation = this._subjectContinuationReply();
+        if (continuation) {
+          this.currentTurnTopics = [
+            ...new Set([
+              this.memory.currentSubject.topic,
+              ...this.currentTurnTopics
+            ])
+          ];
+          return continuation;
+        }
+      }
       if (matchedRule.topic === 'gratitude' && this.lang.gratitudeResponses) {
         return this._pickVaried(this.lang.gratitudeResponses);
       }
@@ -161,6 +208,15 @@
               : ' Would you like to go deeper, or is there another question?';
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
+          // A knowledge answer becomes the active subject so a following
+          // short statement ("space is incredible", «واقعا جالبه»)
+          // continues the same thread instead of bouncing to the
+          // honest-unknown pool.
+          this.memory.currentSubject = {
+            topic: 'knowledge',
+            entityRefs: [factual.topic],
+            since: this.memory.turnCount
+          };
           return factualReply + factualFollowup;
         }
         const domainHints =
@@ -434,25 +490,48 @@
         r.includes('{captured}')
       );
       if (!needsCapture) {
-        return this._pickVaried(matchedRule.responses);
+        // A matched rule is a conversational move, not a generic fallback
+        // barrage, so its pool is exempt from the question budget: pools
+        // whose lines all end in a follow-up question (pet care, gig
+        // economy, fitness, comparison) must never be starved into the
+        // generic fallback after a few turns. The budget still guards
+        // the unknown-input fallbacks below.
+        return this._pickVaried(matchedRule.responses, {
+          ignoreQuestionBudget: true
+        });
       }
 
       if (captured) {
         const withCapture = matchedRule.responses.filter((r) =>
           r.includes('{captured}')
         );
-        const template = this._pickVaried(withCapture);
-        // The captured tail often carries a trailing or leading copula
-        // («هست خواهرزاده», "is the best"); echoing it verbatim reads
-        // broken, so the copula is trimmed before substitution.
-        return template.replace('{captured}', trimCapturedCopulas(captured));
+        // Long captures are verb phrases, not subjects: «خانوادم همش
+        // مقایسه‌م می‌کنن» captures «همش مقایسه‌م می‌کنن», and echoing
+        // it as «درباره‌ی همش مقایسه‌م می‌کنن بیشتر برایم بگویید» reads
+        // broken. Only short noun-phrase captures (at most
+        // CAPTURED_MAX_WORDS words) are safe to quote back; anything
+        // longer falls through to the capture-free templates below.
+        const capturedWords = String(captured)
+          .split(/\s+/u)
+          .filter(Boolean).length;
+        if (capturedWords <= CAPTURED_MAX_WORDS) {
+          const template = this._pickVaried(withCapture, {
+            ignoreQuestionBudget: true
+          });
+          // The captured tail often carries a trailing or leading copula
+          // («هست خواهرزاده», "is the best"); echoing it verbatim reads
+          // broken, so the copula is trimmed before substitution.
+          return template.replace('{captured}', trimCapturedCopulas(captured));
+        }
       }
 
       const captureFree = matchedRule.responses.filter(
         (r) => !r.includes('{captured}')
       );
       if (captureFree.length > 0) {
-        return this._pickVaried(captureFree);
+        return this._pickVaried(captureFree, {
+          ignoreQuestionBudget: true
+        });
       }
       return this._pickVaried(this.lang.genericFallbacks);
     },
@@ -484,6 +563,15 @@
               : ' Would you like to go deeper, or is there another question?';
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
+          // Mirror the rule-path subject update (see the knowledge branch
+          // of _respondWithRule) so a following short statement on the
+          // same fact keeps the thread instead of bouncing to the
+          // honest-unknown pool.
+          this.memory.currentSubject = {
+            topic: 'knowledge',
+            entityRefs: [factual.topic],
+            since: this.memory.turnCount
+          };
           return factual.text + followup;
         }
         if (this.currentTurnDialogueAct === 'question') {
@@ -666,11 +754,42 @@
       if (!subject || !subject.topic) {
         return null;
       }
-      if (this.memory.turnCount - subject.since > SUBJECT_CONTINUATION_WINDOW) {
+      // The knowledge thread refreshes on every shelf answer (each new
+      // genre or fact resets _lastKnowledgeTurn), but the memory subject
+      // keeps its ORIGINAL since stamp because updateSubject only rewrites
+      // it when the topic itself changes. Measuring from _lastKnowledgeTurn
+      // keeps a long knowledge run (movie recs, fact after fact) alive
+      // instead of expiring mid-thread and bouncing to the unknown pool.
+      const since =
+        subject.topic === 'knowledge' ? this._lastKnowledgeTurn : subject.since;
+      if (
+        !since ||
+        this.memory.turnCount - since > SUBJECT_CONTINUATION_WINDOW
+      ) {
         return null;
       }
       const specific = this.lang.topicSpecificQuestions?.[subject.topic];
-      if (!specific || specific.length === 0) {
+      // A topic without its own follow-up questions (for example the
+      // knowledge thread, which has no rule-topic entry) still deserves a
+      // generic continuation instead of the honest-unknown pool: the
+      // user just heard Darya explain something and said more about it.
+      // topicRecoveryResponses carries the _default fallback that
+      // topicSpecificQuestions lacks, so a subject with no specific
+      // entry keeps a warm thread instead of dying on an undefined pool.
+      // Conversational openers (greeting and smalltalk exchanges) are NOT
+      // content threads: "I keep thinking about my old apartment" right
+      // after a greeting is a fresh disclosure, so it must fall through
+      // to the pronoun reflection / honest-unknown paths instead of
+      // being pinned to a "let us return to the topic" line.
+      const isOpenerSubject = OPENER_SUBJECT_TOPICS.has(subject.topic);
+      const pool =
+        specific && specific.length > 0
+          ? specific
+          : !isOpenerSubject
+            ? this.lang.topicSpecificQuestions?.['_default'] ||
+              this.lang.topicRecoveryResponses?._default
+            : null;
+      if (!pool || pool.length === 0) {
         return null;
       }
       // Bypass the question budget like the short-answer context path:
@@ -678,12 +797,32 @@
       // not a new barrage. The picked question is recorded as pending so
       // a following short answer or question-echo can continue the same
       // thread.
-      const reply = this._pickVaried(specific, {
+      const reply = this._pickVaried(pool, {
         ignoreQuestionBudget: true,
         trackQuestions: false
       });
       if (reply && this._isQuestionResponse(reply)) {
         this.memory.noteBotQuestion(reply, subject.topic);
+      }
+      // A served continuation keeps the thread alive: a long lived
+      // thread (a pet worry spanning many turns, a comparison that
+      // keeps getting follow-ups) must not expire mid-conversation just
+      // because several unmatched statements passed. The since stamp
+      // refreshes so the NEXT unmatched statement still continues the
+      // same thread. The refresh is bounded (see
+      // SUBJECT_CONTINUATION_MAX_REFRESHES): a chatty unmatched user
+      // cannot keep a subject immortal forever, because after the cap
+      // the stamp stops moving and the window check expires the thread
+      // into the honest-unknown pool. A fresh subject (topic change)
+      // starts with a fresh budget. Knowledge threads refresh
+      // _lastKnowledgeTurn on every shelf answer instead, so their
+      // stamp is left untouched here.
+      if (reply && subject.topic !== 'knowledge') {
+        const refreshes = subject.continuationRefreshes || 0;
+        if (refreshes < SUBJECT_CONTINUATION_MAX_REFRESHES) {
+          subject.since = this.memory.turnCount;
+          subject.continuationRefreshes = refreshes + 1;
+        }
       }
       return reply;
     }
