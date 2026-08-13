@@ -60,11 +60,30 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - Bare "falling behind" no longer hijacks workaholic anxiety; it needs
   a comparison target ("falling behind everyone") to reach the social
   comparison thread.
+- Subject-continuation regressions: the subject-preference guard now
+  actually works (its window constant was never exported, making it dead
+  code), keeps a fresh specific subject when a generic advice topic
+  fires, and unions the subject topic with matched topics instead of
+  replacing them.
+- Continuation refreshes are capped, so a chatty unmatched user cannot
+  keep one subject alive forever; an abandoned thread still ages out
+  into the honest-unknown pool.
+- A generic advice subject (friendship) no longer blocks a fresh
+  "what should I do" turn from reaching the advice pool.
+- The wild-daily comparison test asserted only a subset of the
+  comparison pool's variants, making it flaky; its regex now covers the
+  whole pool.
+- The wild-passions and quick-replies e2e suites were written but never
+  wired into `npm test` or the smoke runner; they now run in CI.
+- Added a browser e2e test that proves the offline contract end to end:
+  the service worker precaches every URL it declares, and the app still
+  loads and answers requests after the server is fully shut down.
 
 ### Validated
 
-- 852/852 tests pass, including the new knowledge-world and
-  wild-conversation routing coverage.
+- 921/921 tests pass, including the new knowledge-world,
+  wild-conversation, wild-daily, and wild-passions routing coverage,
+  plus the offline service-worker e2e.
 - 291/291 smoke checks pass.
 - Zero evasive fallbacks across the 60-phrase daily-life probe
   (financial anxiety, family pressure, social comparison) in both

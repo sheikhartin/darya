@@ -658,14 +658,15 @@ No new external dependencies required. All features implemented using:
 
 ---
 
-## 10. Implementation Status (v1.2.0)
+## 10. Implementation Status (v1.2.1)
 
-All scoped phases for v1.2.0 are complete and validated. The
+All scoped phases for v1.2.0 and the v1.2.1 hardening round are complete
+and validated. The
 implementation deliberately kept the zero-dependency, offline-first
 architecture: every feature below runs in the browser with no network
 calls.
 
-### 10.1 Delivered in v1.2.0
+### 10.1 Delivered in v1.2.0 and v1.2.1
 
 | Area | Delivered | Where |
 | --- | --- | --- |
@@ -687,16 +688,25 @@ calls.
 | App-command honesty | Theme/sound requests are answered by pointing to the real UI control, never fake compliance | js/engine/responder-overrides.js, both language packs' ruleAppCommand pools |
 | Persona conversations | 26 persona-based scenario fixtures across both languages (new parent, night-shift worker, divorce, harassment threat, tech frustration, self-worth, and more), each asserting dialogue act and topic per turn | tests/scenarios/persona-*.json and fa-persona-*.json |
 | Daily-life topic routing | Gym anxiety, dating-app fatigue, remote-work isolation, postpartum, and pet-loss each route to their own empathetic pools in both languages; EN/FA topic parity is enforced by tests | js/languages/en-rules.js, fa-rules.js, en-responses-rules.js, fa-responses-rules.js |
+| Hostile-transcript routing | The real Persian transcript failures are fixed: «چندتا فیلم/بازی/کتاب بهم معرفی کن» open the knowledge shelves, «الان چه سالیه» answers the calendar, «جیگرم/عسلم» stay greetings, «گاوی مگه» de-escalates instead of the boredom line, and «باهوش‌تر بودی» opens meta_feedback | js/data/knowledge-base.js, knowledge-facts-*.js, fa-vocabulary.js, fa-rules.js, both response packs |
+| Comparison and crush rules | «تویوتا بهتره یا بوگاتی» gets the criterion question (never the shopping dodge), crush confessions keep the crush thread above family, and age-gap crushes (30+ years) still get the balanced age_gap guidance | js/languages/en-rules.js, fa-rules.js, en-responses-contexts.js, fa-responses-rules.js |
+| Emotion calibration fixes | The FA grieving keyword «فوت» no longer matches inside «فوتبال» (a football comparison never gets a "من اینجا با تو هستم" prefix); warmth prefixes no longer stack onto comparison, crush, procrastination, dating-apps, or pet-loss pools | js/engine/responder-emotion.js, responder-overrides.js, responder-phase.js |
+| Focus and phone coverage | «چطور تمرکزمو برگردونم» and phone-addiction complaints route to procrastination instead of app_feedback; «موبایل»/«انیمیشن» were dropped from the app-feedback UI-word list | js/languages/fa-rules.js |
+| Knowledge lookup guards | FA duration/preference statements («چند وقته فوتبال بازی نکردم», «چقدر چای دوست دارم») no longer unlock weak-word answers; the general movie shelf no longer outranks genre facts; EN best/top/favorite framing reaches the shelf | js/data/knowledge-base.js, knowledge-facts-entertainment.js, knowledge-facts-project.js |
+| 2026 daily-life wild suite | 24 regression tests (80+ assertions) covering the hostile transcript, AI-job anxiety, gig economy, housing, young-adult loneliness, dating-app burnout, and sequential context (jokes vary, topic switches stay fresh) | tests/wild-daily-2026.test.mjs |
 | Learning support | "How can I learn English?" and its Persian equivalent get a structured practical method, not a hand-off | both language packs' ruleLearningAdvice pools |
 | Docs | README rewritten with pipeline, memory, exercises, mood, safety sections; AGENTS.md gained the normalization and Iranian-name conventions; spec reflects delivered scope | README.md, AGENTS.md, this file |
 
 ### 10.2 Validation
 
-- 822/822 tests pass across the engine, language, quality, time-utils,
-  foundation, wild-conversations, ambient-sound, and browser e2e suites.
-- 3 browser e2e suites pass, including the WAI-ARIA keyboard contract
-  in a real browser, sound attention, and quick-reply chips (mood +
-  exercise chips).
+- 921/921 tests pass across the engine, language, quality, time-utils,
+  foundation, knowledge-world, wild-conversations, wild-daily-2026,
+  wild-passions-2026, ambient-sound, and browser e2e suites.
+- 4 browser e2e suites pass, including the WAI-ARIA keyboard contract
+  in a real browser, sound attention, quick-reply chips (mood +
+  exercise chips), and the offline service-worker contract (the worker
+  precaches the full shell and static assets, and the app loads with
+  the network fully gone).
 - 126 dialogue scenario fixtures pass in both languages, covering the
   26 persona conversations, 10 daily-life threads (gym anxiety, dating
   apps, remote work, postpartum, pet loss), cross-turn profile and
@@ -705,10 +715,11 @@ calls.
 - Smoke test passes 291/291 checks (structure, JS syntax, HTTP asset
   serving).
 - 20/20 repeated stress rounds of the engine suite pass with no flaky
-  failures.
+  failures; the new wild-daily-2026 suite is stable across 8 consecutive
+  runs (randomized pool selection never trips a false assertion).
 - ESLint (0 warnings), Stylelint, and Prettier checks are clean.
 
-### 10.3 Not in v1.2.0 (per user decisions)
+### 10.3 Not in v1.2.0 or v1.2.1 (per user decisions)
 
 - Persistent memory across sessions (session-only by design).
 - Voice input/output, social features, external integrations,
@@ -717,6 +728,6 @@ calls.
 
 ---
 
-*Document Version: 1.2*
-*Last Updated: August 11, 2026*
+*Document Version: 1.2.1*
+*Last Updated: August 12, 2026*
 *Author: Buffy (AI Assistant)*
