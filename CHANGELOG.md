@@ -5,6 +5,16 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.2.4] - 2026-08-14
+
+### Fixed
+
+- **Send button vertically centered in the composer.** The composer flex
+  container aligned its children to the bottom edge, so the send button
+  stayed pinned to the lower corner while the auto-growing textarea
+  stretched upward on multi-line input. The button now stays centered
+  against the input at any height.
+
 ## [1.2.3] - 2026-08-13
 
 ### Changed
