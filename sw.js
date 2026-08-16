@@ -103,6 +103,7 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-world.js',
   './js/data/knowledge-fun-facts.js',
   './js/data/knowledge-lists.js',
+  './js/data/media-pool.js',
   './js/data/knowledge-base.js',
   './js/languages/index.js',
   './js/text/halfspace-data.js',
