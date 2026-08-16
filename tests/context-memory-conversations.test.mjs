@@ -1,5 +1,5 @@
 /**
- * Deep-context memory scenario suite (upgrade round 2).
+ * Deep-context memory scenario suite.
  *
  * 23+ multi-turn personas spanning passions, entertainment, breakups,
  * loneliness, loss, jealousy, anger, sadness, poverty, depression,
@@ -10,7 +10,7 @@
  * same subject across turns. Also pins the new context-memory touch
  * (emotional-shift acknowledgment).
  *
- * Run with: node --test tests/upgrade-scenarios-deep.test.mjs
+ * Run with: node --test tests/context-memory-conversations.test.mjs
  */
 
 'use strict';

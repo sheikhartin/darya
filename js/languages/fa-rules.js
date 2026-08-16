@@ -1542,6 +1542,15 @@
     // Flirtation: date requests, romantic compliments directed at Darya.
     // Warm, clear boundary.
     rule(
+      'dirty_talk_request',
+      63,
+      pw(
+        'حرف زشت|حرفای زشت|چت جنسی|دوست دختر مجازی|دوست پسر مجازی|بیا (?:سکس|رابطه|حرف زشت)|(?:سکس|رابطه جنسی).{0,8}(?:کنیم|بکنیم|بکنم|کنم|بریم|داشته باشیم)|باهات (?:سکس|رابطه)|میخوام (?:باهات|بات).{0,6}(?:سکس|رابطه)|نقش.{0,15}جنسی|زنم باش|شوهرم باش'
+      ),
+      R['ruleDirtyTalkRequest']
+    ),
+
+    rule(
       'flirtation',
       57,
       pw(

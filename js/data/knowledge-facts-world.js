@@ -292,4 +292,42 @@
       en: 'Mirza Ghasemi is a Gilan (northern Iran) dish: eggplants are charred over fire so the flesh takes a smoky flavor, then sautéed with garlic, tomatoes, tomato paste, and turmeric, with eggs folded in at the end. The smoky char is the secret of its taste; it is served with fresh bread.'
     }
   ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'investing_basics',
+      keywords: [
+        'چطور سرمایه گذاری کنم',
+        'سرمایه گذاری برای مبتدی',
+        'اولین سرمایه گذاری',
+        'شروع سرمایه گذاری',
+        'how to start investing',
+        'investing for beginners',
+        'start investing',
+        'beginner investing'
+      ],
+      weak: [
+        'سرمایه گذاری',
+        'سرمایه\u200cگذاری',
+        'سرمایه',
+        'invest',
+        'investing',
+        'investment'
+      ],
+      weakSafe: true,
+      hints: [
+        'شروع',
+        'چطور',
+        'چگونه',
+        'مبتدی',
+        'start',
+        'how',
+        'beginner',
+        'money'
+      ],
+      fa: 'سرمایه‌گذاری برای مبتدی‌ها چند اصل ساده دارد: اول، اول صندوق اضطراری بساز (معادل چند ماه هزینه‌ی زندگی) در حساب جداگانه با نقدشوندگی بالا؛ دوم، قبل از هر سرمایه‌گذاری بدهی‌های پرنرخ را پرداخت کن؛ سوم، از مبلغ کوچک شروع کن که تحمل زیانش را داری؛ چهارم، تنوع بده (سرمایه را در چند دارایی پخش کن) تا ریسک کم شود؛ پنجم، بلندمدت فکر کن و از تصمیم‌گیری هیجانی موقع نوسان بازار بپرهیز. «میانگین‌گیری دوره‌ای» (خرید مبلغ ثابت در بازه‌های منظم) روش ساده‌ای برای شروع است. هیچ تضمینی در سرمایه‌گذاری وجود ندارد و ریسک همیشه هست؛ در ایران برای قوانین و مالیات با یک مشاور معتبر مشورت کن.',
+      en: 'Investing for beginners follows a few simple principles: first, build an emergency fund (a few months of living costs) in a separate, highly liquid account; second, pay off high-interest debt before investing; third, start with a small amount you can afford to lose; fourth, diversify across assets to reduce risk; fifth, think long term and avoid emotional decisions during market swings. Dollar-cost averaging, buying a fixed amount on a regular schedule, is a simple way to begin. There is no guarantee in investing and risk always exists; for local rules and taxes, consult a qualified advisor.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

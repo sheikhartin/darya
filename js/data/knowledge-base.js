@@ -426,7 +426,27 @@
       saffron: ['زعفران'],
       tea: ['چای'],
       relationship_plan: ['رابطه سالم', 'رابطه خوب', 'برنامه رابطه', 'رابطه'],
-      sex_education: ['آموزش جنسی', 'رابطه جنسی', 'سکس', 'رضایت جنسی']
+      sex_education: ['آموزش جنسی', 'رابطه جنسی', 'سکس', 'رضایت جنسی'],
+      world_religions: [
+        'ادیان',
+        'اسلام',
+        'مسیحیت',
+        'یهودیت',
+        'بودیسم',
+        'هندوئیسم'
+      ],
+      movies_masterpieces: ['شاهکار'],
+      anime_by_genre: ['انیمه'],
+      books_by_genre: ['کتاب'],
+      games_by_platform: [
+        'بازی پی سی',
+        'بازی پلی استیشن',
+        'بازی ایکس باکس',
+        'بازی سوییچ'
+      ],
+      investing_basics: ['سرمایه گذاری', 'سرمایه‌گذاری'],
+      health_nutrition: ['تغذیه'],
+      sports_cardio: ['یوگا', 'دویدن', 'شنا']
     },
     en: {
       mercury: ['mercury'],
@@ -489,7 +509,26 @@
         'relationship plan',
         'relationship'
       ],
-      sex_education: ['sex education', 'safe sex', 'consent', 'sexual health']
+      sex_education: ['sex education', 'safe sex', 'consent', 'sexual health'],
+      world_religions: [
+        'islam',
+        'christianity',
+        'judaism',
+        'buddhism',
+        'hinduism'
+      ],
+      movies_masterpieces: ['masterpiece', 'masterpieces'],
+      anime_by_genre: ['anime'],
+      books_by_genre: ['books', 'novels'],
+      games_by_platform: [
+        'pc games',
+        'playstation games',
+        'xbox games',
+        'switch games'
+      ],
+      investing_basics: ['investing', 'investments'],
+      health_nutrition: ['nutrition', 'healthy eating'],
+      sports_cardio: ['yoga', 'running', 'swimming', 'cardio']
     }
   };
   const FRAGMENT_FACT_IDS = {
@@ -521,7 +560,15 @@
     saffron: 'saffron',
     tea: 'tea',
     relationship_plan: 'relationship_plan',
-    sex_education: 'sex_education'
+    sex_education: 'sex_education',
+    world_religions: 'world_religions',
+    movies_masterpieces: 'movies_masterpieces',
+    anime_by_genre: 'anime_by_genre',
+    books_by_genre: 'books_by_genre',
+    games_by_platform: 'games_by_platform',
+    investing_basics: 'investing_basics',
+    health_nutrition: 'health_nutrition',
+    sports_cardio: 'sports_cardio'
   };
   // Connective words allowed inside a follow-up fragment. Anything left
   // over after removing the topic word and these connectives means the

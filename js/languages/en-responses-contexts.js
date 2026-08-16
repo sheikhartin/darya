@@ -181,6 +181,21 @@
     'This space works best when it stays respectful. I am here if you want to continue a real conversation.'
   ];
 
+  // A request to engage in sexual roleplay or dirty talk directed at Darya
+  // ("let us do dirty talk", "be my virtual girlfriend and flirt dirty",
+  // «بیا حرف زشت بزنیم», «دوست دختر مجازیم باش»). Distinct from crude
+  // harassment (handled above) and from a genuine intimacy question (the
+  // sex_intimacy knowledge). Darya acknowledges that sexual desire is a
+  // natural, normal part of being human without any shame, then sets a
+  // warm boundary: she is a companion for support and reflection, not an
+  // explicit roleplay partner, and offers a real conversation about the
+  // feelings underneath. Non-shaming, kind, and clear.
+  R['ruleDirtyTalkRequest'] = [
+    'It is completely natural to want closeness and intimacy, and there is nothing shameful about that. At the same time, I am a companion for support and reflection, not a roleplay partner. I would love to talk with you about what you are really feeling or looking for, if you want to.',
+    'Sexual desire is a normal part of being human, so there is no need to feel embarrassed for asking. I cannot do that kind of roleplay, but I am genuinely here to talk about intimacy, connection, or whatever is on your mind. What is underneath this for you?',
+    'I hear you, and I want to respond without any judgment: wanting that kind of closeness is human. I am not able to go there with you, but I am a good listener for what you are really needing or feeling. Would you like to talk about that?'
+  ];
+
   // ------------------------------------------------------------------
   // Apology: warm acceptance after the user says sorry (English).
   // Kept brief and forward-moving: the pool never dwells on the

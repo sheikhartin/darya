@@ -1,5 +1,5 @@
 /**
- * Intelligence-upgrade multi-turn scenario suite.
+ * Multi-turn persona conversation scenarios.
  *
  * Simulates long, realistic conversations with 40+ distinct human voices
  * (different ages, mindsets, tones, registers, languages) and asserts
@@ -10,7 +10,7 @@
  * despair coverage, identity honesty, short-topic facts, sqrt, fun-fact
  * topic filter, burnout, family loss).
  *
- * Run with: node --test tests/upgrade-scenarios.test.mjs
+ * Run with: node --test tests/persona-conversations.test.mjs
  */
 
 'use strict';

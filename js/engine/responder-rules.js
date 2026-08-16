@@ -576,10 +576,7 @@
             ? DaryaKnowledge.lookup(normalizedUserText, this.lang.code)
             : null;
         if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          const followup =
-            this.lang.code === 'fa'
-              ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
-              : ' Would you like to go deeper, or is there another question?';
+          const followup = this._knowledgeFollowup(factual.text);
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           // Mirror the rule-path subject update (see the knowledge branch

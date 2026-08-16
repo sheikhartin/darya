@@ -613,14 +613,16 @@ about intimacy). Each fixture drives a multi-turn conversation through
 the real engine and asserts the dialogue act, intent, and topic thread
 stay correct, so a routing regression in any of these daily
 conversations is caught by the test run.
-- Three dedicated upgrade suites add targeted regression tests and 81
-  multi-turn scenario fixtures: `tests/upgrade-fixes.test.mjs` pins each
-  fixed bug, `tests/upgrade-scenarios.test.mjs` covers everyday personas
-  (promotions, despair, grief, new parents, caregivers, burnout, crisis),
-  and `tests/upgrade-scenarios-deep.test.mjs` adds 37 deep personas
-  spanning passions, entertainment, breakups, loneliness, loss, jealousy,
-  anger, sadness, poverty, depression, excitement, flirty users, rude
-  users, and the new emotional-shift memory touch, in both languages.
+- Three dedicated suites add targeted regression tests and multi-turn
+  scenario fixtures: `tests/engine-regression.test.mjs` pins specific
+  engine behaviors (math, knowledge edge cases, despair coverage, the
+  dirty-talk boundary, break-line spacing), `tests/persona-conversations.test.mjs`
+  covers everyday personas (promotions, despair, grief, new parents,
+  caregivers, burnout, crisis), and `tests/context-memory-conversations.test.mjs`
+  adds deep personas spanning passions, entertainment, breakups,
+  loneliness, loss, jealousy, anger, sadness, poverty, depression,
+  excitement, flirty users, rude users, and the emotional-shift memory
+  touch, in both languages.
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times
   and reports a pass/fail summary per round, useful for shaking out
   flaky assertions.

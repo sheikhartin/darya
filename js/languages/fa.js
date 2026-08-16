@@ -256,6 +256,7 @@
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
+    ruleDirtyTalkRequest: R['ruleDirtyTalkRequest'],
     ruleTellJoke: R.ruleTellJoke,
     ruleTellStory: R.ruleTellStory,
     ruleTellStoryHorror: R.ruleTellStoryHorror,

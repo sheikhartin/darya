@@ -99,7 +99,7 @@
       'grief',
       51,
       // eslint-disable-next-line max-len
-      /\b(?:my (?:mom|mother|dad|father|parents?|brother|sister|son|daughter|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|wife|husband|partner|child|kid)|i lost my (?:mom|mother|dad|father|brother|sister|son|daughter|grandmother|grandfather|wife|husband|partner|child))\s+(?:died|passed away|has passed|passed|is gone|has gone|was killed|has left us|is no longer with us)\b/i,
+      /\b(?:my (?:mom|mother|dad|father|parents?|brother|sister|son|daughter|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|wife|husband|partner|child|kid)|i lost my (?:mom|mother|dad|father|brother|sister|son|daughter|grandmother|grandfather|wife|husband|partner|child))\s+(?:(?:who|that|whom)\s+)?(?:died|passed away|has passed|passed|is gone|has gone|was killed|has left us|is no longer with us)\b/i,
       R['ruleGrief']
     ),
 
@@ -1134,6 +1134,22 @@
     ),
 
     // Flirtation: date requests, romantic compliments directed at Darya.
+    // A request to engage in sexual roleplay or dirty talk directed at
+    // Darya ("let us do dirty talk", "be my virtual girlfriend and flirt
+    // dirty"). Genuine intimacy questions ("how do I talk about sex with
+    // my partner") do not match this framing and still route to the
+    // sex_intimacy knowledge, and bare "be my girlfriend" (no roleplay
+    // intent) stays on flirtation. Sits above flirtation (63 > 57) so a
+    // roleplay request beats the romantic-advance pool, and below the
+    // identity rules.
+    rule(
+      'dirty_talk_request',
+      63,
+      // eslint-disable-next-line max-len
+      /\b(dirty talk|talk dirty|sext(?:ing)?|flirt dirty|(?:let'?s|lets|wanna|want to|can we|should we) (?:do|try|have) (?:some |a )?(?:dirty talk|sexting|sex|roleplay)|be my virtual (?:girlfriend|boyfriend|girl|boy|wife|husband)|have sex with (?:me|you|us)|make love to (?:me|you)|sleep with me|(?:i want to|i wanna|i would like to) (?:have sex|make love|sleep) with (?:you|me)|fuck me|roleplay(?:ing)? (?:with me|sex)|virtual (?:girlfriend|boyfriend) sex)\b/i,
+      R['ruleDirtyTalkRequest']
+    ),
+
     rule(
       'flirtation',
       57,

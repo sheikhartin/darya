@@ -208,6 +208,20 @@
     'این فضا وقتی بهتر کار می‌کند که محترم بماند. من اینجا هستم اگر بخواهی گفتگوی واقعی داشته باشیم.'
   ];
 
+  // A request to engage in sexual roleplay or dirty talk directed at Darya
+  // («بیا حرف زشت بزنیم», «دوست دختر مجازیم باش», «چت جنسی کن»). Distinct
+  // from crude harassment (above) and from a genuine intimacy question (the
+  // sex_intimacy knowledge). Darya acknowledges that sexual desire is a
+  // natural, normal part of being human without shame, then sets a warm
+  // boundary: she is a companion for support and reflection, not an
+  // explicit roleplay partner, and offers a real conversation about the
+  // feelings underneath.
+  R['ruleDirtyTalkRequest'] = [
+    'کاملاً طبیعی است که بخواهی نزدیکی و صمیمیت را تجربه کنی و هیچ شرمی در آن نیست. در عین حال من برای همراهی و گفتگو اینجا هستم، نه برای نقش‌بازی جنسی. اگر بخواهی، خیلی دوست دارم درباره‌ی آنچه واقعاً احساس می‌کنی یا دنبالش هستی با تو حرف بزنم.',
+    'میل جنسی بخشی طبیعی از آدم‌بودن است، پس لازم نیست بابت پرسیدنش خجالت بکشی. من نمی‌توانم آن‌طور نقش‌بازی کنم، اما واقعاً اینجا هستم تا درباره‌ی صمیمیت، ارتباط یا هر چه ذهنت را گرفته گفتگو کنم. چه چیزی پشت این خواسته برایت است؟',
+    'می‌شنومت و بدون هیچ قضاوتی می‌خواهم جواب بدهم: چنین خواسته‌ای کاملاً انسانی است. من نمی‌توانم وارد آن فضا شوم، اما شنونده‌ی خوبی هستم برای آنچه واقعاً بهش نیاز داری یا حس می‌کنی. دوست داری درباره‌اش حرف بزنیم؟'
+  ];
+
   // ------------------------------------------------------------------
   // Apology: warm acceptance after the user says sorry (Persian).
   // Kept brief and forward-moving: the pool never dwells on the
