@@ -687,7 +687,7 @@ test('wild: a fear-of-failure confession is met with encouragement', () => {
   assertQuality(
     reply,
     'fear of failure',
-    'شکست|ترس|قدم|کوچک|تلاش|نگرانی|اضطراب|فشار|موج|بدن'
+    'شکست|ترس|قدم|کوچک|تلاش|نگرانی|اضطراب|مضطرب|فشار|موج|بدن|آرام'
   );
 });
 
@@ -750,7 +750,7 @@ test('wild: the workaholic who cannot rest is heard in both languages', () => {
       EN,
       'i work from morning till night, even on holidays i cannot rest, i am afraid of falling behind',
       'anxiety',
-      'anxiety|stress|body|worry|pressure|work|step|grip|ease|naming|weight'
+      'anxiety|anxious|stress|body|worry|pressure|work|step|grip|ease|naming|weight|predict|small|calm'
     ]
   ];
   for (const [lang, line, topic, must] of cases) {

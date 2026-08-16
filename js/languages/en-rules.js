@@ -87,6 +87,22 @@
       R['ruleGreetingHello']
     ),
 
+    // Death or loss of a named family member ("my mother passed away",
+    // "I lost my brother", "my wife died"). Without this rule the family
+    // thread (50) wins over the generic grief rule (45) and a bereavement
+    // like "my mother passed away last month" got a family-conflict
+    // follow-up instead of grief care. This narrow rule sits ABOVE family
+    // (51 > 50), keeps the topic "grief" (so the widower test and the
+    // conversation stay on the loss thread), and answers from the
+    // question-closing ruleFamilyLoss pool.
+    rule(
+      'grief',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:mom|mother|dad|father|parents?|brother|sister|son|daughter|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|wife|husband|partner|child|kid)|i lost my (?:mom|mother|dad|father|brother|sister|son|daughter|grandmother|grandfather|wife|husband|partner|child))\s+(?:died|passed away|has passed|passed|is gone|has gone|was killed|has left us|is no longer with us)\b/i,
+      R['ruleGrief']
+    ),
+
     rule(
       'family',
       50,
@@ -136,6 +152,36 @@
       // eslint-disable-next-line max-len
       /^(?!.*\b(?:age gap|years older|years younger|much older|much younger|older than me|younger than me)\b).*\b(crush(?:ing)? on|have a crush|had a crush|crush on|got a crush|i (?:like|love) (?:my )?friend'?s (?:sister|brother|mom|dad)|confess(?:ing)? (?:to|my) crush)\b/i,
       R['ruleCrush']
+    ),
+
+    // Positive work and life achievements are celebrations, not stress
+    // disclosures. Without this rule "I just got promoted at work!" and
+    // "I got the job!" matched the work-stress pool (the "at work" and
+    // "got fired/got the job" markers) and got a dour reply. It sits ABOVE
+    // the work rule (53 > 50). A leading negation guard keeps failures and
+    // disappointments ("I did not get the promotion", "I got fired") off
+    // this pool, and ambiguous verbs ("got the flu", "passed out") are
+    // excluded by requiring the object to be an achievement noun.
+    rule(
+      'achievement',
+      53,
+      // eslint-disable-next-line max-len
+      /^(?!.*\b(?:didn'?t|did not|wasn'?t|was not|never|failed|i failed|not (?:get|got|be|passed)|fired|laid off|rejected|ruined|missed)\b).*\b(?:just )?(?:got|was|have been|i'?m|i am|am)\s+(?:promoted|a promotion|a raise|a bonus|accepted|hired|selected|chosen|a new (?:job|position|role))|(?:got|landed|accepted|secured|received|been offered|was offered)\s+(?:the|an?|my)?\s*(?:job|position|role|offer|contract|deal)|passed\s+(?:the|my|an?)?\s*(?:exam|exams|test|tests|interview|course|driving test)|graduated|got\s+my\s+degree|won\s+(?:the|a)?\s*(?:award|prize|competition|scholarship|promotion|match|game|race)|got\s+(?:accepted|engaged|married)|bought\s+(?:my|a)\s+(?:house|home|car)|started\s+(?:my\s+own\s+)?(?:business|company|startup)\b/i,
+      R['ruleAchievement']
+    ),
+
+    // Burnout is the deep, persistent exhaustion of overwork: "burned out",
+    // "I work 80 hours a week", "no day off", "my startup is failing",
+    // "I cannot switch off from work". It needs a different, validating
+    // reply than ordinary work stress, and it currently fell to the
+    // unknown pool because none of these phrases matched the work rule.
+    // It sits above work (55 > 50).
+    rule(
+      'burnout',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(burnout|burned out|burnt out|burning out|emotionally drained|completely drained|totally drained|i work \d+ hours|working \d+ hours (?:a|per) (?:day|week)|no (?:day|days|time) off|i never (?:get|take) (?:a )?(?:day|time) off|my startup is (?:failing|crumbling|collapsing)|startup is killing me|can'?t switch off from work|cannot switch off from work|work is consuming me|no work.life balance|no work life balance|i am exhausted from work|i am burned out from (?:work|this job)|(?:i'?m|i am) running on empty)\b/i,
+      R['ruleBurnout']
     ),
 
     rule(
@@ -264,6 +310,19 @@
       R['ruleParenting']
     ),
 
+    // Loss of passion or interest in a hobby the person used to love
+    // ("I used to love painting but I stopped", "I lost my creative
+    // spark"). A real quiet grief that used to fall to the unknown pool.
+    // Sits above the sadness rule (41 > 40) so the caring lost-passion
+    // pool wins over the generic sadness thread.
+    rule(
+      'lost_passion',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(used to love .{1,40} but (?:i )?(?:stopped|quit|gave up|lost interest)|lost (?:my |the )?(?:[\w'-]+ )?(?:passion|spark|motivation|love|interest|inspiration|enjoyment)|(?:i )?have not (?:picked up|touched) .{1,30} in (?:months|weeks|years)|do not (?:do|enjoy) it anymore|cannot (?:seem to )?(?:enjoy|feel) it anymore|i have lost the (?:desire|will) to do it)\b/i,
+      R['ruleLostPassion']
+    ),
+
     rule(
       'sadness',
       40,
@@ -285,7 +344,7 @@
       'depression',
       56,
       // eslint-disable-next-line max-len
-      /\b(depressed|depression|hopeless|worthless|empty inside|numb|can'?t (?:get out of bed|do anything)|no (?:point|purpose|reason) (?:in|for) (?:life|anything)|i give up|whats the point|what is the point|feel like nothing|i feel dead inside|nothing brings me pleasure|no pleasure anymore|nothing is fun anymore|enjoy nothing anymore|wake up at four|waking at four|wake up at five|waking at five|early morning waking|just sadness|only sadness|sadness or something more|is this (?:depression|more than sadness))\b/i,
+      /\b(depressed|depression|hopeless|worthless|empty inside|numb|can'?t (?:get out of bed|do anything)|have not (?:been )?able to get out of bed|been unable to get out of bed|(?:bring|cant bring|can'?t bring) myself to get out of bed|no (?:point|purpose|reason) (?:in|for) (?:life|anything)|i give up|whats the point|what is the point|feel like nothing|i feel dead inside|nothing brings me pleasure|nothing matters anymore|no pleasure anymore|nothing is fun anymore|enjoy nothing anymore|wake up at four|waking at four|wake up at five|waking at five|early morning waking|just sadness|only sadness|sadness or something more|is this (?:depression|more than sadness)|tired of (?:life|living)|done with everything|life feels pointless|life feels meaningless|feels (?:so )?pointless|what is the point of anything|whats the point of anything|feel like giving up|feel like giving up on everything|giving up on (?:life|everything)|(?:want|wanna|want to|about to) give up on (?:life|everything)|give up on everything|i can'?t go on(?! a|ing)|can'?t keep going|no reason to keep going|nothing is worth it anymore|whats the use anymore)\b/i,
       R['ruleDepression']
     ),
 
@@ -392,7 +451,7 @@
       'social_comparison',
       46,
       // eslint-disable-next-line max-len
-      /\b(everyone (?:on|from) (?:instagram|social media|facebook|tiktok|linkedin)|social media|comparing (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|compare (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|my (?:friends|classmates|cousins?|siblings?|high school friends) (?:are|seem|look) (?:all |so |really )?(?:successful|better|ahead|happy|happier)|everyone (?:else )?(?:is|are|seems?) (?:more successful|happier|better(?: off)?|ahead of me|doing better)|i envy|envious of|jealous of|fall(?:ing)? behind (?:everyone|everyone else|others|them|my (?:friends|classmates|cousins?|peers))|left behind (?:everyone|others|them)|behind everyone|at my age everyone|everyone my age|feel(?:ing)? (?:so |really |very )?inadequate|inadequate (?:compared|next to)|not as (?:good|successful) as (?:them|everyone|my friends))\b/i,
+      /\b(everyone (?:on|from) (?:instagram|social media|facebook|tiktok|linkedin)|social media|comparing (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|compare (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|my (?:friends|classmates|cousins?|siblings?|high school friends) (?:are|seem|look) (?:all |so |really )?(?:successful|better|ahead|happy|happier)|everyone (?:else )?(?:is|are|seems?) (?:more successful|happier|better(?: off)?|ahead of me|doing better)|i envy|envious of|jealous of|jealous (?:that|they)|feel(?:ing)? (?:so |really |very )?jealous|fall(?:ing)? behind (?:everyone|everyone else|others|them|my (?:friends|classmates|cousins?|peers))|left behind (?:everyone|others|them)|behind everyone|at my age everyone|everyone my age|feel(?:ing)? (?:so |really |very )?inadequate|inadequate (?:compared|next to)|not as (?:good|successful) as (?:them|everyone|my friends))\b/i,
       R['ruleSocialComparison']
     ),
 
@@ -429,6 +488,17 @@
       // eslint-disable-next-line max-len
       /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing|you good|u good|are you good)\b/i,
       R['ruleSmalltalkHowareyou']
+    ),
+
+    // A direct request for Darya's name always gets a reply that names
+    // her, instead of a random identity line that might omit the name.
+    // Sits above the general identity rule (62 > 60).
+    rule(
+      'ask_name',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(what('?s| is) your name|what are you (?:called|named)|what should i call you|your name is|what do they call you)\b/i,
+      R['ruleAskName']
     ),
 
     rule(
@@ -643,7 +713,7 @@
       'gratitude',
       25,
       // eslint-disable-next-line max-len
-      /\b(thanks?(?: a (?:lot|bunch|million))?|thank you(?: so much)?|thanks darya|thank you darya|i appreciate(?: you| it| that)|grateful for you|much appreciated|many thanks|appreciate it|you'?re a (?:lifesaver|star|legend)|i owe you(?: one)?)\b/i,
+      /\b(thanks?(?: a (?:lot|bunch|million))?|thank you(?: so much)?|thanks darya|thank you darya|i appreciate(?: you| it| that)|grateful for you|much appreciated|many thanks|appreciate it|you'?re a (?:lifesaver|star|legend)|i owe you(?: one)?|you (?:really |so |totally |genuinely )?helped me|that (?:really |so )?helped(?: a lot)?|this (?:really )?helped|that was (?:really )?helpful|you are (?:really )?helpful)\b/i,
       R['ruleGratitude']
     ),
 

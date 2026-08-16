@@ -624,4 +624,69 @@
       en: 'A few good, less-obvious books from Persian and world literature:\n1. The Blind Owl (Sadegh Hedayat): a dark, brooding novel about solitude and nightmare.\n2. Kelidar (Mahmoud Dowlatabadi): an epic of rural Iranian life.\n3. Savushun (Simin Daneshvar): a Shirazi family during years of war and change.\n4. The Alchemist (Paulo Coelho): a simple, inspiring tale about following dreams.\n5. One Hundred Years of Solitude (Gabriel Garcia Marquez): a masterpiece of magical realism.\n6. 1984 (George Orwell): a sharp warning about power and surveillance.\n7. The Midnight Library (Matt Haig): a warm novel about choices and meaning.\n8. The Magic Mountain (Thomas Mann): a deep novel about time and illness.'
     }
   ]);
+  // Literature facts: Hafez of Shiraz and the author of 1984. Kept in the
+  // entertainment part file with the other books and culture entries.
+  global.DaryaFactChunks.push([
+    {
+      id: 'hafez',
+      keywords: [
+        'درباره حافظ',
+        'حافظ کیست',
+        'شمس الدین محمد حافظ',
+        'شمس‌الدین محمد حافظ',
+        'حافظ شیرازی',
+        'شعر حافظ',
+        'غزل های حافظ',
+        'who is hafez',
+        'hafez of shiraz',
+        'persian poet hafez',
+        'tell me about hafez',
+        'hafez biography'
+      ],
+      weak: ['حافظ', 'hafez'],
+      weakSafe: true,
+      hints: [
+        'شاعر',
+        'شعر',
+        'فارسی',
+        'شیراز',
+        'poet',
+        'poetry',
+        'ghazal',
+        'دیوان'
+      ],
+      fa: 'خواجه شمس‌الدین محمد حافظ شیرازی، شاعر بزرگ فارسی‌زبان سده‌ی هشتم هجری (قرن چهاردهم میلادی)، از شیراز است. «دیوان حافظ» شامل حدود ۵۰۰ غزل است و او را «لسان‌الغیب» (زبانِ نهان) می‌خوانند؛ در ایران فال حافظ بخشی از فرهنگ عامه است. حافظ در غزل به عشق، نقد ریا و زهدِ ظاهری، و آزادگی می‌پردازد و هم‌پایه‌ی سعدی از ستون‌های ادبیات فارسی شمرده می‌شود.',
+      en: 'Hafez of Shiraz (Khwaja Shams-ud-Din Muhammad Hafez, 14th century CE) is one of the greatest Persian poets. His Divan contains roughly 500 ghazals, and Iranians still read his poetry in a tradition called "fal-e Hafez" (bibliomancy), treating a random verse as guidance. His work is famous for its celebration of love and wine as metaphors, its critique of hypocritical piety, and its deep spiritual insight. Alongside Saadi, he is a pillar of Persian literature and his tomb in Shiraz remains a beloved pilgrimage site.'
+    },
+    {
+      id: 'orwell_1984',
+      keywords: [
+        'who wrote 1984',
+        'author of 1984',
+        '1984 by george orwell',
+        '1984 written by',
+        'who is george orwell',
+        'جورج اورول',
+        '1984 نوشته',
+        'نویسنده 1984',
+        '1984 اثر'
+      ],
+      weak: ['orwell', 'اورول', '1984'],
+      weakSafe: true,
+      hints: [
+        'نویسنده',
+        'نوشته',
+        'اثر',
+        'کتاب',
+        'رمان',
+        'novel',
+        'author',
+        'wrote',
+        'dystopia',
+        'داستان'
+      ],
+      fa: 'رمان «۱۹۸۴» را جورج اورول، نویسنده‌ی انگلیسی، نوشت و در ۱۹۴۹ منتشر کرد. این رمان ضدآرمان‌شهری درباره‌ی نظارت همه‌جانبه‌ی یک حکومت تمامیت‌خواه، «برادر بزرگ»، و کنترل حقیقت و زبان است؛ اصطلاحاتی مثل «برادر بزرگ» و «فکرنوازی» از همین کتاب وارد زبان روزمره شدند. اورول همچنین نویسنده‌ی رمان «مزرعه‌ی حیوانات» است.',
+      en: 'George Orwell (Eric Arthur Blair), the English writer, wrote Nineteen Eighty-Four (1949). This dystopian novel portrays an all-powerful totalitarian state, the figure of Big Brother, and the control of truth and language. It introduced the ideas of "Big Brother is watching you" and "newspeak" into everyday speech. Orwell is also the author of Animal Farm, and his essays, including "Politics and the English Language", remain widely studied.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

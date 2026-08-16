@@ -113,6 +113,18 @@
     ]
   };
   R.topicSpecificQuestions = {
+    // Subjects without their own follow-up questions still deserve a warm
+    // continuation ("I am still here with you. What happened next?") instead
+    // of the "let us return to the topic" line, which is wrong when the user
+    // is actively elaborating on the same subject (caregiver, chronic
+    // illness, and other lived topics that have no dedicated question pool).
+    _default: [
+      'Tell me more about what is on your mind.',
+      'What feels heaviest about that right now?',
+      'I am still here with you. What happened next?',
+      'What would it help to untangle first?',
+      'I am listening. How are you carrying this today?'
+    ],
     safety: [
       'Are you in immediate danger right now?',
       'Is someone you trust nearby at this moment?',
@@ -144,10 +156,10 @@
       'What has changed most in your sleep over the past few days?'
     ],
     anxiety: [
-      'What is the worry predicting will happen?',
-      'Where do you notice the anxiety first in your body?',
-      'Does the worry come in waves or stay in the background?',
-      'What would feel like a one-step reduction in its intensity?'
+      'When you get anxious, what does your mind usually predict will happen? Does it jump to the worst case?',
+      'Where do you notice the anxiety first in your body, like your chest, stomach, or somewhere else?',
+      'Is the worry there all the time, or does it come and go in waves?',
+      'What small step usually helps calm you when the worry feels big?'
     ],
     sadness: [
       'When did this sadness start to feel this close?',
@@ -254,10 +266,10 @@
       'What small step could move you toward a more fulfilling professional path?'
     ],
     anxiety: [
-      'When the worry arrives, what does it tend to predict?',
-      'Where do you notice the anxiety first in your body?',
-      'Does the worry feel constant or does it come in waves?',
-      'What would feel like a small step toward easing its grip, even slightly?'
+      'When you get anxious, what does your mind usually predict will happen? Does it jump to the worst case?',
+      'Where do you notice the anxiety first in your body, like your chest, stomach, or somewhere else?',
+      'Is the worry there all the time, or does it come and go in waves?',
+      'What small step usually helps calm you when the worry feels big?'
     ],
     gratitude: [
       'What part of this conversation has felt useful to you?',
@@ -494,6 +506,16 @@
   R.humanTouch = [
     'That {surface} detail is still with me; does it feel different now?',
     'The {surface} thread has a little more to it than it first seemed.'
+  ];
+  // Acknowledges when the user's emotional state has visibly improved
+  // across turns (trajectory shifted positive). This is the "memory that
+  // notices change" touch: it shows Darya has been following the arc, not
+  // just reacting to the last line. Infrequent and only on positive shifts.
+  R.emotionShiftLines = [
+    'It sounds like you are in a lighter place than when we started. What is that like for you?',
+    'You sound a little lighter than you did earlier. Has something eased?',
+    'I have noticed some of the weight has lifted since we began talking. What shifted?',
+    'It is good to hear your mood has moved. What helped it turn around?'
   ];
   R.wordRepetitionResponses = [
     'You keep saying "{word}". Are you testing me, or is there something about {word} on your mind?',

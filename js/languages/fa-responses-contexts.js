@@ -123,6 +123,18 @@
     'این حس خوب واقعی است و ارزش دارد از آن لذت ببرید.'
   ];
 
+  // Success achievements and milestones: promotion, raise, exam pass,
+  // graduation, landing a job, a new home, engagement. The reply celebrates
+  // with the person instead of reading good news as a work-stress report.
+  // The rule sits ABOVE the work rule so «تازه تو کارم ترفیع گرفتم» never
+  // lands on the stress pool.
+  R['ruleAchievement'] = [
+    'این واقعاً چیزی برای جشن گرفتن است. تبریک می‌گویم؛ خودت به این رسیدی. این برایت چه معنی‌ای دارد؟',
+    'چه خبر فوق‌العاده‌ای. واقعاً برایت خوشحالم. چه چیزی کمک کرد به اینجا برسی؟',
+    'این یک موفقیت واقعی است و باید به خودت افتخار کنی. لحظه‌ای که فهمیدی چه حالی داشتی؟',
+    'از ته دل برایت خوشحالم. به خودت اعتبار بده؛ برایش تلاش کردی. الان چه حسی داری؟'
+  ];
+
   R['ruleHealth'] = [
     'نگرانی درباره‌ی سلامتی می‌تواند خیلی ذهن را درگیر کند. چه چیزی بیشتر نگران‌تان کرده؟',
     'آیا با پزشک درباره‌اش صحبت کرده‌اید؟',

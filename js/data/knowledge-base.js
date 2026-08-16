@@ -34,6 +34,17 @@
   };
   const MARKETPLACE_MARKER_BONUS = 25;
 
+  // A clear framed question that names a single short topic word
+  // ("what is rizz?", "cbt چیه", "what is cbt") deserves the fact even
+  // when the topic is only a few letters. Without this flat bonus, the
+  // confidence floor (score/40) is length-proportional, so a 3-letter
+  // weak word like "cbt" scores 9 and falls below the 0.35 override
+  // threshold, while "cognitive behavioral therapy" sails through. The
+  // bonus is gated on the same framedWeakGuard + weakSafe path that
+  // already proves the word is a question, not a stray match, so it
+  // cannot unlock bare topic mentions.
+  const FRAMED_TOPIC_BONUS = 10;
+
   function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -113,7 +124,16 @@
       // framing gate and fall to the unknown pool.
       'best',
       'top',
-      'favorite'
+      'favorite',
+      // "is brain rot a real thing?", "is rizz really a thing?" phrase a
+      // factual existence question without the usual what-is framing. The
+      // topic word is weak, so without a framing word the lookup would not
+      // engage; "a real thing"/"a thing" opens the door (the lookup still
+      // gates the answer on a matching topic word).
+      'a real thing',
+      'really a thing',
+      'actually a thing',
+      'a thing'
     ]
   };
 
@@ -180,7 +200,7 @@
           // solid signal even without a hint: "کنکور چطوریه" deserves the
           // konkur answer. Full keyword weight so short topic words like
           // "کنکور" or "مریخ" still clear the confidence floor.
-          score += k.length * 2;
+          score += k.length * 2 + FRAMED_TOPIC_BONUS;
         } else if (hintHit) {
           // Hint-confirmed weak words ("مریخ" + "سیاره") carry the same
           // weight as a keyword: the hint proves the intended sense.

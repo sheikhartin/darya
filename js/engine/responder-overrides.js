@@ -99,6 +99,12 @@
     'flirtation',
     'empty_success',
     'about_darya_day',
+    // Questions about Darya herself ("are you a real AI?", «تو هوش مصنوعی
+    // واقعی هستی؟», "who made you?") must be answered from the identity
+    // pools, never from the AI-history encyclopedia entry: an identity
+    // question is about Darya, not a request for a history of chatbots.
+    'darya_self',
+    'smalltalk_identity',
     'health_symptoms',
     // The 2026 persona round: a harassment/threat disclosure that also
     // names a platform ("اینستاگرام", Instagram) must never be answered
@@ -1052,6 +1058,19 @@
         const touchLine = this._humanTouchLine();
         if (touchLine) {
           reply = `${reply} ${touchLine}`.trim();
+        }
+      }
+
+      // Context-memory touch: when the user's emotional arc has visibly
+      // improved across turns, gently acknowledge the change so the reply
+      // shows Darya is following the whole conversation, not just the last
+      // line. Gated on the trajectory (a genuine recovery from a heavy
+      // state), rate-limited, and skipped on safety turns. It fires even on
+      // light-positive turns because it is context-aware, not a tone prefix.
+      if (!isSafetyTurn && !_overrideFired && this._emotionalShiftLine) {
+        const shiftLine = this._emotionalShiftLine();
+        if (shiftLine) {
+          reply = `${reply} ${shiftLine}`.trim();
         }
       }
 

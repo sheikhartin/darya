@@ -45,6 +45,10 @@
   const SMALLTALK_TURN_INTERVAL = 3;
   const SMALLTALK_CHANCE = 0.35;
   const HUMAN_TOUCH_INTERVAL = 7;
+  // Minimum turns between emotional-shift acknowledgments ("you sound
+  // lighter than earlier") so the context-aware touch never nags. Even a
+  // string of improving turns only earns one acknowledgment per window.
+  const EMOTION_SHIFT_INTERVAL = 5;
   const ENTITY_RECENT_TURNS = 4;
   const ENTITY_RECENT_CONFIDENCE = 0.72;
   const ENTITY_STALE_CONFIDENCE = 0.45;
@@ -265,6 +269,7 @@
     SMALLTALK_TURN_INTERVAL,
     SMALLTALK_CHANCE,
     HUMAN_TOUCH_INTERVAL,
+    EMOTION_SHIFT_INTERVAL,
     ENTITY_RECENT_TURNS,
     ENTITY_RECENT_CONFIDENCE,
     ENTITY_STALE_CONFIDENCE,

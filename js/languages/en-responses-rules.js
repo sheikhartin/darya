@@ -32,6 +32,17 @@
     'Work is more than the hours; the weight of it can follow you home.'
   ];
 
+  // Burnout is more than stress: a deep, persistent exhaustion and
+  // emptiness from overwork ("burned out", "I work 80 hours a week", "my
+  // startup is failing", "I never take a day off"). The reply validates the
+  // depletion and gently separates self-worth from output, without advice.
+  R['ruleBurnout'] = [
+    'Burnout does not just feel like being busy; it feels like being empty and running on fumes. It is a real signal from your body and mind, not a personal failure.',
+    'Working until you are drained is not the same as being valuable. What has your body or mind been trying to tell you lately?',
+    'The exhaustion you are describing is real. Taking stock of what actually fills you back up is not weakness; it is how you survive the long run.',
+    'It sounds like you have been giving from an empty cup for a while. What is one thing that is just for you, even small?'
+  ];
+
   R['rulePerfectionism'] = [
     'Perfectionism can be a heavy standard to carry. Where did the idea that it has to be flawless come from?',
     'Starting before it is perfect is the hardest step. What would "good enough for today" look like?',
@@ -158,6 +169,18 @@
     'That is lovely. I am glad you are experiencing that.'
   ];
 
+  // Positive achievements and milestones: a promotion, a raise, passing an
+  // exam, graduating, landing a job, a new house, an engagement. The reply
+  // celebrates with the person instead of reading their good news as a
+  // work-stress disclosure. The rule sits ABOVE the work rule so "I just
+  // got promoted at work!" never lands on the stress pool.
+  R['ruleAchievement'] = [
+    'That is genuinely something to celebrate. Congratulations - you earned this. What does it mean to you?',
+    'What wonderful news. I am really glad for you. What helped you get here?',
+    'That is a real accomplishment, and you should be proud of it. What was the moment like when you found out?',
+    'I am so happy for you. Give yourself credit for this - you worked for it. How are you feeling about it right now?'
+  ];
+
   R['ruleLoneliness'] = [
     'Loneliness can feel really heavy. How long has this feeling been with you?',
     'When you say you feel alone, do you mean not having people to talk to, or something deeper?',
@@ -231,6 +254,16 @@
     'I am Darya, a conversation companion. I am here for whatever you want to share.',
     'I am Darya, made by Artin as a tribute to ELIZA, the first chatbot, from MIT. I am here to listen to you.',
     'I am Darya, an open-source companion. The project repository is at github.com/sheikhartin/darya.'
+  ];
+
+  // Asking for Darya's name directly ("what is your name?") deserves a
+  // reply that always states the name, instead of a random identity line
+  // that may omit it. Sits above the general identity rule (62 > 60).
+  R['ruleAskName'] = [
+    'My name is Darya. What is yours?',
+    'I am Darya. Nice to meet you.',
+    'You can call me Darya.',
+    'I go by Darya. What would you like me to call you?'
   ];
 
   R['ruleSmalltalkCapability'] = [
@@ -440,6 +473,17 @@
     'I hear how heavy this feels. When low mood hangs on for weeks or makes everyday things hard, professional support, like a doctor or a mental health professional, can make a real difference. What would a first step look like for you?',
     'It takes courage to say you are struggling. You are not broken, and this is not your fault. Many people feel relief through talking to a professional. Is that something you would consider?',
     'Depression can drain the colour out of everything, and that is real. You deserve support that matches how much this is affecting you. A qualified professional or a trusted person could help you carry it.'
+  ];
+
+  // Loss of passion or interest in something the person used to love
+  // ("I used to love painting but I stopped", "I lost my creative spark").
+  // This is a real, quiet grief of its own and deserves empathy, not the
+  // unknown-topic pool.
+  R['ruleLostPassion'] = [
+    'Losing the spark for something you used to love can feel like losing a part of yourself. What did it used to give you?',
+    'It is not weak to have lost the motivation for it. When did you last feel genuinely drawn to it?',
+    'That kind of passion loss is real and worth naming. Is it tiredness, pressure, or something changed?',
+    'It is okay that the love for it faded for now. What would it take to let it come back gently, without forcing it?'
   ];
 
   // A request for a joke or a laugh. The pool holds clean, kind jokes so

@@ -20,13 +20,16 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **The story of ELIZA.** Ask who made her, what ELIZA was, or about MIT and Darya explains the project's real origin story with substance rather than a canned deflection.
 - **Learning support.** "How can I learn English?" and its Persian equivalent get a structured, practical method (comprehensible input, spaced repetition, daily routine), not a hand-off.
 - **Time and calendar answers.** Ask for the current time or date and Darya replies in your language and calendar, with both Jalali and Gregorian dates for Persian.
-- **Quick facts and math.** Darya answers arithmetic, percentages, square roots, random numbers, primality checks, and even coin flips ("flip a coin", "شیر یا خط") in your language.
+- **Quick facts and math.** Darya answers arithmetic, percentages, square roots (including "square root of 144" and "جذر ۱۶"), random numbers, primality checks, and even coin flips ("flip a coin", "شیر یا خط") in your language.
 - **Professional handling of hostility.** Insults, bullying, and inappropriate comments aimed at Darya are met with calm, boundary-setting responses, never with an argument.
 - **A joke when you need one.** Ask for a joke or a laugh ("tell me a joke", "بخندون من") and Darya shares clean, kind humor in your language.
+- **Celebrates your wins.** Good news - a promotion, a raise, passing an exam, graduating, landing a job, getting engaged - is celebrated with warmth instead of being misread as a work-stress complaint. Burnout ("I work 80 hours a week", «سوختم») is recognized as the deep exhaustion it is, distinct from ordinary stress.
+- **Follows the emotional arc.** Darya remembers the arc of the conversation: when your mood clearly improves across turns, she gently acknowledges it ("You sound lighter than you did earlier") rather than reacting to each line in isolation.
+- **Clear, answerable follow-ups.** Reflective questions are phrased plainly ("When you get anxious, what does your mind usually predict will happen?") so they are easy to answer, in everyday language in both Persian and English.
 - **Help starting the conversation.** Not sure how to begin? Say "how do I start?" or "نمیدونم چی بگم" and Darya offers easy, low-pressure openers. If you stay silent after the greeting, she gently breaks the ice herself with a light question.
 - **Honest shopping guidance.** Darya cannot make purchases, and says so plainly, then helps you think the purchase through: needs, budget, and how to compare options.
-- **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
-- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Darya stays fully offline and never dials; the numbers are offered as the immediate next step.
+- **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. Despair phrasings in both languages ("tired of life", "I am done with everything", "life feels pointless", «از زندگی خسته شدم», «زندگی بی معنی شده», «دیگه طاقت ندارم») route to the caring pool, and Darya keeps acknowledging the struggle turn after turn instead of bouncing away. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
+- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Persian crisis phrasing is matched broadly («دلم می‌خواد به خودم صدمه بزنم», «دیگه نمی‌خوام زنده باشم», «می‌خوام خودمو بکشم») so a cry for help in everyday language never falls through. Darya stays fully offline and never dials; the numbers are offered as the immediate next step.
 - **Offline and private.** Everything runs in your browser. No network requests are made at any time. Conversation data is kept only in your browser tab.
 - **Conversation export.** Download your chat as plain text whenever you like.
 
@@ -422,8 +425,12 @@ Darya recognizes a broad set of everyday topics:
   parent ("I take care of my aging mother", "شیفت شب کار می‌کنم")
   each get their own thread instead of a generic reply
 - Entertainment: TV series suggestions, anime, and movie picks by genre
+- Literature and poetry: Hafez of Shiraz and his ghazals, the author of
+  1984 (George Orwell), and world classics
 - The 2026 job market: in-demand fields, skills-based hiring, and
   changing careers at any age
+- Loss of passion: when a hobby or creative spark you used to love fades,
+  Darya meets it as a real quiet grief instead of the unknown-topic pool
 - Heavy low mood: melancholia, anhedonia, and the honest path to
   professional care
 
@@ -606,6 +613,14 @@ about intimacy). Each fixture drives a multi-turn conversation through
 the real engine and asserts the dialogue act, intent, and topic thread
 stay correct, so a routing regression in any of these daily
 conversations is caught by the test run.
+- Three dedicated upgrade suites add targeted regression tests and 81
+  multi-turn scenario fixtures: `tests/upgrade-fixes.test.mjs` pins each
+  fixed bug, `tests/upgrade-scenarios.test.mjs` covers everyday personas
+  (promotions, despair, grief, new parents, caregivers, burnout, crisis),
+  and `tests/upgrade-scenarios-deep.test.mjs` adds 37 deep personas
+  spanning passions, entertainment, breakups, loneliness, loss, jealousy,
+  anger, sadness, poverty, depression, excitement, flirty users, rude
+  users, and the new emotional-shift memory touch, in both languages.
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times
   and reports a pass/fail summary per round, useful for shaking out
   flaky assertions.

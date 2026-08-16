@@ -161,6 +161,7 @@
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
     humanTouch: R.humanTouch,
+    emotionShiftLines: R.emotionShiftLines,
     professionalBoundary: R.professionalBoundary,
     selfAwareness,
     exitKeywords,

@@ -480,7 +480,7 @@ test('FA stress disclosure routes to empathy, not knowledge shelf', () => {
   // knowledge-reflections essay or a generic fallback.
   assert.match(
     reply,
-    /فشار|سنگین|غرق|تاب‌آوری|استراحت|بدن|رهایی|تسکین|اضطراب|نگران|شدید|خسته/iu
+    /فشار|سنگین|غرق|تاب‌آوری|استراحت|بدن|رهایی|تسکین|اضطراب|مضطرب|نگران|شدید|خسته|آرام/iu
   );
   assert.ok(!FA.genericFallbacks.includes(reply));
   assert.ok(!FA.strategyShiftFallbacks.includes(reply));
@@ -927,7 +927,7 @@ test('same-rule streak guard does not block a fresh emotional disclosure after r
     const reply = engine.respond('امروز احساس استرس دارم');
     assert.match(
       reply,
-      /استرس|نگران|اضطراب|فشار|قدم|پیش برو|گفتگو|می‌شنوم|گفتی|بدنت/u,
+      /استرس|نگران|اضطراب|مضطرب|فشار|قدم|آرام|پیش برو|گفتگو|می‌شنوم|گفتی|بدنت/u,
       `fresh anxiety disclosure should stay on-topic after a smalltalk streak, got: ${reply}`
     );
   }

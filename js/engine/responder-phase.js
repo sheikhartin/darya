@@ -164,6 +164,11 @@
           // The meta-topic pools below ship their own warm lines, so humor
           // or warmth coloring would stack tones and read as robotic.
           topic === 'word_meaning' ||
+          // The ask_name pool ("What is your name?") already opens with
+          // the name; a generic warmth prefix (\"You don't have to solve it
+          // all at once. I am Darya...\") stacks a robotic line onto the
+          // direct answer.
+          topic === 'ask_name' ||
           topic === 'ask_me_question' ||
           topic === 'self_improvement' ||
           topic === 'what_do_i_do' ||
