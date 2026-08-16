@@ -384,4 +384,63 @@
       en: 'A few principles for budget cooking: first, plan around staple ingredients (rice, beans, eggs, seasonal vegetables) so each item stretches across several meals; second, batch cook once and freeze portions for the week; third, simple dishes like lentil soup, bean stew, and omelettes are cheap and nutritious; fourth, buying seasonal produce from local markets costs less than supermarkets. With a simple plan you can eat healthy and varied on a tight budget.'
     }
   ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'world_religions',
+      keywords: [
+        'ادیان بزرگ',
+        'ادیان جهان',
+        'ادیان اصلی',
+        'اسلام چیست',
+        'مسیحیت چیست',
+        'درباره اسلام',
+        'درباره مسیحیت',
+        'درباره یهودیت',
+        'درباره بودیسم',
+        'درباره هندوئیسم',
+        'world religions',
+        'major religions',
+        'what is islam',
+        'what is christianity',
+        'what is judaism',
+        'what is buddhism',
+        'what is hinduism',
+        'about islam',
+        'about christianity',
+        'about judaism',
+        'about buddhism',
+        'about hinduism'
+      ],
+      weak: [
+        'اسلام',
+        'مسیحیت',
+        'یهودیت',
+        'بودیسم',
+        'هندوئیسم',
+        'ادیان',
+        'islam',
+        'christianity',
+        'judaism',
+        'buddhism',
+        'hinduism'
+      ],
+      weakSafe: true,
+      hints: [
+        'درباره',
+        'چیست',
+        'چیه',
+        'بگو',
+        'توضیح',
+        'what is',
+        'about',
+        'tell',
+        'explain',
+        'describe'
+      ],
+      fa: 'ادیان بزرگ هرکدام یک سنت باور، آیین و ارزش هستند و میلیون‌ها نفر در هرکدام معنا و آرامش می‌یابند. اسلام بر یگانگی خدا، پیامبران و اخلاق استوار است و قرآن کتاب آن است. مسیحیت بر زندگی و آموزه‌های عیسی مسیح تمرکز دارد و کتاب مقدس آن شامل عهد عتیق و جدید است. یهودیت قدیمی‌ترین ادیان ابراهیمی است و تورات و سنت خود را دارد. بودیسم که در هند پدید آمد، بر راهنمایی‌های بودا درباره‌ی رنج و رهایی استوار است. هندوئیسم هم مجموعه‌ای از آیین‌ها و باورهای متنوع است که در شبه‌قاره‌ی هند ریشه دارد. بررسی هر دینی با احترام، خواندن متون و گفتگو با پیروانش بهتر از داوری درباره‌ی برتری است؛ انتخاب دین یا نداشتن آن حق شخصی هر انسان است.',
+      en: 'The major religions are each a tradition of belief, practice, and value, and millions of people find meaning and peace in each. Islam centers on the oneness of God, the prophets, and ethics, with the Quran as its scripture. Christianity focuses on the life and teachings of Jesus Christ, and its Bible includes the Old and New Testaments. Judaism is the oldest of the Abrahamic faiths, with the Torah and its own tradition. Buddhism, which arose in India, is built on the Buddha guidance about suffering and release. Hinduism is a broad family of beliefs and practices rooted in the Indian subcontinent. Studying any religion with respect, reading its texts, and talking with its followers beats judging superiority; choosing a religion, or none, is every person own right.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

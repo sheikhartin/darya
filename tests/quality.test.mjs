@@ -1821,6 +1821,30 @@ test('classic script load order stays in sync with index.html', () => {
   }
 });
 
+test('every script in index.html is covered by the service-worker precache list', () => {
+  // The service worker must precache every static script the shell loads,
+  // or offline mode breaks with a 503 for a file that was added to the page
+  // but not to sw.js (the media-pool.js regression). This guard keeps the
+  // two lists from drifting apart.
+  const html = read('index.html');
+  const htmlSrcs = scriptSrcs(html);
+  const sw = read('sw.js');
+  const precacheMatch = sw.match(/PRECACHE_URLS\s*=\s*\[([\s\S]*?)\]/);
+  assert.ok(precacheMatch, 'sw.js should declare PRECACHE_URLS');
+  const precached = new Set(
+    [...precacheMatch[1].matchAll(/'\.\/([^']+)'/gu)].map((m) => m[1])
+  );
+  for (const src of htmlSrcs) {
+    // index.html script srcs are relative ("js/..."); sw.js precache URLs
+    // are "./js/...". Strip any leading "./" for comparison.
+    const normalized = src.replace(/^\.\//u, '');
+    assert.ok(
+      precached.has(normalized),
+      `index.html script ${src} is missing from sw.js PRECACHE_URLS`
+    );
+  }
+});
+
 test('quality fixture: no runtime dependencies were added', () => {
   const packageJson = JSON.parse(read('package.json'));
   assert.equal(packageJson.dependencies, undefined);

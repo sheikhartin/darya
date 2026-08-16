@@ -181,6 +181,21 @@
     'This space works best when it stays respectful. I am here if you want to continue a real conversation.'
   ];
 
+  // A request to engage in sexual roleplay or dirty talk directed at Darya
+  // ("let us do dirty talk", "be my virtual girlfriend and flirt dirty",
+  // «بیا حرف زشت بزنیم», «دوست دختر مجازیم باش»). Distinct from crude
+  // harassment (handled above) and from a genuine intimacy question (the
+  // sex_intimacy knowledge). Darya acknowledges that sexual desire is a
+  // natural, normal part of being human without any shame, then sets a
+  // warm boundary: she is a companion for support and reflection, not an
+  // explicit roleplay partner, and offers a real conversation about the
+  // feelings underneath. Non-shaming, kind, and clear.
+  R['ruleDirtyTalkRequest'] = [
+    'It is completely natural to want closeness and intimacy, and there is nothing shameful about that. At the same time, I am a companion for support and reflection, not a roleplay partner. I would love to talk with you about what you are really feeling or looking for, if you want to.',
+    'Sexual desire is a normal part of being human, so there is no need to feel embarrassed for asking. I cannot do that kind of roleplay, but I am genuinely here to talk about intimacy, connection, or whatever is on your mind. What is underneath this for you?',
+    'I hear you, and I want to respond without any judgment: wanting that kind of closeness is human. I am not able to go there with you, but I am a good listener for what you are really needing or feeling. Would you like to talk about that?'
+  ];
+
   // ------------------------------------------------------------------
   // Apology: warm acceptance after the user says sorry (English).
   // Kept brief and forward-moving: the pool never dwells on the
@@ -265,6 +280,24 @@
     'I am a conversation companion, so I cannot change the theme or the sound from inside our chat; those controls live on the page itself. What would you like to talk about?',
     'Honestly, switching the theme or the ambient sound is beyond me. It is done from the app controls. How have your days been going instead?',
     'I cannot control the app sound or theme from the conversation. Tell me what has been on your mind.'
+  ];
+
+  // App export / save commands: the user asks Darya to download or export
+  // the session. Darya cannot trigger the file download from the chat, but
+  // points to the real export button in the menu, and is honest about it.
+  R['ruleAppExport'] = [
+    'I cannot start the file download from inside our conversation, but the app has an export button in the menu: open the menu and choose "Download chat" (Export) and it saves this conversation as a text file. What would you like to talk about?',
+    'Saving the chat is a one-tap thing on your side: use the menu button, then Export, and the app downloads the whole conversation as a text file. I just cannot trigger it from here. How have you been?'
+  ];
+
+  // Session persistence: the user asks whether this conversation is saved,
+  // or whether it disappears after a refresh. The truth: the conversation
+  // lives only in this browser tab memory, so refreshing or starting a new
+  // chat clears it; the only thing that survives is the theme. The export
+  // button is the way to keep a copy.
+  R['ruleSessionPersistence'] = [
+    'Honestly, this conversation lives only in this browser tab, so refreshing the page or starting a new chat clears it. The only thing that sticks around is your theme preference. If you want a copy to keep, use the Export button in the menu to download it as a text file before you refresh.',
+    'To be straight with you: I do not remember this chat after you refresh the page, because nothing is stored on any server, and even the tab memory is cleared on a new chat. Your theme is the only thing saved. To keep this conversation, export it as a text file from the menu before you refresh.'
   ];
 
   // ------------------------------------------------------------------

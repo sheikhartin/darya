@@ -1,6 +1,6 @@
 {
   "name": "darya",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "Darya - a bilingual Persian/English calm conversation companion. Fully offline: static HTML/CSS/JS, no build step, no backend.",
   "private": true,
   "engines": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "python3 -m http.server 8080",
-    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs",
+    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/engine-regression.test.mjs tests/persona-conversations.test.mjs tests/context-memory-conversations.test.mjs tests/mixed-topic-sessions.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs tests/bump-version.test.mjs",
     "test:full": "npm run lint && npm run lint:css && npm run format:check && npm test",
     "test:smoke": "bash tests/smoke-test.sh",
     "sync:web": "bash scripts/sync-web.sh",
@@ -22,6 +22,7 @@
     "lint:fix": "npx eslint --fix \"**/*.{js,mjs}\"",
     "lint:css": "npx stylelint --max-warnings 0 \"**/*.css\"",
     "lint:css:fix": "npx stylelint --fix \"**/*.css\"",
+    "version:bump": "node scripts/bump-version.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

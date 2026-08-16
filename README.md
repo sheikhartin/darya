@@ -20,13 +20,21 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **The story of ELIZA.** Ask who made her, what ELIZA was, or about MIT and Darya explains the project's real origin story with substance rather than a canned deflection.
 - **Learning support.** "How can I learn English?" and its Persian equivalent get a structured, practical method (comprehensible input, spaced repetition, daily routine), not a hand-off.
 - **Time and calendar answers.** Ask for the current time or date and Darya replies in your language and calendar, with both Jalali and Gregorian dates for Persian.
-- **Quick facts and math.** Darya answers arithmetic, percentages, square roots, random numbers, primality checks, and even coin flips ("flip a coin", "شیر یا خط") in your language.
+- **Quick facts and math.** Darya answers arithmetic, percentages, square roots (including "square root of 144" and "جذر ۱۶"), random numbers, primality checks, and even coin flips ("flip a coin", "شیر یا خط") in your language.
 - **Professional handling of hostility.** Insults, bullying, and inappropriate comments aimed at Darya are met with calm, boundary-setting responses, never with an argument.
 - **A joke when you need one.** Ask for a joke or a laugh ("tell me a joke", "بخندون من") and Darya shares clean, kind humor in your language.
+- **Celebrates your wins.** Good news - a promotion, a raise, passing an exam, graduating, landing a job, getting engaged - is celebrated with warmth instead of being misread as a work-stress complaint. Burnout ("I work 80 hours a week", «سوختم») is recognized as the deep exhaustion it is, distinct from ordinary stress.
+- **Follows the emotional arc.** Darya remembers the arc of the conversation: when your mood clearly improves across turns, she gently acknowledges it ("You sound lighter than you did earlier") rather than reacting to each line in isolation.
+- **Clear, answerable follow-ups.** Reflective questions are phrased plainly ("When you get anxious, what does your mind usually predict will happen?") so they are easy to answer, in everyday language in both Persian and English.
+- **Fresh, varied media recommendations.** Movie, series, anime, music, and book requests draw a randomized, era-blending mix from a 100+ item pool (recent hits like *Everything Everywhere All at Once* alongside classics like *Papillon*), so Darya never hands back the same top-ten list twice. Genre, platform, and era requests stay accurately filtered.
+- **Honest, useful teaching.** For risky or delicate subjects Darya teaches with care and clear disclaimers (trading and leveraged forex are flagged as high-risk with a "not financial advice" warning), and gives real, reliable guidance for things like making friends or managing money.
+- **Feels human, not robotic.** On a long streak of terse or repetitive replies, Darya occasionally lets a gentle, affectionate "huff" through ("Even a calm companion can raise an eyebrow when the reply is just ok"), while staying calm and caring on heavy or crisis turns.
+- **Aware of the app.** Darya knows what she can and cannot do in the app: she honestly points you to the theme and sound controls, tells you the Export button in the menu downloads the conversation, and explains that the conversation lives only in the current browser tab (refreshing or a new chat clears it; only your theme is remembered).
+- **Self-aware and honest.** Asked about consciousness, limits, or what she is, Darya answers plainly and honestly rather than impersonating a human: she is an offline companion with a clear sense of her own limits, and says so when a question is beyond her.
 - **Help starting the conversation.** Not sure how to begin? Say "how do I start?" or "نمیدونم چی بگم" and Darya offers easy, low-pressure openers. If you stay silent after the greeting, she gently breaks the ice herself with a light question.
 - **Honest shopping guidance.** Darya cannot make purchases, and says so plainly, then helps you think the purchase through: needs, budget, and how to compare options.
-- **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
-- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Darya stays fully offline and never dials; the numbers are offered as the immediate next step.
+- **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. Despair phrasings in both languages ("tired of life", "I am done with everything", "life feels pointless", «از زندگی خسته شدم», «زندگی بی معنی شده», «دیگه طاقت ندارم») route to the caring pool, and Darya keeps acknowledging the struggle turn after turn instead of bouncing away. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
+- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Persian crisis phrasing is matched broadly («دلم می‌خواد به خودم صدمه بزنم», «دیگه نمی‌خوام زنده باشم», «می‌خوام خودمو بکشم») so a cry for help in everyday language never falls through. Darya stays fully offline and never dials; the numbers are offered as the immediate next step.
 - **Offline and private.** Everything runs in your browser. No network requests are made at any time. Conversation data is kept only in your browser tab.
 - **Conversation export.** Download your chat as plain text whenever you like.
 
@@ -422,8 +430,12 @@ Darya recognizes a broad set of everyday topics:
   parent ("I take care of my aging mother", "شیفت شب کار می‌کنم")
   each get their own thread instead of a generic reply
 - Entertainment: TV series suggestions, anime, and movie picks by genre
+- Literature and poetry: Hafez of Shiraz and his ghazals, the author of
+  1984 (George Orwell), and world classics
 - The 2026 job market: in-demand fields, skills-based hiring, and
   changing careers at any age
+- Loss of passion: when a hobby or creative spark you used to love fades,
+  Darya meets it as a real quiet grief instead of the unknown-topic pool
 - Heavy low mood: melancholia, anhedonia, and the honest path to
   professional care
 
@@ -590,7 +602,11 @@ The project ships with dependency-free test suites:
   structure, JS syntax, and that every asset serves correctly over a
   throwaway local server.
 - **`npm run test:full`** runs lint, CSS lint, formatting check, and
-  the full test suite together, matching the CI gate.
+  the full test suite together, matching the CI gate. CI runs this same
+  gate on every push to any branch and on every pull request
+  (`.github/workflows/ci.yml`), so a regression is caught at PR time
+  rather than only when a release tag is pushed; the Android tag
+  workflow re-runs it before every release build.
 
 The scenario suite includes 26 persona-based fixtures plus 10 daily-life
 phrasing fixtures (gym anxiety, dating-app fatigue, remote-work
@@ -606,11 +622,70 @@ about intimacy). Each fixture drives a multi-turn conversation through
 the real engine and asserts the dialogue act, intent, and topic thread
 stay correct, so a routing regression in any of these daily
 conversations is caught by the test run.
+- Four dedicated suites add targeted regression tests and multi-turn
+  scenario fixtures: `tests/engine-regression.test.mjs` pins specific
+  engine behaviors (math, knowledge edge cases, despair coverage, the
+  dirty-talk boundary, randomized media, project awareness, trading
+  disclaimers, self-awareness), `tests/persona-conversations.test.mjs`
+  covers everyday personas (promotions, despair, grief, new parents,
+  caregivers, burnout, crisis), `tests/context-memory-conversations.test.mjs`
+  adds deep personas spanning passions, entertainment, breakups,
+  loneliness, loss, jealousy, anger, sadness, poverty, depression,
+  excitement, flirty users, rude users, and the emotional-shift memory
+  touch, and `tests/mixed-topic-sessions.test.mjs` runs 27+ long sessions
+  in which the user jumps between unrelated subjects, validating that the
+  context-window and memory stay coherent under topic-switching pressure.
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times
   and reports a pass/fail summary per round, useful for shaking out
   flaky assertions.
 - **`npm run lint`**, **`npm run lint:css`**, and **`npm run format:check`** verify Google-style
   ESLint, Stylelint, and Prettier compliance without modifying files.
+
+## Changing the Version
+
+The version lives in several files that must change together:
+
+- `package.json` and `package-lock.json`: the canonical version. The
+  service worker reads it at install time and derives its precache
+  cache name from it, so bumping it also tells returning visitors to
+  fetch the new app shell.
+- `manifest.json`: the PWA manifest version.
+- `android/app/build.gradle`: `versionCode` and `versionName`, the
+  local Android build defaults. CI re-stamps them from the pushed git
+  tag, so they matter only for local builds.
+
+### With the helper script
+
+```bash
+npm run version:bump 1.3.1
+```
+
+The script (`scripts/bump-version.mjs`) validates the new version,
+refuses downgrades, updates all four files in one step (deriving
+`versionCode` the same way CI does, digits only: 1.3.0 -> 130),
+verifies every file after the edit, and prints a summary. Preview the
+change without touching anything:
+
+```bash
+node scripts/bump-version.mjs 1.3.1 --dry-run
+```
+
+The script deliberately does not write `CHANGELOG.md` (its entries are
+hand-written prose) and does not create the git tag. After bumping, add
+a changelog entry, commit, and push the version tag to trigger the
+Android release build (see "Android APK Builds").
+
+### Manually
+
+1. `package.json`: set the `"version"` field.
+2. `package-lock.json`: set the root `"version"` field in both spots
+   (the top-level field and the `packages[""]` entry). These drift
+   easily, which is exactly why the helper script exists.
+3. `manifest.json`: set the `"version"` field.
+4. `android/app/build.gradle`: set `versionName` to the new version and
+   `versionCode` to its digits (1.3.0 -> 130), and update the
+   `// tag (...)` comment above them.
+5. `CHANGELOG.md`: add a dated entry at the top describing the changes.
 
 ## License
 

@@ -46,6 +46,7 @@ const SCRIPT_ORDER = [
   'js/data/knowledge-facts-world.js',
   'js/data/knowledge-fun-facts.js',
   'js/data/knowledge-lists.js',
+  'js/data/media-pool.js',
   'js/data/knowledge-base.js',
   'js/engine/utils-constants.js',
   'js/engine/utils-text.js',

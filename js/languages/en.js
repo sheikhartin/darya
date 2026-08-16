@@ -161,6 +161,8 @@
     topicShiftTemplates: R.topicShiftTemplates,
     recapTemplates: R.recapTemplates,
     humanTouch: R.humanTouch,
+    emotionShiftLines: R.emotionShiftLines,
+    playfulHuff: R.playfulHuff,
     professionalBoundary: R.professionalBoundary,
     selfAwareness,
     exitKeywords,
@@ -235,6 +237,7 @@
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
+    ruleDirtyTalkRequest: R['ruleDirtyTalkRequest'],
     emotionCalibration: R.emotionCalibration,
     // Question recall (see responder-recall.js): "do you remember what
     // the last question I asked you was?" answers from conversation

@@ -5,6 +5,39 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.3.0] - 2026-08-16
+
+### Added
+
+- **CI on every push and pull request.** A new
+  `.github/workflows/ci.yml` runs the full release gate (ESLint,
+  Stylelint, the Prettier format check, and the complete test suite
+  including the browser e2e suites) on every push to any branch and on
+  every pull request, not only when a version tag is pushed. The
+  Android build workflow still re-runs the same gate before any APK/AAB
+  build, so a regression is caught at PR time, long before release.
+- **Version-bump helper script.** `npm run version:bump 1.3.1` syncs
+  the version across `package.json`, `package-lock.json`,
+  `manifest.json`, and the Android local build defaults in one step. It
+  validates the new version, refuses downgrades, derives versionCode
+  exactly like CI does (1.3.0 -> 130), supports `--dry-run` previews,
+  and is covered by its own test suite. The README now documents both
+  the script and the manual steps in a "Changing the Version" section.
+
+### Changed
+
+- **Version bumped to 1.3.0** in `package.json`, `package-lock.json`,
+  `manifest.json`, and the Android local build defaults (versionCode
+  130 / versionName "1.3.0"). Bumping `package.json` also refreshes the
+  service-worker precache name, so returning visitors fetch the new app
+  shell on their next load.
+
+### Validated
+
+- 1076/1076 tests pass, including the browser e2e suites and the new
+  version-bump script tests.
+- ESLint (0 warnings), Stylelint, and Prettier are clean.
+
 ## [1.2.4] - 2026-08-14
 
 ### Fixed
