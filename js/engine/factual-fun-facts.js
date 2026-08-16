@@ -78,7 +78,8 @@
   const CATEGORY_EN = {
     science: /\b(?:science|scientific|physics|chemistry|biology|water)\b/i,
     space:
-      /\b(?:space|planet|star|solar|universe|moon|venus|jupiter|saturn)\b/i,
+      // eslint-disable-next-line max-len
+      /\b(?:space|astronomy|astronomical|planet|planets|star|stars|solar|universe|galaxy|nebula|asteroid|comet|constellation|moon|venus|jupiter|saturn)\b/i,
     animals:
       /\b(?:animal|animals|octopus|cow|elephant|tardigrade|sloth|wombat)\b/i,
     history:
@@ -103,7 +104,9 @@
   };
   const CATEGORY_FA = {
     science: /(?:علم|فیزیک|شیمی|زیست|آب)/u,
-    space: /(?:فضا|سیاره|ستاره|منظومه|کیهان|ماه|مشتری|زحل|زهره)/u,
+    space:
+      // eslint-disable-next-line max-len
+      /(?:فضا|نجوم|هیات|ستاره شناسی|ستاره‌شناسی|سیاره|ستاره|منظومه|کیهان|کهکشان|سحابی|سیارک|دنباله دار|دنباله‌دار|ماه|مشتری|زحل|زهره|مریخ)/u,
     animals: /(?:حیوان|حیوانات|اختاپوس|گاو|فیل|خرس آبی|تنبل|وامبت)/u,
     // ئ to ی variants included: the normalizer maps «کلئوپاترا» to
     // «کلیوپاترا», so both spellings are needed to keep the trigger live.

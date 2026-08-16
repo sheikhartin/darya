@@ -624,4 +624,168 @@
       en: 'A few good, less-obvious books from Persian and world literature:\n1. The Blind Owl (Sadegh Hedayat): a dark, brooding novel about solitude and nightmare.\n2. Kelidar (Mahmoud Dowlatabadi): an epic of rural Iranian life.\n3. Savushun (Simin Daneshvar): a Shirazi family during years of war and change.\n4. The Alchemist (Paulo Coelho): a simple, inspiring tale about following dreams.\n5. One Hundred Years of Solitude (Gabriel Garcia Marquez): a masterpiece of magical realism.\n6. 1984 (George Orwell): a sharp warning about power and surveillance.\n7. The Midnight Library (Matt Haig): a warm novel about choices and meaning.\n8. The Magic Mountain (Thomas Mann): a deep novel about time and illness.'
     }
   ]);
+  // Literature facts: Hafez of Shiraz and the author of 1984. Kept in the
+  // entertainment part file with the other books and culture entries.
+  global.DaryaFactChunks.push([
+    {
+      id: 'hafez',
+      keywords: [
+        'درباره حافظ',
+        'حافظ کیست',
+        'شمس الدین محمد حافظ',
+        'شمس‌الدین محمد حافظ',
+        'حافظ شیرازی',
+        'شعر حافظ',
+        'غزل های حافظ',
+        'who is hafez',
+        'hafez of shiraz',
+        'persian poet hafez',
+        'tell me about hafez',
+        'hafez biography'
+      ],
+      weak: ['حافظ', 'hafez'],
+      weakSafe: true,
+      hints: [
+        'شاعر',
+        'شعر',
+        'فارسی',
+        'شیراز',
+        'poet',
+        'poetry',
+        'ghazal',
+        'دیوان'
+      ],
+      fa: 'خواجه شمس‌الدین محمد حافظ شیرازی، شاعر بزرگ فارسی‌زبان سده‌ی هشتم هجری (قرن چهاردهم میلادی)، از شیراز است. «دیوان حافظ» شامل حدود ۵۰۰ غزل است و او را «لسان‌الغیب» (زبانِ نهان) می‌خوانند؛ در ایران فال حافظ بخشی از فرهنگ عامه است. حافظ در غزل به عشق، نقد ریا و زهدِ ظاهری، و آزادگی می‌پردازد و هم‌پایه‌ی سعدی از ستون‌های ادبیات فارسی شمرده می‌شود.',
+      en: 'Hafez of Shiraz (Khwaja Shams-ud-Din Muhammad Hafez, 14th century CE) is one of the greatest Persian poets. His Divan contains roughly 500 ghazals, and Iranians still read his poetry in a tradition called "fal-e Hafez" (bibliomancy), treating a random verse as guidance. His work is famous for its celebration of love and wine as metaphors, its critique of hypocritical piety, and its deep spiritual insight. Alongside Saadi, he is a pillar of Persian literature and his tomb in Shiraz remains a beloved pilgrimage site.'
+    },
+    {
+      id: 'orwell_1984',
+      keywords: [
+        'who wrote 1984',
+        'author of 1984',
+        '1984 by george orwell',
+        '1984 written by',
+        'who is george orwell',
+        'جورج اورول',
+        '1984 نوشته',
+        'نویسنده 1984',
+        '1984 اثر'
+      ],
+      weak: ['orwell', 'اورول', '1984'],
+      weakSafe: true,
+      hints: [
+        'نویسنده',
+        'نوشته',
+        'اثر',
+        'کتاب',
+        'رمان',
+        'novel',
+        'author',
+        'wrote',
+        'dystopia',
+        'داستان'
+      ],
+      fa: 'رمان «۱۹۸۴» را جورج اورول، نویسنده‌ی انگلیسی، نوشت و در ۱۹۴۹ منتشر کرد. این رمان ضدآرمان‌شهری درباره‌ی نظارت همه‌جانبه‌ی یک حکومت تمامیت‌خواه، «برادر بزرگ»، و کنترل حقیقت و زبان است؛ اصطلاحاتی مثل «برادر بزرگ» و «فکرنوازی» از همین کتاب وارد زبان روزمره شدند. اورول همچنین نویسنده‌ی رمان «مزرعه‌ی حیوانات» است.',
+      en: 'George Orwell (Eric Arthur Blair), the English writer, wrote Nineteen Eighty-Four (1949). This dystopian novel portrays an all-powerful totalitarian state, the figure of Big Brother, and the control of truth and language. It introduced the ideas of "Big Brother is watching you" and "newspeak" into everyday speech. Orwell is also the author of Animal Farm, and his essays, including "Politics and the English Language", remain widely studied.'
+    }
+  ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'movies_masterpieces',
+      keywords: [
+        'شاهکارهای سینما',
+        'بهترین فیلم های تاریخ',
+        'فیلم های ماندگار',
+        'فیلم کلاسیک سینما',
+        'cinema masterpieces',
+        'best films of all time',
+        'greatest movies ever',
+        'classic masterpiece films',
+        'iconic films'
+      ],
+      weak: [
+        'شاهکار',
+        'ماندگار',
+        'masterpiece',
+        'masterpieces',
+        'iconic',
+        'classic'
+      ],
+      weakSafe: true,
+      hints: [
+        'فیلم',
+        'سینما',
+        'پیشنهاد',
+        'بهترین',
+        'movie',
+        'film',
+        'cinema',
+        'best'
+      ],
+      fa: 'چند شاهکار ماندگار سینما که تقریباً همه‌ی منتقدان تحسینشان می‌کنند:\n۱. «پدرخوانده» (فرانسیس فورد کوپولا، ۱۹۷۲): حماسه‌ای درباره‌ی خانواده و قدرت.\n۲. «همشهری کین» (اورسن ولز، ۱۹۴۱): روایتی پیشرو درباره‌ی جاه‌طلبی و تنهایی.\n۳. «شهر خدا» (فرناندو میرلس، ۲۰۰۲): واقع‌گرایی خشن از دل فقر.\n۴. «هفت‌سامورایی» (آکیرا کوروساوا، ۱۹۵۴): تأثیرگذارترین فیلم‌های اکشن تاریخ.\n۵. «درخشش» (استنلی کوبریک، ۱۹۸۰): شاهکاری در ژانر وحشت روانی.\n۶. «باشگاه مبارزه» (دیوید فینچر، ۱۹۹۹): نقدی تند بر مصرف‌گرایی.\n۷. «پالت‌دوگِر» (کریستوفر نولان، ۲۰۱۰): درباره‌ی خاطره و هویت.\n۸. «روشنایی‌های شهر» (چارلی چاپلین، ۱۹۳۱): کلاسیک بی‌کلام و عمیق.',
+      en: 'A few enduring cinema masterpieces almost every critic admires:\n1. The Godfather (Francis Ford Coppola, 1972): an epic of family and power.\n2. Citizen Kane (Orson Welles, 1941): a pioneering tale of ambition and loneliness.\n3. City of God (Fernando Meirelles, 2002): raw realism from within poverty.\n4. Seven Samurai (Akira Kurosawa, 1954): among the most influential action films ever.\n5. The Shining (Stanley Kubrick, 1980): a masterpiece of psychological horror.\n6. Fight Club (David Fincher, 1999): a sharp critique of consumerism.\n7. Inception (Christopher Nolan, 2010): about memory and identity.\n8. City Lights (Charlie Chaplin, 1931): a deep silent classic.'
+    }
+  ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'anime_by_genre',
+      keywords: [
+        'انیمه پیشنهاد',
+        'بهترین انیمه',
+        'انیمه معرفی کن',
+        'انیمه جدید',
+        'anime recommendations',
+        'best anime',
+        'recommend anime',
+        'good anime to watch'
+      ],
+      weak: ['انیمه', 'anime'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'بهترین',
+        'معرفی',
+        'تماشا',
+        'recommend',
+        'best',
+        'watch'
+      ],
+      fa: 'چند انیمه‌ی محبوب به تفکیک ژانر:\nهیجان و ماجراجویی: «حمله به تایتان» و «وان پیس».\nفانتزی و دنیای جادویی: «فول‌مِتال آکمیست: برادرهود» و «سوسومه».\nروان‌شناختی و معمایی: «دِث‌نوت» و «شبح درون پوسته».\nکمدی و روزمره: «مُب سایکو ۱۰۰» و «هرگونه کارگردانی ماکوتو شینکای».\nاحساسی و عاشقانه: «نام تو» و «قلعه‌ی متحرک هاول».\nبرای شروع، «برادرهود» و «نام تو» تقریباً برای همه‌ی سلیقه‌ها انتخاب امنی‌اند.',
+      en: 'A few popular anime picks by genre:\nAction and adventure: Attack on Titan and One Piece.\nFantasy and magical worlds: Fullmetal Alchemist: Brotherhood and Mushishi.\nPsychological and mystery: Death Note and Ghost in the Shell.\nComedy and slice of life: Mob Psycho 100 and anything directed by Makoto Shinkai.\nEmotional and romantic: Your Name and Howl Moving Castle.\nTo start, Brotherhood and Your Name are safe choices for almost any taste.'
+    }
+  ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'books_by_genre',
+      keywords: [
+        'کتاب پیشنهاد',
+        'بهترین کتاب',
+        'کتاب معرفی کن',
+        'کتاب خوب بخونم',
+        'book recommendations',
+        'best books to read',
+        'recommend a book',
+        'good books'
+      ],
+      weak: ['کتاب', 'رمان', 'book', 'books', 'novel'],
+      weakSafe: true,
+      hints: [
+        'پیشنهاد',
+        'بهترین',
+        'معرفی',
+        'بخونم',
+        'recommend',
+        'best',
+        'read'
+      ],
+      fa: 'چند کتاب عالی به تفکیک ژانر:\nعلمی-تخیلی: «باشگاه کتاب‌بازها» و «بلندی‌های بادگیر».\nراز و معمایی: «قتل در قطار سریع‌السیر شرق» (آگاتا کریستی).\nفانتزی: «ارباب حلقه‌ها» (جی. آر. آر. تالکین).\nرئالیسم جادویی: «صد سال تنهایی» (گابریل گارسیا مارکز).\nروان‌شناختی: «جنایت و مکافات» (داستایوفسکی).\nادبیات فارسی: «بوف کور» (صادق هدایت) و «سووشون» (سیمین دانشور).\nغیرداستانی و الهام‌بخش: «انسان در جست‌وجوی معنا» (ویکتور فرانکل).',
+      en: 'A few excellent books by genre:\nScience fiction: Dune and Nineteen Eighty-Four.\nMystery: Murder on the Orient Express (Agatha Christie).\nFantasy: The Lord of the Rings (J. R. R. Tolkien).\nMagical realism: One Hundred Years of Solitude (Gabriel Garcia Marquez).\nPsychological: Crime and Punishment (Dostoevsky).\nPersian literature: The Blind Owl (Sadegh Hedayat) and Savushun (Simin Daneshvar).\nNonfiction and inspiring: Man Search for Meaning (Viktor Frankl).'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

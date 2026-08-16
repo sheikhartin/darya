@@ -118,6 +118,15 @@
   When the assistant is insulted, set calm boundaries; never mirror
   hostility. Flag requests for hate speech, deception, or malicious
   code.
+- Requests for sexual roleplay or dirty talk directed at the assistant
+  (dirty talk, sexting, "be my virtual girlfriend") get a warm,
+  non-shaming boundary: acknowledge that desire is natural, state that
+  the assistant is a companion for support and reflection rather than an
+  explicit roleplay partner, and offer to talk about the feelings
+  underneath. Never shame the person, and never engage in explicit
+  roleplay. A genuine intimacy or sex-education question ("how do I talk
+  about sex with my partner") stays a normal knowledge topic and must not
+  be misread as a roleplay request.
 
 ## 7. Performance
 
@@ -153,6 +162,17 @@
   the main language of a comment, even in `js/languages/fa-*.js`.
   No other languages, including Chinese, are allowed in comments or
   docs. Darya's codebase is English and Farsi only.
+- Keep each language pure in its own replies: an English response uses
+  English words and a Persian response uses Persian words. Do not
+  code-switch for ordinary vocabulary in either direction. The only
+  exceptions are proper-noun titles (movie, game, anime, book names),
+  brand/platform names, and quoted foreign sources, which are kept as-is
+  in whichever language the reply is written in.
+- When a reply is a numbered or bulleted list (movie or game
+  recommendations, a fact list), put a blank line after the list and then
+  write Darya's own closing sentence or follow-up question on its own
+  paragraph, so the list and the closing line stay visually separated and
+  easy to read.
 
 ## 10. Commits and Docs
 

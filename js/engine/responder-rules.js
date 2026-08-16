@@ -31,6 +31,24 @@
   // ones fall through to the capture-free templates of the same pool.
   const CAPTURED_MAX_WORDS = 3;
 
+  // Topics where a repeated disclosure is never a broken record and must
+  // always be answered from the caring pool, never degraded to a fallback.
+  // The same-rule streak guard exists to stop spam (repeated "ok" re-hitting
+  // the how-are-you pool), but a person who keeps expressing despair, grief,
+  // or pain across several turns is not spamming: they are stuck, and the
+  // fallback reply ("let us return to the topic") is incoherent because they
+  // never left the topic. Exempting these keeps the empathy present every
+  // turn (health_pain is already exempted inline).
+  const STREAK_EXEMPT_TOPICS = new Set([
+    'depression',
+    'safety',
+    'grief',
+    'grief_hope',
+    'anxiety',
+    'stress',
+    'harassment_threat'
+  ]);
+
   // Imperative request phrases ("tell me something interesting", «یه
   // چیزی جالب بگو», "name some youtubers", «چند تا یوتیوبر بگو»). These
   // are requests for content, not statements, so the pronoun reflection
@@ -469,6 +487,7 @@
       if (
         matchedRule.topic !== 'greeting' &&
         matchedRule.topic !== 'health_pain' &&
+        !STREAK_EXEMPT_TOPICS.has(matchedRule.topic) &&
         this.memory.sameRuleStreak > MAX_CONSECUTIVE_SAME_RULE &&
         matchedRule.topic === this.memory.lastRuleTopic
       ) {
@@ -557,10 +576,16 @@
             ? DaryaKnowledge.lookup(normalizedUserText, this.lang.code)
             : null;
         if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          const followup =
-            this.lang.code === 'fa'
-              ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
-              : ' Would you like to go deeper, or is there another question?';
+          const randomized = DaryaKnowledge.randomizeRecommendation
+            ? DaryaKnowledge.randomizeRecommendation(
+                factual.topic,
+                this.lang.code,
+                5,
+                normalizedUserText
+              )
+            : null;
+          const answerText = randomized || factual.text;
+          const followup = this._knowledgeFollowup(answerText);
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           // Mirror the rule-path subject update (see the knowledge branch
@@ -572,7 +597,7 @@
             entityRefs: [factual.topic],
             since: this.memory.turnCount
           };
-          return factual.text + followup;
+          return answerText + followup;
         }
         if (this.currentTurnDialogueAct === 'question') {
           // A first-person process question ("چطور میتونم مدیریت کنم",

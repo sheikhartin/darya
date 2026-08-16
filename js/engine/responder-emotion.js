@@ -8,6 +8,7 @@
   const {
     EMOTION_PREFIX_CHANCE,
     MIXED_LANGUAGE_REDIRECT_CHANCE,
+    EMOTION_SHIFT_INTERVAL,
     scoreSentiment
   } = global.DaryaUtils;
 
@@ -183,6 +184,52 @@
       }
       const prefix = calibration[detectedEmotion];
       return `${prefix} ${reply}`.trim();
+    },
+
+    /**
+     * Returns a gentle acknowledgment line when the user's emotional state
+     * has visibly improved across turns (trajectory shifted positive), or
+     * null. This is the "memory that notices change" touch: it shows Darya
+     * has been following the emotional arc, not just reacting to the last
+     * line. It is rate-limited so it does not nag, never fires on heavy or
+     * safety turns, and uses the language's emotionShiftLines pool.
+     * @returns {string|null}
+     */
+    _emotionalShiftLine() {
+      if (
+        !this.lang.emotionShiftLines ||
+        this.lang.emotionShiftLines.length === 0 ||
+        this.memory.turnCount - (this._lastEmotionShiftTurn || -Infinity) <
+          EMOTION_SHIFT_INTERVAL
+      ) {
+        return null;
+      }
+      // Only acknowledge when the user is recovering from a genuinely heavy
+      // state: the previous turn must have been negatively valenced, and
+      // the current turn must be a clear positive shift. This prevents
+      // "you sound lighter than before" firing off a neutral greeting into
+      // an excited statement, where there was nothing heavy to recover from.
+      if (
+        !this._emotionShiftedPositive() ||
+        !global.DaryaEmotionAnalyzer ||
+        !this.emotionTrajectory
+      ) {
+        return null;
+      }
+      const prevEmotion = this.emotionTrajectory.previous();
+      const prevDims =
+        global.DaryaEmotionAnalyzer.EMOTION_DIMENSIONS?.[prevEmotion];
+      if (!prevDims || prevDims.valence >= 0) {
+        return null;
+      }
+      this._lastEmotionShiftTurn = this.memory.turnCount;
+      // Bypass the question budget: this is a rare, context-aware human
+      // touch, not a new question barrage, so it must always land instead
+      // of being stripped and swapped for a generic fallback.
+      return this._pickVaried(this.lang.emotionShiftLines, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
     },
 
     // ======================================================================

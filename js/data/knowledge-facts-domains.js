@@ -878,4 +878,47 @@
       en: 'I work fully offline, so I do not have live news; I never connect to the internet. But I am curious which part of the world has been on your mind lately.'
     }
   ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'sports_cardio',
+      keywords: [
+        'ورزش هوازی',
+        'دویدن شروع',
+        'شنا یاد بگیرم',
+        'یوگا شروع',
+        'کاردیو',
+        'cardio workout',
+        'start running',
+        'learn to swim',
+        'start yoga'
+      ],
+      weak: [
+        'هوازی',
+        'دویدن',
+        'شنا',
+        'یوگا',
+        'کاردیو',
+        'cardio',
+        'run',
+        'running',
+        'swim',
+        'yoga'
+      ],
+      weakSafe: true,
+      hints: [
+        'ورزش',
+        'شروع',
+        'کدام',
+        'تمرین',
+        'sport',
+        'exercise',
+        'start',
+        'which'
+      ],
+      fa: 'شروع ورزش هوازی ساده و تدریجی است: از پیاده‌روی تند یا دویدن آهسته شروع کن (مثلاً ۳ بار در هفته، ۲۰ تا ۳۰ دقیقه) و هر هفته کمی به زمان یا شدت اضافه کن. برای دویدن، کفش مناسب مهم است و گرم‌کردن و سردکردن را فراموش نکن. شنا برای مفاصل بسیار سبک است و برای همه‌ی سنین خوب است. یوگا هم به انعطاف، تعادل و آرامش ذهن کمک می‌کند و با چند حرکت ساده شروع می‌شود. قبل از شروع یک برنامه‌ی جدید، مخصوصاً اگر مشکل سلامتی داری، با پزشک مشورت کن.',
+      en: 'Starting cardio is simple and gradual: begin with brisk walking or slow jogging (say three times a week for 20 to 30 minutes) and add a little time or intensity each week. For running, good shoes matter, and do not skip warming up and cooling down. Swimming is very gentle on the joints and works for all ages. Yoga also builds flexibility, balance, and calm, starting with a few simple poses. Before starting any new program, especially with a health condition, consult a doctor.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -16,11 +16,31 @@
     WELLBEING_CHECK_TURNS,
     BOREDOM_CHECK_INTERVAL,
     BOREDOM_MIN_TURNS,
-    WORD_REPETITION_THRESHOLD
+    WORD_REPETITION_THRESHOLD,
+    PLAYFUL_HUFF_CHANCE,
+    PLAYFUL_HUFF_MIN_TURNS,
+    PLAYFUL_HUFF_STREAK
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
     global.DaryaResponderShared;
+
+  // An educational how-to question ("how do I start investing?",
+  // «چطور سرمایه‌گذاری را شروع کنم؟», "investing for beginners") is a
+  // request for general knowledge, not a personal financial/medical/legal
+  // decision. Such a question lets the knowledge shelf answer even when the
+  // professional_boundary rule (which matches the bare topic word like
+  // "investing") fired first. Direct personal decisions ("should I invest
+  // my savings?", "give me financial advice") do not match and keep the
+  // professional boundary.
+  const EDUCATIONAL_HOWTO_EN =
+    // eslint-disable-next-line max-len
+    /\b(?:how (?:do|can|should|to|would) (?:i |we )?(?:start|begin|learn|get into|get started with|understand))|investing for beginners|beginner.{0,12}invest/i;
+  const EDUCATIONAL_HOWTO_FA =
+    // eslint-disable-next-line max-len
+    /(?:چطور|چگونه|چطوری|چه جوری).{0,12}(?:شروع کنم|یاد بگیرم|یاد بگیر|بفهمم|برم سراغ)|سرمایه.{0,8}(?:برای مبتدی|از صفر)/u;
+  const EDUCATIONAL_HOWTO = (text) =>
+    EDUCATIONAL_HOWTO_EN.test(text) || EDUCATIONAL_HOWTO_FA.test(text);
 
   // Topics that mean the user asked a genuine question of their own,
   // which the rule pipeline answers directly. The question-echo override
@@ -99,6 +119,12 @@
     'flirtation',
     'empty_success',
     'about_darya_day',
+    // Questions about Darya herself ("are you a real AI?", «تو هوش مصنوعی
+    // واقعی هستی؟», "who made you?") must be answered from the identity
+    // pools, never from the AI-history encyclopedia entry: an identity
+    // question is about Darya, not a request for a history of chatbots.
+    'darya_self',
+    'smalltalk_identity',
     'health_symptoms',
     // The 2026 persona round: a harassment/threat disclosure that also
     // names a platform ("اینستاگرام", Instagram) must never be answered
@@ -121,6 +147,63 @@
   ]);
 
   Object.assign(global.DaryaResponseEngine.prototype, {
+    /**
+     * Builds the closing follow-up for a knowledge answer with the right
+     * spacing. List-style answers (movies, games, facts) are already
+     * newline-separated, so a single space before the follow-up would glue
+     * the question onto the last list item. A blank line separates Darya's
+     * own closing sentence/paragraph from the list so the whole reply stays
+     * easy to read. Paragraph-style answers get a single space instead.
+     * @param {string} answerText - The knowledge answer already built.
+     * @returns {string} The follow-up with correct leading whitespace.
+     */
+    /**
+     * Occasionally replaces a light reply with a gentle, affectionate "huff"
+     * when the user has been terse or repetitive for a while. This is the
+     * human touch of mild frustration that keeps Darya from reading as a
+     * robotic calm listener. Never fires on heavy, safety, or genuinely
+     * engaged turns.
+     * @param {string} reply - The reply built so far.
+     * @returns {string} The possibly-replaced reply.
+     */
+    _maybePlayfulHuff(reply) {
+      if (
+        !this.lang.playfulHuff ||
+        this.lang.playfulHuff.length === 0 ||
+        this.memory.turnCount < PLAYFUL_HUFF_MIN_TURNS ||
+        this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
+        this.currentTurnDialogueAct === 'acknowledgement' ||
+        this.memory.isInDistressStreak()
+      ) {
+        return reply;
+      }
+      // The last few user utterances must all be terse (a short, repetitive
+      // pattern like "ok", "ok", "hmm") for a huff to be in character.
+      const recent = this.memory.recentUtterances.slice(-PLAYFUL_HUFF_STREAK);
+      const terse = recent.every(
+        (u) => u.split(/\s+/u).filter(Boolean).length <= 3
+      );
+      if (!terse || recent.length < PLAYFUL_HUFF_STREAK) {
+        return reply;
+      }
+      if (Math.random() >= PLAYFUL_HUFF_CHANCE) {
+        return reply;
+      }
+      return this._pickVaried(this.lang.playfulHuff, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+    },
+
+    _knowledgeFollowup(answerText) {
+      const sentence =
+        this.lang.code === 'fa'
+          ? 'دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
+          : 'Would you like to go deeper, or is there another question?';
+      const separator = String(answerText || '').includes('\n') ? '\n\n' : ' ';
+      return `${separator}${sentence}`;
+    },
+
     _applySmartOverrides({
       reply,
       rawText,
@@ -507,7 +590,12 @@
         !isSpamNoise &&
         !_overrideFired &&
         matchedRule?.topic !== 'knowledge' &&
-        matchedRule?.topic !== 'professional_boundary' &&
+        // The professional-boundary rule normally blocks the shelf (financial
+        // advice, medical, legal). An educational how-to question ("how to
+        // start investing", «چطور سرمایه‌گذاری کنم؟») is general knowledge,
+        // not a personal decision, so it may reach the shelf.
+        (matchedRule?.topic !== 'professional_boundary' ||
+          EDUCATIONAL_HOWTO(matchingText)) &&
         // Personal disclosures stay conversational even when they contain a
         // knowledge keyword: "من ایمپاستر دارم" is a feeling, not a request
         // for a definition.
@@ -576,14 +664,23 @@
       if (_knowledgeOverrideEligible) {
         const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
         if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          const followup =
-            this.lang.code === 'fa'
-              ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
-              : ' Would you like to go deeper, or is there another question?';
-          reply = factual.text + followup;
+          // A general recommendation ask (movies, series, games, anime,
+          // music, books) gets a fresh randomized, era-blending list from
+          // the media pool instead of the same static list every time.
+          const randomized = DaryaKnowledge.randomizeRecommendation
+            ? DaryaKnowledge.randomizeRecommendation(
+                factual.topic,
+                this.lang.code,
+                5,
+                matchingText
+              )
+            : null;
+          const answerText = randomized || factual.text;
+          const followup = this._knowledgeFollowup(answerText);
+          reply = answerText + followup;
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
-          this._lastKnowledgeText = factual.text;
+          this._lastKnowledgeText = answerText;
           _overrideFired = true;
         }
       }
@@ -662,10 +759,7 @@
             null;
         }
         if (refined) {
-          const followup =
-            this.lang.code === 'fa'
-              ? ' دوست داری همین موضوع را بیشتر بگردیم یا سؤال دیگری داری؟'
-              : ' Want to go deeper on this, or is there another question?';
+          const followup = this._knowledgeFollowup(refined.text);
           reply = refined.text + followup;
           this._lastKnowledgeTopic = refined.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
@@ -1053,6 +1147,26 @@
         if (touchLine) {
           reply = `${reply} ${touchLine}`.trim();
         }
+      }
+
+      // Context-memory touch: when the user's emotional arc has visibly
+      // improved across turns, gently acknowledge the change so the reply
+      // shows Darya is following the whole conversation, not just the last
+      // line. Gated on the trajectory (a genuine recovery from a heavy
+      // state), rate-limited, and skipped on safety turns. It fires even on
+      // light-positive turns because it is context-aware, not a tone prefix.
+      if (!isSafetyTurn && !_overrideFired && this._emotionalShiftLine) {
+        const shiftLine = this._emotionalShiftLine();
+        if (shiftLine) {
+          reply = `${reply} ${shiftLine}`.trim();
+        }
+      }
+
+      // Human touch: on a long streak of terse, repetitive replies, Darya
+      // may gently huff with affection instead of staying a robotic calm
+      // listener. Skipped on safety and heavy turns inside the method.
+      if (!isSafetyTurn && !_overrideFired) {
+        reply = this._maybePlayfulHuff(reply);
       }
 
       this._advanceConversationPhase(normalized);

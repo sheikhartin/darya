@@ -350,4 +350,47 @@
       en: 'For workshop helper prints, PETG is a better choice than PLA: it resists heat and impact better and holds up outdoors, while PLA is perfect for prototypes and decorative parts. Keep your filament dry (moisture causes bubbles and weak layer adhesion), and for live-edge wooden tables, dry and stabilize the wood before building; keep the table away from heat sources and direct sun, and oil both sides so moisture stays balanced. Work with safety gear (glasses, gloves) and ventilation; mistakes in making are part of learning.'
     }
   ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'games_by_platform',
+      keywords: [
+        'بازی برای پی سی',
+        'بازی pc',
+        'بهترین بازی پی سی',
+        'بازی پلی استیشن',
+        'بازی ایکس باکس',
+        'بازی نینتندو سوییچ',
+        'games for pc',
+        'best pc games',
+        'playstation games',
+        'xbox games',
+        'nintendo switch games'
+      ],
+      weak: [
+        'پی سی',
+        'pc',
+        'پلی استیشن',
+        'playstation',
+        'ایکس باکس',
+        'xbox',
+        'سوییچ',
+        'switch'
+      ],
+      weakSafe: true,
+      hints: [
+        'بازی',
+        'گیم',
+        'پیشنهاد',
+        'بهترین',
+        'game',
+        'games',
+        'recommend',
+        'best'
+      ],
+      fa: 'چند بازی خوب به تفکیک پلتفرم:\nپی‌سی: «ویچر ۳»، «سیبرپانک ۲۰۷۷»، «پرتال ۲» و «استاردیو ولی».\nپلی‌استیشن: «گاد آو وار»، «آخرین بازمانده از ما» و «سایه‌ی کولوسوس».\nایکس‌باکس: «هیلو: اینفینیت»، «گیم‌پس» و «فورزا هورایزن».\nنینتندو سوییچ: «زِلدا: نفس وحش» و «ماریو اوديسی».\nبازی‌های چندنفره و آرام: «اسنک براس» و «فلافل».',
+      en: 'A few good games by platform:\nPC: The Witcher 3, Cyberpunk 2077, Portal 2, and Stardew Valley.\nPlayStation: God of War, The Last of Us, and Shadow of the Colossus.\nXbox: Halo Infinite, Game Pass, and Forza Horizon.\nNintendo Switch: Zelda: Breath of the Wild and Mario Odyssey.\nFor calm multiplayer fun: Snackbar and Fall Guys.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

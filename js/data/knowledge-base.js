@@ -34,6 +34,17 @@
   };
   const MARKETPLACE_MARKER_BONUS = 25;
 
+  // A clear framed question that names a single short topic word
+  // ("what is rizz?", "cbt چیه", "what is cbt") deserves the fact even
+  // when the topic is only a few letters. Without this flat bonus, the
+  // confidence floor (score/40) is length-proportional, so a 3-letter
+  // weak word like "cbt" scores 9 and falls below the 0.35 override
+  // threshold, while "cognitive behavioral therapy" sails through. The
+  // bonus is gated on the same framedWeakGuard + weakSafe path that
+  // already proves the word is a question, not a stray match, so it
+  // cannot unlock bare topic mentions.
+  const FRAMED_TOPIC_BONUS = 10;
+
   function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -113,7 +124,16 @@
       // framing gate and fall to the unknown pool.
       'best',
       'top',
-      'favorite'
+      'favorite',
+      // "is brain rot a real thing?", "is rizz really a thing?" phrase a
+      // factual existence question without the usual what-is framing. The
+      // topic word is weak, so without a framing word the lookup would not
+      // engage; "a real thing"/"a thing" opens the door (the lookup still
+      // gates the answer on a matching topic word).
+      'a real thing',
+      'really a thing',
+      'actually a thing',
+      'a thing'
     ]
   };
 
@@ -180,7 +200,7 @@
           // solid signal even without a hint: "کنکور چطوریه" deserves the
           // konkur answer. Full keyword weight so short topic words like
           // "کنکور" or "مریخ" still clear the confidence floor.
-          score += k.length * 2;
+          score += k.length * 2 + FRAMED_TOPIC_BONUS;
         } else if (hintHit) {
           // Hint-confirmed weak words ("مریخ" + "سیاره") carry the same
           // weight as a keyword: the hint proves the intended sense.
@@ -406,7 +426,27 @@
       saffron: ['زعفران'],
       tea: ['چای'],
       relationship_plan: ['رابطه سالم', 'رابطه خوب', 'برنامه رابطه', 'رابطه'],
-      sex_education: ['آموزش جنسی', 'رابطه جنسی', 'سکس', 'رضایت جنسی']
+      sex_education: ['آموزش جنسی', 'رابطه جنسی', 'سکس', 'رضایت جنسی'],
+      world_religions: [
+        'ادیان',
+        'اسلام',
+        'مسیحیت',
+        'یهودیت',
+        'بودیسم',
+        'هندوئیسم'
+      ],
+      movies_masterpieces: ['شاهکار'],
+      anime_by_genre: ['انیمه'],
+      books_by_genre: ['کتاب'],
+      games_by_platform: [
+        'بازی پی سی',
+        'بازی پلی استیشن',
+        'بازی ایکس باکس',
+        'بازی سوییچ'
+      ],
+      investing_basics: ['سرمایه گذاری', 'سرمایه‌گذاری'],
+      health_nutrition: ['تغذیه'],
+      sports_cardio: ['یوگا', 'دویدن', 'شنا']
     },
     en: {
       mercury: ['mercury'],
@@ -469,7 +509,26 @@
         'relationship plan',
         'relationship'
       ],
-      sex_education: ['sex education', 'safe sex', 'consent', 'sexual health']
+      sex_education: ['sex education', 'safe sex', 'consent', 'sexual health'],
+      world_religions: [
+        'islam',
+        'christianity',
+        'judaism',
+        'buddhism',
+        'hinduism'
+      ],
+      movies_masterpieces: ['masterpiece', 'masterpieces'],
+      anime_by_genre: ['anime'],
+      books_by_genre: ['books', 'novels'],
+      games_by_platform: [
+        'pc games',
+        'playstation games',
+        'xbox games',
+        'switch games'
+      ],
+      investing_basics: ['investing', 'investments'],
+      health_nutrition: ['nutrition', 'healthy eating'],
+      sports_cardio: ['yoga', 'running', 'swimming', 'cardio']
     }
   };
   const FRAGMENT_FACT_IDS = {
@@ -501,7 +560,15 @@
     saffron: 'saffron',
     tea: 'tea',
     relationship_plan: 'relationship_plan',
-    sex_education: 'sex_education'
+    sex_education: 'sex_education',
+    world_religions: 'world_religions',
+    movies_masterpieces: 'movies_masterpieces',
+    anime_by_genre: 'anime_by_genre',
+    books_by_genre: 'books_by_genre',
+    games_by_platform: 'games_by_platform',
+    investing_basics: 'investing_basics',
+    health_nutrition: 'health_nutrition',
+    sports_cardio: 'sports_cardio'
   };
   // Connective words allowed inside a follow-up fragment. Anything left
   // over after removing the topic word and these connectives means the
@@ -645,6 +712,114 @@
     return shuffled.slice(0, wanted);
   }
 
+  // Age cutoff for "recent" titles in a recommendation mix. Anything at or
+  // after this year counts as recent, anything before as a classic, so a
+  // randomized recommendation blend spans the two eras instead of handing
+  // back a single-era list.
+  const RECENT_YEAR_CUTOFF = 2016;
+
+  /**
+   * Builds a randomized, bilingual recommendation list from the media pool.
+   * Each call shuffles the category pool and blends recent and classic
+   * titles, so Darya never returns the same static list twice. Titles
+   * without a year (podcasts) are treated as timeless and mixed freely.
+   * @param {string} category - A media-pool category key (movie, series,
+   *   game, anime, music, podcast, book, documentary).
+   * @param {string} langCode - 'fa' or 'en'.
+   * @param {number} [count=5] - How many titles to recommend.
+   * @returns {string} A formatted, newline-separated recommendation list.
+   */
+  function randomMediaRecommendations(category, langCode, count) {
+    const pool = global.DaryaMediaPool?.categories?.[category];
+    if (!pool || pool.length === 0) {
+      return '';
+    }
+    const wanted = Math.max(2, Math.min(count || 5, pool.length));
+    // Split into recent and classic so the mix spans eras.
+    const recent = pool.filter((item) => (item.y || 0) >= RECENT_YEAR_CUTOFF);
+    const classic = pool.filter((item) => (item.y || 0) < RECENT_YEAR_CUTOFF);
+    const timeless = pool.filter((item) => !item.y);
+    // Pick roughly half recent / half classic (with timeless filling in).
+    const half = Math.ceil(wanted / 2);
+    const pickShuffled = (arr, n) =>
+      [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+    const chosen = [
+      ...pickShuffled(recent, half),
+      ...pickShuffled(classic, wanted - half),
+      ...pickShuffled(timeless, wanted)
+    ].slice(0, wanted);
+    // Shuffle the chosen mix so the eras are not always clustered.
+    const mixed = [...chosen].sort(() => Math.random() - 0.5);
+    const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+    return mixed
+      .map((item, i) => {
+        const year = item.y ? ` (${item.y})` : '';
+        const reason = langCode === 'fa' ? item.fa : item.en;
+        const numeral =
+          langCode === 'fa'
+            ? String(i + 1).replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)])
+            : `${i + 1}`;
+        return `${numeral}. ${item.t}${year}: ${reason}`;
+      })
+      .join('\n');
+  }
+
+  // Recommendation fact IDs that should produce a randomized media-pool
+  // reply instead of a static list: a general movie request, series, anime,
+  // music, or books. Per-genre movie lists (movies_horror, etc.) and the
+  // games facts (which carry era/platform/genre semantics) stay curated so
+  // genre and platform filtering is preserved, but the broad "recommend X"
+  // asks get a fresh, era-blending mix each time.
+  const RECOMMENDATION_CATEGORIES = {
+    movies_recommendations: 'movie',
+    movies_masterpieces: 'movie',
+    movies_tv_series: 'series',
+    movies_anime: 'anime',
+    anime_by_genre: 'anime',
+    song_recommendations: 'music',
+    books_recommendations: 'book',
+    books_by_genre: 'book'
+  };
+
+  // Series words in each language, used to split a "recommend X" request
+  // that the broad movie/series fact matched into a series pick instead of
+  // a movie pick. A Persian "یه سریال خوب معرفی کن" hits the general
+  // movie fact (which lists series keywords too), but should recommend
+  // series, not movies.
+  const SERIES_WORDS =
+    /(?:سریال|مینی‌سریال|مینی سریال|series|tv show|tv shows|drama series|کره‌ای)/iu;
+
+  /**
+   * Returns a randomized recommendation list for a matched fact, or null
+   * when the fact is not a randomized recommendation (so the static fact
+   * text is used). Lets the engine hand back a fresh, era-blending mix for
+   * "recommend a movie/game/series/anime/music/book" instead of the same
+   * list every time.
+   * @param {string} factId - The matched fact's id.
+   * @param {string} langCode - 'fa' or 'en'.
+   * @param {number} [count=5] - How many titles to recommend.
+   * @param {string} [text] - The matching input, so a series ask that the
+   *   broad movie fact matched can still resolve to series.
+   * @returns {string|null}
+   */
+  function randomizeRecommendation(factId, langCode, count, text) {
+    let category = RECOMMENDATION_CATEGORIES[factId];
+    if (!category) {
+      return null;
+    }
+    // A movie/series fact that the request names series resolves to series.
+    if (
+      category === 'movie' &&
+      RECOMMENDATION_CATEGORIES[factId] === 'movie' &&
+      text &&
+      SERIES_WORDS.test(text)
+    ) {
+      category = 'series';
+    }
+    const list = randomMediaRecommendations(category, langCode, count);
+    return list || null;
+  }
+
   const DaryaKnowledge = {
     domains,
     answer,
@@ -652,6 +827,8 @@
     lookupGenre,
     lookupFragment,
     randomFacts,
+    randomMediaRecommendations,
+    randomizeRecommendation,
     factsCount: FACTS.length
   };
   global.DaryaKnowledge = DaryaKnowledge;

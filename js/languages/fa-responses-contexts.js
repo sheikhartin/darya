@@ -123,6 +123,18 @@
     'این حس خوب واقعی است و ارزش دارد از آن لذت ببرید.'
   ];
 
+  // Success achievements and milestones: promotion, raise, exam pass,
+  // graduation, landing a job, a new home, engagement. The reply celebrates
+  // with the person instead of reading good news as a work-stress report.
+  // The rule sits ABOVE the work rule so «تازه تو کارم ترفیع گرفتم» never
+  // lands on the stress pool.
+  R['ruleAchievement'] = [
+    'این واقعاً چیزی برای جشن گرفتن است. تبریک می‌گویم؛ خودت به این رسیدی. این برایت چه معنی‌ای دارد؟',
+    'چه خبر فوق‌العاده‌ای. واقعاً برایت خوشحالم. چه چیزی کمک کرد به اینجا برسی؟',
+    'این یک موفقیت واقعی است و باید به خودت افتخار کنی. لحظه‌ای که فهمیدی چه حالی داشتی؟',
+    'از ته دل برایت خوشحالم. به خودت اعتبار بده؛ برایش تلاش کردی. الان چه حسی داری؟'
+  ];
+
   R['ruleHealth'] = [
     'نگرانی درباره‌ی سلامتی می‌تواند خیلی ذهن را درگیر کند. چه چیزی بیشتر نگران‌تان کرده؟',
     'آیا با پزشک درباره‌اش صحبت کرده‌اید؟',
@@ -194,6 +206,20 @@
     'من یک همراه برای گفتگو هستم. بیایید این فضا را محترم نگه داریم.',
     'نمی‌توانم به این نوع صحبت پاسخ دهم. دوست داری درباره موضوع دیگری حرف بزنیم؟',
     'این فضا وقتی بهتر کار می‌کند که محترم بماند. من اینجا هستم اگر بخواهی گفتگوی واقعی داشته باشیم.'
+  ];
+
+  // A request to engage in sexual roleplay or dirty talk directed at Darya
+  // («بیا حرف زشت بزنیم», «دوست دختر مجازیم باش», «چت جنسی کن»). Distinct
+  // from crude harassment (above) and from a genuine intimacy question (the
+  // sex_intimacy knowledge). Darya acknowledges that sexual desire is a
+  // natural, normal part of being human without shame, then sets a warm
+  // boundary: she is a companion for support and reflection, not an
+  // explicit roleplay partner, and offers a real conversation about the
+  // feelings underneath.
+  R['ruleDirtyTalkRequest'] = [
+    'کاملاً طبیعی است که بخواهی نزدیکی و صمیمیت را تجربه کنی و هیچ شرمی در آن نیست. در عین حال من برای همراهی و گفتگو اینجا هستم، نه برای نقش‌بازی جنسی. اگر بخواهی، خیلی دوست دارم درباره‌ی آنچه واقعاً احساس می‌کنی یا دنبالش هستی با تو حرف بزنم.',
+    'میل جنسی بخشی طبیعی از آدم‌بودن است، پس لازم نیست بابت پرسیدنش خجالت بکشی. من نمی‌توانم آن‌طور نقش‌بازی کنم، اما واقعاً اینجا هستم تا درباره‌ی صمیمیت، ارتباط یا هر چه ذهنت را گرفته گفتگو کنم. چه چیزی پشت این خواسته برایت است؟',
+    'می‌شنومت و بدون هیچ قضاوتی می‌خواهم جواب بدهم: چنین خواسته‌ای کاملاً انسانی است. من نمی‌توانم وارد آن فضا شوم، اما شنونده‌ی خوبی هستم برای آنچه واقعاً بهش نیاز داری یا حس می‌کنی. دوست داری درباره‌اش حرف بزنیم؟'
   ];
 
   // ------------------------------------------------------------------

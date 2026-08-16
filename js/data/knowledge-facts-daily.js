@@ -585,4 +585,44 @@
       en: 'When gaming shifts from fun to something that keeps you up all night or pushes aside work and study, it is worth being honest with yourself. Set small boundaries: turn it off one hour after dinner, or treat gaming as a reward for finished tasks rather than a replacement for them. Burnout from a game or a genre is normal too; variety and rest make gaming fun again. If even with limits you cannot regain control and your life is suffering, getting professional help can guide you back; that is courage, not weakness.'
     }
   ]);
+
+  // Curated factual entries appended by the knowledge-expansion pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'health_nutrition',
+      keywords: [
+        'تغذیه سالم',
+        'غذای سالم',
+        'چطور سالم بخورم',
+        'رژیم متعادل',
+        'healthy eating',
+        'healthy diet',
+        'balanced nutrition',
+        'how to eat healthy'
+      ],
+      weak: [
+        'تغذیه',
+        'تغذیه\u200cای',
+        'رژیم',
+        'nutrition',
+        'diet',
+        'healthy',
+        'healthy food',
+        'غذا'
+      ],
+      weakSafe: true,
+      hints: [
+        'سالم',
+        'چطور',
+        'بخورم',
+        'متعادل',
+        'healthy',
+        'how',
+        'eat',
+        'balanced'
+      ],
+      fa: 'اصول ساده‌ی تغذیه‌ی سالم: نیمی از بشقاب را سبزیجات و میوه پر کن، یک‌چهارم پروتئین سالم (حبوبات، تخم‌مرغ، ماهی، گوشت کم‌چرب) و یک‌چهارم غلات کامل (برنج قهوه‌ای، نان سبوس‌دار). آب به‌جای نوشابه‌های شیرین، و خوراکی‌های فرآوری‌شده و شکر افزوده را کم کن. وعده‌ها را منظم بخور و آهسته‌تر جویدن کمک می‌کند زودتر سیر شوی. برای بیماری یا نیاز خاص، با پزشک یا متخصص تغذیه مشورت کن؛ من جای او را نمی‌گیرم.',
+      en: 'Simple principles of healthy eating: fill half the plate with vegetables and fruit, a quarter with healthy protein (beans, eggs, fish, lean meat), and a quarter with whole grains (brown rice, whole-wheat bread). Drink water instead of sugary drinks, and cut back on processed foods and added sugar. Eat regular meals and chew more slowly to feel full sooner. For an illness or a special need, consult a doctor or dietitian; I am not a substitute.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

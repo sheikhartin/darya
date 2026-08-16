@@ -240,11 +240,14 @@
       }
     }
 
-    // Square roots: "جذر ۱۶", "square root of 9", "sqrt(16)". Only
-    // answers when the expression is a lone root, so "5 + sqrt(4)" is
-    // never double-handled here.
+    // Square roots: "جذر ۱۶", "square root of 9", "sqrt(16)", "what is
+    // the square root of 144?". Only answers when the expression is a
+    // lone root, so "5 + sqrt(4)" is never double-handled here. The
+    // optional "از" is the Persian genitive ("جذر ۱۶") while "of" is the
+    // English equivalent ("square root of 144"); both are consumed so a
+    // bare number, a Persian "از", or an English "of" all resolve.
     const sqrtMatch = text.match(
-      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:از\s*)?\(?\s*([۰-۹0-9.٫]+)\s*\)?/iu
+      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:(?:از|of)\s*)?\(?\s*([۰-۹0-9.٫]+)\s*\)?/iu
     );
     if (sqrtMatch && !/[+\-*xX/^÷]/.test(text.slice(0, sqrtMatch.index))) {
       const n = parseFaNumber(sqrtMatch[1]);
