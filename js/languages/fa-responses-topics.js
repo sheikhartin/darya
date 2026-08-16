@@ -519,6 +519,17 @@
   // across turns (trajectory shifted positive). Shows Darya is following
   // the arc of the conversation, not just reacting to the last line.
   // Infrequent and only on positive shifts.
+  // Occasional light, affectionate frustration when the user has been terse
+  // or repetitive («اوکی»، «هوم»). Playful, in-character, never hostile,
+  // never fired on heavy or safety turns. Makes Darya feel human.
+  R.playfulHuff = [
+    'باشه باشه، می‌بینم امروز خیلی پرحرفی. یک کلمه؟ آخرش یک کلمه؟ من می‌توانم سرنخ بگیرم، اما فال‌گیر نیستم.',
+    'هوم. من یک سؤال کوچک می‌پرسم و جوابم «اوکی» است. شنونده‌ی خوبی هستم، اما ذهن‌خوان نه.',
+    'می‌دانی، خیلی صبور بوده‌ام. ولی حتی یک همراه آرام هم وقتی جواب فقط «اوکی» می‌شود، یک ابرو بالا می‌آورد.',
+    'پس من فقط باید حدس بزنم. کاملاً آرامم. کاملاً. فقط یک ابرو بالا آمده، همین.',
+    'یک کلمه‌ی کامل. حرفم گرفته شد. خوب، نه کاملاً، چون دارم همین‌ها را می‌گویم.'
+  ];
+
   R.emotionShiftLines = [
     'انگار از اول گفتگو کمی سبک‌تر شدی. چه حسی داری؟',
     'حرفت الان کمی سبک‌تر از قبل است. چی سبک شده؟',

@@ -330,4 +330,54 @@
       en: 'Investing for beginners follows a few simple principles: first, build an emergency fund (a few months of living costs) in a separate, highly liquid account; second, pay off high-interest debt before investing; third, start with a small amount you can afford to lose; fourth, diversify across assets to reduce risk; fifth, think long term and avoid emotional decisions during market swings. Dollar-cost averaging, buying a fixed amount on a regular schedule, is a simple way to begin. There is no guarantee in investing and risk always exists; for local rules and taxes, consult a qualified advisor.'
     }
   ]);
+
+  // Curated factual entry appended by the teaching-topics pass.
+  global.DaryaFactChunks.push([
+    {
+      id: 'trading_risks',
+      keywords: [
+        'چطور ترید کنم',
+        'ترید برای مبتدی',
+        'آموزش ترید',
+        'ترید ارز دیجیتال',
+        'فارکس چیه',
+        'آموزش فارکس',
+        'فارکس یاد بگیرم',
+        'فارکس یاد',
+        'بازار بورس ترید',
+        'how to trade',
+        'trading for beginners',
+        'day trading',
+        'what is forex',
+        'learn to trade',
+        'is trading profitable'
+      ],
+      weak: [
+        'ترید',
+        'معامله گر',
+        'فارکس',
+        'باینری',
+        'trade',
+        'trading',
+        'forex',
+        'leverage'
+      ],
+      weakSafe: true,
+      hints: [
+        'شروع',
+        'چطور',
+        'یاد',
+        'مبتدی',
+        'سود',
+        'start',
+        'learn',
+        'beginner',
+        'profit',
+        'ریسک',
+        'risk'
+      ],
+      fa: 'قبل از هر چیز یک هشدار جدی: ترید (معامله‌گری کوتاه‌مدت، فارکس با اهرم، و باینری) پرریسک‌ترین شکل بازارهای مالی است و اکثر افراد تازه‌کار در آن ضرر می‌کنند؛ تبلیغ «سود تضمینی» یا «درآمد آسان از ترید» تقریباً همیشه کلاهبرداری است. اگر باز هم می‌خواهی یاد بگیری، مسیر درست این است: اول مفاهیم پایه را از منابع معتبر و رایگان بیاموز، با حساب آزمایشی (دمو) تمرین کن، هرگز با پولی که نیاز داری یا قرضی وارد نشو، و هرگز به وعده‌ی سود سریع اعتماد نکن. بازار هیچ تضمینی ندارد و سرمایه می‌تواند کاملاً از بین برود. این متن توصیه‌ی مالی نیست؛ برای تصمیم مالی واقعی با یک مشاور معتبر و دارای مجوز مشورت کن.',
+      en: 'Before anything, a serious warning: short-term trading, leveraged forex, and binary options are the riskiest corners of the financial markets, and most beginners lose money; any promise of "guaranteed profit" or "easy income from trading" is almost certainly a scam. If you still want to learn, the honest path is: learn the basics from free, reputable sources first, practice on a demo account, never trade with money you need or have borrowed, and never trust a promise of fast returns. The market offers no guarantees and your capital can be lost entirely. This is not financial advice; for a real decision, consult a qualified, licensed advisor.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

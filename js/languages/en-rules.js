@@ -166,7 +166,7 @@
       'achievement',
       53,
       // eslint-disable-next-line max-len
-      /^(?!.*\b(?:didn'?t|did not|wasn'?t|was not|never|failed|i failed|not (?:get|got|be|passed)|fired|laid off|rejected|ruined|missed)\b).*\b(?:just )?(?:got|was|have been|i'?m|i am|am)\s+(?:promoted|a promotion|a raise|a bonus|accepted|hired|selected|chosen|a new (?:job|position|role))|(?:got|landed|accepted|secured|received|been offered|was offered)\s+(?:the|an?|my)?\s*(?:job|position|role|offer|contract|deal)|passed\s+(?:the|my|an?)?\s*(?:exam|exams|test|tests|interview|course|driving test)|graduated|got\s+my\s+degree|won\s+(?:the|a)?\s*(?:award|prize|competition|scholarship|promotion|match|game|race)|got\s+(?:accepted|engaged|married)|bought\s+(?:my|a)\s+(?:house|home|car)|started\s+(?:my\s+own\s+)?(?:business|company|startup)\b/i,
+      /^(?!.*\b(?:didn'?t|did not|wasn'?t|was not|never|failed|i failed|not (?:get|got|be|passed)|fired|laid off|rejected|ruined|missed)\b).*\b(?:just )?(?:got|was|have been|i'?m|i am|am)\s+(?:promoted|a promotion|a raise|a bonus|accepted|hired|selected|chosen|a new (?:job|position|role))|(?:got|landed|accepted|secured|received|been offered|was offered)\s+(?:the|an?|my)?\s*(?:job|position|role|offer|contract|deal)|passed\s+(?:the|my|an?)?\s*(?:exam|exams|test|tests|interview|course|driving test)|graduated|got\s+my\s+degree|won\s+(?:the|a)?\s*(?:award|prize|competition|scholarship|promotion|match|game|race)|got\s+(?:accepted|engaged|married)|bought\s+(?:my|a)\s+(?:house|home|car)|started\s+(?:my\s+own\s+)?(?:business|company|startup)|finished\s+(?:a|the|my)\s+(?:big\s+|huge\s+|biggest\s+)?(?:project|presentation|report)|(?:i\s+)?(?:just\s+)?(?:finished|completed|finally finished)\s+(?:my\s+)?(?:project|thesis|dissertation|degree|book)\b/i,
       R['ruleAchievement']
     ),
 
@@ -701,6 +701,27 @@
       R['ruleAppCommand']
     ),
 
+    // App export / download-session commands ("download this chat",
+    // "export my session"). Darya cannot trigger the file download from the
+    // chat but points to the real Export button in the menu.
+    rule(
+      'app_export',
+      67,
+      // eslint-disable-next-line max-len
+      /\b(export|download|save|print)\s+(?:this|the|our|my|this (?:conversation|chat|session)|the (?:conversation|chat|session)|a (?:copy|text file))(?:\s*(?:of|to))?(?:\s*(?:the )?(?:conversation|chat|session|text|file))?|(?:download|export|save) (?:my|this) (?:conversation|chat|session|history)|how (?:do|can) i (?:export|save|download) (?:this|our) (?:chat|conversation|session)\b/i,
+      R['ruleAppExport']
+    ),
+
+    // Session persistence ("will this be saved?", "does it disappear after
+    // I refresh?"). Honest about the session-only memory and the theme.
+    rule(
+      'session_persistence',
+      66,
+      // eslint-disable-next-line max-len
+      /\b(?:will (?:this|our|the) (?:chat|conversation|session|messages?) (?:be|get) (?:saved|deleted|removed|erased|lost)|(?:is|are) (?:this|our|the) (?:chat|conversation|session|messages) (?:saved|stored|remembered)|(?:does|do) (?:it|they) (?:disappear|get (?:deleted|removed)|go away) (?:after|when) (?:i )?(?:refresh|reload|close)|(?:will|do) you (?:remember|keep) (?:this|our) (?:chat|conversation|session) (?:after|when) (?:i )?(?:refresh|reload|close|leave)|can (?:you|this|i) save (?:this|our) (?:conversation|chat|session)|is this conversation private|do you store (?:my|our) (?:messages|chat|conversation)|(?:do|will) you (?:remember|keep|still remember) (?:this|my|our)\b|remember (?:this|it) (?:after|when) (?:i )?(?:refresh|reload|leave|close))\b/i,
+      R['ruleSessionPersistence']
+    ),
+
     rule(
       'app_feedback',
       32,
@@ -1038,7 +1059,7 @@
       'darya_self',
       66,
       // eslint-disable-next-line max-len
-      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die))\b/i,
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
       R['ruleDaryaSelf']
     ),
 

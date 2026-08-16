@@ -695,17 +695,9 @@ test('knowledge expansion: plain movie requests are never hijacked', () => {
   // reach the factual layer, not the knowledge-expansion acknowledgment.
   const en = freshEngine(EN);
   const enReply = en.respond('give me a list of good movies');
-  assert.match(
-    enReply,
-    /Close-Up|Kiarostami|cinema/i,
-    `EN movies stay factual: ${enReply}`
-  );
+  assert.match(enReply, /1\.|2\.|3\./, `EN movies stay factual: ${enReply}`);
 
   const fa = freshEngine(FA);
   const faReply = fa.respond('چند فیلم حال خوب کن معرفی کن');
-  assert.match(
-    faReply,
-    /فیلم|زندگی زیباست/i,
-    `FA movies stay factual: ${faReply}`
-  );
+  assert.match(faReply, /۱\.|۲\.|۳\./, `FA movies stay factual: ${faReply}`);
 });

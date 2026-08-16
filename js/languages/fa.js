@@ -201,6 +201,7 @@
     recapTemplates: R.recapTemplates,
     humanTouch: R.humanTouch,
     emotionShiftLines: R.emotionShiftLines,
+    playfulHuff: R.playfulHuff,
     professionalBoundary: R.professionalBoundary,
     selfAwareness,
     exitKeywords,

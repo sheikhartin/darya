@@ -26,6 +26,11 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **Celebrates your wins.** Good news - a promotion, a raise, passing an exam, graduating, landing a job, getting engaged - is celebrated with warmth instead of being misread as a work-stress complaint. Burnout ("I work 80 hours a week", «سوختم») is recognized as the deep exhaustion it is, distinct from ordinary stress.
 - **Follows the emotional arc.** Darya remembers the arc of the conversation: when your mood clearly improves across turns, she gently acknowledges it ("You sound lighter than you did earlier") rather than reacting to each line in isolation.
 - **Clear, answerable follow-ups.** Reflective questions are phrased plainly ("When you get anxious, what does your mind usually predict will happen?") so they are easy to answer, in everyday language in both Persian and English.
+- **Fresh, varied media recommendations.** Movie, series, anime, music, and book requests draw a randomized, era-blending mix from a 100+ item pool (recent hits like *Everything Everywhere All at Once* alongside classics like *Papillon*), so Darya never hands back the same top-ten list twice. Genre, platform, and era requests stay accurately filtered.
+- **Honest, useful teaching.** For risky or delicate subjects Darya teaches with care and clear disclaimers (trading and leveraged forex are flagged as high-risk with a "not financial advice" warning), and gives real, reliable guidance for things like making friends or managing money.
+- **Feels human, not robotic.** On a long streak of terse or repetitive replies, Darya occasionally lets a gentle, affectionate "huff" through ("Even a calm companion can raise an eyebrow when the reply is just ok"), while staying calm and caring on heavy or crisis turns.
+- **Aware of the app.** Darya knows what she can and cannot do in the app: she honestly points you to the theme and sound controls, tells you the Export button in the menu downloads the conversation, and explains that the conversation lives only in the current browser tab (refreshing or a new chat clears it; only your theme is remembered).
+- **Self-aware and honest.** Asked about consciousness, limits, or what she is, Darya answers plainly and honestly rather than impersonating a human: she is an offline companion with a clear sense of her own limits, and says so when a question is beyond her.
 - **Help starting the conversation.** Not sure how to begin? Say "how do I start?" or "نمیدونم چی بگم" and Darya offers easy, low-pressure openers. If you stay silent after the greeting, she gently breaks the ice herself with a light question.
 - **Honest shopping guidance.** Darya cannot make purchases, and says so plainly, then helps you think the purchase through: needs, budget, and how to compare options.
 - **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. Despair phrasings in both languages ("tired of life", "I am done with everything", "life feels pointless", «از زندگی خسته شدم», «زندگی بی معنی شده», «دیگه طاقت ندارم») route to the caring pool, and Darya keeps acknowledging the struggle turn after turn instead of bouncing away. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
@@ -613,16 +618,19 @@ about intimacy). Each fixture drives a multi-turn conversation through
 the real engine and asserts the dialogue act, intent, and topic thread
 stay correct, so a routing regression in any of these daily
 conversations is caught by the test run.
-- Three dedicated suites add targeted regression tests and multi-turn
+- Four dedicated suites add targeted regression tests and multi-turn
   scenario fixtures: `tests/engine-regression.test.mjs` pins specific
   engine behaviors (math, knowledge edge cases, despair coverage, the
-  dirty-talk boundary, break-line spacing), `tests/persona-conversations.test.mjs`
+  dirty-talk boundary, randomized media, project awareness, trading
+  disclaimers, self-awareness), `tests/persona-conversations.test.mjs`
   covers everyday personas (promotions, despair, grief, new parents,
-  caregivers, burnout, crisis), and `tests/context-memory-conversations.test.mjs`
+  caregivers, burnout, crisis), `tests/context-memory-conversations.test.mjs`
   adds deep personas spanning passions, entertainment, breakups,
   loneliness, loss, jealousy, anger, sadness, poverty, depression,
   excitement, flirty users, rude users, and the emotional-shift memory
-  touch, in both languages.
+  touch, and `tests/mixed-topic-sessions.test.mjs` runs 27+ long sessions
+  in which the user jumps between unrelated subjects, validating that the
+  context-window and memory stay coherent under topic-switching pressure.
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times
   and reports a pass/fail summary per round, useful for shaking out
   flaky assertions.

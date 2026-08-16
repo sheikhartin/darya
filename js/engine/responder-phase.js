@@ -177,6 +177,9 @@
           topic === 'apology' ||
           topic === 'meta_feedback' ||
           topic === 'about_eliza' ||
+          // The darya_self pool already answers self-awareness/identity
+          // honestly and warmly; a generic warmth prefix would stack on top.
+          topic === 'darya_self' ||
           topic === 'compliment_darya' ||
           topic === 'misread_correction' ||
           // The health_pain pool already opens with a caring line
@@ -262,7 +265,12 @@
           // real UI control; humor or warmth coloring would replace the
           // "turn on ambient sound" reply with a tone line and re-break
           // the transcript scenario.
-          topic === 'app_command'
+          topic === 'app_command' ||
+          // App export and session-persistence pools already carry a warm,
+          // honest pointer; a generic warmth prefix ("You don't have to
+          // solve it all at once") would stack onto them and read as noise.
+          topic === 'app_export' ||
+          topic === 'session_persistence'
       );
       if (alreadyWarmTopic) {
         return reply;

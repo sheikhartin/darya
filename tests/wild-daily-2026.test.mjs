@@ -65,13 +65,13 @@ function assertRouted(engine, allowed, label) {
 
 test('daily: FA movie and game and book requests answer, never unfamiliar', () => {
   const cases = [
-    ['چندتا فیلم سینمایی بگو', /سینما|فیلم/],
-    ['چندتا فیلم بهم معرفی کن', /سینما|فیلم/],
-    ['فیلم سینمایی بهم معرفی کن', /سینما|فیلم/],
+    ['چندتا فیلم سینمایی بگو', /۱\.|۲\.|۳\.|فیلم|سینما/],
+    ['چندتا فیلم بهم معرفی کن', /۱\.|۲\.|۳\.|فیلم|سینما/],
+    ['فیلم سینمایی بهم معرفی کن', /۱\.|۲\.|۳\.|فیلم|سینما/],
     ['چندتا بازی بهم معرفی کن', /بازی|گیم/],
     ['یه بازی آروم معرفی کن', /بازی|گیم/],
-    ['چندتا کتاب بهم معرفی کن', /کتاب/],
-    ['بهترین فیلم تاریخ چیه', /سینما|فیلم/]
+    ['چندتا کتاب بهم معرفی کن', /۱\.|۲\.|۳\.|کتاب/],
+    ['بهترین فیلم تاریخ چیه', /۱\.|۲\.|۳\.|فیلم|سینما/]
   ];
   for (const [line, must] of cases) {
     const engine = freshEngine(FA);
@@ -82,10 +82,10 @@ test('daily: FA movie and game and book requests answer, never unfamiliar', () =
 
 test('daily: EN film and book and game requests answer, never unfamiliar', () => {
   const cases = [
-    ['suggest a few films please', /film|cinema|movie/i],
+    ['suggest a few films please', /1\.|2\.|3\.|film|cinema|movie/i],
     ['recommend a relaxing game', /game/i],
-    ['recommend me some books', /book/i],
-    ['best movie of all time', /film|cinema|movie/i],
+    ['recommend me some books', /1\.|2\.|3\.|book/i],
+    ['best movie of all time', /1\.|2\.|3\.|film|cinema|movie/i],
     ['top 10 games to play', /game/i]
   ];
   for (const [line, must] of cases) {
@@ -396,9 +396,13 @@ test('context: topic switches answer each fresh request, no stale topic', () => 
   assertQuality(
     engine.respond('suggest a few films please'),
     'EN films',
-    /film|cinema|movie/i
+    /1\.|2\.|3\.|film|cinema|movie/i
   );
-  assertQuality(engine.respond('recommend me some books'), 'EN books', /book/i);
+  assertQuality(
+    engine.respond('recommend me some books'),
+    'EN books',
+    /1\.|2\.|3\.|book/i
+  );
   assertQuality(engine.respond('suggest some games'), 'EN games', /game/i);
   // A heavy disclosure right after light requests still routes to the
   // lived topic: the engine must never bounce into a stale shelf.
@@ -412,10 +416,14 @@ test('context: FA topic switches stay fresh across the transcript', () => {
   assertQuality(
     engine.respond('چندتا فیلم بهم معرفی کن'),
     'FA films',
-    /سینما|فیلم/
+    /۱\.|۲\.|۳\.|سینما|فیلم/
   );
   assertQuality(engine.respond('یه جوک بگو'), 'FA joke');
-  assertQuality(engine.respond('چندتا کتاب بهم معرفی کن'), 'FA books', /کتاب/);
+  assertQuality(
+    engine.respond('چندتا کتاب بهم معرفی کن'),
+    'FA books',
+    /۱\.|۲\.|۳\.|کتاب/
+  );
   const hurt = engine.respond('دلم گرفته');
   assertRouted(engine, ['sadness'], 'FA sadness after light talk');
   assertQuality(hurt, 'FA sadness after light talk');
@@ -456,5 +464,5 @@ test('daily: FA بهم and برام request forms never trip the repetition dete
   // detector must not flag «چندتا کتاب بهم معرفی کن» as repetitive noise.
   const engine = freshEngine(FA);
   const reply = engine.respond('چندتا کتاب بهم معرفی کن');
-  assertQuality(reply, 'FA بهم book request', /کتاب/);
+  assertQuality(reply, 'FA بهم book request', /۱\.|۲\.|۳\.|کتاب/);
 });

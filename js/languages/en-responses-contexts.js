@@ -282,6 +282,24 @@
     'I cannot control the app sound or theme from the conversation. Tell me what has been on your mind.'
   ];
 
+  // App export / save commands: the user asks Darya to download or export
+  // the session. Darya cannot trigger the file download from the chat, but
+  // points to the real export button in the menu, and is honest about it.
+  R['ruleAppExport'] = [
+    'I cannot start the file download from inside our conversation, but the app has an export button in the menu: open the menu and choose "Download chat" (Export) and it saves this conversation as a text file. What would you like to talk about?',
+    'Saving the chat is a one-tap thing on your side: use the menu button, then Export, and the app downloads the whole conversation as a text file. I just cannot trigger it from here. How have you been?'
+  ];
+
+  // Session persistence: the user asks whether this conversation is saved,
+  // or whether it disappears after a refresh. The truth: the conversation
+  // lives only in this browser tab memory, so refreshing or starting a new
+  // chat clears it; the only thing that survives is the theme. The export
+  // button is the way to keep a copy.
+  R['ruleSessionPersistence'] = [
+    'Honestly, this conversation lives only in this browser tab, so refreshing the page or starting a new chat clears it. The only thing that sticks around is your theme preference. If you want a copy to keep, use the Export button in the menu to download it as a text file before you refresh.',
+    'To be straight with you: I do not remember this chat after you refresh the page, because nothing is stored on any server, and even the tab memory is cleared on a new chat. Your theme is the only thing saved. To keep this conversation, export it as a text file from the menu before you refresh.'
+  ];
+
   // ------------------------------------------------------------------
   // Family conflict: a falling-out or feud with a family member ("I fell
   // out with my mom", "we are not talking to my sister"). The lived pain

@@ -16,7 +16,10 @@
     WELLBEING_CHECK_TURNS,
     BOREDOM_CHECK_INTERVAL,
     BOREDOM_MIN_TURNS,
-    WORD_REPETITION_THRESHOLD
+    WORD_REPETITION_THRESHOLD,
+    PLAYFUL_HUFF_CHANCE,
+    PLAYFUL_HUFF_MIN_TURNS,
+    PLAYFUL_HUFF_STREAK
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
@@ -154,6 +157,44 @@
      * @param {string} answerText - The knowledge answer already built.
      * @returns {string} The follow-up with correct leading whitespace.
      */
+    /**
+     * Occasionally replaces a light reply with a gentle, affectionate "huff"
+     * when the user has been terse or repetitive for a while. This is the
+     * human touch of mild frustration that keeps Darya from reading as a
+     * robotic calm listener. Never fires on heavy, safety, or genuinely
+     * engaged turns.
+     * @param {string} reply - The reply built so far.
+     * @returns {string} The possibly-replaced reply.
+     */
+    _maybePlayfulHuff(reply) {
+      if (
+        !this.lang.playfulHuff ||
+        this.lang.playfulHuff.length === 0 ||
+        this.memory.turnCount < PLAYFUL_HUFF_MIN_TURNS ||
+        this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
+        this.currentTurnDialogueAct === 'acknowledgement' ||
+        this.memory.isInDistressStreak()
+      ) {
+        return reply;
+      }
+      // The last few user utterances must all be terse (a short, repetitive
+      // pattern like "ok", "ok", "hmm") for a huff to be in character.
+      const recent = this.memory.recentUtterances.slice(-PLAYFUL_HUFF_STREAK);
+      const terse = recent.every(
+        (u) => u.split(/\s+/u).filter(Boolean).length <= 3
+      );
+      if (!terse || recent.length < PLAYFUL_HUFF_STREAK) {
+        return reply;
+      }
+      if (Math.random() >= PLAYFUL_HUFF_CHANCE) {
+        return reply;
+      }
+      return this._pickVaried(this.lang.playfulHuff, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+    },
+
     _knowledgeFollowup(answerText) {
       const sentence =
         this.lang.code === 'fa'
@@ -623,11 +664,23 @@
       if (_knowledgeOverrideEligible) {
         const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
         if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          const followup = this._knowledgeFollowup(factual.text);
-          reply = factual.text + followup;
+          // A general recommendation ask (movies, series, games, anime,
+          // music, books) gets a fresh randomized, era-blending list from
+          // the media pool instead of the same static list every time.
+          const randomized = DaryaKnowledge.randomizeRecommendation
+            ? DaryaKnowledge.randomizeRecommendation(
+                factual.topic,
+                this.lang.code,
+                5,
+                matchingText
+              )
+            : null;
+          const answerText = randomized || factual.text;
+          const followup = this._knowledgeFollowup(answerText);
+          reply = answerText + followup;
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
-          this._lastKnowledgeText = factual.text;
+          this._lastKnowledgeText = answerText;
           _overrideFired = true;
         }
       }
@@ -1107,6 +1160,13 @@
         if (shiftLine) {
           reply = `${reply} ${shiftLine}`.trim();
         }
+      }
+
+      // Human touch: on a long streak of terse, repetitive replies, Darya
+      // may gently huff with affection instead of staying a robotic calm
+      // listener. Skipped on safety and heavy turns inside the method.
+      if (!isSafetyTurn && !_overrideFired) {
+        reply = this._maybePlayfulHuff(reply);
       }
 
       this._advanceConversationPhase(normalized);

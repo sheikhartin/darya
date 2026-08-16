@@ -37,6 +37,12 @@
   const BOREDOM_SKIP_CHANCE = 0.4;
   const EMOTION_PREFIX_CHANCE = 0.4;
   const HUMOR_CHANCE = 0.2;
+  // Occasional light, affectionate "huff" when the user has been terse or
+  // repetitive for a while. This is the human touch of gentle frustration:
+  // rare, playful, never hostile, and never on heavy or safety turns.
+  const PLAYFUL_HUFF_CHANCE = 0.25;
+  const PLAYFUL_HUFF_MIN_TURNS = 4;
+  const PLAYFUL_HUFF_STREAK = 3;
   const WARMTH_MIN_SERIOUSNESS = 0.3;
   const WARMTH_MAX_SERIOUSNESS = 0.6;
   const WARMTH_MIN_TURN_GAP = 3;
@@ -261,6 +267,9 @@
     BOREDOM_SKIP_CHANCE,
     EMOTION_PREFIX_CHANCE,
     HUMOR_CHANCE,
+    PLAYFUL_HUFF_CHANCE,
+    PLAYFUL_HUFF_MIN_TURNS,
+    PLAYFUL_HUFF_STREAK,
     WARMTH_MIN_SERIOUSNESS,
     WARMTH_MAX_SERIOUSNESS,
     WARMTH_MIN_TURN_GAP,

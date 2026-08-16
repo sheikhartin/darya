@@ -576,7 +576,16 @@
             ? DaryaKnowledge.lookup(normalizedUserText, this.lang.code)
             : null;
         if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          const followup = this._knowledgeFollowup(factual.text);
+          const randomized = DaryaKnowledge.randomizeRecommendation
+            ? DaryaKnowledge.randomizeRecommendation(
+                factual.topic,
+                this.lang.code,
+                5,
+                normalizedUserText
+              )
+            : null;
+          const answerText = randomized || factual.text;
+          const followup = this._knowledgeFollowup(answerText);
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           // Mirror the rule-path subject update (see the knowledge branch
@@ -588,7 +597,7 @@
             entityRefs: [factual.topic],
             since: this.memory.turnCount
           };
-          return factual.text + followup;
+          return answerText + followup;
         }
         if (this.currentTurnDialogueAct === 'question') {
           // A first-person process question ("چطور میتونم مدیریت کنم",

@@ -606,7 +606,9 @@
         'رژیم',
         'nutrition',
         'diet',
-        'healthy food'
+        'healthy',
+        'healthy food',
+        'غذا'
       ],
       weakSafe: true,
       hints: [

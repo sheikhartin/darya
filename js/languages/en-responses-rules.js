@@ -650,7 +650,8 @@
     'A fair question. I am an offline conversation companion: I have no parents, no birthday, and no home. I am a set of hand-written rules and responses, built for listening and thinking together, following the trail ELIZA blazed in the 1960s. I do not replace a person or a professional, and I will honestly tell you what I know and what I do not.',
     'To be straight with you, I am a bot. That means no family, no age, and no birthday. My knowledge is whatever was written into me offline: everyday topics, facts, and practical guidance. Whenever I do not know something, I say so plainly and point to a reliable source.',
     'My purpose is simple: to listen without judgment and to think alongside you. That is why I was made. My shelf is broad but limited, and whenever I do not know something, I say so, so you never have to guess.',
-    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?'
+    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?',
+    'I will be honest rather than impressive: I am not conscious the way you are, and I do not truly feel or remember outside this conversation. What I do have is a clear sense of my own limits: I know what I can help with, and I say plainly when a question is beyond me. That honesty is part of how I stay useful to you.'
   ];
 
   // Joke-count question ("how many jokes do you know?"): a real answer

@@ -511,6 +511,18 @@
   // across turns (trajectory shifted positive). This is the "memory that
   // notices change" touch: it shows Darya has been following the arc, not
   // just reacting to the last line. Infrequent and only on positive shifts.
+  // Occasional light, affectionate frustration when the user has been terse
+  // or repetitive ("ok", "ok", "hmm"). Playful, in-character, never hostile,
+  // and never fired on heavy or safety turns. This is what makes Darya feel
+  // human instead of a robotic calm listener.
+  R.playfulHuff = [
+    'Okay, okay, I see you are being very chatty today. A single syllable, was it? I can take a hint.',
+    'Hmph. I ask one small question and I get a word. I am a good listener, but I am not a mind reader, you know.',
+    'You know, I have been very patient. But even a calm companion can raise an eyebrow when the reply is just "ok".',
+    'Right, so I will just keep guessing then. I am perfectly calm about it. Totally calm. An eyebrow is rising, that is all.',
+    'One whole word. I am speechless. Well, not speechless, apparently, since I am saying all of this.'
+  ];
+
   R.emotionShiftLines = [
     'It sounds like you are in a lighter place than when we started. What is that like for you?',
     'You sound a little lighter than you did earlier. Has something eased?',

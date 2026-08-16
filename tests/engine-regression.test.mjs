@@ -311,10 +311,11 @@ test('knowledge: major world religions are answerable in both languages', () => 
 });
 
 test('knowledge: cinema masterpieces are suggested', () => {
-  assert.match(
-    freshEngine(EN).respond('best films of all time'),
-    /masterpiece|Godfather|Citizen Kane|Kurosawa/i
-  );
+  const reply = freshEngine(EN).respond('best films of all time');
+  // The movie pool is randomized and era-blending, so assert a numbered
+  // recommendation list is returned rather than a specific title.
+  assert.match(reply, /1\.|2\.|3\./);
+  assert.ok(reply.length > 40, 'movie recommendation should be substantial');
 });
 
 test('knowledge: games by platform are suggested', () => {
@@ -369,4 +370,87 @@ test('break-lines: a paragraph answer keeps a single space before the follow-up'
     /\n\n/,
     'paragraph answers should not add a blank line'
   );
+});
+
+// ---------------------------------------------------------------------------
+// 12. Randomized media recommendations
+// ---------------------------------------------------------------------------
+
+test('media pool: a movie request returns a fresh, era-blending list', () => {
+  const e = freshEngine(EN);
+  const a = e.respond('recommend a good movie');
+  const b = freshEngine(EN).respond('recommend a good movie');
+  assert.match(a, /1\.|2\.|3\./);
+  assert.match(b, /1\.|2\.|3\./);
+  // Two independent draws should not be identical (the pool mixes eras).
+  assert.notEqual(a, b, 'movie recommendations should vary across draws');
+});
+
+test('media pool: series and movie asks are distinguished in Persian', () => {
+  const movie = freshEngine(FA).respond('یه فیلم خوب معرفی کن');
+  const series = freshEngine(FA).respond('یه سریال خوب معرفی کن');
+  assert.match(movie, /۱\.|۲\.|۳\./);
+  // A series ask should recommend series, not movies; the media pool series
+  // entries are series titles (Fleabag, Chernobyl, etc.).
+  assert.match(
+    series,
+    /Fleabag|Chernobyl|The Bear|Dark|Succession|Mr\. Robot|Better Call Saul|Arcane|Ted Lasso|Hannibal/i
+  );
+});
+
+// ---------------------------------------------------------------------------
+// 13. Project awareness: export, save, session persistence
+// ---------------------------------------------------------------------------
+
+test('project: export command points to the real menu button', () => {
+  const en = freshEngine(EN);
+  const reply = en.respond('can you export my session?');
+  assert.ok(en.currentTurnTopics.includes('app_export'));
+  assert.match(reply, /export|menu|download|file/i);
+  const fa = freshEngine(FA);
+  fa.respond('میخوام گفتگو رو دانلود کنم');
+  assert.ok(fa.currentTurnTopics.includes('app_export'));
+});
+
+test('project: session persistence is answered honestly', () => {
+  const en = freshEngine(EN);
+  const reply = en.respond('will this conversation be saved after refresh?');
+  assert.ok(en.currentTurnTopics.includes('session_persistence'));
+  assert.match(reply, /tab|refresh|theme|saved|export|memory/i);
+  const fa = freshEngine(FA);
+  const faReply = fa.respond('بعد از رفرش این مکالمه پاک میشه؟');
+  assert.ok(fa.currentTurnTopics.includes('session_persistence'));
+  assert.match(faReply, /رفرش|تم|ذخیره|export|حافظه|تب/i);
+});
+
+// ---------------------------------------------------------------------------
+// 14. Teaching topic with risk disclaimer
+// ---------------------------------------------------------------------------
+
+test('teaching: trading answers with a serious risk disclaimer', () => {
+  for (const [lang, q] of [
+    [EN, 'how do i start trading?'],
+    [FA, 'چطور ترید کنم']
+  ]) {
+    const e = freshEngine(lang);
+    const reply = e.respond(q);
+    assert.match(
+      reply,
+      /warning|risk|lose|guarantee|demo|not financial advice|هشدار|ریسک|ضرر|تضمین|دمو/i
+    );
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 15. Self-awareness
+// ---------------------------------------------------------------------------
+
+test('self-awareness: identity questions route to the darya_self pool', () => {
+  const en = freshEngine(EN);
+  const reply = en.respond('are you self aware?');
+  assert.ok(en.currentTurnTopics.includes('darya_self'));
+  assert.ok(reply.length > 10);
+  const fa = freshEngine(FA);
+  fa.respond('آیا خودآگاهی داری؟');
+  assert.ok(fa.currentTurnTopics.includes('darya_self'));
 });
