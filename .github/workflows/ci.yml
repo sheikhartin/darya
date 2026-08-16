@@ -1,0 +1,48 @@
+name: CI
+
+# Runs the full release gate (ESLint, Stylelint, Prettier format check,
+# and the complete test suite including the browser e2e suites) on every
+# push to any branch and on every pull request, so a regression is
+# caught at PR time instead of only when a version tag is pushed. The
+# Android build workflow re-runs the same gate before every release
+# build.
+#
+# Tag pushes intentionally do not trigger this workflow:
+# build-android.yml already runs the gate on tags and then assembles the
+# release artifacts.
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+concurrency:
+  # One in-flight run per branch or PR. Supersede stale runs when new
+  # commits arrive, and cancel the redundant duplicate when a push and
+  # an open pull request cover the same commit.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          # Must stay in sync with "engines.node" in package.json
+          # (>=22). Capacitor 8's CLI requires Node 22+.
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the full CI gate
+        run: npm run test:full

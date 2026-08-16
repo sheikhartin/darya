@@ -602,7 +602,11 @@ The project ships with dependency-free test suites:
   structure, JS syntax, and that every asset serves correctly over a
   throwaway local server.
 - **`npm run test:full`** runs lint, CSS lint, formatting check, and
-  the full test suite together, matching the CI gate.
+  the full test suite together, matching the CI gate. CI runs this same
+  gate on every push to any branch and on every pull request
+  (`.github/workflows/ci.yml`), so a regression is caught at PR time
+  rather than only when a release tag is pushed; the Android tag
+  workflow re-runs it before every release build.
 
 The scenario suite includes 26 persona-based fixtures plus 10 daily-life
 phrasing fixtures (gym anxiety, dating-app fatigue, remote-work
@@ -636,6 +640,52 @@ conversations is caught by the test run.
   flaky assertions.
 - **`npm run lint`**, **`npm run lint:css`**, and **`npm run format:check`** verify Google-style
   ESLint, Stylelint, and Prettier compliance without modifying files.
+
+## Changing the Version
+
+The version lives in several files that must change together:
+
+- `package.json` and `package-lock.json`: the canonical version. The
+  service worker reads it at install time and derives its precache
+  cache name from it, so bumping it also tells returning visitors to
+  fetch the new app shell.
+- `manifest.json`: the PWA manifest version.
+- `android/app/build.gradle`: `versionCode` and `versionName`, the
+  local Android build defaults. CI re-stamps them from the pushed git
+  tag, so they matter only for local builds.
+
+### With the helper script
+
+```bash
+npm run version:bump 1.3.1
+```
+
+The script (`scripts/bump-version.mjs`) validates the new version,
+refuses downgrades, updates all four files in one step (deriving
+`versionCode` the same way CI does, digits only: 1.3.0 -> 130),
+verifies every file after the edit, and prints a summary. Preview the
+change without touching anything:
+
+```bash
+node scripts/bump-version.mjs 1.3.1 --dry-run
+```
+
+The script deliberately does not write `CHANGELOG.md` (its entries are
+hand-written prose) and does not create the git tag. After bumping, add
+a changelog entry, commit, and push the version tag to trigger the
+Android release build (see "Android APK Builds").
+
+### Manually
+
+1. `package.json`: set the `"version"` field.
+2. `package-lock.json`: set the root `"version"` field in both spots
+   (the top-level field and the `packages[""]` entry). These drift
+   easily, which is exactly why the helper script exists.
+3. `manifest.json`: set the `"version"` field.
+4. `android/app/build.gradle`: set `versionName` to the new version and
+   `versionCode` to its digits (1.3.0 -> 130), and update the
+   `// tag (...)` comment above them.
+5. `CHANGELOG.md`: add a dated entry at the top describing the changes.
 
 ## License
 

@@ -493,6 +493,23 @@ else
   fail "cache version marker: expected dynamic version from package.json"
 fi
 
+# The version must stay in sync across every file that carries it
+# (package.json, package-lock.json, manifest.json, and the Android
+# local defaults in build.gradle). The bump script keeps them together,
+# but a hand edit can still drift one. versionCode is the digits-only
+# version (1.3.0 -> 130), the same rule CI tag stamping uses.
+pkg_ver=$(grep -m1 '"version"' package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')
+lock_ver=$(grep -m1 '"version"' package-lock.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')
+manifest_ver=$(grep -m1 '"version"' manifest.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')
+gradle_ver=$(sed -nE 's/^[[:space:]]*versionName "([^"]+)".*/\1/p' android/app/build.gradle)
+gradle_code=$(sed -nE 's/^[[:space:]]*versionCode ([0-9]+).*/\1/p' android/app/build.gradle)
+expected_code=$(printf '%s' "$pkg_ver" | tr -cd '0-9')
+if [[ -n "$pkg_ver" && "$pkg_ver" = "$lock_ver" && "$pkg_ver" = "$manifest_ver" && "$pkg_ver" = "$gradle_ver" && "$gradle_code" = "$expected_code" ]]; then
+  ok "version is in sync across package.json, package-lock.json, manifest.json, and build.gradle"
+else
+  fail "version drift: package=$pkg_ver lock=$lock_ver manifest=$manifest_ver gradle=$gradle_ver versionCode=$gradle_code (expected $expected_code)"
+fi
+
 # English-only comments: scan all .js source files under js/ for
 # comment lines (//) whose first non-whitespace character is outside
 # the ASCII range (i.e., not English). This catches Persian/Arabic
