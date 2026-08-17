@@ -38,6 +38,22 @@
       en: 'Gen Z (born roughly in the 1990s to early 2010s) has its own evolving vocabulary born on TikTok and X: "rizz" means charm or charisma, "aura" means the vibe or presence someone gives off (as in "huge aura"), "delulu" means delightfully delusional, "cooked" means done for or exhausted, and "slay" means to perform brilliantly. These words shift fast and are mostly playful and informal.'
     },
     {
+      id: 'digital_attention',
+      keywords: [
+        'is brain rot permanent',
+        'short videos ruined my attention span',
+        'short videos destroyed my attention span',
+        'can i fix my attention span',
+        'آیا برین رات همیشگیه',
+        'ویدیوهای کوتاه تمرکزم رو خراب کردن'
+      ],
+      weak: ['attention span', 'brain rot', 'دامنه توجه', 'تمرکز'],
+      weakSafe: true,
+      hints: ['permanent', 'fix', 'short video', 'همیشگی', 'ویدیوی کوتاه'],
+      fa: '«برین رات» تشخیص پزشکی نیست و افت تمرکز لزوماً دائمی نیست. مصرف زیاد محتوای کوتاه با توجه و یادآوری ضعیف‌تر ارتباط دارد، اما مغز تغییرپذیر است. به‌جای حذف ناگهانی همه‌چیز، اعلان‌ها را کم کن، زمان ویدیوی کوتاه را تدریجی پایین بیاور و هر روز یک فعالیت طولانی‌تر مثل خواندن، پیاده‌روی یا کار بدون جابه‌جایی انجام بده. اگر مشکل تمرکز در درس، کار یا زندگی ماندگار است، ارزیابی حرفه‌ای می‌تواند علت‌هایی مثل کم‌خوابی، اضطراب یا بیش‌فعالی را بررسی کند.',
+      en: '“Brain rot” is not a medical diagnosis, and a shorter attention span is not automatically permanent. Heavy short-form media use is associated with poorer attention and recall, but attention can be retrained. Rather than deleting everything overnight, reduce notifications, lower short-video time gradually, and practice one sustained activity daily, such as reading, walking, or focused work without switching. If concentration problems keep disrupting school, work, or daily life, a professional evaluation can check factors such as sleep, anxiety, or ADHD.'
+    },
+    {
       id: 'tiktok_culture',
       keywords: [
         'تیک تاک',

@@ -892,7 +892,9 @@
         'cardio workout',
         'start running',
         'learn to swim',
-        'start yoga'
+        'start yoga',
+        'begin yoga',
+        'how should i begin yoga'
       ],
       weak: [
         'هوازی',

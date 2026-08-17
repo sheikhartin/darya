@@ -165,7 +165,8 @@
         'cursor چیه',
         'github copilot',
         'ai coding assistant',
-        'coding with ai'
+        'coding with ai',
+        'how should a beginner use ai coding assistants responsibly'
       ],
       weak: ['copilot', 'cursor', 'کدنویس', 'coding assistant'],
       weakSafe: true,

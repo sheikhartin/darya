@@ -153,7 +153,14 @@
       return null;
     }
     const isFa = langCode === 'fa';
-    const lower = text.toLowerCase().replace(/\s+/gu, ' ').trim();
+    const normalized = text.toLowerCase().replace(/\s+/gu, ' ').trim();
+    const lower = normalized
+      .replace(
+        /^(?:switch|change)(?: the)? (?:topic|topics|subject)(?: to)?\s*/i,
+        ''
+      )
+      .replace(/^(?:موضوع را|موضوع رو) عوض کن(?: به)?\s*/u, '')
+      .trim();
     if (!lower) {
       return null;
     }
@@ -162,6 +169,16 @@
 
     let best = null;
     for (const fact of FACTS) {
+      // “Switch topics” is a conversation command, not Nintendo Switch.
+      // A platform fact may use the weak word “switch”, but only a real
+      // game request is allowed to activate it in this phrasing.
+      if (
+        fact.id === 'games_by_platform' &&
+        /\bswitch (?:the )?topics?\b/i.test(lower) &&
+        !/\b(?:game|games|gaming|nintendo)\b/i.test(lower)
+      ) {
+        continue;
+      }
       let score = 0;
       let exact = false;
       let matchedAny = false;
@@ -699,7 +716,7 @@
    * @param {string} [category] - Optional category filter
    * @returns {Array<string>} The selected fact lines
    */
-  function randomFacts(langCode, count, category) {
+  function randomFacts(langCode, count, category, excludedFacts = null) {
     const isFa = langCode === 'fa';
     const pool = FUN_FACTS[isFa ? 'fa' : 'en'] || {};
     const sources = category && pool[category] ? pool[category] : [];
@@ -708,68 +725,232 @@
         ? sources
         : Object.values(pool).reduce((acc, list) => acc.concat(list), []);
     const wanted = Math.max(1, Math.min(count || 3, all.length));
-    const shuffled = [...all].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, wanted);
+    let available = excludedFacts
+      ? all.filter((fact) => !excludedFacts.has(fact))
+      : [...all];
+    // Repeats are allowed only after every fact on this shelf has appeared.
+    // Remove this shelf's entries from the session set without disturbing
+    // unseen facts remembered for other categories.
+    if (available.length === 0 && excludedFacts) {
+      all.forEach((fact) => excludedFacts.delete(fact));
+      available = [...all];
+    }
+    const shuffled = [...available];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swap = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+    }
+    return shuffled.slice(0, Math.min(wanted, shuffled.length));
   }
 
-  // Age cutoff for "recent" titles in a recommendation mix. Anything at or
-  // after this year counts as recent, anything before as a classic, so a
-  // randomized recommendation blend spans the two eras instead of handing
-  // back a single-era list.
+  const DEFAULT_MEDIA_COUNT = 5;
+  const MAX_MEDIA_COUNT = 12;
   const RECENT_YEAR_CUTOFF = 2016;
 
-  /**
-   * Builds a randomized, bilingual recommendation list from the media pool.
-   * Each call shuffles the category pool and blends recent and classic
-   * titles, so Darya never returns the same static list twice. Titles
-   * without a year (podcasts) are treated as timeless and mixed freely.
-   * @param {string} category - A media-pool category key (movie, series,
-   *   game, anime, music, podcast, book, documentary).
-   * @param {string} langCode - 'fa' or 'en'.
-   * @param {number} [count=5] - How many titles to recommend.
-   * @returns {string} A formatted, newline-separated recommendation list.
-   */
-  function randomMediaRecommendations(category, langCode, count) {
-    const pool = global.DaryaMediaPool?.categories?.[category];
-    if (!pool || pool.length === 0) {
-      return '';
-    }
-    const wanted = Math.max(2, Math.min(count || 5, pool.length));
-    // Split into recent and classic so the mix spans eras.
-    const recent = pool.filter((item) => (item.y || 0) >= RECENT_YEAR_CUTOFF);
-    const classic = pool.filter((item) => (item.y || 0) < RECENT_YEAR_CUTOFF);
-    const timeless = pool.filter((item) => !item.y);
-    // Pick roughly half recent / half classic (with timeless filling in).
-    const half = Math.ceil(wanted / 2);
-    const pickShuffled = (arr, n) =>
-      [...arr].sort(() => Math.random() - 0.5).slice(0, n);
-    const chosen = [
-      ...pickShuffled(recent, half),
-      ...pickShuffled(classic, wanted - half),
-      ...pickShuffled(timeless, wanted)
-    ].slice(0, wanted);
-    // Shuffle the chosen mix so the eras are not always clustered.
-    const mixed = [...chosen].sort(() => Math.random() - 0.5);
-    const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
-    return mixed
-      .map((item, i) => {
-        const year = item.y ? ` (${item.y})` : '';
-        const reason = langCode === 'fa' ? item.fa : item.en;
-        const numeral =
-          langCode === 'fa'
-            ? String(i + 1).replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)])
-            : `${i + 1}`;
-        return `${numeral}. ${item.t}${year}: ${reason}`;
-      })
-      .join('\n');
+  const MEDIA_WORDS = {
+    movie: /(?:\bmovies?\b|\bfilms?\b|فیلم|سینما)/iu,
+    series: /(?:\bseries\b|\btv shows?\b|\bshows?\b|سریال|مینی سریال)/iu,
+    game: /(?:\bgames?\b|\bvideo games?\b|بازی|گیم)/iu,
+    anime: /(?:\banime\b|انیمه)/iu,
+    music: /(?:\bmusic\b|\bsongs?\b|\balbums?\b|موسیقی|آهنگ|البوم|آلبوم)/iu,
+    podcast: /(?:\bpodcasts?\b|پادکست)/iu,
+    book: /(?:\bbooks?\b|\bnovels?\b|کتاب|رمان)/iu,
+    documentary: /(?:\bdocumentar(?:y|ies)\b|\bdocumentations?\b|مستند)/iu
+  };
+  const MEDIA_REQUEST =
+    // eslint-disable-next-line max-len
+    /(?:\brecommend\b|\bsuggest\b|\bgive me\b|\bshow me\b|\bname (?:me |some |a few )?\b|\bwhat should i (?:watch|read|play|listen to)\b|\bto (?:watch|read|play|listen to)\b|\bbest\b|\btop\b|\bmore\b|پیشنهاد|معرفی|بگو|چی (?:ببینم|بخونم|گوش بدم|بازی کنم)|چه (?:ببینم|بخونم|گوش بدم|بازی کنم)|بهترین|بیشتر)/iu;
+  const MORE_REQUEST =
+    // eslint-disable-next-line max-len
+    /^(?:please\s+)?(?:tell me\s+)?(?:suggest\s+)?(?:\d+\s+)?(?:more|another|others?|new ones?|different ones?)(?:\s+please)?$|^(?:بازم|بیشتر|بیش تر|چندتای? دیگه|یکی دیگه|موارد دیگه|پیشنهاد دیگه)(?: لطفا)?$/iu;
+
+  const GENRE_ALIASES = {
+    drama: /\bdrama\b|درام/iu,
+    sci_fi: /\bsci[ -]?fi\b|\bscience fiction\b|علمی تخیلی/iu,
+    thriller: /\bthriller\b|\bsuspense\b|تریلر|دلهره/iu,
+    comedy: /\bcomedy\b|\bfunny\b|کمدی|خنده دار/iu,
+    romance: /\bromance\b|\bromantic\b|عاشقانه/iu,
+    horror: /\bhorror\b|\bscary\b|ترسناک|وحشت/iu,
+    animation: /\banimat(?:ed|ion)\b|\bcartoon\b|انیمیشن/iu,
+    crime: /\bcrime\b|\bcriminal\b|جنایی/iu,
+    mystery: /\bmystery\b|\bmysterious\b|معمایی/iu,
+    historical: /\bhistorical?\b|تاریخی/iu,
+    fantasy: /\bfantasy\b|فانتزی/iu,
+    rpg: /\brpg\b|\brole[ -]?playing\b|نقش افرینی/iu,
+    strategy: /\bstrategy\b|استراتژی/iu,
+    puzzle: /\bpuzzles?\b|معمایی/iu,
+    adventure: /\badventure\b|ماجراجویی/iu,
+    simulation: /\bsimulation\b|\bsim\b|شبیه سازی/iu,
+    platformer: /\bplatformer\b|سکوبازی/iu,
+    action: /\baction\b|اکشن/iu,
+    slice_of_life: /\bslice of life\b|روزمره/iu,
+    sports: /\bsports?\b|ورزشی/iu,
+    rock: /\brock\b|راک/iu,
+    jazz: /\bjazz\b|جاز/iu,
+    classical: /\bclassical\b|کلاسیک/iu,
+    electronic: /\belectronic\b|الکترونیک/iu,
+    folk: /\bfolk\b|فولک/iu,
+    hip_hop: /\bhip[ -]?hop\b|\brap\b|هیپ هاپ|رپ/iu,
+    ambient: /\bambient\b|امبینت/iu,
+    science: /\bscience\b|علمی/iu,
+    history: /\bhistory\b|تاریخ/iu,
+    technology: /\btechnology\b|\btech\b|فناوری|تکنولوژی/iu,
+    culture: /\bculture\b|فرهنگ/iu,
+    true_crime: /\btrue crime\b|جنایی واقعی/iu,
+    business: /\bbusiness\b|کسب و کار/iu,
+    storytelling: /\bstorytelling\b|\bstories\b|داستان/iu,
+    literary: /\bliterary\b|ادبی/iu,
+    philosophy: /\bphilosophy\b|فلسفه/iu,
+    memoir: /\bmemoir\b|خاطرات/iu,
+    nature: /\bnature\b|طبیعت/iu,
+    society: /\bsociety\b|\bsocial\b|اجتماعی/iu,
+    art: /\bart\b|هنر/iu
+  };
+
+  function detectMediaGenre(text, category) {
+    const shelves = global.DaryaMediaPool?.genres?.[category] || {};
+    return (
+      Object.keys(shelves).find((genre) => GENRE_ALIASES[genre]?.test(text)) ||
+      null
+    );
   }
 
-  // Recommendation fact IDs that should produce a randomized media-pool
-  // reply instead of a static list: a general movie request, series, anime,
-  // music, or books. Per-genre movie lists (movies_horror, etc.) and the
-  // games facts (which carry era/platform/genre semantics) stay curated so
-  // genre and platform filtering is preserved, but the broad "recommend X"
-  // asks get a fresh, era-blending mix each time.
+  /** Resolve a full media request without letting a stale topic influence it. */
+  function detectMediaRequest(text, langCode) {
+    if (!text || !MEDIA_REQUEST.test(text)) {
+      return null;
+    }
+    const category = Object.keys(MEDIA_WORDS).find((key) =>
+      MEDIA_WORDS[key].test(text)
+    );
+    if (!category) {
+      return null;
+    }
+    const genre = detectMediaGenre(text, category);
+    // Existing specialist shelves carry details such as platform, era,
+    // duration, and true-story status that a broad genre tag cannot retain.
+    if (
+      category === 'movie' &&
+      // eslint-disable-next-line max-len
+      /horror|scary|romantic|romance|comedy|fantasy|thriller|sci[ -]?fi|science fiction|true (?:story|events)|animated|animation|ترسناک|وحشت|عاشقانه|کمدی|فانتزی|هیجانی|علمی تخیلی|واقعی|انیمیشن/iu.test(
+        text
+      )
+    ) {
+      return null;
+    }
+    if (
+      category === 'game' &&
+      (genre ||
+        // eslint-disable-next-line max-len
+        /\b(?:pc|ps[1-5]|playstation|xbox|switch|classic|retro|modern|new|mobile|android|online|multiplayer|relaxing|cozy)\b|پی سی|پلی استیشن|ایکس باکس|سوییچ|قدیمی|جدید|موبایل|اندروید|آنلاین|اروم|آروم/iu.test(
+          text
+        ))
+    ) {
+      return null;
+    }
+    if (
+      category === 'series' &&
+      /\b(?:short|mini[ -]?series)\b|کوتاه|مینی سریال/iu.test(text)
+    ) {
+      return null;
+    }
+    return {
+      category,
+      genre,
+      count: parseListCount(text, langCode) || DEFAULT_MEDIA_COUNT
+    };
+  }
+
+  function isMoreMediaRequest(text) {
+    return Boolean(text && MORE_REQUEST.test(text.trim()));
+  }
+
+  function shuffledCopy(items) {
+    const copy = [...items];
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+      const swap = Math.floor(Math.random() * (index + 1));
+      [copy[index], copy[swap]] = [copy[swap], copy[index]];
+    }
+    return copy;
+  }
+
+  /** Selects fresh titles, excluding every title already shown this session. */
+  function recommendMedia(category, langCode, count, options = {}) {
+    const all = options.genre
+      ? global.DaryaMediaPool?.genres?.[category]?.[options.genre]
+      : global.DaryaMediaPool?.categories?.[category];
+    if (!all?.length) {
+      return null;
+    }
+    const excluded = options.excludedTitles || new Set();
+    const available = all.filter((item) => !excluded.has(item.t));
+    const wanted = Math.max(
+      1,
+      Math.min(count || DEFAULT_MEDIA_COUNT, MAX_MEDIA_COUNT)
+    );
+    let recent = shuffledCopy(
+      available.filter((item) => item.y >= RECENT_YEAR_CUTOFF)
+    );
+    let established = shuffledCopy(
+      available.filter((item) => !item.y || item.y < RECENT_YEAR_CUTOFF)
+    );
+    const selected = [];
+    // Keep broad series and game replies recognizable while the remaining
+    // choices still vary. This avoids a shelf made entirely of obscure picks.
+    if ((category === 'series' || category === 'game') && !options.genre) {
+      const familiar = available.filter((item) =>
+        category === 'series'
+          ? /^(?:The Bear|Dark|Chernobyl|Arcane|Severance)$/u.test(item.t)
+          : /^(?:Hades|Baldur’s Gate 3)$/u.test(item.t)
+      );
+      const anchor = shuffledCopy(familiar)[0];
+      if (anchor) {
+        selected.push(anchor);
+        recent = recent.filter((item) => item.t !== anchor.t);
+        established = established.filter((item) => item.t !== anchor.t);
+      }
+    }
+    while (selected.length < wanted && (recent.length || established.length)) {
+      const source =
+        selected.length % 2 === 0 && recent.length
+          ? recent
+          : established.length
+            ? established
+            : recent;
+      selected.push(source.pop());
+    }
+    const digits = '۰۱۲۳۴۵۶۷۸۹';
+    const lines = selected
+      .map((item, index) => {
+        const number =
+          langCode === 'fa'
+            ? String(index + 1).replace(
+                /[0-9]/g,
+                (digit) => digits[Number(digit)]
+              )
+            : String(index + 1);
+        const year = item.y ? ` (${item.y})` : '';
+        return `${number}. ${item.t}${year}: ${langCode === 'fa' ? item.fa : item.en}`;
+      })
+      .join('\n');
+    const labels = {
+      en: { game: 'Game picks:', documentary: 'Documentary picks:' },
+      fa: { game: 'پیشنهادهای بازی:', documentary: 'پیشنهادهای مستند:' }
+    };
+    const intro = labels[langCode]?.[category];
+    const text = intro ? `${intro}\n${lines}` : lines;
+    return {
+      text,
+      titles: selected.map((item) => item.t),
+      exhausted: selected.length < wanted || available.length <= wanted,
+      remaining: Math.max(0, available.length - selected.length)
+    };
+  }
+
+  function randomMediaRecommendations(category, langCode, count) {
+    return recommendMedia(category, langCode, count)?.text || '';
+  }
+
   const RECOMMENDATION_CATEGORIES = {
     movies_recommendations: 'movie',
     movies_masterpieces: 'movie',
@@ -781,43 +962,19 @@
     books_by_genre: 'book'
   };
 
-  // Series words in each language, used to split a "recommend X" request
-  // that the broad movie/series fact matched into a series pick instead of
-  // a movie pick. A Persian "یه سریال خوب معرفی کن" hits the general
-  // movie fact (which lists series keywords too), but should recommend
-  // series, not movies.
-  const SERIES_WORDS =
-    /(?:سریال|مینی‌سریال|مینی سریال|series|tv show|tv shows|drama series|کره‌ای)/iu;
-
-  /**
-   * Returns a randomized recommendation list for a matched fact, or null
-   * when the fact is not a randomized recommendation (so the static fact
-   * text is used). Lets the engine hand back a fresh, era-blending mix for
-   * "recommend a movie/game/series/anime/music/book" instead of the same
-   * list every time.
-   * @param {string} factId - The matched fact's id.
-   * @param {string} langCode - 'fa' or 'en'.
-   * @param {number} [count=5] - How many titles to recommend.
-   * @param {string} [text] - The matching input, so a series ask that the
-   *   broad movie fact matched can still resolve to series.
-   * @returns {string|null}
-   */
   function randomizeRecommendation(factId, langCode, count, text) {
     let category = RECOMMENDATION_CATEGORIES[factId];
+    if (category === 'movie' && MEDIA_WORDS.series.test(text || '')) {
+      category = 'series';
+    }
     if (!category) {
       return null;
     }
-    // A movie/series fact that the request names series resolves to series.
-    if (
-      category === 'movie' &&
-      RECOMMENDATION_CATEGORIES[factId] === 'movie' &&
-      text &&
-      SERIES_WORDS.test(text)
-    ) {
-      category = 'series';
-    }
-    const list = randomMediaRecommendations(category, langCode, count);
-    return list || null;
+    return (
+      recommendMedia(category, langCode, count, {
+        genre: detectMediaGenre(text || '', category)
+      })?.text || null
+    );
   }
 
   const DaryaKnowledge = {
@@ -827,6 +984,10 @@
     lookupGenre,
     lookupFragment,
     randomFacts,
+    detectMediaRequest,
+    detectMediaGenre,
+    isMoreMediaRequest,
+    recommendMedia,
     randomMediaRecommendations,
     randomizeRecommendation,
     factsCount: FACTS.length

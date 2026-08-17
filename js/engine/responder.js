@@ -127,6 +127,12 @@ class DaryaResponseEngine {
     // Full text of the last knowledge answer, so a format-feedback turn
     // ("write each on a separate line") can re-emit the list line by line.
     this._lastKnowledgeText = null;
+    // Media recommendations remember every title shown per category. This
+    // makes "more" a real continuation and prevents repeats until that
+    // category's offline catalog is exhausted.
+    this._mediaRecommendationState = null;
+    this._usedMediaTitles = new Map();
+    this._usedFunFacts = new Set();
     // Tracks a minor-attraction disclosure that arrived without adult
     // context, awaiting the speaker's age in a follow-up turn (see
     // responder-safety.js). Null when no disclosure is pending.

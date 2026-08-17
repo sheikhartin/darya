@@ -19,7 +19,7 @@
  *      from cache, the picker must render, and a fetch of a precached
  *      script must still return 200.
  *
- * The test skips itself (rather than failing) when no Chrome/Chromium
+ * The test fails explicitly when no Chrome/Chromium
  * binary is available, so the suite stays green on machines without one.
  */
 
@@ -182,8 +182,8 @@ test(
     let browser;
     try {
       if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the offline-sw e2e test'
+        throw new Error(
+          'no Chrome/Chromium binary found; cannot run the offline-sw e2e test'
         );
       }
       try {
@@ -200,7 +200,7 @@ test(
           ]
         });
       } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+        throw new Error('headless Chrome failed to launch: ' + err.message);
       }
 
       const page = await browser.newPage();

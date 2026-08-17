@@ -1,815 +1,489 @@
 /**
- * Darya - media recommendation pool.
+ * Darya - broad offline media catalog.
  *
- * A large, bilingual pool of movies, TV series, games, anime, music,
- * podcasts, documentaries, and books used to build varied recommendation
- * replies. The pool deliberately mixes recent hits with older classics so
- * Darya never hands back the same boring top-ten list twice, and every
- * reply is a fresh random combination of recent and established titles.
- *
- * Items are structured (title + year + one-line reason in each language)
- * rather than a flat string, so the recommendation generator can shuffle
- * them, mix eras, and dedupe. Registered on global.DaryaMediaPool and
- * consumed by the knowledge layer (knowledge-base.js).
- *
- * Session/offline-only: this is static content shipped with the app; no
- * network calls are made.
+ * Every category contains seven genre shelves with at least five choices.
+ * The deliberately international mix includes classics, recent work, and
+ * less obvious picks. Compact tuples keep the shipped database readable.
  */
 (function (global) {
   'use strict';
 
-  // Each entry: { t: title, y: year, en: reason, fa: reason }
-  const MOVIES = [
-    {
-      t: 'Papillon',
-      y: 1973,
-      en: 'a relentless escape epic about friendship and freedom',
-      fa: 'حماسه‌ی گریز و دوستی و آزادی'
-    },
-    {
-      t: 'The Shawshank Redemption',
-      y: 1994,
-      en: 'a soulful story of hope inside a prison',
-      fa: 'داستانی امیدبخش در دل زندان'
-    },
-    {
-      t: 'Parasite',
-      y: 2019,
-      en: 'a sharp class satire that keeps twisting',
-      fa: 'طنزی تند درباره‌ی طبقه و اجتماع'
-    },
-    {
-      t: 'Arrival',
-      y: 2016,
-      en: 'a thoughtful sci-fi about language and time',
-      fa: 'علمی-تخیلی عمیق درباره‌ی زبان و زمان'
-    },
-    {
-      t: 'Amélie',
-      y: 2001,
-      en: 'a whimsical, heartwarming Parisian tale',
-      fa: 'داستانی لطیف و گرم از دل پاریس'
-    },
-    {
-      t: 'The Prestige',
-      y: 2006,
-      en: 'a riveting rivalry about obsession and magic',
-      fa: 'رقابتی نفس‌گیر درباره‌ی وسواس و شعبده'
-    },
-    {
-      t: 'Everything Everywhere All at Once',
-      y: 2022,
-      en: 'a wild multiverse ride about family and kindness',
-      fa: 'سفری پر از ماجرا درباره‌ی خانواده و مهربانی'
-    },
-    {
-      t: 'Spirited Away',
-      y: 2001,
-      en: 'Miyazaki classic about courage in a strange world',
-      fa: 'کلاسیک میازاکی درباره‌ی شجاعت'
-    },
-    {
-      t: 'The Grand Budapest Hotel',
-      y: 2014,
-      en: 'a playful, stylish comedy-drama',
-      fa: 'کمدی-درام شوخ و شیک'
-    },
-    {
-      t: 'Soul',
-      y: 2020,
-      en: 'a warm Pixar meditation on purpose',
-      fa: 'تأملی گرم درباره‌ی هدف زندگی'
-    },
-    {
-      t: 'Oldboy',
-      y: 2003,
-      en: 'a brutal Korean revenge masterpiece',
-      fa: 'شاهکار انتقام جنجالی کره‌ای'
-    },
-    {
-      t: 'Fight Club',
-      y: 1999,
-      en: 'a cult classic about identity and rebellion',
-      fa: 'کلاسیک کالت درباره‌ی هویت و عصیان'
-    },
-    {
-      t: 'The Silence of the Lambs',
-      y: 1991,
-      en: 'a chilling psychological thriller',
-      fa: 'تریلر روان‌شناختی و هولناک'
-    },
-    {
-      t: 'Portrait of a Lady on Fire',
-      y: 2019,
-      en: 'a quiet, devastating romance',
-      fa: 'عاشقانه‌ای آرام و تکان‌دهنده'
-    },
-    {
-      t: 'Coco',
-      y: 2017,
-      en: 'a vibrant story about memory and family',
-      fa: 'داستانی رنگارنگ درباره‌ی خاطره و خانواده'
-    },
-    {
-      t: 'Whiplash',
-      y: 2014,
-      en: 'an intense tale of ambition and music',
-      fa: 'داستانی پرشور درباره‌ی جاه‌طلبی و موسیقی'
-    },
-    {
-      t: 'Her',
-      y: 2013,
-      en: 'a tender look at love and loneliness in a digital age',
-      fa: 'نگاهی لطیف به عشق و تنهایی در عصر دیجیتال'
-    },
-    {
-      t: 'The Lives of Others',
-      y: 2006,
-      en: 'a tense German drama about conscience',
-      fa: 'درامی پرتنش آلمانی درباره‌ی وجدان'
-    },
-    {
-      t: 'Interstellar',
-      y: 2014,
-      en: 'a sweeping space epic about love and time',
-      fa: 'حماسه‌ای فضایی درباره‌ی عشق و زمان'
-    },
-    {
-      t: 'The Truman Show',
-      y: 1998,
-      en: 'a smart look at reality and freedom',
-      fa: 'نگاهی هوشمند به واقعیت و آزادی'
-    },
-    {
-      t: 'La La Land',
-      y: 2016,
-      en: 'a dreamy musical about ambition and love',
-      fa: 'موزیکال رویایی درباره‌ی آرزو و عشق'
-    },
-    {
-      t: 'The Pursuit of Happyness',
-      y: 2006,
-      en: 'a moving true story of resilience',
-      fa: 'داستان واقعی و تأثیرگذار درباره‌ی تاب‌آوری'
-    },
-    {
-      t: 'Inception',
-      y: 2010,
-      en: 'a mind-bending heist through dreams',
-      fa: 'سرقتی حیرت‌انگیز در دلِ رؤیاها'
-    },
-    {
-      t: 'Eternal Sunshine of the Spotless Mind',
-      y: 2004,
-      en: 'a poetic tale about memory and love',
-      fa: 'داستانی شاعرانه درباره‌ی خاطره و عشق'
-    },
-    {
-      t: 'Zodiac',
-      y: 2007,
-      en: 'a gripping true-crime investigation',
-      fa: 'بررسی جنایی واقعی و پرکشش'
-    },
-    {
-      t: 'The Intouchables',
-      y: 2011,
-      en: 'an uplifting friendship across worlds',
-      fa: 'دوستی امیدبخش میان دو دنیا'
-    },
-    {
-      t: 'Memories of Murder',
-      y: 2003,
-      en: 'Bong Joon-ho early true-crime masterwork',
-      fa: 'اثر اولیه‌ی بونگ جون-هو در ژانر جنایی'
-    },
-    {
-      t: 'Ratatouille',
-      y: 2007,
-      en: 'a delightful tale about cooking and passion',
-      fa: 'داستانی دلچسب درباره‌ی آشپزی و اشتیاق'
-    },
-    {
-      t: 'The Matrix',
-      y: 1999,
-      en: 'a defining sci-fi about reality and choice',
-      fa: 'علمی-تخیلی اثرگذار درباره‌ی واقعیت و انتخاب'
-    },
-    {
-      t: 'Joker',
-      y: 2019,
-      en: 'a dark character study of a broken man',
-      fa: 'مطالعه‌ای تاریک درباره‌ی یک انسان شکسته'
-    },
-    {
-      t: 'Close-Up',
-      y: 1990,
-      en: 'Kiarostami blurs reality and cinema',
-      fa: 'کیارستمی واقعیت و سینما را یکی می‌کند'
-    },
-    {
-      t: 'A Separation',
-      y: 2011,
-      en: 'an Oscar-winning Iranian family drama',
-      fa: 'درام خانوادگی ایرانی برنده‌ی اسکار'
-    },
-    {
-      t: 'Children of Heaven',
-      y: 1997,
-      en: 'a beloved Iranian classic about a pair of shoes',
-      fa: 'کلاسیک محبوب ایرانی درباره‌ی یک جفت کفش'
-    },
-    {
-      t: 'About Elly',
-      y: 2009,
-      en: 'a tense, layered Iranian mystery',
-      fa: 'معمایی ایرانی پرتنش و چندلایه'
-    },
-    {
-      t: 'The Salesman',
-      y: 2016,
-      en: 'Farhadi probing drama about pride and guilt',
-      fa: 'درام عمیق فرهادی درباره‌ی غرور و گناه'
-    },
-    {
-      t: 'Leila',
-      y: 1997,
-      en: 'a tender Iranian film about marriage and sacrifice',
-      fa: 'فیلمی لطیف ایرانی درباره‌ی ازدواج و فداکاری'
-    }
-  ];
+  const GENRE_LABELS = {
+    drama: ['character-rich drama', 'درام شخصیت‌محور'],
+    sci_fi: ['imaginative science fiction', 'علمی-تخیلی خلاق'],
+    thriller: ['tense thriller', 'تریلر پرتعلیق'],
+    comedy: ['smart comedy', 'کمدی هوشمند'],
+    romance: ['thoughtful romance', 'عاشقانه‌ی تأمل‌برانگیز'],
+    horror: ['atmospheric horror', 'وحشت اتمسفریک'],
+    animation: ['inventive animation', 'انیمیشن خلاق'],
+    crime: ['layered crime story', 'داستان جنایی چندلایه'],
+    mystery: ['absorbing mystery', 'معمای پرکشش'],
+    historical: ['vivid historical story', 'روایت تاریخی زنده'],
+    fantasy: ['richly built fantasy', 'فانتزی خوش‌ساخت'],
+    rpg: ['choice-rich role-playing', 'نقش‌آفرینی پرانتخاب'],
+    strategy: ['rewarding strategy', 'استراتژی عمیق'],
+    puzzle: ['clever puzzle design', 'معماهای هوشمندانه'],
+    adventure: ['memorable adventure', 'ماجراجویی به‌یادماندنی'],
+    simulation: ['absorbing simulation', 'شبیه‌سازی درگیرکننده'],
+    platformer: ['precise platforming', 'سکوبازی دقیق'],
+    action: ['dynamic action', 'اکشن پویا'],
+    slice_of_life: ['gentle everyday storytelling', 'روایت لطیف روزمره'],
+    sports: ['compelling sports story', 'روایت ورزشی جذاب'],
+    rock: ['distinctive rock', 'راک متمایز'],
+    jazz: ['expressive jazz', 'جاز پراحساس'],
+    classical: ['timeless classical music', 'موسیقی کلاسیک ماندگار'],
+    electronic: ['adventurous electronic sound', 'صدای الکترونیک جسورانه'],
+    folk: ['rooted folk songwriting', 'ترانه‌سرایی فولک اصیل'],
+    hip_hop: ['inventive hip-hop', 'هیپ‌هاپ خلاق'],
+    ambient: ['immersive ambient music', 'موسیقی امبینت فراگیر'],
+    science: ['accessible science', 'علم به زبان روشن'],
+    history: ['engaging history', 'تاریخ جذاب'],
+    technology: ['thoughtful technology coverage', 'نگاه سنجیده به فناوری'],
+    culture: ['curious cultural reporting', 'روایت کنجکاوانه‌ی فرهنگی'],
+    true_crime: ['responsible true-crime reporting', 'روایت مسئولانه‌ی جنایی'],
+    business: ['practical business thinking', 'نگاه کاربردی به کسب‌وکار'],
+    storytelling: ['excellent human storytelling', 'داستان‌گویی انسانی عالی'],
+    literary: ['finely crafted literary fiction', 'داستان ادبی خوش‌ساخت'],
+    philosophy: ['approachable philosophy', 'فلسفه‌ی قابل‌فهم'],
+    memoir: ['honest personal memoir', 'خاطرات شخصی صادقانه'],
+    nature: [
+      'remarkable natural-world filmmaking',
+      'تصویربرداری شگفت‌انگیز طبیعت'
+    ],
+    society: ['probing social documentary', 'مستند اجتماعی کاوشگر'],
+    art: ['insightful art documentary', 'مستند هنری روشنگر'],
+    music: ['vivid music documentary', 'مستند موسیقی زنده']
+  };
 
-  const SERIES = [
-    {
-      t: 'Breaking Bad',
-      y: 2008,
-      en: 'a teacher turned chemist, one of the best ever',
-      fa: 'معلمی که شیمی‌دان می‌شود؛ یکی از بهترین‌ها'
-    },
-    {
-      t: 'Succession',
-      y: 2018,
-      en: 'a vicious family power struggle',
-      fa: 'نبرد بی‌رحم قدرت در یک خانواده'
-    },
-    {
-      t: 'Severance',
-      y: 2022,
-      en: 'a surreal thriller about work and memory',
-      fa: 'تریلری سوررئال درباره‌ی کار و خاطره'
-    },
-    {
-      t: 'Dark',
-      y: 2017,
-      en: 'a layered German time-travel mystery',
-      fa: 'معمای زمان آلمانی و چندلایه'
-    },
-    {
-      t: 'Ted Lasso',
-      y: 2020,
-      en: 'a warm, uplifting comedy about kindness',
-      fa: 'کمدی گرم و امیدبخش درباره‌ی مهربانی'
-    },
-    {
-      t: 'The Bear',
-      y: 2022,
-      en: 'a raw, brilliant look at a kitchen',
-      fa: 'نگاهی خام و درخشان به آشپزخانه'
-    },
-    {
-      t: 'Fleabag',
-      y: 2016,
-      en: 'a sharp, funny, heartbroken monologue',
-      fa: 'مونولوگی تند، خنده‌دار و دل‌شکسته'
-    },
-    {
-      t: 'Station Eleven',
-      y: 2021,
-      en: 'art and humanity after a catastrophe',
-      fa: 'هنر و انسانیت پس از یک فاجعه'
-    },
-    {
-      t: 'Mr. Robot',
-      y: 2015,
-      en: 'a realistic look at hacking and mental health',
-      fa: 'نگاهی واقعی به هک و سلامت روان'
-    },
-    {
-      t: 'The Queen Gambit',
-      y: 2020,
-      en: 'a stylish story about chess and genius',
-      fa: 'داستانی شیک درباره‌ی شطرنج و نبوغ'
-    },
-    {
-      t: 'Chernobyl',
-      y: 2019,
-      en: 'a haunting retelling of a real disaster',
-      fa: 'روایتی هولناک از یک فاجعه‌ی واقعی'
-    },
-    {
-      t: 'Better Call Saul',
-      y: 2015,
-      en: 'a superb slow-burn prequel',
-      fa: 'پیش‌درآمدی عالی و کم‌کم‌پیش'
-    },
-    {
-      t: 'Arcane',
-      y: 2021,
-      en: 'a stunning animated series from the game universe',
-      fa: 'سریال انیمیشنی خیره‌کننده از دنیای یک بازی'
-    },
-    {
-      t: 'The Last of Us',
-      y: 2023,
-      en: 'a gripping adaptation about love and survival',
-      fa: 'اقتباسی پرکشش درباره‌ی عشق و بقا'
-    },
-    {
-      t: 'Money Heist',
-      y: 2017,
-      en: 'a stylish heist drama with a masked gang',
-      fa: 'درام سرقت شیک با گروهی نقاب‌پوش'
-    },
-    {
-      t: 'The Office (US)',
-      y: 2005,
-      en: 'a beloved workplace mockumentary',
-      fa: 'موکومنتاری محبوب درباره‌ی محیط کار'
-    },
-    {
-      t: 'Sherlock',
-      y: 2010,
-      en: 'a clever modern take on the detective',
-      fa: 'برداشتی هوشمندانه و مدرن از کارآگاه'
-    },
-    {
-      t: 'Avatar: The Last Airbender',
-      y: 2005,
-      en: 'a beloved animated epic of balance',
-      fa: 'حماسه‌ی انیمیشنی محبوب درباره‌ی تعادل'
-    },
-    {
-      t: 'The Handmaid Tale',
-      y: 2017,
-      en: 'a chilling dystopia about freedom',
-      fa: 'داستانی هولناک درباره‌ی آزادی'
-    },
-    {
-      t: 'Bojack Horseman',
-      y: 2014,
-      en: 'a darkly funny animated look at depression',
-      fa: 'انیمیشنی تیره و خنده‌دار درباره‌ی افسردگی'
-    },
-    {
-      t: 'Normal People',
-      y: 2020,
-      en: 'a tender, honest love story',
-      fa: 'داستان عاشقانه‌ای صادق و لطیف'
-    },
-    {
-      t: 'Mindhunter',
-      y: 2017,
-      en: 'a chilling study of criminal psychology',
-      fa: 'مطالعه‌ای هولناک درباره‌ی روان‌شناسی جنایی'
-    },
-    {
-      t: 'Hannibal',
-      y: 2013,
-      en: 'a gorgeous, disturbing psychological thriller',
-      fa: 'تریلری زیبا و آزاردهنده'
-    },
-    {
-      t: 'The Crown',
-      y: 2016,
-      en: 'a lavish drama of a royal family',
-      fa: 'درامی پر از زرق و برق از خانواده‌ی سلطنتی'
-    }
-  ];
-
-  const GAMES = [
-    {
-      t: 'The Witcher 3',
-      y: 2015,
-      en: 'an expansive open-world RPG with deep stories',
-      fa: 'بازی نقش‌آفرینی جهان‌باز با داستان‌های عمیق'
-    },
-    {
-      t: 'Cyberpunk 2077',
-      y: 2020,
-      en: 'a neon dystopian open world',
-      fa: 'دنیای باز ویران‌شهری نئونی'
-    },
-    {
-      t: 'Portal 2',
-      y: 2011,
-      en: 'a brilliant puzzle game with great humor',
-      fa: 'بازی معمایی درخشان با طنزی عالی'
-    },
-    {
-      t: 'Stardew Valley',
-      y: 2016,
-      en: 'a calm farming-life gem',
-      fa: 'بازی آرام مزرعه‌داری'
-    },
-    {
-      t: 'God of War',
-      y: 2018,
-      en: 'a cinematic action epic about fatherhood',
-      fa: 'اکشن سینمایی درباره‌ی پدر بودن'
-    },
-    {
-      t: 'The Last of Us',
-      y: 2013,
-      en: 'a heartbreaking survival story',
-      fa: 'داستان بقای تکان‌دهنده'
-    },
-    {
-      t: 'Shadow of the Colossus',
-      y: 2005,
-      en: 'a lonely, majestic adventure',
-      fa: 'ماجرایی تنها و باشکوه'
-    },
-    {
-      t: 'Zelda: Breath of the Wild',
-      y: 2017,
-      en: 'a masterful open-world adventure',
-      fa: 'ماجراجویی جهان‌باز بی‌نقص'
-    },
-    {
-      t: 'Hollow Knight',
-      y: 2017,
-      en: 'a gorgeous, hard Metroidvania',
-      fa: 'بازی زیبا و دشوار مترویدوانیا'
-    },
-    {
-      t: 'Celeste',
-      y: 2018,
-      en: 'a platformer about anxiety and growth',
-      fa: 'بازی پرشی درباره‌ی اضطراب و رشد'
-    },
-    {
-      t: 'Journey',
-      y: 2012,
-      en: 'a wordless, moving online journey',
-      fa: 'سفری بی‌کلام و تأثیرگذار'
-    },
-    {
-      t: 'Disco Elysium',
-      y: 2019,
-      en: 'a stunning detective RPG about ideas',
-      fa: 'نقش‌آفرینی کارآگاهی درباره‌ی ایده‌ها'
-    },
-    {
-      t: 'Hades',
-      y: 2020,
-      en: 'an addictive roguelike with great writing',
-      fa: 'بازی روگ‌لایک اعتیادآور با نوشته‌ای عالی'
-    },
-    {
-      t: 'Outer Wilds',
-      y: 2019,
-      en: 'a beautiful space mystery about a time loop',
-      fa: 'معمای فضایی درباره‌ی حلقه‌ی زمان'
-    },
-    {
-      t: 'Firewatch',
-      y: 2016,
-      en: 'a quiet story in the woods',
-      fa: 'داستانی آرام در دل جنگل'
-    },
-    {
-      t: 'Inside',
-      y: 2016,
-      en: 'a haunting minimal platformer',
-      fa: 'بازی پرشی مینیمال و هولناک'
-    },
-    {
-      t: 'Untitled Goose Game',
-      y: 2019,
-      en: 'a silly, hilarious mischief game',
-      fa: 'بازی بامزه و شیطنت‌آمیز'
-    },
-    {
-      t: 'Elden Ring',
-      y: 2022,
-      en: 'a vast, demanding open-world epic',
-      fa: 'حماسه‌ی جهان‌باز و دشوار'
-    },
-    {
-      t: 'Baldur Gate 3',
-      y: 2023,
-      en: 'a deep RPG full of choices',
-      fa: 'نقش‌آفرینی عمیق و پر از انتخاب'
-    },
-    {
-      t: 'It Takes Two',
-      y: 2021,
-      en: 'a wonderful co-op adventure about a couple',
-      fa: 'ماجراجویی دونفره درباره‌ی یک زوج'
-    },
-    {
-      t: 'A Short Hike',
-      y: 2019,
-      en: 'a cozy tiny adventure about connection',
-      fa: 'ماجراجویی کوچک و دلچسب درباره‌ی ارتباط'
-    },
-    {
-      t: 'Monument Valley',
-      y: 2014,
-      en: 'a beautiful puzzle about impossible geometry',
-      fa: 'معمایی زیبا درباره‌ی هندسه‌ی ناممکن'
-    },
-    {
-      t: 'Gris',
-      y: 2018,
-      en: 'a breathtaking artful game about grief',
-      fa: 'بازی هنری نفس‌گیر درباره‌ی غم'
-    }
-  ];
-
-  const ANIME = [
-    {
-      t: 'Fullmetal Alchemist: Brotherhood',
-      y: 2009,
-      en: 'a masterful story of sacrifice and redemption',
-      fa: 'داستانی بی‌نقص درباره‌ی فداکاری و رستگاری'
-    },
-    {
-      t: 'Attack on Titan',
-      y: 2013,
-      en: 'an epic, brutal tale of freedom',
-      fa: 'حماسه‌ای خشن درباره‌ی آزادی'
-    },
-    {
-      t: 'Death Note',
-      y: 2006,
-      en: 'a clever battle of wits',
-      fa: 'جنگ نبوغی هوشمندانه'
-    },
-    {
-      t: 'Your Name',
-      y: 2016,
-      en: 'a beautiful film about distance and longing',
-      fa: 'فیلمی زیبا درباره‌ی فاصله و دلتنگ'
-    },
-    {
-      t: 'Cowboy Bebop',
-      y: 1998,
-      en: 'a stylish space-noir classic',
-      fa: 'کلاسیک فضایی-نوآر شیک'
-    },
-    {
-      t: 'Violet Evergarden',
-      y: 2018,
-      en: 'a deeply moving story about grief and love',
-      fa: 'داستانی عمیقاً تأثیرگذار درباره‌ی غم و عشق'
-    },
-    {
-      t: 'A Silent Voice',
-      y: 2016,
-      en: 'a gentle film about forgiveness and bullying',
-      fa: 'فیلمی لطیف درباره‌ی بخشش و زورگویی'
-    },
-    {
-      t: 'Spy x Family',
-      y: 2022,
-      en: 'a warm, funny spy-family comedy',
-      fa: 'کمدی گرم و بامزه‌ی خانواده‌ی جاسوسی'
-    },
-    {
-      t: 'One Punch Man',
-      y: 2015,
-      en: 'a hilarious satire of superheroes',
-      fa: 'طنزی بامزه درباره‌ی ابرقهرمان‌ها'
-    },
-    {
-      t: 'Erased',
-      y: 2016,
-      en: 'a tense mystery about time and second chances',
-      fa: 'معمایی پرتنش درباره‌ی زمان و فرصت دوباره'
-    },
-    {
-      t: 'Mob Psycho 100',
-      y: 2016,
-      en: 'a funny, heartfelt story of growth',
-      fa: 'داستانی بامزه و عمیق درباره‌ی رشد'
-    },
-    {
-      t: 'Nausicaa of the Valley of the Wind',
-      y: 1984,
-      en: 'an environmental Miyazaki classic',
-      fa: 'کلاسیک محیط‌زیستی میازاکی'
-    }
-  ];
-
-  const MUSIC = [
-    {
-      t: 'Pink Floyd - The Dark Side of the Moon',
-      y: 1973,
-      en: 'an all-time progressive rock masterpiece',
-      fa: 'شاهکار همیشگی راک پیشرو'
-    },
-    {
-      t: 'Daft Punk - Random Access Memories',
-      y: 2013,
-      en: 'a lush electronic tribute to the past',
-      fa: 'آلبوم الکترونیک غنی و نوستالژیک'
-    },
-    {
-      t: 'Radiohead - In Rainbows',
-      y: 2007,
-      en: 'a warm, layered alt-rock gem',
-      fa: 'آلبوم راک آلترناتیو گرم و چندلایه'
-    },
-    {
-      t: 'Amy Winehouse - Back to Black',
-      y: 2006,
-      en: 'a raw, soulful classic',
-      fa: 'آلبوم سول خام و کلاسیک'
-    },
-    {
-      t: 'Hans Zimmer - Interstellar OST',
-      y: 2014,
-      en: 'a sweeping, emotional film score',
-      fa: 'موسیقی متن گسترده و احساسی'
-    },
-    {
-      t: 'Yann Tiersen - Amelie OST',
-      y: 2001,
-      en: 'a gentle, whimsical piano score',
-      fa: 'موسیقی پیانویی لطیف و رؤیایی'
-    },
-    {
-      t: 'Beethoven - Moonlight Sonata',
-      y: 1801,
-      en: 'a timeless piece of quiet power',
-      fa: 'قطعه‌ای جاودانه از قدرت خاموش'
-    },
-    {
-      t: 'The Weeknd - Dawn FM',
-      y: 2022,
-      en: 'a sleek modern pop concept album',
-      fa: 'آلبوم پاپ مفهومی مدرن و شیک'
-    },
-    {
-      t: 'Sade - Diamond Life',
-      y: 1984,
-      en: 'a smooth, soulful debut',
-      fa: 'اولین آلبوم سول نرم و دلنشین'
-    },
-    {
-      t: 'Vulfpeck - The Beautiful Game',
-      y: 2016,
-      en: 'funky, joyful instrumentals',
-      fa: 'آهنگ‌های فانک و شاد'
-    },
-    {
-      t: 'Erik Satie - Gymnopedies',
-      y: 1888,
-      en: 'calming, minimalist piano',
-      fa: 'پیانوی مینیمال و آرام‌بخش'
-    },
-    {
-      t: 'Jonas Blue - Blue (album)',
-      y: 2018,
-      en: 'bright, upbeat dance-pop',
-      fa: 'دنس-پاپ شاد و پرانرژی'
-    }
-  ];
-
-  const PODCASTS = [
-    {
-      t: 'Lex Fridman Podcast',
-      en: 'long, deep conversations about science and AI',
-      fa: 'گفتگوهای طولانی و عمیق درباره‌ی علم و هوش مصنوعی'
-    },
-    {
-      t: 'The Daily (NYT)',
-      en: 'a clear daily news explainer',
-      fa: 'روایت روزانه‌ی خبری و روشن'
-    },
-    {
-      t: 'Stuff You Should Know',
-      en: 'curiosity-driven explainers on everything',
-      fa: 'توضیح درباره‌ی همه‌چیز از روی کنجکاوی'
-    },
-    {
-      t: '99% Invisible',
-      en: 'the hidden design in everyday life',
-      fa: 'طراحی پنهان در زندگی روزمره'
-    },
-    {
-      t: 'The Moth',
-      en: 'real people telling true stories live',
-      fa: 'داستان‌های واقعی و بی‌واسطه'
-    },
-    {
-      t: 'Science Vs',
-      en: 'tackles myths with evidence',
-      fa: 'افسانه‌ها را با شواهد می‌سنجد'
-    },
-    {
-      t: 'Hidden Brain',
-      en: 'the psychology behind our behavior',
-      fa: 'روان‌شناسی پشت رفتار ما'
-    },
-    {
-      t: 'Darknet Diaries',
-      en: 'hacking and cybercrime stories',
-      fa: 'داستان‌های هک و جرائم سایبری'
-    }
-  ];
-
-  const BOOKS = [
-    {
-      t: 'The Midnight Library',
-      y: 2020,
-      en: 'Matt Haig on choices and meaning',
-      fa: 'مت هیگ درباره‌ی انتخاب‌ها و معنا'
-    },
-    {
-      t: 'Man Search for Meaning',
-      y: 1946,
-      en: 'Viktor Frankl on resilience',
-      fa: 'ویکتور فرانکل درباره‌ی تاب‌آوری'
-    },
-    {
-      t: 'The Alchemist',
-      y: 1988,
-      en: 'Coelho on following dreams',
-      fa: 'کوئلیو درباره‌ی دنبال‌کردن رؤیا'
-    },
-    {
-      t: 'Sapiens',
-      y: 2011,
-      en: 'Harari on the story of humankind',
-      fa: 'هراری درباره‌ی داستان بشر'
-    },
-    {
-      t: 'The Art of Loving',
-      y: 1956,
-      en: 'Fromm on love as a practice',
-      fa: 'فروم درباره‌ی عشق به‌مثابه تمرین'
-    },
-    {
-      t: 'Atomic Habits',
-      y: 2018,
-      en: 'Clear on building small habits',
-      fa: 'کلیر درباره‌ی ساختن عادت‌های کوچک'
-    }
-  ];
-
-  const DOCUMENTARIES = [
-    {
-      t: 'My Octopus Teacher',
-      y: 2020,
-      en: 'a bond with an octopus, tender and wise',
-      fa: 'پیوندی لطیف و حکیمانه با یک اختاپوس'
-    },
-    {
-      t: 'Free Solo',
-      y: 2018,
-      en: 'a breathtaking climb without ropes',
-      fa: 'صعودی نفس‌گیر بدون طناب'
-    },
-    {
-      t: 'Jiro Dreams of Sushi',
-      y: 2011,
-      en: 'obsession and mastery in a sushi shop',
-      fa: 'وسواس و استادی در یک رستوران سوشی'
-    },
-    {
-      t: 'Won the Ocean',
-      y: 2020,
-      en: 'life and loss at the Great Barrier Reef',
-      fa: 'زندگی و ازدست‌دادن در دیواره‌ی بزرگ'
-    },
-    {
-      t: 'Koyaanisqatsi',
-      y: 1982,
-      en: 'a wordless meditation on modern life',
-      fa: 'تأملی بی‌کلام درباره‌ی زندگی مدرن'
-    }
-  ];
-
-  global.DaryaMediaPool = {
-    MOVIES,
-    SERIES,
-    GAMES,
-    ANIME,
-    MUSIC,
-    PODCASTS,
-    BOOKS,
-    DOCUMENTARIES,
-    // Every named category, so a randomized pick can draw a fresh mix.
-    categories: {
-      movie: MOVIES,
-      series: SERIES,
-      game: GAMES,
-      anime: ANIME,
-      music: MUSIC,
-      podcast: PODCASTS,
-      book: BOOKS,
-      documentary: DOCUMENTARIES
+  const RAW = {
+    movie: {
+      drama: [
+        ['A Separation', 2011],
+        ['Shoplifters', 2018],
+        ['The Lives of Others', 2006],
+        ['Yi Yi', 2000],
+        ['Aftersun', 2022]
+      ],
+      sci_fi: [
+        ['Arrival', 2016],
+        ['Coherence', 2013],
+        ['Moon', 2009],
+        ['Solaris', 1972],
+        ['Aniara', 2018]
+      ],
+      thriller: [
+        ['The Guilty', 2018],
+        ['Decision to Leave', 2022],
+        ['The Invisible Guest', 2016],
+        ['Run Lola Run', 1998],
+        ['Tell No One', 2006]
+      ],
+      comedy: [
+        ['Tampopo', 1985],
+        ['Wild Tales', 2014],
+        ['The Death of Stalin', 2017],
+        ['The Lunchbox', 2013],
+        ['One Cut of the Dead', 2017]
+      ],
+      romance: [
+        ['In the Mood for Love', 2000],
+        ['Past Lives', 2023],
+        ['Before Sunrise', 1995],
+        ['Portrait of a Lady on Fire', 2019],
+        ['The Worst Person in the World', 2021]
+      ],
+      horror: [
+        ['The Wailing', 2016],
+        ['The Babadook', 2014],
+        ['His House', 2020],
+        ['Let the Right One In', 2008],
+        ['Under the Shadow', 2016]
+      ],
+      animation: [
+        ['Song of the Sea', 2014],
+        ['Persepolis', 2007],
+        ['The Red Turtle', 2016],
+        ['Ernest and Celestine', 2012],
+        ['I Lost My Body', 2019]
+      ]
+    },
+    series: {
+      drama: [
+        ['The Bear', 2022],
+        ['Rectify', 2013],
+        ['Pachinko', 2022],
+        ['I May Destroy You', 2020],
+        ['My Brilliant Friend', 2018]
+      ],
+      sci_fi: [
+        ['Severance', 2022],
+        ['Dark', 2017],
+        ['Devs', 2020],
+        ['Station Eleven', 2021],
+        ['Scavengers Reign', 2023]
+      ],
+      crime: [
+        ['Giri/Haji', 2019],
+        ['Happy Valley', 2014],
+        ['Gomorrah', 2014],
+        ['We Own This City', 2022],
+        ['Top of the Lake', 2013]
+      ],
+      comedy: [
+        ['Detectorists', 2014],
+        ['Derry Girls', 2018],
+        ['Reservation Dogs', 2021],
+        ['Somebody Somewhere', 2022],
+        ['This Way Up', 2019]
+      ],
+      mystery: [
+        ['The OA', 2016],
+        ['Les Revenants', 2012],
+        ['Sharp Objects', 2018],
+        ['The Devil’s Hour', 2022],
+        ['The Resort', 2022]
+      ],
+      historical: [
+        ['Chernobyl', 2019],
+        ['Wolf Hall', 2015],
+        ['The Underground Railroad', 2021],
+        ['Babylon Berlin', 2017],
+        ['The English', 2022]
+      ],
+      fantasy: [
+        ['Arcane', 2021],
+        ['The Dark Crystal: Age of Resistance', 2019],
+        ['Kingdom', 2019],
+        ['Jonathan Strange & Mr Norrell', 2015],
+        ['Over the Garden Wall', 2014]
+      ]
+    },
+    game: {
+      rpg: [
+        ['Disco Elysium', 2019],
+        ['Pentiment', 2022],
+        ['Baldur’s Gate 3', 2023],
+        ['Citizen Sleeper', 2022],
+        ['Hades', 2020]
+      ],
+      strategy: [
+        ['Into the Breach', 2018],
+        ['Frostpunk', 2018],
+        ['Dorfromantik', 2021],
+        ['Invisible, Inc.', 2015],
+        ['Against the Storm', 2023]
+      ],
+      puzzle: [
+        ['Baba Is You', 2019],
+        ['The Case of the Golden Idol', 2022],
+        ['The Witness', 2016],
+        ['Patrick’s Parabox', 2022],
+        ['Return of the Obra Dinn', 2018]
+      ],
+      adventure: [
+        ['Outer Wilds', 2019],
+        ['Sable', 2021],
+        ['A Short Hike', 2019],
+        ['Heaven’s Vault', 2019],
+        ['Chants of Sennaar', 2023]
+      ],
+      simulation: [
+        ['Stardew Valley', 2016],
+        ['RimWorld', 2018],
+        ['Dwarf Fortress', 2022],
+        ['Unpacking', 2021],
+        ['Hardspace: Shipbreaker', 2022]
+      ],
+      horror: [
+        ['SOMA', 2015],
+        ['Signalis', 2022],
+        ['Darkwood', 2017],
+        ['Detention', 2017],
+        ['Amnesia: The Bunker', 2023]
+      ],
+      platformer: [
+        ['Celeste', 2018],
+        ['Hollow Knight', 2017],
+        ['Pizza Tower', 2023],
+        ['Gris', 2018],
+        ['The Messenger', 2018]
+      ]
+    },
+    anime: {
+      action: [
+        ['Mob Psycho 100', 2016],
+        ['Moribito: Guardian of the Spirit', 2007],
+        ['Samurai Champloo', 2004],
+        ['Dorohedoro', 2020],
+        ['Vivy: Fluorite Eye’s Song', 2021]
+      ],
+      slice_of_life: [
+        ['Barakamon', 2014],
+        ['Keep Your Hands Off Eizouken!', 2020],
+        ['March Comes in Like a Lion', 2016],
+        ['Natsume’s Book of Friends', 2008],
+        ['Skip and Loafer', 2023]
+      ],
+      sci_fi: [
+        ['Planetes', 2003],
+        ['Serial Experiments Lain', 1998],
+        ['Psycho-Pass', 2012],
+        ['Kaiba', 2008],
+        ['Astra Lost in Space', 2019]
+      ],
+      fantasy: [
+        ['Frieren: Beyond Journey’s End', 2023],
+        ['Land of the Lustrous', 2017],
+        ['The Twelve Kingdoms', 2002],
+        ['Ranking of Kings', 2021],
+        ['Princess Tutu', 2002]
+      ],
+      romance: [
+        ['Insomniacs After School', 2023],
+        ['Nana', 2006],
+        ['Bloom Into You', 2018],
+        ['Tsuki ga Kirei', 2017],
+        ['My Love Story!!', 2015]
+      ],
+      mystery: [
+        ['Odd Taxi', 2021],
+        ['Monster', 2004],
+        ['Erased', 2016],
+        ['Pluto', 2023],
+        ['From the New World', 2012]
+      ],
+      sports: [
+        ['Ping Pong the Animation', 2014],
+        ['Run with the Wind', 2018],
+        ['Chihayafuru', 2011],
+        ['Haikyu!!', 2014],
+        ['Megalo Box', 2018]
+      ]
+    },
+    music: {
+      rock: [
+        ['Talk Talk - Spirit of Eden', 1988],
+        ['Big Thief - Dragon New Warm Mountain I Believe in You', 2022],
+        ['Television - Marquee Moon', 1977],
+        ['Warpaint - The Fool', 2010],
+        ['Mdou Moctar - Afrique Victime', 2021]
+      ],
+      jazz: [
+        ['Alice Coltrane - Journey in Satchidananda', 1971],
+        ['Yussef Kamaal - Black Focus', 2016],
+        ['Charles Mingus - The Black Saint and the Sinner Lady', 1963],
+        ['Nala Sinephro - Space 1.8', 2021],
+        ['GoGo Penguin - Version 2.0', 2014]
+      ],
+      classical: [
+        ['Max Richter - The Blue Notebooks', 2004],
+        ['Caroline Shaw - Orange', 2019],
+        ['Claude Debussy - La mer', 1905],
+        ['Arvo Pärt - Tabula Rasa', 1984],
+        ['Ryuichi Sakamoto - async', 2017]
+      ],
+      electronic: [
+        ['Jon Hopkins - Immunity', 2013],
+        ['Floating Points - Crush', 2019],
+        ['Kelly Lee Owens - Inner Song', 2020],
+        ['Four Tet - There Is Love in You', 2010],
+        ['Bicep - Isles', 2017]
+      ],
+      folk: [
+        ['Arooj Aftab - Vulture Prince', 2021],
+        ['Nick Drake - Pink Moon', 1972],
+        ['Lankum - False Lankum', 2023],
+        ['Laura Marling - Song for Our Daughter', 2020],
+        ['Ali Farka Touré - Savane', 2006]
+      ],
+      hip_hop: [
+        ['Little Simz - Sometimes I Might Be Introvert', 2021],
+        ['Madvillain - Madvillainy', 2004],
+        ['Noname - Room 25', 2018],
+        ['A Tribe Called Quest - We got it from Here...', 2016],
+        ['J Dilla - Donuts', 2006]
+      ],
+      ambient: [
+        ['Hiroshi Yoshimura - Green', 1986],
+        ['Bing & Ruth - No Home of the Mind', 2017],
+        ['Kaitlyn Aurelia Smith - Ears', 2016],
+        ['Brian Eno - Apollo', 1983],
+        ['Visible Cloaks - Reassemblage', 2017]
+      ]
+    },
+    podcast: {
+      science: [
+        ['Ologies', null],
+        ['The Skeptics’ Guide to the Universe', null],
+        ['BBC Inside Science', null],
+        ['The Infinite Monkey Cage', null],
+        ['Unexplainable', null]
+      ],
+      history: [
+        ['Fall of Civilizations', null],
+        ['The Rest Is History', null],
+        ['Throughline', null],
+        ['You’re Dead to Me', null],
+        ['Tides of History', null]
+      ],
+      technology: [
+        ['Hard Fork', null],
+        ['Darknet Diaries', null],
+        ['Decoder', null],
+        ['Command Line Heroes', null],
+        ['Tech Won’t Save Us', null]
+      ],
+      culture: [
+        ['Articles of Interest', null],
+        ['The Allusionist', null],
+        ['Twenty Thousand Hertz', null],
+        ['Decoder Ring', null],
+        ['Rough Translation', null]
+      ],
+      true_crime: [
+        ['Criminal', null],
+        ['In the Dark', null],
+        ['Bear Brook', null],
+        ['Your Own Backyard', null],
+        ['Someone Knows Something', null]
+      ],
+      business: [
+        ['Acquired', null],
+        ['How I Built This', null],
+        ['The Knowledge Project', null],
+        ['Masters of Scale', null],
+        ['Odd Lots', null]
+      ],
+      storytelling: [
+        ['The Moth', null],
+        ['Heavyweight', null],
+        ['This American Life', null],
+        ['Snap Judgment', null],
+        ['StoryCorps', null]
+      ]
+    },
+    book: {
+      literary: [
+        ['Stoner', 1965],
+        ['The Door', 1987],
+        ['A Fine Balance', 1995],
+        ['Convenience Store Woman', 2016],
+        ['The Remains of the Day', 1989]
+      ],
+      sci_fi: [
+        ['The Dispossessed', 1974],
+        ['Children of Time', 2015],
+        ['Roadside Picnic', 1972],
+        ['Ancillary Justice', 2013],
+        ['The Employees', 2018]
+      ],
+      fantasy: [
+        ['Piranesi', 2020],
+        ['The Fifth Season', 2015],
+        ['The Spear Cuts Through Water', 2022],
+        ['Jonathan Strange & Mr Norrell', 2004],
+        ['A Wizard of Earthsea', 1968]
+      ],
+      mystery: [
+        ['The Devotion of Suspect X', 2005],
+        ['Drive Your Plow Over the Bones of the Dead', 2009],
+        ['The Thursday Murder Club', 2020],
+        ['The Name of the Rose', 1980],
+        ['Case Histories', 2004]
+      ],
+      history: [
+        ['The Dawn of Everything', 2021],
+        ['King Leopold’s Ghost', 1998],
+        ['The Warmth of Other Suns', 2010],
+        ['SPQR', 2015],
+        ['The Silk Roads', 2015]
+      ],
+      philosophy: [
+        ['At the Existentialist Café', 2016],
+        ['The Pig That Wants to Be Eaten', 2005],
+        ['How to Be Perfect', 2022],
+        ['The Book of Disquiet', 1982],
+        ['Justice', 2009]
+      ],
+      memoir: [
+        ['Educated', 2018],
+        ['The Years', 2008],
+        ['Crying in H Mart', 2021],
+        ['When Death Takes Something from You Give It Back', 2017],
+        ['Born a Crime', 2016]
+      ]
+    },
+    documentary: {
+      nature: [
+        ['Honeyland', 2019],
+        ['The Velvet Queen', 2021],
+        ['Microcosmos', 1996],
+        ['Fire of Love', 2022],
+        ['The Elephant Queen', 2018]
+      ],
+      science: [
+        ['Particle Fever', 2013],
+        ['The Farthest', 2017],
+        ['Human Nature', 2019],
+        ['A Trip to Infinity', 2022],
+        ['The Most Unknown', 2018]
+      ],
+      history: [
+        ['The Act of Killing', 2012],
+        ['They Shall Not Grow Old', 2018],
+        ['Shoah', 1985],
+        ['The Cave', 2019],
+        ['Apollo 11', 2019]
+      ],
+      society: [
+        ['Collective', 2019],
+        ['Minding the Gap', 2018],
+        ['The Mole Agent', 2020],
+        ['Ascension', 2021],
+        ['All That Breathes', 2022]
+      ],
+      art: [
+        ['Faces Places', 2017],
+        ['Finding Vivian Maier', 2013],
+        ['Rivers and Tides', 2001],
+        ['Exit Through the Gift Shop', 2010],
+        ['Cutie and the Boxer', 2013]
+      ],
+      music: [
+        ['Summer of Soul', 2021],
+        ['Searching for Sugar Man', 2012],
+        ['20 Feet from Stardom', 2013],
+        ['Buena Vista Social Club', 1999],
+        ['The Last Waltz', 1978]
+      ],
+      sports: [
+        ['Senna', 2010],
+        ['Free Solo', 2018],
+        ['Hoop Dreams', 1994],
+        ['The Rescue', 2021],
+        ['Rising Phoenix', 2020]
+      ]
     }
   };
+
+  const categories = {};
+  const genres = {};
+  Object.entries(RAW).forEach(([category, shelves]) => {
+    genres[category] = {};
+    categories[category] = [];
+    Object.entries(shelves).forEach(([genre, rows]) => {
+      const label = GENRE_LABELS[genre];
+      const items = rows.map(([t, y]) => ({
+        t,
+        y,
+        genre,
+        en: label[0],
+        fa: label[1]
+      }));
+      genres[category][genre] = items;
+      categories[category].push(...items);
+    });
+  });
+
+  global.DaryaMediaPool = { categories, genres, genreLabels: GENRE_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);

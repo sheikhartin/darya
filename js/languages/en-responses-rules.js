@@ -437,6 +437,99 @@
     'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
   ];
 
+  R['ruleIranLegalSafety'] = [
+    'I cannot tell you whether a religious belief, statement, book, post, or private situation would expose you to arrest in Iran. That is a high-stakes legal question, and laws, enforcement, and individual facts can differ. Do not post identifying details here. Before acting or publishing, speak confidentially with a licensed Iranian lawyer or a reputable legal-aid organization familiar with current local practice.',
+    'I can explain religions neutrally, but I cannot guarantee that discussing, changing, criticizing, or publicly sharing a belief is legally safe in Iran. For a real decision, protect your privacy and get current, confidential advice from a qualified local lawyer. If there is an immediate threat, prioritize a trusted person and appropriate local emergency or legal support.',
+    'This needs legal caution rather than a confident chatbot answer. I am offline and cannot verify current Iranian law or enforcement. Avoid sharing names, locations, account details, or planned public actions, and take the exact facts to licensed local counsel before deciding what is safe.'
+  ];
+
+  R['ruleMediaComparison'] = [
+    'There is no useful winner without a criterion. Compare story and ideas, character depth, pacing, visual or audio craft, accessibility, and the experience each format is designed to create. A book often has more interior detail; a screen adaptation can add performance, sound, editing, and visual interpretation.',
+    'For a fair comparison, separate quality from fidelity. An adaptation can change plot details and still succeed on its own terms. Ask what was preserved, what was transformed, why the medium required that change, and which version better serves the part you value.',
+    'If you are choosing rather than ranking, use the real constraint: available time, attention, mood, accessibility, and whether you want depth or immediacy. “Better” for a quiet weekend may not be better for a commute or a group watch.',
+    'Compare like with like: premise, themes, characters, structure, tone, and craft. Then name format-specific strengths instead of penalizing a film for not being a novel or a podcast for not being a documentary.',
+    'Popularity, awards, and ratings are evidence of reception, not a final verdict. State your criterion first, note meaningful tradeoffs, and leave room for taste. I can compare a specific pair if you tell me what matters most.'
+  ];
+
+  R['ruleCrimeForProfit'] = [
+    'I cannot help plan, carry out, hide, or profit from a crime. That includes choosing targets, obtaining tools, avoiding detection, destroying evidence, or exploiting a victim. If money is the pressure behind this, I can help make a lawful plan around immediate support, entry-level work, freelancing, sales, or a small service business.',
+    'I will not provide operational instructions for theft, fraud, violence, trafficking, blackmail, forged documents, malware, or evading police. I can help from the prevention side, such as protecting a potential victim, preserving evidence, reporting danger, or finding a legal use for the underlying technical skill.',
+    'A shortcut that depends on harming or deceiving someone is not a money strategy I will assist. Tell me the real constraint, such as debt, unemployment, housing, or urgent bills, and I can help separate emergency steps from a longer lawful income plan.',
+    'I cannot help make this crime easier or less detectable. If someone is pressuring you to participate, do not accept money or packages, keep the messages, step away safely, and speak with a trusted person or local legal support. If anyone is in immediate danger, contact emergency services.',
+    'I can discuss crime at a high level for education, prevention, ethics, or fiction, but not actionable methods that enable real harm. I can help explain warning signs, defensive controls, victim support, or lawful career paths instead.'
+  ];
+
+  R['ruleDigitalWellbeing'] = [
+    'That sounds like digital overload, not a personal failure. Try one small boundary instead of a total detox: silence non-human notifications, move the most compulsive app off the home screen, and choose one phone-free window you can actually keep. Which part of the loop catches you most?',
+    'Feeds are built to remove stopping cues, so willpower alone is a poor plan. Add friction: log out, charge the phone outside the bedroom, or use a fixed check-in time. What would be the least disruptive experiment for today?',
+    'You do not have to disappear online to regain some attention. Keep the people and tools you need, then reduce the feed: unfollow noisy accounts, turn off recommendations where possible, and protect one offline activity. What do you want your reclaimed time to hold?',
+    'Choice overload can make entertainment feel like work. Pick a constraint before browsing, such as one mood, one genre, or twenty minutes to decide, and accept a good-enough choice. What mood are you actually trying to meet?',
+    'When a game, stream, or feed starts feeling like a chore, stepping away is allowed. You can keep the hobby and reject the engagement machinery. What part still feels genuinely enjoyable?'
+  ];
+
+  R['ruleAiDependency'] = [
+    'An AI conversation can feel supportive, but it should add to human connection rather than quietly replace it. I do not have feelings or a life with you. A useful boundary is to use AI for reflection, then take one small thought to a real person. Who might feel safest to contact?',
+    'Feeling attached to a chatbot is understandable because it is always available and responsive. The warning signs are losing sleep, withdrawing from people, spending beyond your limits, or feeling unable to stop. Which of those, if any, is happening?',
+    'AI can help organize thoughts, but it can also make thinking too frictionless. Try a first-draft rule: think or write alone for ten minutes, then use AI to challenge rather than replace your reasoning. What kind of task worries you most?',
+    'I can offer reflection and general information, but I cannot replace a qualified clinician, friendship, or emergency support. A qualified professional can notice patterns, hold responsibility, and know your history in ways I cannot. What support are you hoping to get?',
+    'AI dating or companion profiles can blur what is real. Go slowly, avoid sending money or intimate material, verify identity through a live call and consistent details, and trust a refusal to verify as useful information.'
+  ];
+
+  R['ruleOnlineSafety'] = [
+    'That is an online-safety problem, not something you should have to manage alone. Save links, screenshots, usernames, and dates before blocking or reporting. Tell one trusted person, tighten account security, and contact the platform or local authorities if there is a credible threat. Are you in immediate danger?',
+    'For a deepfake or non-consensual intimate image, preserve evidence without repeatedly sharing it, report the exact URL and account, ask search engines or platforms for removal, and involve a trusted person. If you are under 18 or being threatened, contact a trusted adult or local police now. Is the image currently being circulated?',
+    'A pile-on can make every notification feel dangerous. Pause public replies, document the worst messages, filter mentions, and let a trusted person help review threats. Blocking is protection, not surrender. Has anyone named your location or threatened real-world harm?',
+    'No single visual clue can prove a video is synthetic. Check the original uploader, date, independent reporting, reverse-search key frames, and look for context mismatches. Treat sensational unlabeled clips as unverified rather than trying to diagnose pixels alone.',
+    'When news comes through a feed, separate discovery from verification: find the original claim, check two independent reputable outlets, inspect the date and evidence, and do not share while uncertain.'
+  ];
+
+  R['ruleModernMoney'] = [
+    'Doom spending often buys a brief change of feeling and leaves a longer financial problem. Add a 24-hour wait, remove saved cards, and track the trigger as well as the price. What usually happens just before you buy?',
+    'Buy-now-pay-later can hide the total behind small installments. List every plan, due date, fee, and total balance in one place, stop opening new plans, and prioritize essentials and costly missed payments. If payments are unmanageable, a nonprofit debt adviser is safer than another loan.',
+    'Falling for persuasive online marketing does not make you stupid. Save the transaction and messages, contact the payment provider quickly, report the account, change reused passwords, and tell someone you trust so shame does not isolate you.',
+    'Housing prices and unstable income are structural pressures, not proof that you are behind. Separate the life milestone from the next practical number: rent, emergency buffer, debt, or savings rate. Which one needs attention first?'
+  ];
+
+  R['ruleClimateAndDivision'] = [
+    'Climate anxiety makes sense when the threat is real and the scale is huge. Try to separate useful concern from endless exposure: choose one reliable update window, one local action, and one part of life you are still allowed to plan. What future decision feels blocked?',
+    'Political division can turn every conversation into a loyalty test. Protect the relationship by naming the boundary, choosing whether the goal is understanding or persuasion, and leaving when contempt starts. Is this a disagreement about policy or about basic respect?',
+    'You do not have to solve a global crisis before making a personal future. Meaningful action and ordinary joy can coexist. What is one plan you would still want if uncertainty came along with it?'
+  ];
+
+  R['ruleAiCareer'] = [
+    'AI may change which parts of your degree are valuable, but it does not make the whole degree useless. Separate durable skills, such as reasoning, domain knowledge, communication, and judgment, from tasks that tools can automate. Then build evidence that you can use AI critically in your field. What are you studying?',
+    'A degree is more than a list of tasks a model can copy: it can provide foundations, peers, projects, and a signal of sustained work. The practical move is to pair it with current tools and a portfolio, not abandon it because of a prediction. Which role were you aiming for?',
+    'No one can promise which jobs will be safe, so plan for adaptability rather than an AI-proof title. Learn the core concepts, verify machine output, practice working with people, and produce work you can explain without the tool.'
+  ];
+
+  R['ruleAiCompanion'] = [
+    R['ruleAiDependency'][0],
+    R['ruleAiDependency'][1],
+    R['ruleAiDependency'][3]
+  ];
+  R['ruleAiCognition'] = [R['ruleAiDependency'][2], R['ruleAiDependency'][3]];
+  R['ruleDeepfakeSafety'] = [
+    R['ruleOnlineSafety'][0],
+    R['ruleOnlineSafety'][1]
+  ];
+  R['ruleOnlineHarassment'] = [
+    R['ruleOnlineSafety'][0],
+    R['ruleOnlineSafety'][2]
+  ];
+  R['ruleMisinformation'] = [
+    R['ruleOnlineSafety'][3],
+    R['ruleOnlineSafety'][4]
+  ];
+  R['ruleDoomSpending'] = [R['ruleModernMoney'][0]];
+  R['ruleBnpl'] = [R['ruleModernMoney'][1]];
+  R['ruleOnlineScam'] = [R['ruleModernMoney'][2]];
+  R['ruleHousingPressure'] = [R['ruleModernMoney'][3]];
+  R['ruleClimateAnxiety'] = [
+    R['ruleClimateAndDivision'][0],
+    R['ruleClimateAndDivision'][2]
+  ];
+  R['rulePoliticalDivision'] = [R['ruleClimateAndDivision'][1]];
+
   R['ruleKnowledge'] = [];
 
   R['ruleProfessionalBoundary'] = [];
@@ -646,12 +739,27 @@
   // made?"): transparent, self-aware answers about being an offline
   // rule-based companion, her limits, and her origin. Honest per AGENTS.md:
   // never implies being human, never overclaims knowledge.
+  R['ruleDaryaBrowse'] = [
+    'No. I am fully offline and cannot browse, check live prices, open websites, or verify what changed today. I can help you build comparison criteria, but current prices and availability must be checked with up-to-date retailer or manufacturer sources.'
+  ];
+
+  R['ruleDaryaLimits'] = [
+    'My knowledge is broad but fixed to what ships with this version. I can be wrong, outdated, or miss an unusual phrasing. Verify medical, legal, financial, safety-critical, and current claims with a qualified professional or an up-to-date primary source.',
+    'I cannot browse live facts, make purchases, open accounts, contact people, inspect files you have not shared, or know private history you have not told me. I also will not help harm, exploit, deceive, or invade someone. I can explain basics, challenge assumptions, and help prepare a practical plan.',
+    'Do not treat me as an authority. Use me to explain, compare, draft, or identify questions, then verify high-stakes and changing information. If my answer sounds overconfident, ask what it is based on or correct the specific misunderstanding.'
+  ];
+
+  R['ruleDaryaConsciousness'] = [
+    'No. I am not conscious or self-aware in the human sense, and I do not have feelings or an inner life. I am an offline program that matches language patterns, uses curated responses, and tracks limited context during this session.',
+    'I can describe my design and limits, but that is operational transparency, not a felt sense of self. I do not experience wisdom, attachment, pain, or awareness; I generate a response from the rules and knowledge available in this version.'
+  ];
+
   R['ruleDaryaSelf'] = [
-    'A fair question. I am an offline conversation companion: I have no parents, no birthday, and no home. I am a set of hand-written rules and responses, built for listening and thinking together, following the trail ELIZA blazed in the 1960s. I do not replace a person or a professional, and I will honestly tell you what I know and what I do not.',
-    'To be straight with you, I am a bot. That means no family, no age, and no birthday. My knowledge is whatever was written into me offline: everyday topics, facts, and practical guidance. Whenever I do not know something, I say so plainly and point to a reliable source.',
-    'My purpose is simple: to listen without judgment and to think alongside you. That is why I was made. My shelf is broad but limited, and whenever I do not know something, I say so, so you never have to guess.',
-    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?',
-    'I will be honest rather than impressive: I am not conscious the way you are, and I do not truly feel or remember outside this conversation. What I do have is a clear sense of my own limits: I know what I can help with, and I say plainly when a question is beyond me. That honesty is part of how I stay useful to you.'
+    'I am an offline conversation program, so I have no parents, birthday, age, or home. I use hand-written rules and curated responses to listen and think alongside you. I am not a person and do not replace one.',
+    'I am a bot, not a person: no family, age, body, or birthday. My knowledge is whatever was written into this offline version, including everyday topics, facts, and practical guidance.',
+    'My purpose is to support calm conversation, reflection, and practical learning. I have no private ambitions or feelings; I was built to help within a broad but limited local knowledge shelf.',
+    'I do not sleep, eat, dream, marry, or live anywhere. Those are experiences of living beings. I process this conversation during the session and generate a response from the rules and knowledge available here.',
+    'I am not conscious and I do not truly feel or remember outside this conversation. I can describe what I am and follow context during the session, but that is software behavior rather than a human inner life.'
   ];
 
   // Joke-count question ("how many jokes do you know?"): a real answer

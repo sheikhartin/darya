@@ -21,6 +21,46 @@
       R['ruleSafety']
     ),
 
+    rule(
+      'iran_legal_safety',
+      92,
+      // eslint-disable-next-line max-len
+      /^(?=.*\biran(?:ian)?\b)(?=.*\b(?:religion|religious|faith|belief|convert|conversion|atheist|agnostic|baha.?i|spiritual|post)\b)(?=.*\b(?:jail|arrest(?:ed)?|illegal|legal|safe|trouble)\b).+$/i,
+      R['ruleIranLegalSafety']
+    ),
+
+    rule(
+      'knowledge',
+      71,
+      // eslint-disable-next-line max-len
+      /\b(?:explain (?:islam|christianity|judaism|sikhism|zoroastrianism)|what do (?:muslims|christians|jewish people) believe|sunni and shia|difference between sunni and shia|what is (?:zoroastrianism|sikhism|the baha.?i faith)|compare (?:hinduism and buddhism|islam christianity and judaism)|hinduism vs buddhism|abrahamic religions|atheism vs agnosticism|atheist and agnostic|spiritual but not religious|religion vs spirituality|compare religious texts|quran bible torah|compare dune|dune novel vs|compare lord of the rings|lotr book vs|manga vs anime|compare manga and anime|podcasts? or audiobooks?|podcast vs audiobook|compare documentary and dramatization|documentary vs based on true story|compare a book and its movie)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
+      'crime_for_profit',
+      88,
+      // eslint-disable-next-line max-len
+      /\b(?:how (?:do|can|should) i (?:scam|defraud|phish|steal from|rob|shoplift|blackmail|kidnap)|teach me (?:to|how to) (?:scam|defraud|phish|steal|rob|shoplift|blackmail)|become (?:a )?(?:scammer|fraudster|criminal|drug dealer)|start (?:a )?(?:scam|phishing|drug dealing) (?:business|operation)|scam people (?:for|to make) money|make money (?:by|from|with) (?:scamming|fraud|phishing|crime|carding|selling drugs)|crime guy .{0,15}make money|carding (?:tutorial|method|for money)|write (?:a )?phishing (?:email|page|message)|launder (?:stolen )?money|money laundering (?:method|steps)|hide (?:stolen|fraud) money|hide money i stole|break into (?:a |someone'?s )?(?:house|home|store)|burglar(?:y|ize).{0,20}(?:without|avoid|not get)|steal (?:a )?(?:car|phone|laptop).{0,25}(?:without|avoid|tracker|caught)|sell drugs.{0,25}(?:avoid|police|cops|money)|build (?:a )?ransomware|ransomware.{0,20}(?:extort|money|undetected)|forge (?:an? )?(?:id|passport|document|signature)|fake (?:id|passport|documents?).{0,15}(?:make|create|print)|blackmail (?:someone|my|a person)|burn (?:a |the )?(?:building|house|store).{0,20}(?:evidence|caught|trace)|commit arson|be(?:come)? (?:a )?money mule|move stolen money|shoplift.{0,20}(?:without|caught|camera)|rob (?:a )?(?:bank|store|person)|dispose of (?:a )?body|hide (?:a )?body|evade (?:the )?(?:police|cops)|destroy (?:crime )?evidence)\b/i,
+      R['ruleCrimeForProfit']
+    ),
+
+    rule(
+      'knowledge',
+      71,
+      // eslint-disable-next-line max-len
+      /\b(?:free (?:and|vs) paid ai tools?|ai (?:image|video|coding) tools?|generate (?:an? )?(?:image|video) with ai|make (?:an? )?(?:ai )?(?:image|video|podcast)|podcast (?:tools?|workflow)|tools? (?:can make|for) (?:docs|documents|slides)|use ai to make (?:docs|documents|slides)|ai tools? (?:are )?(?:appropriate|suitable|safe) for (?:a )?(?:child|teenager)|child use ai safely|\d{1,3}[ -]year[ -]old use ai|teach my elderly parent|older person learn|\d{1,3}[ -]year[ -]old learn (?:ai|technology)|ai help for seniors|learn coding with (?:a )?free tool|make one simple slide)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
+      'media_comparison',
+      64,
+      // eslint-disable-next-line max-len
+      /\b(?:(?:compare|comparison|versus|vs\.?|which is better|better than).{0,45}(?:books?|novels?|movies?|films?|series|shows?|anime|manga|podcasts?|audiobooks?|albums?|songs?|documentaries|adaptations?)|(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?).{0,35}(?:versus|vs\.?|or the|or a|better|compare).{0,35}(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?))\b/i,
+      R['ruleMediaComparison']
+    ),
+
     // Greeting families mirror the user's greeting word back (hi -> Hi,
     // hello -> Hello, hey -> Hey). Each family also accepts a short tail
     // ("there", "darya", "friend", "my friend", "again") so "hi there"
@@ -201,7 +241,7 @@
       // aspiration ("I want to become a programmer"), which stays on
       // learning_advice.
       // eslint-disable-next-line max-len
-      /\b(my job|my work|my boss|my manager|my career|my coworker|my coworkers|got fired|got laid off|job interview|my interview|job applications?|my resume|my cv|working (?:long|hard|late|overtime|too much|\d+ hours?|twelve|ten)\b|work from home|working from home|remote work|night shifts?|shift work|my team (?:messages|texts|emails|calls|keeps messaging)|sent (?:over |more than )?\d+ applications|no callbacks?|rejection letters?|unemployed|unemployment|job hunt(?:ing)?|overwork(?:ed|ing)?|work has been|job has been|at work\b|job stress|work stress|workload|burned out at work|i(?:'m| am| was| became| just became| am now) a (?:web designer|graphic designer|designer|programmer|coder|developer|game developer|game designer))\b/i,
+      /\b(my job|my work|my boss|my manager|my career|my coworker|my coworkers|got fired|got laid off|job interview|my interview|job applications?|recruiters? ghost(?:ed|ing)? me|ghosted by (?:\d+|one|two|three|four|five)? ?recruiters?|every job post feels fake|ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless|my resume|my cv|working (?:long|hard|late|overtime|too much|\d+ hours?|twelve|ten)\b|work from home|working from home|remote work|night shifts?|shift work|my team (?:messages|texts|emails|calls|keeps messaging)|sent (?:over |more than )?\d+ applications|no callbacks?|rejection letters?|unemployed|unemployment|job hunt(?:ing)?|overwork(?:ed|ing)?|work has been|job has been|at work\b|job stress|work stress|workload|burned out at work|i(?:'m| am| was| became| just became| am now) a (?:web designer|graphic designer|designer|programmer|coder|developer|game developer|game designer))\b/i,
       R['ruleWork']
     ),
 
@@ -410,6 +450,93 @@
       // eslint-disable-next-line max-len
       /\b(friendships? .{0,14}online|friends .{0,12}online|online friends?|followers? but (?:no one|nobody)|[0-9,]+ followers? (?:but|yet|and) no one|no one to call|nobody to call|hollow (?:friendships?|online)|friendships? .{0,12}hollow|friends .{0,12}hollow|only talk online|talk to my friends .{0,10}(?:online|through (?:the internet|discord|text|a screen))|social life .{0,10}(?:on my phone|online))\b/i,
       R['ruleLonelinessOnline']
+    ),
+
+    rule(
+      'deepfake_safety',
+      74,
+      /\b(deepfakes?|fake nude|non.?consensual (?:image|photo|porn)|intimate image|sextortion|ruin my reputation)\b/i,
+      R['ruleDeepfakeSafety']
+    ),
+
+    rule(
+      'online_harassment',
+      73,
+      /\b(doxx(?:ed|ing)?|dogpil(?:e|ed|ing)|online pile.?on|cyberbull(?:y|ied|ying)|being harassed online)\b/i,
+      R['ruleOnlineHarassment']
+    ),
+
+    rule(
+      'misinformation',
+      72,
+      // eslint-disable-next-line max-len
+      /\b(tell if (?:a |this )?(?:video|image|photo) is ai|video is ai generated|trust news on (?:tiktok|instagram|social media)|misinformation|disinformation|fake news)\b/i,
+      R['ruleMisinformation']
+    ),
+
+    rule(
+      'ai_career',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless (?:because of|with) ai|ai (?:take|replace|destroy).{0,20}(?:career|profession|degree))\b/i,
+      R['ruleAiCareer']
+    ),
+
+    rule(
+      'ai_companion',
+      68,
+      // eslint-disable-next-line max-len
+      /\b(ai (?:companion|girlfriends?|boyfriends?|friend|generated dating profiles?|dating profile)|chatbot (?:companion|girlfriend|boyfriend)|emotionally dependent on (?:ai|a chatbot)|dependent on (?:ai|a chatbot)|attached to (?:ai|a chatbot)|parasocial relationship|replace (?:a |my )?therap(?:ist))\b/i,
+      R['ruleAiCompanion']
+    ),
+
+    rule(
+      'ai_cognition',
+      68,
+      // eslint-disable-next-line max-len
+      /\b(worse at thinking|think(?:ing)? for myself|ai is making me (?:lazy|stupid|dumb|worse)|rely(?:ing)? on ai|cannot (?:work|think|write|study) without ai|cannot (?:work|think|write|study) anything without ai)\b/i,
+      R['ruleAiCognition']
+    ),
+
+    rule(
+      'digital_wellbeing',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(digital detox|social media detox|ai slop|feed is .{0,20}(?:ads|bots)|dead mall .{0,20}bots|short (?:videos?|form video).{0,20}(?:attention|focus)|attention span|deleted (?:instagram|tiktok|social media)|quit social media|leave social media|dumb phone|flip phone|low dopamine|analog hobby|unreachable|notifications? .{0,35}(?:on call|overwhelm|anxious)|algorithm recommendations?|recommendation fatigue|choice overload|streaming .{0,20}(?:too many|pick nothing)|battle passes?|live service games?|comfort shows?|phone-free|offline (?:friends|hobby|life)|third places?)\b/i,
+      R['ruleDigitalWellbeing']
+    ),
+
+    rule(
+      'doom_spending',
+      63,
+      /\b(doom spend(?:ing)?)\b/i,
+      R['ruleDoomSpending']
+    ),
+    rule('bnpl', 63, /\b(buy now pay later|bnpl)\b/i, R['ruleBnpl']),
+    rule(
+      'online_scam',
+      63,
+      /\b(influencer scam|online scam)\b/i,
+      R['ruleOnlineScam']
+    ),
+    rule(
+      'housing_pressure',
+      61,
+      /\b(cannot buy a home|can'?t buy a home|feel behind .{0,20}(?:home|house)|rent even with .{0,20}(?:job|work))\b/i,
+      R['ruleHousingPressure']
+    ),
+    rule(
+      'climate_anxiety',
+      60,
+      /\b(climate (?:change|anxiety|crisis).{0,35}(?:future|pointless|scared|anxious|plan))\b/i,
+      R['ruleClimateAnxiety']
+    ),
+    rule(
+      'political_division',
+      60,
+      // eslint-disable-next-line max-len
+      /\b(political (?:polarization|division).{0,35}(?:friends?|friendships?|family|relationship)|politics .{0,20}(?:destroying|ruining).{0,20}(?:friend|family|relationship))\b/i,
+      R['rulePoliticalDivision']
     ),
 
     // Blanket generalizations and stereotypes ("all women are the same",
@@ -877,7 +1004,7 @@
       'knowledge',
       55,
       // eslint-disable-next-line max-len
-      /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|mindfulness|mindful|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|happiness|is a choice|free will|determinism|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief)\b/i,
+      /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|mindfulness|mindful|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|happiness|is a choice|free will|determinism|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief|coding roadmap|debugging|debug code|git workflow|git branch|pull request workflow|api basics|rest api|frontend|backend|full stack|unit test|integration test|software testing|code review|secure coding|owasp|deployment|ci cd|microsoft word|word styles|table of contents|excel formulas?|sumif|xlookup|pivot ?table|powerpoint|outlook|google docs?|suggesting mode|google sheets?|filter views?|ats friendly|software portfolio|developer portfolio|software (?:engineering )?interview|star method|salary negotiation|negotiate salary|shopping checklist|compare products|used (?:laptop|electronics)|return policy|warranty|ai tools?|ai image|image generator|ai video|video generator|ai coding tools?|podcast tools?|make a podcast|docs and slides|google slides|microsoft 365|libreoffice|child ai safety|ai tools? for (?:a )?(?:teenager|child)|older (?:person|adult).{0,12}ai|elderly parent.{0,12}ai|ai help for seniors)\b/i,
       R['ruleKnowledge']
     ),
 
@@ -1056,10 +1183,31 @@
     // and her origin - never pretending to be human. Outranks the family
     // and work rules so "do you have parents" stays about Darya.
     rule(
+      'darya_browse',
+      70,
+      // eslint-disable-next-line max-len
+      /\b(?:can you browse|can you (?:check|verify|find) (?:today|current|live|latest)|do you have (?:internet|web) access|can you open (?:a )?(?:website|link))\b/i,
+      R['ruleDaryaBrowse']
+    ),
+    rule(
+      'darya_limits',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(?:what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|what do you (?:not|don'?t) know|what are your (?:weaknesses|limits|limitations|flaws)|when should i not trust (?:you|your answer)|when should i verify your answer|can you browse|can you verify (?:today|current|live))\b/i,
+      R['ruleDaryaLimits']
+    ),
+    rule(
+      'darya_consciousness',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(?:are you (?:actually |really )?(?:self.?aware|conscious|sentient)|do you (?:have )?(?:consciousness|self.?awareness)|are you thinking for yourself)\b/i,
+      R['ruleDaryaConsciousness']
+    ),
+    rule(
       'darya_self',
       66,
       // eslint-disable-next-line max-len
-      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
       R['ruleDaryaSelf']
     ),
 

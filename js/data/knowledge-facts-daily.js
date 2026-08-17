@@ -598,7 +598,9 @@
         'healthy eating',
         'healthy diet',
         'balanced nutrition',
-        'how to eat healthy'
+        'how to eat healthy',
+        'how can i eat healthier',
+        'how do i eat healthier'
       ],
       weak: [
         'تغذیه',

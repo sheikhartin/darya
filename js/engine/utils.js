@@ -475,8 +475,14 @@
     mostRecentUtterance(exclude = '') {
       for (let i = this.recentUtterances.length - 1; i >= 0; i -= 1) {
         const utterance = this.recentUtterances[i];
+        const isCommandOrQuestion =
+          // eslint-disable-next-line max-len
+          /^(?:recommend|suggest|tell me|explain|what|why|when|where|who|how|name|give me|show me|پیشنهاد|معرفی|بگو|توضیح|چی|چرا|چطور|چگونه|کجا|کی|چه)(?:\s|$)/iu.test(
+            utterance.trim()
+          );
         if (
           utterance !== exclude &&
+          !isCommandOrQuestion &&
           utterance.split(/\s+/).filter(Boolean).length >= 3
         ) {
           return utterance;

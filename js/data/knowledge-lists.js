@@ -38,9 +38,9 @@
   // Media nouns that can follow a number word in a list request
   // (\"سه فیلم\", \"پنج سریال\", \"three movies\", \"six games\").
   const FA_COUNT_NOUN =
-    '(?:تا|تایی|عدد|فیلم|سریال|بازی|بازی ویدئویی|بازی ویدیویی|مستند|انیمیشن|کتاب|پیشنهاد)';
+    '(?:تا|تایی|عدد|فیلم|سریال|بازی|بازی ویدئویی|بازی ویدیویی|مستند|انیمه|انیمیشن|پادکست|آهنگ|موسیقی|کتاب|پیشنهاد)';
   const EN_COUNT_NOUN =
-    '(?:movies?|films?|series|shows?|games?|documentaries|documentary|anime|books?|picks?|suggestions?)';
+    '(?:movies?|films?|series|shows?|games?|documentaries|documentary|documentations?|anime|podcasts?|albums?|songs?|music|books?|picks?|suggestions?)';
 
   /**
    * Extracts a requested list count from user text, or null when the text
@@ -83,18 +83,18 @@
     }
 
     // English: \"exactly 6\", \"just three\", \"10 movies\", \"at least 4\".
-    const digitMatch = lower.match(
-      // eslint-disable-next-line max-len
-      /(?:\b(?:exactly|just|only|at least|about|around)\s+)?(\d{1,2})\s*(?:movies?|films?|series|shows?|games?|documentaries|documentary|anime|books?|picks?)?\b/
+    const qualifiedDigit = lower.match(
+      /\b(?:exactly|just|only|at least|about|around)\s+(\d{1,2})\b/
     );
-    if (
-      digitMatch &&
+    if (qualifiedDigit) {
+      return clampCount(Number(qualifiedDigit[1]));
+    }
+    const mediaDigit = lower.match(
       // eslint-disable-next-line max-len
-      /(?:\b(?:exactly|just|only|at least|about|around)\b|\b(?:movies?|films?|series|shows?|games?|documentaries|documentary|anime|books?|picks?)\b)/.test(
-        lower
-      )
-    ) {
-      return clampCount(Number(digitMatch[1]));
+      /\b(\d{1,2})\s*(?:movies?|films?|series|shows?|games?|documentaries|documentary|documentations?|anime|podcasts?|albums?|songs?|books?|picks?)\b/
+    );
+    if (mediaDigit) {
+      return clampCount(Number(mediaDigit[1]));
     }
     for (const [word, count] of Object.entries(EN_NUM_WORDS)) {
       const wordMatch = lower.match(
