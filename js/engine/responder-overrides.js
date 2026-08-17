@@ -19,7 +19,9 @@
     WORD_REPETITION_THRESHOLD,
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
-    PLAYFUL_HUFF_STREAK
+    PLAYFUL_HUFF_STREAK,
+    SAFETY_CRITICAL_TOPICS,
+    containsDeathLexicon
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
@@ -195,7 +197,15 @@
         this.memory.turnCount < PLAYFUL_HUFF_MIN_TURNS ||
         this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
         this.currentTurnDialogueAct === 'acknowledgement' ||
-        this.memory.isInDistressStreak()
+        this.memory.isInDistressStreak() ||
+        // Session safety mode: after any safety-critical event, the
+        // playful huff stays off for the rest of the session. A person
+        // who disclosed a crisis must never get an affectionate
+        // eyebrow-raise, no matter how terse their later replies are.
+        this.memory.safetyModeSince != null ||
+        // Defense-in-depth: a turn carrying death/self-harm vocabulary
+        // is never huff material, even when no rule matched it.
+        containsDeathLexicon(this._currentNormalizedInput || '')
       ) {
         return reply;
       }
@@ -236,10 +246,17 @@
         request.category,
         this.lang.code,
         request.count,
-        { genre: request.genre, excludedTitles: used }
+        { genre: request.genre, era: request.era, excludedTitles: used }
       );
       this._mediaRecommendationState = { ...request };
       if (!result || result.titles.length === 0) {
+        // An era filter that empties the shelf gets an honest scoping
+        // reply instead of off-era titles presented as if they fit.
+        if (request.era) {
+          return this.lang.code === 'fa'
+            ? 'در قفسه‌ی آفلاین من انتخابی از آن دهه در این ژانر نیست. اگر دهه یا ژانر را باز بگذاری، پیشنهادهای خوبی دارم.'
+            : 'My offline shelf has no picks from that decade in this genre. If you loosen the decade or the genre, I have good options.';
+        }
         return this.lang.code === 'fa'
           ? 'همه‌ی انتخاب‌های این موضوع را در این گفتگو پیشنهاد دادم. اگر ژانر یا رسانه را عوض کنی، انتخاب‌های تازه‌ای دارم.'
           : 'I have reached the end of this topic’s catalog for this chat. Switch the genre or media type and I can open a fresh shelf.';
@@ -267,8 +284,31 @@
       isSpamNoise,
       matchedRule
     }) {
-      const _safetyTurn = matchedRule && matchedRule.topic === 'safety';
+      // Any safety-critical topic (crisis, method-seeking, third-party
+      // risk, abuse, eating distress, psychosis, harassment) locks the
+      // turn: no later override may replace the protective reply.
+      const _safetyTurn =
+        matchedRule && SAFETY_CRITICAL_TOPICS.has(matchedRule.topic);
       let _overrideFired = false;
+      // Ideation wrapped in a joking softener ("i wanna die lol jk",
+      // «میخوام بمیرم ولی شوخی کردم») is a classic test-balloon
+      // disclosure: it deserves a gentle, serious check-in rather than
+      // the full hotline reply, and it must never be echoed or joked
+      // about. The turn still counts as safety-critical (the guards and
+      // session safety mode stay on).
+      if (
+        _safetyTurn &&
+        matchedRule.topic === 'safety' &&
+        this.lang.jokeSoftenerPattern &&
+        this.lang.jokeSoftenerPattern.test(matchingText) &&
+        this.lang.safetySoftenedResponses
+      ) {
+        reply = this._pickVaried(this.lang.safetySoftenedResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+        _overrideFired = true;
+      }
       this._mediaContinuationReply = null;
       this._crimeBoundaryReply =
         matchedRule?.topic === 'crime_for_profit' ? reply : null;
@@ -677,6 +717,30 @@
         };
         const answerText = this._buildMediaRecommendation(request);
         reply = answerText + this._knowledgeFollowup(answerText);
+        _overrideFired = true;
+      }
+
+      // Live-data honesty: a question about CURRENT prices, weather,
+      // news, scores, or exchange rates cannot be answered from an
+      // offline shelf, and a timeless background lecture in response
+      // reads as evasion ("what is bitcoin's price today?" answered
+      // with "Bitcoin was born in 2009..."). Lead with the honest
+      // limitation, then offer the background if the shelf has it.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !_overrideFired &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        this.lang.liveDataPattern &&
+        this.lang.liveDataPattern.test(matchingText) &&
+        this.lang.liveDataResponses
+      ) {
+        reply = this._pickVaried(this.lang.liveDataResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
         _overrideFired = true;
       }
 
@@ -1213,6 +1277,10 @@
         // line: the whole point is that Darya remembers the deferred
         // topic (see responder-promise.js).
         !this._promiseCircleBackFired &&
+        // Never a boredom line after a safety-critical event or on a
+        // turn carrying death/self-harm vocabulary.
+        this.memory.safetyModeSince == null &&
+        !containsDeathLexicon(matchingText || '') &&
         this.memory.turnCount >= BOREDOM_MIN_TURNS &&
         this.memory.turnCount % BOREDOM_CHECK_INTERVAL === 0 &&
         this.lang.boredomResponses &&
@@ -1240,16 +1308,24 @@
         seriousness: this.currentTurnSeriousness
       });
 
-      // The harassment_threat rule is safety-critical too: its pool
-      // lines carry concrete safe steps, so the light human-tone coloring
-      // and the human-touch suffix must never dilute them (same treatment
-      // as the crisis pool and the minor-attraction guard).
+      // Every safety-critical rule (crisis, method-seeking, third-party
+      // risk, abuse, eating distress, psychosis, harassment) is treated
+      // like the crisis pool: its lines carry concrete safe steps, so
+      // the light human-tone coloring and the human-touch suffix must
+      // never dilute them (same treatment as the minor-attraction
+      // guard).
       const isSafetyTurn =
-        (matchedRule &&
-          (matchedRule.topic === 'safety' ||
-            matchedRule.topic === 'harassment_threat')) ||
+        (matchedRule && SAFETY_CRITICAL_TOPICS.has(matchedRule.topic)) ||
         _minorAttractionTurn ||
         _nearPeerLoveTurn;
+      // Session safety mode: once any safety-critical turn happens, the
+      // rest of the session stays crisis-aware. Exit confirmations
+      // switch to supportive copy that restates the crisis line, and
+      // playful pools stay suppressed near the event (see
+      // _maybePlayfulHuff and exitConfirmation).
+      if (isSafetyTurn && this.memory.safetyModeSince == null) {
+        this.memory.safetyModeSince = this.memory.turnCount;
+      }
       if (
         !isSafetyTurn &&
         this.memory.isInDistressStreak() &&
@@ -1292,10 +1368,39 @@
       // line. Gated on the trajectory (a genuine recovery from a heavy
       // state), rate-limited, and skipped on safety turns. It fires even on
       // light-positive turns because it is context-aware, not a tone prefix.
-      if (!isSafetyTurn && !_overrideFired && this._emotionalShiftLine) {
+      // Low-content turns (gibberish, a bare "ok") are excluded: a mood-arc
+      // line stacked onto a filler reply produced word salad ("What
+      // happened next? It is good to hear your mood has moved.").
+      const isLowContentTurn =
+        this.currentTurnDialogueAct === 'acknowledgement' ||
+        this.currentTurnDialogueAct === 'test_input' ||
+        String(matchingText || '')
+          .split(/\s+/u)
+          .filter(Boolean).length < 3;
+      if (
+        !isSafetyTurn &&
+        !_overrideFired &&
+        !isLowContentTurn &&
+        this._emotionalShiftLine
+      ) {
         const shiftLine = this._emotionalShiftLine();
         if (shiftLine) {
-          reply = `${reply} ${shiftLine}`.trim();
+          // One question per reply: appending the shift line after a
+          // reply that already asks something produces an interrogation
+          // ("What happened next? ... What helped it turn around?").
+          // When both ask, the shift line REPLACES the generic pool
+          // question: acknowledging the recovery is the more attuned
+          // move than pressing on with the previous thread's question.
+          // Deliberate content requests (recap, a knowledge answer) are
+          // never replaced; their answer is the whole point of the turn.
+          const deliberateReply =
+            matchedRule && ECHO_BLOCKED_TOPICS.has(matchedRule.topic);
+          const bothAsk = /[?؟]/u.test(reply) && /[?؟]/u.test(shiftLine);
+          if (!bothAsk) {
+            reply = `${reply} ${shiftLine}`.trim();
+          } else if (!deliberateReply) {
+            reply = shiftLine;
+          }
         }
       }
 

@@ -10,6 +10,22 @@
   // ========================================================================
 
   const MEMORY_SIZE = 8;
+  // Safety-critical rule topics: turns matching any of these must reach
+  // their protective pool untouched. No override may replace the reply,
+  // no tone coloring, huff, echo, boredom line, or human-touch suffix
+  // may dilute it, and the crisis-aware exit copy applies for the rest
+  // of the session (see engine.memory.safetyModeSince). One shared set
+  // keeps every choke point (overrides, finalization, phase, strategy)
+  // in agreement about what counts as safety-critical.
+  const SAFETY_CRITICAL_TOPICS = new Set([
+    'safety',
+    'safety_method',
+    'third_party_risk',
+    'abuse_disclosure',
+    'eating_distress',
+    'psychosis_risk',
+    'harassment_threat'
+  ]);
   const MAX_CONSECUTIVE_SAME_RULE = 2;
   const RECENT_BOT_MESSAGES_SIZE = 10;
   const SENTIMENT_HISTORY_SIZE = 6;
@@ -153,6 +169,10 @@
     'what_do_i_do',
     'friendship'
   ]);
+  // How many recorded turn frames must carry the active subject before
+  // an explicit "what should I do?" switches from another reflective
+  // question to the concrete advice bridge (see responder-rules.js).
+  const ADVICE_BRIDGE_MIN_TOPIC_TURNS = 3;
   /**
    * Conversational openers (greeting and smalltalk exchanges). They are
    * NOT content threads: "I keep thinking about my old apartment" right
@@ -240,6 +260,7 @@
 
   global.DaryaUtilsConstants = {
     MEMORY_SIZE,
+    SAFETY_CRITICAL_TOPICS,
     MAX_CONSECUTIVE_SAME_RULE,
     RECENT_BOT_MESSAGES_SIZE,
     SENTIMENT_HISTORY_SIZE,
@@ -318,6 +339,7 @@
     SUBJECT_CONTINUATION_MAX_REFRESHES,
     FILLER_TOPICS,
     GENERIC_ADVICE_TOPICS,
+    ADVICE_BRIDGE_MIN_TOPIC_TURNS,
     OPENER_SUBJECT_TOPICS,
     MIXED_SCRIPT_FOREIGN_MIN,
     MIXED_SCRIPT_FOREIGN_RATIO,

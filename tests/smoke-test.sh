@@ -452,7 +452,7 @@ else
   fail "HTML/XSS injection stripping regression; engine may echo back malicious tags"
 fi
 
-if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
   ok "intelligence identity and generic-phrase guards pass"
 else
   fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"

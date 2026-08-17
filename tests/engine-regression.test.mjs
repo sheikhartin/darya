@@ -390,12 +390,12 @@ test('media pool: series and movie asks are distinguished in Persian', () => {
   const movie = freshEngine(FA).respond('یه فیلم خوب معرفی کن');
   const series = freshEngine(FA).respond('یه سریال خوب معرفی کن');
   assert.match(movie, /۱\.|۲\.|۳\./);
-  // A series ask should recommend series, not movies; the media pool series
-  // entries are series titles (Fleabag, Chernobyl, etc.).
-  assert.match(
-    series,
-    /Fleabag|Chernobyl|The Bear|Dark|Succession|Mr\. Robot|Better Call Saul|Arcane|Ted Lasso|Hannibal/i
-  );
+  // A series ask should recommend series, not movies. The broad series
+  // reply always contains one familiar anchor drawn from the pool's
+  // anchor set (see recommendMedia), so asserting on exactly that set
+  // keeps the test deterministic instead of flaking when the random
+  // fill happens to avoid the older spot-check titles.
+  assert.match(series, /The Bear|Dark|Chernobyl|Arcane|Severance/i);
 });
 
 // ---------------------------------------------------------------------------

@@ -91,6 +91,20 @@
     return (
       text
         // Expand abbreviations for matching only (not stored in memory):
+        // Safety-critical first: crisis language arrives in slang far
+        // more often than in formal phrasing ("kms", "unalive myself").
+        // These MUST canonicalize before rule matching so the safety
+        // rule can fire on the register people actually type in.
+        // "kms"/"kys" are the established internet shorthands for kill
+        // myself/yourself, and "unalive" is the moderation-era euphemism
+        // for suicide/kill. Only purely additive expansions live here:
+        // contraction variants ("dont", "cant") are matched inside the
+        // safety patterns themselves so existing "don'?t" rules keep
+        // working unchanged.
+        .replace(/\bkms\b/gi, 'kill myself')
+        .replace(/\bkys\b/gi, 'kill yourself')
+        .replace(/\bunalive (?:myself|me)\b/gi, 'kill myself')
+        .replace(/\bunalive\b/gi, 'die')
         .replace(/\bafaik\b/gi, 'as far as i know')
         .replace(/\bafk\b/gi, 'away from keyboard')
         .replace(/\bbrb\b/gi, 'be right back')
@@ -222,12 +236,37 @@
     return result.join(' ');
   }
 
+  // Death/self-harm lexicon guard: any turn containing one of these
+  // must never be answered by the echo shaper, the pronoun reflection
+  // ("So you wanna die lol jk"), the playful huff, or a boredom line,
+  // regardless of which rule matched. This is the engine's second line
+  // of defense behind the safety rules: even a phrasing the rules
+  // missed cannot be mirrored back or joked about. Kept intentionally
+  // broad; false positives only make a reply slightly more careful.
+  const DEATH_LEXICON_EN =
+    /\b(?:die|died|dying|dead|death|suicide|suicidal|kill|overdose|self.?harm|lifeless|funeral|bury me|grave)\b/i;
+  const DEATH_LEXICON_FA =
+    /(?<!\p{L})(?:بمیرم|مرگ|بمیره|مردن|خودکشی|بکشم|میمیرم|می‌میرم|مرده بودم|قبرم|خاکم کنن|دفنم)(?!\p{L})/u;
+
+  /**
+   * True when the (normalized) turn text contains death or self-harm
+   * vocabulary in either language. Used to gate playful and mirroring
+   * response paths.
+   * @param {string} text - Normalized matching text.
+   * @returns {boolean}
+   */
+  function containsDeathLexicon(text) {
+    const t = String(text || '');
+    return DEATH_LEXICON_EN.test(t) || DEATH_LEXICON_FA.test(t);
+  }
+
   global.DaryaUtilsText = {
     scriptRatio,
     isValidScript,
     truncateExcerpt,
     normalizeForMatching,
     scoreSentiment,
-    reflectPronouns
+    reflectPronouns,
+    containsDeathLexicon
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -94,13 +94,23 @@
       if (uniqueChars.size <= 2 && text.length > 4) {
         return true;
       }
+      // Keyboard-mash detection for Latin input: a long single "word"
+      // with an implausible consonant run (e.g. "asdkjhaskdjh") is
+      // noise, not language. Real English consonant clusters (ngths,
+      // rsts) never contain j, q, x, or z, so the run must include one
+      // of those letters, which keeps legitimate words like
+      // "strengths" out. Applied only to single-token Latin inputs so
+      // real sentences and Persian text are never touched.
       const words = text.split(/\s+/u).filter(Boolean);
       if (
-        words.length <= 2 &&
-        this.lang.stopWords &&
-        words.every((w) => this.lang.stopWords.has(w.toLowerCase()))
+        words.length === 1 &&
+        /^[a-z]+$/i.test(words[0]) &&
+        words[0].length >= 8 &&
+        /(?=[bcdfghjklmnpqrstvwxz]*[jqxz])[bcdfghjklmnpqrstvwxz]{5,}/i.test(
+          words[0]
+        )
       ) {
-        return false;
+        return true;
       }
       return false;
     },

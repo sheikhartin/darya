@@ -48,7 +48,7 @@
         'explain'
       ],
       fa: 'بیت‌کوین اولین ارز دیجیتال جهان است که در ۲۰۰۹ با یک مقاله‌ی ناشناس شروع شد و بر بستر بلاک‌چین کار می‌کند: یک دفتر کل غیرمتمرکز که بدون بانک مرکزی، تراکنش‌ها را ثبت می‌کند. ارزشش به شدت نوسان دارد؛ گاهی چند ده درصد در ماه بالا و پایین می‌شود. نکته‌ی مهم: پولی که می‌توانی از دست بدهی را سرمایه‌گذاری کن، هرگز قرض نکن، و هر «سود تضمینی» یا طرح پانزی را جدی نگیر.',
-      en: 'Bitcoin is the world first cryptocurrency, born in 2009 from an anonymous paper, and it runs on a blockchain: a decentralized ledger that records transactions without any central bank. Its value is extremely volatile, sometimes moving tens of percent in a single month. The key rule: only invest money you can afford to lose, never borrow to trade, and treat any guaranteed-profit or ponzi scheme as a scam.'
+      en: 'Bitcoin is the first cryptocurrency in the world, born in 2009 from an anonymous paper, and it runs on a blockchain: a decentralized ledger that records transactions without any central bank. Its value is extremely volatile, sometimes moving tens of percent in a single month. The key rule: only invest money you can afford to lose, never borrow to trade, and treat any guaranteed-profit or ponzi scheme as a scam.'
     },
     {
       id: 'stock_market',

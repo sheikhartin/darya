@@ -29,6 +29,8 @@
     action: ['dynamic action', 'اکشن پویا'],
     slice_of_life: ['gentle everyday storytelling', 'روایت لطیف روزمره'],
     sports: ['compelling sports story', 'روایت ورزشی جذاب'],
+    iranian: ['landmark Iranian cinema', 'سینمای ماندگار ایران'],
+    persian: ['beloved Persian music', 'موسیقی به‌یادماندنی ایرانی'],
     rock: ['distinctive rock', 'راک متمایز'],
     jazz: ['expressive jazz', 'جاز پراحساس'],
     classical: ['timeless classical music', 'موسیقی کلاسیک ماندگار'],
@@ -97,7 +99,12 @@
         ['The Babadook', 2014],
         ['His House', 2020],
         ['Let the Right One In', 2008],
-        ['Under the Shadow', 2016]
+        ['Under the Shadow', 2016],
+        ['The Thing', 1982],
+        ['The Shining', 1980],
+        ['Possession', 1981],
+        ['Rosemary\u2019s Baby', 1968],
+        ['Suspiria', 1977]
       ],
       animation: [
         ['Song of the Sea', 2014],
@@ -105,6 +112,18 @@
         ['The Red Turtle', 2016],
         ['Ernest and Celestine', 2012],
         ['I Lost My Body', 2019]
+      ],
+      iranian: [
+        ['A Separation (Asghar Farhadi)', 2011],
+        ['Taste of Cherry (Abbas Kiarostami)', 1997],
+        ['Children of Heaven (Majid Majidi)', 1997],
+        ['Close-Up (Abbas Kiarostami)', 1990],
+        ['The Salesman (Asghar Farhadi)', 2016],
+        ['Where Is the Friend\u2019s House? (Abbas Kiarostami)', 1987],
+        ['The Color of Paradise (Majid Majidi)', 1999],
+        ['About Elly (Asghar Farhadi)', 2009],
+        ['Offside (Jafar Panahi)', 2006],
+        ['Hit the Road (Panah Panahi)', 2021]
       ]
     },
     series: {
@@ -309,6 +328,18 @@
         ['Kaitlyn Aurelia Smith - Ears', 2016],
         ['Brian Eno - Apollo', 1983],
         ['Visible Cloaks - Reassemblage', 2017]
+      ],
+      persian: [
+        ['Googoosh - Do Panjereh', 1971],
+        ['Mohammad-Reza Shajarian - Bidad', 1985],
+        ['Ebi - Shab-e Niloufari', 1994],
+        ['Mohsen Namjoo - Toranj', 2007],
+        ['Dariush - Faryad Zire Ab', 1978],
+        ['Farhad Mehrad - Jomeh', 1971],
+        ['Hayedeh - Soghati', 1978],
+        ['Kayhan Kalhor - Silent City', 2008],
+        ['Homayoun Shajarian - Naqsh-e Khial', 2004],
+        ['Viguen - Mahtab', 1954]
       ]
     },
     podcast: {

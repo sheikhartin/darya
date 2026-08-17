@@ -180,6 +180,12 @@
     'You have logged {count} mood check-in(s) this session, averaging {average} out of 10, with your latest at {last}. Overall the trend has been {direction}.',
     'Looking at your check-ins: {count} in total, averaging {average}, and the direction is {direction}. Your latest was a {last}.'
   ];
+  // Single-sample summary: one check-in has no trend, so no direction
+  // language (see responder-mood.js).
+  R.moodSingleSummaryResponses = [
+    'You have logged one mood check-in this session: a {last} out of 10. Log a few more over time and I can tell you how the arc is moving.',
+    'So far there is one check-in on record, a {last} out of 10. After another one or two I can read back a real direction.'
+  ];
   R.moodNoDataResponse =
     'You have not logged a mood yet this session. Just say "mood check" whenever you want to start.';
   R.moodReleaseResponses = [
@@ -268,6 +274,18 @@
     bothKnown: [
       'Yes, I remember: your name is {name} and you are {age} years old. You told me both in this conversation and I have kept them.',
       'I remember: {name}, {age} years old. Both were shared in this chat and I held onto them.'
+    ],
+    locationStored: [
+      'Noted: {location}. I will remember that for our conversation.',
+      '{location}, got it. I will keep that in mind while we talk.'
+    ],
+    locationKnown: [
+      'You told me you live in {location}, and I remembered.',
+      'From what you shared, you live in {location}.'
+    ],
+    locationUnknown: [
+      'Honestly, you have not told me where you live. If you share it, I will remember for this conversation.',
+      'I do not know yet; you have not mentioned where you live. Tell me and I will keep it in mind.'
     ],
     noneKnown: [
       'Anything you share in this conversation stays with me. You have not told me your name or age yet; whenever you like, tell me and I will remember.',

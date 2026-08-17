@@ -157,6 +157,20 @@
         const values = log.map((entry) => entry.value);
         const last = values[values.length - 1];
         const first = values[0];
+        // A single check-in has no trend: saying "the direction is
+        // fairly steady" about one sample reads as statistical
+        // nonsense. Use the dedicated single-sample template instead.
+        if (values.length === 1 && this.lang.moodSingleSummaryResponses) {
+          this.lastTurnQuickReplies = [];
+          const single = this._pickVaried(
+            this.lang.moodSingleSummaryResponses,
+            {
+              ignoreQuestionBudget: true,
+              trackQuestions: false
+            }
+          );
+          return single.replace(/\{last\}/gu, String(last));
+        }
         const direction =
           last > first
             ? this.lang.moodDirectionUp

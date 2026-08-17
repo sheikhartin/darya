@@ -138,6 +138,15 @@
     'There is no single right answer, but together we can find a step that fits.'
   ];
 
+  // Advice bridge: served when "what should I do?" arrives after
+  // several turns on one lived topic. Concrete micro-steps, not another
+  // reflective question (see responder-rules.js).
+  R.adviceBridgeResponses = [
+    'You have been carrying this for a while, so let me offer something concrete. Three small starting points: write down the single worst moment of it and what you wish had happened; pick one trusted person and tell them just that moment; and decide one tiny boundary or step you can take this week. Which of those feels most doable?',
+    'Here is a concrete way in, since you have sat with this a while: first, name the one thing about the situation you can actually control. Second, choose the smallest action on it you could take tomorrow. Third, plan who you would tell about it. Small, real, and yours. Want to start with the first one?',
+    'Let me be practical with you. When something has weighed this long, three moves usually help: capture it on paper exactly as it happened, rehearse one sentence you wish you could say, and pick a single next step so small it feels almost silly. Which one shall we try together?'
+  ];
+
   R['ruleUnsureTopic'] = [
     'No worries. Let us start simple: which one feels closest to your mind right now?',
     'You do not have to pick right away. My suggestion is to start with the first topic you mentioned.',

@@ -12,6 +12,215 @@
     return parseFloat(ascii.replace(/٫/g, '.'));
   }
 
+  // ======================================================================
+  // Full expression evaluator (shunting-yard)
+  //
+  // The legacy two-operand matcher silently answered a FRAGMENT of a
+  // longer expression: "2+2*3" matched the trailing "2*3" and replied
+  // "2 * 3 = 6" as if that were the answer, a genuine correctness bug
+  // (a homework user gets a confidently wrong result). The evaluator
+  // below parses the whole expression with correct precedence and
+  // parentheses; the two-operand paths remain for phrasings with
+  // surrounding words ("what is 2 + 2?").
+  // ======================================================================
+
+  /** Binding power per operator; ^ binds tightest and is right-assoc. */
+  const OP_PRECEDENCE = { '+': 1, '-': 1, '*': 2, '/': 2, '^': 3 };
+  /** Maximum expression length accepted by the evaluator. */
+  const EXPRESSION_MAX_LENGTH = 120;
+
+  /**
+   * Tokenizes and evaluates a pure arithmetic expression supporting
+   * + - * / ^ ( ) with ASCII/Persian digits, Persian decimal separator,
+   * unary minus, and the x/×/÷ operator aliases. Returns the numeric
+   * result, or null when the text is not a fully-valid expression (so
+   * a fragment is never answered as if it were the whole input).
+   * @param {string} raw - Candidate expression text.
+   * @returns {number|null}
+   */
+  function evaluateExpression(raw) {
+    const text = String(raw || '')
+      .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+      .replace(/٫/g, '.')
+      .replace(/[×xX]/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/\s+/g, '');
+    if (
+      !text ||
+      text.length > EXPRESSION_MAX_LENGTH ||
+      /[^0-9.+\-*/^()]/.test(text)
+    ) {
+      return null;
+    }
+    // Tokenize: numbers and single-char operators/parens.
+    const tokens = text.match(/(?:\d+(?:\.\d+)?|\.\d+|[+\-*/^()])/g);
+    if (!tokens || tokens.join('') !== text) {
+      return null;
+    }
+    // Shunting-yard to RPN, treating a leading/post-operator '-' as
+    // unary (encoded as 'n', binding tighter than ^).
+    const output = [];
+    const stack = [];
+    let prev = null;
+    for (const token of tokens) {
+      if (/^(?:\d|\.)/.test(token)) {
+        output.push(parseFloat(token));
+      } else if (token === '(') {
+        stack.push(token);
+      } else if (token === ')') {
+        while (stack.length && stack[stack.length - 1] !== '(') {
+          output.push(stack.pop());
+        }
+        if (!stack.length) {
+          return null;
+        }
+        stack.pop();
+      } else {
+        const isUnaryMinus =
+          token === '-' &&
+          (prev === null || (prev !== ')' && !/^(?:\d|\.)/.test(prev)));
+        if (isUnaryMinus) {
+          stack.push('n');
+        } else {
+          const prec = OP_PRECEDENCE[token];
+          while (stack.length) {
+            const top = stack[stack.length - 1];
+            if (top === '(') {
+              break;
+            }
+            const topPrec = top === 'n' ? 4 : OP_PRECEDENCE[top];
+            // ^ is right-associative; everything else left-associative.
+            if (topPrec > prec || (topPrec === prec && token !== '^')) {
+              output.push(stack.pop());
+            } else {
+              break;
+            }
+          }
+          stack.push(token);
+        }
+      }
+      prev = token;
+    }
+    while (stack.length) {
+      const op = stack.pop();
+      if (op === '(') {
+        return null;
+      }
+      output.push(op);
+    }
+    // Evaluate the RPN.
+    const values = [];
+    for (const item of output) {
+      if (typeof item === 'number') {
+        values.push(item);
+      } else if (item === 'n') {
+        if (!values.length) {
+          return null;
+        }
+        values.push(-values.pop());
+      } else {
+        if (values.length < 2) {
+          return null;
+        }
+        const b = values.pop();
+        const a = values.pop();
+        let value;
+        switch (item) {
+          case '+':
+            value = a + b;
+            break;
+          case '-':
+            value = a - b;
+            break;
+          case '*':
+            value = a * b;
+            break;
+          case '/':
+            value = b === 0 ? NaN : a / b;
+            break;
+          case '^':
+            value = Math.pow(a, b);
+            break;
+          default:
+            return null;
+        }
+        values.push(value);
+      }
+    }
+    if (values.length !== 1 || !Number.isFinite(values[0])) {
+      return null;
+    }
+    return values[0];
+  }
+
+  /**
+   * Answers a multi-operator arithmetic expression when the message is
+   * (or clearly frames) a complete expression with at least two
+   * operators or parentheses, e.g. "2+2*3", "(2+3)*4", or "what is
+   * 10-4/2?". Single-operator inputs keep the friendlier legacy paths.
+   * Returns the formatted answer string or null.
+   * @param {object} engine - Engine instance (for language and followup).
+   * @param {string} text - Normalized user text.
+   * @returns {string|null}
+   */
+  function handleFullExpression(engine, text) {
+    // Pull the longest expression-looking span out of the message. A
+    // leading unary minus is part of the expression (-(3+4)*2 = -14).
+    const spanMatch = String(text).match(
+      /-?\s*[0-9۰-۹(][0-9۰-۹.٫+\-*/^()×÷xX\s]*[0-9۰-۹)]/u
+    );
+    if (!spanMatch) {
+      return null;
+    }
+    const span = spanMatch[0].trim();
+    // Only take over when the span really is a compound expression:
+    // two or more binary operators, or parentheses. This leaves plain
+    // "2+2" to the legacy path (which words the answer with operator
+    // names in Persian).
+    const operatorCount = (span.match(/[+\-*/^×÷]/g) || []).length;
+    const hasParens = /[()]/.test(span);
+    if (operatorCount < 2 && !hasParens) {
+      return null;
+    }
+    // The span must be the arithmetic core of the message: apart from
+    // an optional question frame ("what is", «چند می‌شه»), no other
+    // words may surround it, so "call me at 10+2pm-ish" never matches.
+    const QUESTION_FRAME =
+      // eslint-disable-next-line max-len
+      /(?:what\s+is|what'?s|calculate|compute|solve|equals?|=|\?|چند\s*(?:می‌شه|میشه|می‌شود|است|میشود)?|چقدر\s*(?:می‌شه|میشه)?|مساوی|برابر|حساب کن|محاسبه کن|؟)/giu;
+    const remainder = String(text)
+      .replace(span, ' ')
+      .replace(QUESTION_FRAME, ' ')
+      .trim();
+    if (/[\p{L}]/u.test(remainder)) {
+      return null;
+    }
+    if (
+      /\/\s*0(?![.٫0-9])/.test(
+        span.replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+      )
+    ) {
+      return engine.lang.code === 'fa'
+        ? 'تقسیم بر صفر تعریف‌نشده است.'
+        : 'Dividing by zero is undefined.';
+    }
+    const value = evaluateExpression(span);
+    if (value === null) {
+      return null;
+    }
+    const rounded = Math.round(value * 100) / 100;
+    if (engine.lang.code === 'fa') {
+      const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+      const toPersian = (n) =>
+        String(n)
+          .replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)])
+          .replace(/\./g, '٫');
+      const spanFa = span.replace(/\s+/g, ' ');
+      return `${spanFa} مساوی است با ${toPersian(rounded)}.`;
+    }
+    return `${span.replace(/\s+/g, ' ')} = ${rounded}.`;
+  }
+
   // Common Persian number words for word-form arithmetic ("پنج به علاوه
   // سه چند می‌شه؟"). Keys are sorted longest-first when building the
   // alternation so "پانزده" matches before "پنج".
@@ -95,6 +304,14 @@
   }
 
   function handleFactualQuestion(engine, text) {
+    // Compound expressions first: "2+2*3", "(2+3)*4", "what is 10-4/2".
+    // The legacy two-operand paths below would otherwise answer a
+    // FRAGMENT of the expression (the "2*3" inside "2+2*3") and present
+    // it as the whole answer.
+    const fullExpression = handleFullExpression(engine, text);
+    if (fullExpression) {
+      return fullExpression;
+    }
     // Operands support integers and decimals. Persian text may use the
     // Persian decimal separator "٫" (U+066B) or the ASCII dot. The
     // negative lookbehind prevents matching a *substring* of a longer
@@ -247,10 +464,17 @@
     // English equivalent ("square root of 144"); both are consumed so a
     // bare number, a Persian "از", or an English "of" all resolve.
     const sqrtMatch = text.match(
-      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:(?:از|of)\s*)?\(?\s*([۰-۹0-9.٫]+)\s*\)?/iu
+      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:(?:از|of)\s*)?\(?\s*(-?\s*[۰-۹0-9.٫]+)\s*\)?/iu
     );
-    if (sqrtMatch && !/[+\-*xX/^÷]/.test(text.slice(0, sqrtMatch.index))) {
-      const n = parseFaNumber(sqrtMatch[1]);
+    if (sqrtMatch && !/[+*xX/^÷]/.test(text.slice(0, sqrtMatch.index))) {
+      const n = parseFaNumber(String(sqrtMatch[1]).replace(/\s+/g, ''));
+      // A negative radicand has no real square root; say so honestly
+      // instead of falling to the unknown pool with NaN.
+      if (n < 0) {
+        return engine.lang.code === 'fa'
+          ? 'عدد منفی جذر حقیقی ندارد؛ جذر اعداد منفی به حوزه‌ی اعداد مختلط می‌رود.'
+          : 'A negative number has no real square root; that territory belongs to complex numbers.';
+      }
       const result = Math.round(Math.sqrt(n) * 100) / 100;
       const isPersian = engine.lang.code === 'fa';
       const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';

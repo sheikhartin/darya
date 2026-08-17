@@ -17,6 +17,7 @@
     ENTITY_CONFIDENCE_DECAY_STALE_BASE,
     ENTITY_CONFIDENCE_DECAY_STALE_RATE,
     TEST_INPUT_PATTERNS,
+    SAFETY_CRITICAL_TOPICS,
     normalizeForMatching
   } = global.DaryaUtils;
 
@@ -142,22 +143,42 @@
     },
 
     /**
-     * Returns a varied farewell.
+     * Returns a varied farewell. After a safety-critical event this
+     * session, the farewell restates the crisis resources: the person
+     * leaving after a heavy disclosure must carry the numbers with
+     * them, not a breezy goodbye.
      * @returns {string}
      */
     farewell() {
-      const text = this._pickVaried(this.lang.farewells);
+      const pool =
+        this.memory.safetyModeSince != null && this.lang.farewellsCaring
+          ? this.lang.farewellsCaring
+          : this.lang.farewells;
+      const text = this._pickVaried(pool, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
       this.memory.rememberBotMessage(text);
       return text;
     },
 
     /**
-     * Returns a neutral confirmation message asking if the user really
-     * wants to end the conversation.
+     * Returns a confirmation message asking if the user really wants to
+     * end the conversation. After a safety-critical event this session,
+     * the copy switches to a crisis-aware variant: never "I will wish
+     * you well" phrasing to someone who disclosed ideation, and the
+     * door stays visibly open.
      * @returns {string}
      */
     exitConfirmation() {
-      const text = this._pickVaried(this.lang.exitConfirmMessages);
+      const pool =
+        this.memory.safetyModeSince != null && this.lang.exitConfirmCaring
+          ? this.lang.exitConfirmCaring
+          : this.lang.exitConfirmMessages;
+      const text = this._pickVaried(pool, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
       this.memory.rememberBotMessage(text);
       return text;
     },
@@ -192,7 +213,7 @@
     // ======================================================================
 
     selectResponseStrategy({ matchedRule, blendKey, matchingText }) {
-      if (matchedRule?.topic === 'safety') {
+      if (matchedRule && SAFETY_CRITICAL_TOPICS.has(matchedRule.topic)) {
         return 'safety';
       }
       if (matchedRule?.topic === 'professional_boundary') {
@@ -268,7 +289,7 @@
       if (matchedRule?.topic === 'negation') {
         return 'negation';
       }
-      if (matchedRule?.topic === 'safety') {
+      if (matchedRule && SAFETY_CRITICAL_TOPICS.has(matchedRule.topic)) {
         return 'safety';
       }
       if (this._isAcknowledgement(text)) {

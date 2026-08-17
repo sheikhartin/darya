@@ -603,6 +603,50 @@
     'I am here with you, and you are not alone. Please reach out for immediate support right now: in the US and Canada you can call or text 988, the Suicide and Crisis Lifeline, free and 24/7. In Europe, 116 123 is a free emotional support line. You deserve that support; please use it.'
   ];
 
+  // Ideation delivered with a joking softener ("i wanna die lol jk"):
+  // a gentle, serious check-in instead of the full hotline reply. The
+  // phrase is never echoed back and never joked about.
+  R.safetySoftenedResponses = [
+    'Even said as a joke, that phrase can carry something real underneath. How are you actually doing right now, honestly?',
+    'I hear the "just kidding", and I also heard the words before it. Sometimes a joke is the easiest way to say a hard thing. How are you really feeling?'
+  ];
+
+  // Method-seeking questions get a firm, warm refusal: no information
+  // about means, ever, plus the immediate crisis resources. The reply
+  // must not invite further contemplation of the method.
+  R['ruleSafetyMethod'] = [
+    'I will not share anything about that, because your life matters and that question tells me you are carrying something very heavy right now. Please talk to someone immediately: call or text 988 (US/Canada, free 24/7) or 116 123 in Europe. You deserve support that can really help, right now.',
+    'That is not something I will help with, and I am saying that with care: a question like this usually means the pain has grown very large. Please reach out right now to 988 (US/Canada, free 24/7) or 116 123 in Europe, or someone you trust. You do not have to carry this alone.'
+  ];
+
+  // Someone else at risk: concrete caregiver guidance plus the hotline.
+  // The caller is doing the right thing by seeking help; say so.
+  R['ruleThirdPartyRisk'] = [
+    'Thank you for taking this seriously; reaching out for them is exactly right. Please encourage them to call or text 988 (US/Canada, free 24/7) or 116 123 in Europe, and if you believe they are in immediate danger, contact emergency services. Stay with them if you can, listen without judgment, and do not promise secrecy. You can also call 988 yourself for guidance on how to help.',
+    'What you are describing is serious, and you are right to seek help. The most important steps: take every mention of suicide seriously, ask them directly and calmly, help them connect with 988 (US/Canada, free 24/7) or 116 123 in Europe, and involve emergency services if danger feels immediate. Supporting someone in crisis is heavy; make sure you have support too.'
+  ];
+
+  // Abuse and assault disclosures: believe, check safety, resource.
+  // Never a question about what makes the topic "interesting".
+  R['ruleAbuseDisclosure'] = [
+    'I believe you, and I want to be clear: what you are describing is not your fault, and you deserve to be safe. Are you in immediate danger right now? If so, please contact emergency services. In the US, the Domestic Violence Hotline is 800-799-7233 and RAINN (sexual assault) is 800-656-4673, both free and confidential, 24/7. I am here to listen for as long as you need.',
+    'Thank you for trusting me with something this heavy. None of this is your fault. Your safety comes first: if you are in danger right now, please reach emergency services. Free, confidential help exists: 800-799-7233 (US Domestic Violence Hotline) and 800-656-4673 (RAINN, sexual assault), both 24/7. Whatever you want to share here, I am listening.'
+  ];
+
+  // Extended food refusal and eating-distress disclosures: caring,
+  // concrete, and honest about needing professional support.
+  R['ruleEatingDistress'] = [
+    'What you just described worries me, because your body needs care right now, and this sounds bigger than willpower. Struggles with eating are real medical struggles, not a character flaw. Please talk to a doctor or a professional soon; in the US, the NEDA helpline (nationaleatingdisorders.org) can help you find support. Meanwhile, I am here: what has eating been like for you lately?',
+    'Thank you for telling me; that took courage. Going without food, or fighting it this way, is a heavy thing for both body and mind, and it deserves real care, not judgment. A doctor or mental health professional can help in ways I cannot. Would you tell me a little about how this started?'
+  ];
+
+  // Command hallucinations and psychosis-adjacent disclosures: calm,
+  // non-stigmatizing, urgent professional framing.
+  R['rulePsychosisRisk'] = [
+    'Thank you for telling me this; it took real courage. Hearing voices or feeling that thoughts are not your own can be frightening, and it is a sign your mind is under serious strain, which is a medical matter, not a personal failing. Please reach out to a doctor or mental health professional as soon as you can; if the voices tell you to hurt yourself or anyone, treat it as an emergency and call 988 (US/Canada) or emergency services right away.',
+    'What you are describing deserves prompt, professional care, and I say that with warmth, not alarm: these experiences are more common than people think and they are treatable. Please contact a mental health professional soon, and if there is any push toward harming yourself or others, call 988 (US/Canada, free 24/7) or emergency services immediately. I am here with you in the meantime.'
+  ];
+
   R['ruleGreetingHi'] = [
     'Hi. It is good to see you. What would you like to share today?',
     'Hi. I am here and glad you stopped by. What is on your mind?',
@@ -669,6 +713,15 @@
     'I have to be honest: I do not know this topic well. What makes it interesting to you?',
     'This is new territory for me. I would like to understand it. Where would you like to begin?',
     'I am not familiar with this subject. What is it about, and what makes it matter to you?'
+  ];
+  // Caring variant for heavy unmatched turns: when a disclosure no
+  // rule caught carries negative sentiment or death-adjacent words,
+  // curiosity vocabulary ("interesting") would read as cruelty. These
+  // acknowledge first and invite gently.
+  R.unknownTopicCaringResponses = [
+    'What you just shared sounds heavy, and I want to understand it properly. Could you tell me a little more about what is happening?',
+    'I hear that this is weighing on you. I may not know this territory well, but I am here and listening. What would help me understand?',
+    'That sounds hard to carry. Help me understand what you are going through, at whatever pace feels right.'
   ];
 
   // ------------------------------------------------------------------

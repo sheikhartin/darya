@@ -146,12 +146,13 @@ class DaryaResponseEngine {
     // the boredom override in _finalizeReply never replaces it (see
     // responder-promise.js). Reset at the start of every turn.
     this._promiseCircleBackFired = false;
-    // Session-only user profile: name and age the user discloses during
-    // the conversation, so "چند سالمه؟" and "what is my name?" can be
-    // answered honestly instead of evasively. Purely in-memory: cleared
-    // with the engine on every new chat, never persisted (see
-    // responder-overrides.js _handleUserProfileTurn).
-    this._userProfile = { name: null, age: null };
+    // Session-only user profile: name, age, and location the user
+    // discloses during the conversation, so "چند سالمه؟", "what is my
+    // name?", and "where do I live?" can be answered honestly instead
+    // of evasively. Purely in-memory: cleared with the engine on every
+    // new chat, never persisted (see responder-profile.js
+    // _handleUserProfileTurn).
+    this._userProfile = { name: null, age: null, location: null };
     // Last math/factual follow-up sentence, so consecutive answers never
     // append the same redirect twice in a row (the full answer string is
     // what lands in recentBotMessages, so pool recency filtering alone
