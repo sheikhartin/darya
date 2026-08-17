@@ -201,7 +201,7 @@
       // aspiration ("I want to become a programmer"), which stays on
       // learning_advice.
       // eslint-disable-next-line max-len
-      /\b(my job|my work|my boss|my manager|my career|my coworker|my coworkers|got fired|got laid off|job interview|my interview|job applications?|my resume|my cv|working (?:long|hard|late|overtime|too much|\d+ hours?|twelve|ten)\b|work from home|working from home|remote work|night shifts?|shift work|my team (?:messages|texts|emails|calls|keeps messaging)|sent (?:over |more than )?\d+ applications|no callbacks?|rejection letters?|unemployed|unemployment|job hunt(?:ing)?|overwork(?:ed|ing)?|work has been|job has been|at work\b|job stress|work stress|workload|burned out at work|i(?:'m| am| was| became| just became| am now) a (?:web designer|graphic designer|designer|programmer|coder|developer|game developer|game designer))\b/i,
+      /\b(my job|my work|my boss|my manager|my career|my coworker|my coworkers|got fired|got laid off|job interview|my interview|job applications?|recruiters? ghost(?:ed|ing)? me|ghosted by (?:\d+|one|two|three|four|five)? ?recruiters?|every job post feels fake|ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless|my resume|my cv|working (?:long|hard|late|overtime|too much|\d+ hours?|twelve|ten)\b|work from home|working from home|remote work|night shifts?|shift work|my team (?:messages|texts|emails|calls|keeps messaging)|sent (?:over |more than )?\d+ applications|no callbacks?|rejection letters?|unemployed|unemployment|job hunt(?:ing)?|overwork(?:ed|ing)?|work has been|job has been|at work\b|job stress|work stress|workload|burned out at work|i(?:'m| am| was| became| just became| am now) a (?:web designer|graphic designer|designer|programmer|coder|developer|game developer|game designer))\b/i,
       R['ruleWork']
     ),
 
@@ -410,6 +410,93 @@
       // eslint-disable-next-line max-len
       /\b(friendships? .{0,14}online|friends .{0,12}online|online friends?|followers? but (?:no one|nobody)|[0-9,]+ followers? (?:but|yet|and) no one|no one to call|nobody to call|hollow (?:friendships?|online)|friendships? .{0,12}hollow|friends .{0,12}hollow|only talk online|talk to my friends .{0,10}(?:online|through (?:the internet|discord|text|a screen))|social life .{0,10}(?:on my phone|online))\b/i,
       R['ruleLonelinessOnline']
+    ),
+
+    rule(
+      'deepfake_safety',
+      74,
+      /\b(deepfakes?|fake nude|non.?consensual (?:image|photo|porn)|intimate image|sextortion|ruin my reputation)\b/i,
+      R['ruleDeepfakeSafety']
+    ),
+
+    rule(
+      'online_harassment',
+      73,
+      /\b(doxx(?:ed|ing)?|dogpil(?:e|ed|ing)|online pile.?on|cyberbull(?:y|ied|ying)|being harassed online)\b/i,
+      R['ruleOnlineHarassment']
+    ),
+
+    rule(
+      'misinformation',
+      72,
+      // eslint-disable-next-line max-len
+      /\b(tell if (?:a |this )?(?:video|image|photo) is ai|video is ai generated|trust news on (?:tiktok|instagram|social media)|misinformation|disinformation|fake news)\b/i,
+      R['ruleMisinformation']
+    ),
+
+    rule(
+      'ai_career',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless (?:because of|with) ai|ai (?:take|replace|destroy).{0,20}(?:career|profession|degree))\b/i,
+      R['ruleAiCareer']
+    ),
+
+    rule(
+      'ai_companion',
+      68,
+      // eslint-disable-next-line max-len
+      /\b(ai (?:companion|girlfriends?|boyfriends?|friend|generated dating profiles?|dating profile)|chatbot (?:companion|girlfriend|boyfriend)|emotionally dependent on (?:ai|a chatbot)|dependent on (?:ai|a chatbot)|attached to (?:ai|a chatbot)|parasocial relationship|replace (?:a |my )?therapist)\b/i,
+      R['ruleAiCompanion']
+    ),
+
+    rule(
+      'ai_cognition',
+      68,
+      // eslint-disable-next-line max-len
+      /\b(worse at thinking|think(?:ing)? for myself|ai is making me (?:lazy|stupid|dumb|worse)|rely(?:ing)? on ai|cannot (?:work|think|write|study) without ai|cannot (?:work|think|write|study) anything without ai)\b/i,
+      R['ruleAiCognition']
+    ),
+
+    rule(
+      'digital_wellbeing',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(digital detox|social media detox|ai slop|feed is .{0,20}(?:ads|bots)|dead mall .{0,20}bots|short (?:videos?|form video).{0,20}(?:attention|focus)|attention span|deleted (?:instagram|tiktok|social media)|quit social media|leave social media|dumb phone|flip phone|low dopamine|analog hobby|unreachable|notifications? .{0,35}(?:on call|overwhelm|anxious)|algorithm recommendations?|recommendation fatigue|choice overload|streaming .{0,20}(?:too many|pick nothing)|battle passes?|live service games?|comfort shows?|phone-free|offline (?:friends|hobby|life)|third places?)\b/i,
+      R['ruleDigitalWellbeing']
+    ),
+
+    rule(
+      'doom_spending',
+      63,
+      /\b(doom spend(?:ing)?)\b/i,
+      R['ruleDoomSpending']
+    ),
+    rule('bnpl', 63, /\b(buy now pay later|bnpl)\b/i, R['ruleBnpl']),
+    rule(
+      'online_scam',
+      63,
+      /\b(influencer scam|online scam)\b/i,
+      R['ruleOnlineScam']
+    ),
+    rule(
+      'housing_pressure',
+      61,
+      /\b(cannot buy a home|can'?t buy a home|feel behind .{0,20}(?:home|house)|rent even with .{0,20}(?:job|work))\b/i,
+      R['ruleHousingPressure']
+    ),
+    rule(
+      'climate_anxiety',
+      60,
+      /\b(climate (?:change|anxiety|crisis).{0,35}(?:future|pointless|scared|anxious|plan))\b/i,
+      R['ruleClimateAnxiety']
+    ),
+    rule(
+      'political_division',
+      60,
+      // eslint-disable-next-line max-len
+      /\b(political (?:polarization|division).{0,35}(?:friends?|friendships?|family|relationship)|politics .{0,20}(?:destroying|ruining).{0,20}(?:friend|family|relationship))\b/i,
+      R['rulePoliticalDivision']
     ),
 
     // Blanket generalizations and stereotypes ("all women are the same",

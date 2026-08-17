@@ -16,7 +16,7 @@
  *   6. Enter on an item activates it (the theme flips) and returns
  *      focus to the trigger.
  *
- * The test skips itself (rather than failing) when no Chrome/Chromium
+ * The test fails explicitly when no Chrome/Chromium
  * binary is available, so the suite stays green on machines without one.
  */
 
@@ -102,7 +102,7 @@ function startStaticServer() {
 /**
  * Locates a Chrome/Chromium binary without downloading anything. An
  * explicit DARYA_CHROME env var wins (handy for CI or for forcing the
- * test to skip via a bogus path); otherwise it scans PATH, then a few
+ * test to fail via a bogus path); otherwise it scans PATH, then a few
  * standard install locations.
  * @returns {string|null}
  */
@@ -165,8 +165,8 @@ test(
     let browser;
     try {
       if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the e2e keyboard test'
+        throw new Error(
+          'no Chrome/Chromium binary found; cannot run the e2e keyboard test'
         );
       }
       try {
@@ -183,7 +183,7 @@ test(
           ]
         });
       } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+        throw new Error('headless Chrome failed to launch: ' + err.message);
       }
 
       const page = await browser.newPage();
@@ -462,8 +462,8 @@ test(
     let browser;
     try {
       if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the e2e dialog test'
+        throw new Error(
+          'no Chrome/Chromium binary found; cannot run the e2e dialog test'
         );
       }
       try {
@@ -480,7 +480,7 @@ test(
           ]
         });
       } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+        throw new Error('headless Chrome failed to launch: ' + err.message);
       }
 
       const page = await browser.newPage();

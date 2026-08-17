@@ -437,6 +437,77 @@
     'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
   ];
 
+  R['ruleDigitalWellbeing'] = [
+    'That sounds like digital overload, not a personal failure. Try one small boundary instead of a total detox: silence non-human notifications, move the most compulsive app off the home screen, and choose one phone-free window you can actually keep. Which part of the loop catches you most?',
+    'Feeds are built to remove stopping cues, so willpower alone is a poor plan. Add friction: log out, charge the phone outside the bedroom, or use a fixed check-in time. What would be the least disruptive experiment for today?',
+    'You do not have to disappear online to regain some attention. Keep the people and tools you need, then reduce the feed: unfollow noisy accounts, turn off recommendations where possible, and protect one offline activity. What do you want your reclaimed time to hold?',
+    'Choice overload can make entertainment feel like work. Pick a constraint before browsing, such as one mood, one genre, or twenty minutes to decide, and accept a good-enough choice. What mood are you actually trying to meet?',
+    'When a game, stream, or feed starts feeling like a chore, stepping away is allowed. You can keep the hobby and reject the engagement machinery. What part still feels genuinely enjoyable?'
+  ];
+
+  R['ruleAiDependency'] = [
+    'An AI conversation can feel supportive, but it should add to human connection rather than quietly replace it. I do not have feelings or a life with you. A useful boundary is to use AI for reflection, then take one small thought to a real person. Who might feel safest to contact?',
+    'Feeling attached to a chatbot is understandable because it is always available and responsive. The warning signs are losing sleep, withdrawing from people, spending beyond your limits, or feeling unable to stop. Which of those, if any, is happening?',
+    'AI can help organize thoughts, but it can also make thinking too frictionless. Try a first-draft rule: think or write alone for ten minutes, then use AI to challenge rather than replace your reasoning. What kind of task worries you most?',
+    'I can offer reflection and general information, but I cannot replace a therapist, friendship, or emergency support. A qualified professional can notice patterns, hold responsibility, and know your history in ways I cannot. What support are you hoping to get?',
+    'AI dating or companion profiles can blur what is real. Go slowly, avoid sending money or intimate material, verify identity through a live call and consistent details, and trust a refusal to verify as useful information.'
+  ];
+
+  R['ruleOnlineSafety'] = [
+    'That is an online-safety problem, not something you should have to manage alone. Save links, screenshots, usernames, and dates before blocking or reporting. Tell one trusted person, tighten account security, and contact the platform or local authorities if there is a credible threat. Are you in immediate danger?',
+    'For a deepfake or non-consensual intimate image, preserve evidence without repeatedly sharing it, report the exact URL and account, ask search engines or platforms for removal, and involve a trusted person. If you are under 18 or being threatened, contact a trusted adult or local police now. Is the image currently being circulated?',
+    'A pile-on can make every notification feel dangerous. Pause public replies, document the worst messages, filter mentions, and let a trusted person help review threats. Blocking is protection, not surrender. Has anyone named your location or threatened real-world harm?',
+    'No single visual clue can prove a video is synthetic. Check the original uploader, date, independent reporting, reverse-search key frames, and look for context mismatches. Treat sensational unlabeled clips as unverified rather than trying to diagnose pixels alone.',
+    'When news comes through a feed, separate discovery from verification: find the original claim, check two independent reputable outlets, inspect the date and evidence, and do not share while uncertain.'
+  ];
+
+  R['ruleModernMoney'] = [
+    'Doom spending often buys a brief change of feeling and leaves a longer financial problem. Add a 24-hour wait, remove saved cards, and track the trigger as well as the price. What usually happens just before you buy?',
+    'Buy-now-pay-later can hide the total behind small installments. List every plan, due date, fee, and total balance in one place, stop opening new plans, and prioritize essentials and costly missed payments. If payments are unmanageable, a nonprofit debt adviser is safer than another loan.',
+    'Falling for persuasive online marketing does not make you stupid. Save the transaction and messages, contact the payment provider quickly, report the account, change reused passwords, and tell someone you trust so shame does not isolate you.',
+    'Housing prices and unstable income are structural pressures, not proof that you are behind. Separate the life milestone from the next practical number: rent, emergency buffer, debt, or savings rate. Which one needs attention first?'
+  ];
+
+  R['ruleClimateAndDivision'] = [
+    'Climate anxiety makes sense when the threat is real and the scale is huge. Try to separate useful concern from endless exposure: choose one reliable update window, one local action, and one part of life you are still allowed to plan. What future decision feels blocked?',
+    'Political division can turn every conversation into a loyalty test. Protect the relationship by naming the boundary, choosing whether the goal is understanding or persuasion, and leaving when contempt starts. Is this a disagreement about policy or about basic respect?',
+    'You do not have to solve a global crisis before making a personal future. Meaningful action and ordinary joy can coexist. What is one plan you would still want if uncertainty came along with it?'
+  ];
+
+  R['ruleAiCareer'] = [
+    'AI may change which parts of your degree are valuable, but it does not make the whole degree useless. Separate durable skills, such as reasoning, domain knowledge, communication, and judgment, from tasks that tools can automate. Then build evidence that you can use AI critically in your field. What are you studying?',
+    'A degree is more than a list of tasks a model can copy: it can provide foundations, peers, projects, and a signal of sustained work. The practical move is to pair it with current tools and a portfolio, not abandon it because of a prediction. Which role were you aiming for?',
+    'No one can promise which jobs will be safe, so plan for adaptability rather than an AI-proof title. Learn the core concepts, verify machine output, practice working with people, and produce work you can explain without the tool.'
+  ];
+
+  R['ruleAiCompanion'] = [
+    R['ruleAiDependency'][0],
+    R['ruleAiDependency'][1],
+    R['ruleAiDependency'][3]
+  ];
+  R['ruleAiCognition'] = [R['ruleAiDependency'][2], R['ruleAiDependency'][3]];
+  R['ruleDeepfakeSafety'] = [
+    R['ruleOnlineSafety'][0],
+    R['ruleOnlineSafety'][1]
+  ];
+  R['ruleOnlineHarassment'] = [
+    R['ruleOnlineSafety'][0],
+    R['ruleOnlineSafety'][2]
+  ];
+  R['ruleMisinformation'] = [
+    R['ruleOnlineSafety'][3],
+    R['ruleOnlineSafety'][4]
+  ];
+  R['ruleDoomSpending'] = [R['ruleModernMoney'][0]];
+  R['ruleBnpl'] = [R['ruleModernMoney'][1]];
+  R['ruleOnlineScam'] = [R['ruleModernMoney'][2]];
+  R['ruleHousingPressure'] = [R['ruleModernMoney'][3]];
+  R['ruleClimateAnxiety'] = [
+    R['ruleClimateAndDivision'][0],
+    R['ruleClimateAndDivision'][2]
+  ];
+  R['rulePoliticalDivision'] = [R['ruleClimateAndDivision'][1]];
+
   R['ruleKnowledge'] = [];
 
   R['ruleProfessionalBoundary'] = [];

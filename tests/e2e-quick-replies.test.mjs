@@ -13,7 +13,7 @@
  *   3. Tapping the "7" chip records the mood, produces a reflection,
  *      and dismisses the chips.
  *
- * The test skips itself (rather than failing) when no Chrome/Chromium
+ * The test fails explicitly when no Chrome/Chromium
  * binary is available, so the suite stays green on machines without one.
  */
 
@@ -128,8 +128,8 @@ test(
     let browser;
     try {
       if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the quick-replies e2e test'
+        throw new Error(
+          'no Chrome/Chromium binary found; cannot run the quick-replies e2e test'
         );
       }
       try {
@@ -146,7 +146,7 @@ test(
           ]
         });
       } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+        throw new Error('headless Chrome failed to launch: ' + err.message);
       }
 
       const page = await browser.newPage();
@@ -241,8 +241,8 @@ test(
     let browser;
     try {
       if (!chromePath) {
-        return t.skip(
-          'no Chrome/Chromium binary found; skipping the exercise e2e test'
+        throw new Error(
+          'no Chrome/Chromium binary found; cannot run the exercise e2e test'
         );
       }
       try {
@@ -259,7 +259,7 @@ test(
           ]
         });
       } catch (err) {
-        return t.skip('headless Chrome failed to launch: ' + err.message);
+        throw new Error('headless Chrome failed to launch: ' + err.message);
       }
 
       const page = await browser.newPage();

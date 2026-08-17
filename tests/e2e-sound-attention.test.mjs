@@ -125,16 +125,16 @@ function findChromeBinary() {
 }
 
 /**
- * Launches headless Chrome with autoplay allowed, skipping the test when
+ * Launches headless Chrome with autoplay allowed, failing the test when
  * no binary exists.
- * @param {object} t - The node:test context (for t.skip)
  * @returns {Promise<import('@playwright/test').Browser|null>}
  */
-async function launchChrome(t) {
+async function launchChrome() {
   const chromePath = findChromeBinary();
   if (!chromePath) {
-    t.skip('no Chrome/Chromium binary found; skipping the e2e sound test');
-    return null;
+    throw new Error(
+      'no Chrome/Chromium binary found; cannot run the e2e sound test'
+    );
   }
   try {
     return await chromium.launch({
@@ -150,8 +150,7 @@ async function launchChrome(t) {
       ]
     });
   } catch (err) {
-    t.skip('headless Chrome failed to launch: ' + err.message);
-    return null;
+    throw new Error('headless Chrome failed to launch: ' + err.message);
   }
 }
 
@@ -165,7 +164,7 @@ test(
     const server = await startStaticServer();
     let browser;
     try {
-      browser = await launchChrome(t);
+      browser = await launchChrome();
       if (!browser) {
         return;
       }
@@ -249,7 +248,7 @@ test(
     const server = await startStaticServer();
     let browser;
     try {
-      browser = await launchChrome(t);
+      browser = await launchChrome();
       if (!browser) {
         return;
       }
@@ -325,7 +324,7 @@ test(
     const server = await startStaticServer();
     let browser;
     try {
-      browser = await launchChrome(t);
+      browser = await launchChrome();
       if (!browser) {
         return;
       }
