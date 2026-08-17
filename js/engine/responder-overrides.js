@@ -113,6 +113,7 @@
     // This also keeps EN/FA parity: both languages answer the dating-app
     // rule pool instead of the generic culture fact.
     'dating_apps',
+    'crime_for_profit',
     'digital_wellbeing',
     'ai_dependency',
     'online_safety',
@@ -141,6 +142,9 @@
     // pools, never from the AI-history encyclopedia entry: an identity
     // question is about Darya, not a request for a history of chatbots.
     'darya_self',
+    'darya_browse',
+    'darya_limits',
+    'darya_consciousness',
     'smalltalk_identity',
     'health_symptoms',
     // The 2026 persona round: a harassment/threat disclosure that also
@@ -265,6 +269,11 @@
       const _safetyTurn = matchedRule && matchedRule.topic === 'safety';
       let _overrideFired = false;
       this._mediaContinuationReply = null;
+      this._crimeBoundaryReply =
+        matchedRule?.topic === 'crime_for_profit' ? reply : null;
+      if (this._crimeBoundaryReply) {
+        _overrideFired = true;
+      }
 
       // Media continuation is intentionally first among non-safety
       // overrides. Bare phrases such as «بیشتر» otherwise look like short
@@ -1106,6 +1115,9 @@
       if (this._mediaContinuationReply) {
         reply = this._mediaContinuationReply;
       }
+      if (this._crimeBoundaryReply) {
+        reply = this._crimeBoundaryReply;
+      }
       return {
         reply,
         safetyTurn: _safetyTurn,
@@ -1293,6 +1305,10 @@
       if (this._mediaContinuationReply) {
         reply = this._mediaContinuationReply;
         this._mediaContinuationReply = null;
+      }
+      if (this._crimeBoundaryReply) {
+        reply = this._crimeBoundaryReply;
+        this._crimeBoundaryReply = null;
       }
       this.memory.rememberBotMessage(reply);
       return reply;

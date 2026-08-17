@@ -273,7 +273,7 @@
         ['Yussef Kamaal - Black Focus', 2016],
         ['Charles Mingus - The Black Saint and the Sinner Lady', 1963],
         ['Nala Sinephro - Space 1.8', 2021],
-        ['GoGo Penguin - v2.0', 2014]
+        ['GoGo Penguin - Version 2.0', 2014]
       ],
       classical: [
         ['Max Richter - The Blue Notebooks', 2004],

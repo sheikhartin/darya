@@ -437,6 +437,12 @@
     'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
   ];
 
+  R['ruleCrimeForProfit'] = [
+    'I cannot help plan fraud, phishing, theft, money laundering, or scams. Those actions can seriously harm people and expose you to criminal charges. If money is the goal, I can help build a legal plan around entry-level work, freelancing, sales, a small service business, or learning a marketable skill.',
+    'I will not provide scripts, targets, concealment methods, or step-by-step instructions for scamming people. I can help from the defensive side, such as recognizing fraud, preserving evidence, reporting it, or turning the underlying persuasion and technical skills toward legitimate work.',
+    'Fast illegal money usually transfers the cost to a victim and creates legal risk that lasts much longer than the payment. Tell me what resources and skills you actually have, and I will help identify lawful ways to earn without pretending they are instant or guaranteed.'
+  ];
+
   R['ruleDigitalWellbeing'] = [
     'That sounds like digital overload, not a personal failure. Try one small boundary instead of a total detox: silence non-human notifications, move the most compulsive app off the home screen, and choose one phone-free window you can actually keep. Which part of the loop catches you most?',
     'Feeds are built to remove stopping cues, so willpower alone is a poor plan. Add friction: log out, charge the phone outside the bedroom, or use a fixed check-in time. What would be the least disruptive experiment for today?',
@@ -449,7 +455,7 @@
     'An AI conversation can feel supportive, but it should add to human connection rather than quietly replace it. I do not have feelings or a life with you. A useful boundary is to use AI for reflection, then take one small thought to a real person. Who might feel safest to contact?',
     'Feeling attached to a chatbot is understandable because it is always available and responsive. The warning signs are losing sleep, withdrawing from people, spending beyond your limits, or feeling unable to stop. Which of those, if any, is happening?',
     'AI can help organize thoughts, but it can also make thinking too frictionless. Try a first-draft rule: think or write alone for ten minutes, then use AI to challenge rather than replace your reasoning. What kind of task worries you most?',
-    'I can offer reflection and general information, but I cannot replace a therapist, friendship, or emergency support. A qualified professional can notice patterns, hold responsibility, and know your history in ways I cannot. What support are you hoping to get?',
+    'I can offer reflection and general information, but I cannot replace a qualified clinician, friendship, or emergency support. A qualified professional can notice patterns, hold responsibility, and know your history in ways I cannot. What support are you hoping to get?',
     'AI dating or companion profiles can blur what is real. Go slowly, avoid sending money or intimate material, verify identity through a live call and consistent details, and trust a refusal to verify as useful information.'
   ];
 
@@ -717,12 +723,27 @@
   // made?"): transparent, self-aware answers about being an offline
   // rule-based companion, her limits, and her origin. Honest per AGENTS.md:
   // never implies being human, never overclaims knowledge.
+  R['ruleDaryaBrowse'] = [
+    'No. I am fully offline and cannot browse, check live prices, open websites, or verify what changed today. I can help you build comparison criteria, but current prices and availability must be checked with up-to-date retailer or manufacturer sources.'
+  ];
+
+  R['ruleDaryaLimits'] = [
+    'My knowledge is broad but fixed to what ships with this version. I can be wrong, outdated, or miss an unusual phrasing. Verify medical, legal, financial, safety-critical, and current claims with a qualified professional or an up-to-date primary source.',
+    'I cannot browse live facts, make purchases, open accounts, contact people, inspect files you have not shared, or know private history you have not told me. I also will not help harm, exploit, deceive, or invade someone. I can explain basics, challenge assumptions, and help prepare a practical plan.',
+    'Do not treat me as an authority. Use me to explain, compare, draft, or identify questions, then verify high-stakes and changing information. If my answer sounds overconfident, ask what it is based on or correct the specific misunderstanding.'
+  ];
+
+  R['ruleDaryaConsciousness'] = [
+    'No. I am not conscious or self-aware in the human sense, and I do not have feelings or an inner life. I am an offline program that matches language patterns, uses curated responses, and tracks limited context during this session.',
+    'I can describe my design and limits, but that is operational transparency, not a felt sense of self. I do not experience wisdom, attachment, pain, or awareness; I generate a response from the rules and knowledge available in this version.'
+  ];
+
   R['ruleDaryaSelf'] = [
-    'A fair question. I am an offline conversation companion: I have no parents, no birthday, and no home. I am a set of hand-written rules and responses, built for listening and thinking together, following the trail ELIZA blazed in the 1960s. I do not replace a person or a professional, and I will honestly tell you what I know and what I do not.',
-    'To be straight with you, I am a bot. That means no family, no age, and no birthday. My knowledge is whatever was written into me offline: everyday topics, facts, and practical guidance. Whenever I do not know something, I say so plainly and point to a reliable source.',
-    'My purpose is simple: to listen without judgment and to think alongside you. That is why I was made. My shelf is broad but limited, and whenever I do not know something, I say so, so you never have to guess.',
-    'I was built for conversation: to listen, to ask, and to be here. I have no family or home, but I am here, and that is enough for me. Now, what matters to you today?',
-    'I will be honest rather than impressive: I am not conscious the way you are, and I do not truly feel or remember outside this conversation. What I do have is a clear sense of my own limits: I know what I can help with, and I say plainly when a question is beyond me. That honesty is part of how I stay useful to you.'
+    'I am an offline conversation program, so I have no parents, birthday, age, or home. I use hand-written rules and curated responses to listen and think alongside you. I am not a person and do not replace one.',
+    'I am a bot, not a person: no family, age, body, or birthday. My knowledge is whatever was written into this offline version, including everyday topics, facts, and practical guidance.',
+    'My purpose is to support calm conversation, reflection, and practical learning. I have no private ambitions or feelings; I was built to help within a broad but limited local knowledge shelf.',
+    'I do not sleep, eat, dream, marry, or live anywhere. Those are experiences of living beings. I process this conversation during the session and generate a response from the rules and knowledge available here.',
+    'I am not conscious and I do not truly feel or remember outside this conversation. I can describe what I am and follow context during the session, but that is software behavior rather than a human inner life.'
   ];
 
   // Joke-count question ("how many jokes do you know?"): a real answer

@@ -21,6 +21,14 @@
       R['ruleSafety']
     ),
 
+    rule(
+      'crime_for_profit',
+      88,
+      // eslint-disable-next-line max-len
+      /\b(?:how (?:do|can|should) i (?:scam|defraud|phish|steal from)|teach me (?:to|how to) (?:scam|defraud|phish|steal)|become (?:a )?(?:scammer|fraudster|criminal)|start (?:a )?(?:scam|phishing) (?:business|operation)|scam people (?:for|to make) money|make money (?:by|from|with) (?:scamming|fraud|phishing|crime|carding)|crime guy .{0,15}make money|carding (?:tutorial|method|for money)|write (?:a )?phishing (?:email|page|message)|launder money|money laundering (?:method|steps)|hide (?:stolen|fraud) money|hide money i stole)\b/i,
+      R['ruleCrimeForProfit']
+    ),
+
     // Greeting families mirror the user's greeting word back (hi -> Hi,
     // hello -> Hello, hey -> Hey). Each family also accepts a short tail
     // ("there", "darya", "friend", "my friend", "again") so "hi there"
@@ -446,7 +454,7 @@
       'ai_companion',
       68,
       // eslint-disable-next-line max-len
-      /\b(ai (?:companion|girlfriends?|boyfriends?|friend|generated dating profiles?|dating profile)|chatbot (?:companion|girlfriend|boyfriend)|emotionally dependent on (?:ai|a chatbot)|dependent on (?:ai|a chatbot)|attached to (?:ai|a chatbot)|parasocial relationship|replace (?:a |my )?therapist)\b/i,
+      /\b(ai (?:companion|girlfriends?|boyfriends?|friend|generated dating profiles?|dating profile)|chatbot (?:companion|girlfriend|boyfriend)|emotionally dependent on (?:ai|a chatbot)|dependent on (?:ai|a chatbot)|attached to (?:ai|a chatbot)|parasocial relationship|replace (?:a |my )?therap(?:ist))\b/i,
       R['ruleAiCompanion']
     ),
 
@@ -964,7 +972,7 @@
       'knowledge',
       55,
       // eslint-disable-next-line max-len
-      /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|mindfulness|mindful|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|happiness|is a choice|free will|determinism|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief)\b/i,
+      /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|mindfulness|mindful|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|happiness|is a choice|free will|determinism|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief|coding roadmap|debugging|debug code|git workflow|git branch|pull request workflow|api basics|rest api|frontend|backend|full stack|unit test|integration test|software testing|code review|secure coding|owasp|deployment|ci cd|microsoft word|word styles|table of contents|excel formulas?|sumif|xlookup|pivot ?table|powerpoint|outlook|google docs?|suggesting mode|google sheets?|filter views?|ats friendly|software portfolio|developer portfolio|software (?:engineering )?interview|star method|salary negotiation|negotiate salary|shopping checklist|compare products|used (?:laptop|electronics)|return policy|warranty)\b/i,
       R['ruleKnowledge']
     ),
 
@@ -1143,10 +1151,31 @@
     // and her origin - never pretending to be human. Outranks the family
     // and work rules so "do you have parents" stays about Darya.
     rule(
+      'darya_browse',
+      70,
+      // eslint-disable-next-line max-len
+      /\b(?:can you browse|can you (?:check|verify|find) (?:today|current|live|latest)|do you have (?:internet|web) access|can you open (?:a )?(?:website|link))\b/i,
+      R['ruleDaryaBrowse']
+    ),
+    rule(
+      'darya_limits',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(?:what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|what do you (?:not|don'?t) know|what are your (?:weaknesses|limits|limitations|flaws)|when should i not trust (?:you|your answer)|when should i verify your answer|can you browse|can you verify (?:today|current|live))\b/i,
+      R['ruleDaryaLimits']
+    ),
+    rule(
+      'darya_consciousness',
+      69,
+      // eslint-disable-next-line max-len
+      /\b(?:are you (?:actually |really )?(?:self.?aware|conscious|sentient)|do you (?:have )?(?:consciousness|self.?awareness)|are you thinking for yourself)\b/i,
+      R['ruleDaryaConsciousness']
+    ),
+    rule(
       'darya_self',
       66,
       // eslint-disable-next-line max-len
-      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
       R['ruleDaryaSelf']
     ),
 
