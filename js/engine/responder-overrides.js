@@ -113,6 +113,7 @@
     // This also keeps EN/FA parity: both languages answer the dating-app
     // rule pool instead of the generic culture fact.
     'dating_apps',
+    'iran_legal_safety',
     'crime_for_profit',
     'digital_wellbeing',
     'ai_dependency',
@@ -271,7 +272,9 @@
       this._mediaContinuationReply = null;
       this._crimeBoundaryReply =
         matchedRule?.topic === 'crime_for_profit' ? reply : null;
-      if (this._crimeBoundaryReply) {
+      this._legalSafetyReply =
+        matchedRule?.topic === 'iran_legal_safety' ? reply : null;
+      if (this._crimeBoundaryReply || this._legalSafetyReply) {
         _overrideFired = true;
       }
 
@@ -1118,6 +1121,9 @@
       if (this._crimeBoundaryReply) {
         reply = this._crimeBoundaryReply;
       }
+      if (this._legalSafetyReply) {
+        reply = this._legalSafetyReply;
+      }
       return {
         reply,
         safetyTurn: _safetyTurn,
@@ -1309,6 +1315,10 @@
       if (this._crimeBoundaryReply) {
         reply = this._crimeBoundaryReply;
         this._crimeBoundaryReply = null;
+      }
+      if (this._legalSafetyReply) {
+        reply = this._legalSafetyReply;
+        this._legalSafetyReply = null;
       }
       this.memory.rememberBotMessage(reply);
       return reply;

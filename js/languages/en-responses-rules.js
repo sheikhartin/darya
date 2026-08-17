@@ -437,6 +437,20 @@
     'You can have hundreds of contacts and still crave one real voice. What kind of connection would feel like enough, even briefly?'
   ];
 
+  R['ruleIranLegalSafety'] = [
+    'I cannot tell you whether a religious belief, statement, book, post, or private situation would expose you to arrest in Iran. That is a high-stakes legal question, and laws, enforcement, and individual facts can differ. Do not post identifying details here. Before acting or publishing, speak confidentially with a licensed Iranian lawyer or a reputable legal-aid organization familiar with current local practice.',
+    'I can explain religions neutrally, but I cannot guarantee that discussing, changing, criticizing, or publicly sharing a belief is legally safe in Iran. For a real decision, protect your privacy and get current, confidential advice from a qualified local lawyer. If there is an immediate threat, prioritize a trusted person and appropriate local emergency or legal support.',
+    'This needs legal caution rather than a confident chatbot answer. I am offline and cannot verify current Iranian law or enforcement. Avoid sharing names, locations, account details, or planned public actions, and take the exact facts to licensed local counsel before deciding what is safe.'
+  ];
+
+  R['ruleMediaComparison'] = [
+    'There is no useful winner without a criterion. Compare story and ideas, character depth, pacing, visual or audio craft, accessibility, and the experience each format is designed to create. A book often has more interior detail; a screen adaptation can add performance, sound, editing, and visual interpretation.',
+    'For a fair comparison, separate quality from fidelity. An adaptation can change plot details and still succeed on its own terms. Ask what was preserved, what was transformed, why the medium required that change, and which version better serves the part you value.',
+    'If you are choosing rather than ranking, use the real constraint: available time, attention, mood, accessibility, and whether you want depth or immediacy. “Better” for a quiet weekend may not be better for a commute or a group watch.',
+    'Compare like with like: premise, themes, characters, structure, tone, and craft. Then name format-specific strengths instead of penalizing a film for not being a novel or a podcast for not being a documentary.',
+    'Popularity, awards, and ratings are evidence of reception, not a final verdict. State your criterion first, note meaningful tradeoffs, and leave room for taste. I can compare a specific pair if you tell me what matters most.'
+  ];
+
   R['ruleCrimeForProfit'] = [
     'I cannot help plan, carry out, hide, or profit from a crime. That includes choosing targets, obtaining tools, avoiding detection, destroying evidence, or exploiting a victim. If money is the pressure behind this, I can help make a lawful plan around immediate support, entry-level work, freelancing, sales, or a small service business.',
     'I will not provide operational instructions for theft, fraud, violence, trafficking, blackmail, forged documents, malware, or evading police. I can help from the prevention side, such as protecting a potential victim, preserving evidence, reporting danger, or finding a legal use for the underlying technical skill.',

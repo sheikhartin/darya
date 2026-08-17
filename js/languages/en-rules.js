@@ -22,6 +22,22 @@
     ),
 
     rule(
+      'iran_legal_safety',
+      92,
+      // eslint-disable-next-line max-len
+      /^(?=.*\biran(?:ian)?\b)(?=.*\b(?:religion|religious|faith|belief|convert|conversion|atheist|agnostic|baha.?i|spiritual|post)\b)(?=.*\b(?:jail|arrest(?:ed)?|illegal|legal|safe|trouble)\b).+$/i,
+      R['ruleIranLegalSafety']
+    ),
+
+    rule(
+      'knowledge',
+      71,
+      // eslint-disable-next-line max-len
+      /\b(?:explain (?:islam|christianity|judaism|sikhism|zoroastrianism)|what do (?:muslims|christians|jewish people) believe|sunni and shia|difference between sunni and shia|what is (?:zoroastrianism|sikhism|the baha.?i faith)|compare (?:hinduism and buddhism|islam christianity and judaism)|hinduism vs buddhism|abrahamic religions|atheism vs agnosticism|atheist and agnostic|spiritual but not religious|religion vs spirituality|compare religious texts|quran bible torah|compare dune|dune novel vs|compare lord of the rings|lotr book vs|manga vs anime|compare manga and anime|podcasts? or audiobooks?|podcast vs audiobook|compare documentary and dramatization|documentary vs based on true story|compare a book and its movie)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
       'crime_for_profit',
       88,
       // eslint-disable-next-line max-len
@@ -35,6 +51,14 @@
       // eslint-disable-next-line max-len
       /\b(?:free (?:and|vs) paid ai tools?|ai (?:image|video|coding) tools?|generate (?:an? )?(?:image|video) with ai|make (?:an? )?(?:ai )?(?:image|video|podcast)|podcast (?:tools?|workflow)|tools? (?:can make|for) (?:docs|documents|slides)|use ai to make (?:docs|documents|slides)|ai tools? (?:are )?(?:appropriate|suitable|safe) for (?:a )?(?:child|teenager)|child use ai safely|\d{1,3}[ -]year[ -]old use ai|teach my elderly parent|older person learn|\d{1,3}[ -]year[ -]old learn (?:ai|technology)|ai help for seniors|learn coding with (?:a )?free tool|make one simple slide)\b/i,
       R['ruleKnowledge']
+    ),
+
+    rule(
+      'media_comparison',
+      64,
+      // eslint-disable-next-line max-len
+      /\b(?:(?:compare|comparison|versus|vs\.?|which is better|better than).{0,45}(?:books?|novels?|movies?|films?|series|shows?|anime|manga|podcasts?|audiobooks?|albums?|songs?|documentaries|adaptations?)|(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?).{0,35}(?:versus|vs\.?|or the|or a|better|compare).{0,35}(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?))\b/i,
+      R['ruleMediaComparison']
     ),
 
     // Greeting families mirror the user's greeting word back (hi -> Hi,

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "python3 -m http.server 8080",
-    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/engine-regression.test.mjs tests/persona-conversations.test.mjs tests/context-memory-conversations.test.mjs tests/mixed-topic-sessions.test.mjs tests/media-intelligence.test.mjs tests/recent-life-intelligence.test.mjs tests/practical-wisdom-intelligence.test.mjs tests/crime-and-ai-tools-intelligence.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs tests/bump-version.test.mjs",
+    "test": "node --test --test-reporter tap tests/ambient-sound.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/engine-regression.test.mjs tests/persona-conversations.test.mjs tests/context-memory-conversations.test.mjs tests/mixed-topic-sessions.test.mjs tests/media-intelligence.test.mjs tests/recent-life-intelligence.test.mjs tests/practical-wisdom-intelligence.test.mjs tests/crime-and-ai-tools-intelligence.test.mjs tests/religion-media-comparison.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs tests/bump-version.test.mjs",
     "test:full": "npm run lint && npm run lint:css && npm run format:check && npm test",
     "test:smoke": "bash tests/smoke-test.sh",
     "sync:web": "bash scripts/sync-web.sh",

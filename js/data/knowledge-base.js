@@ -153,7 +153,14 @@
       return null;
     }
     const isFa = langCode === 'fa';
-    const lower = text.toLowerCase().replace(/\s+/gu, ' ').trim();
+    const normalized = text.toLowerCase().replace(/\s+/gu, ' ').trim();
+    const lower = normalized
+      .replace(
+        /^(?:switch|change)(?: the)? (?:topic|topics|subject)(?: to)?\s*/i,
+        ''
+      )
+      .replace(/^(?:موضوع را|موضوع رو) عوض کن(?: به)?\s*/u, '')
+      .trim();
     if (!lower) {
       return null;
     }
@@ -162,6 +169,16 @@
 
     let best = null;
     for (const fact of FACTS) {
+      // “Switch topics” is a conversation command, not Nintendo Switch.
+      // A platform fact may use the weak word “switch”, but only a real
+      // game request is allowed to activate it in this phrasing.
+      if (
+        fact.id === 'games_by_platform' &&
+        /\bswitch (?:the )?topics?\b/i.test(lower) &&
+        !/\b(?:game|games|gaming|nintendo)\b/i.test(lower)
+      ) {
+        continue;
+      }
       let score = 0;
       let exact = false;
       let matchedAny = false;
@@ -699,7 +716,7 @@
    * @param {string} [category] - Optional category filter
    * @returns {Array<string>} The selected fact lines
    */
-  function randomFacts(langCode, count, category) {
+  function randomFacts(langCode, count, category, excludedFacts = null) {
     const isFa = langCode === 'fa';
     const pool = FUN_FACTS[isFa ? 'fa' : 'en'] || {};
     const sources = category && pool[category] ? pool[category] : [];
@@ -708,8 +725,22 @@
         ? sources
         : Object.values(pool).reduce((acc, list) => acc.concat(list), []);
     const wanted = Math.max(1, Math.min(count || 3, all.length));
-    const shuffled = [...all].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, wanted);
+    let available = excludedFacts
+      ? all.filter((fact) => !excludedFacts.has(fact))
+      : [...all];
+    // Repeats are allowed only after every fact on this shelf has appeared.
+    // Remove this shelf's entries from the session set without disturbing
+    // unseen facts remembered for other categories.
+    if (available.length === 0 && excludedFacts) {
+      all.forEach((fact) => excludedFacts.delete(fact));
+      available = [...all];
+    }
+    const shuffled = [...available];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swap = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+    }
+    return shuffled.slice(0, Math.min(wanted, shuffled.length));
   }
 
   const DEFAULT_MEDIA_COUNT = 5;
@@ -870,7 +901,7 @@
       const familiar = available.filter((item) =>
         category === 'series'
           ? /^(?:The Bear|Dark|Chernobyl|Arcane|Severance)$/u.test(item.t)
-          : /^(?:Hades|Baldur’s Gate 3|Stardew Valley)$/u.test(item.t)
+          : /^(?:Hades|Baldur’s Gate 3)$/u.test(item.t)
       );
       const anchor = shuffledCopy(familiar)[0];
       if (anchor) {

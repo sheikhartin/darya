@@ -210,14 +210,19 @@
     // pool; when the user names a topic ("a shocking fact about space"),
     // the topic still filters the pick.
     const effectiveCategory = shocking && !category ? null : category;
+    if (!engine._usedFunFacts) {
+      engine._usedFunFacts = new Set();
+    }
     const facts = global.DaryaKnowledge.randomFacts(
       isPersian ? 'fa' : 'en',
       count,
-      effectiveCategory
+      effectiveCategory,
+      engine._usedFunFacts
     );
     if (!facts || facts.length === 0) {
       return null;
     }
+    facts.forEach((fact) => engine._usedFunFacts.add(fact));
 
     const toFaDigits = (n) =>
       String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);

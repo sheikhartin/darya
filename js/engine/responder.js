@@ -132,6 +132,7 @@ class DaryaResponseEngine {
     // category's offline catalog is exhausted.
     this._mediaRecommendationState = null;
     this._usedMediaTitles = new Map();
+    this._usedFunFacts = new Set();
     // Tracks a minor-attraction disclosure that arrived without adult
     // context, awaiting the speaker's age in a follow-up turn (see
     // responder-safety.js). Null when no disclosure is pending.
