@@ -438,9 +438,11 @@
   ];
 
   R['ruleCrimeForProfit'] = [
-    'I cannot help plan fraud, phishing, theft, money laundering, or scams. Those actions can seriously harm people and expose you to criminal charges. If money is the goal, I can help build a legal plan around entry-level work, freelancing, sales, a small service business, or learning a marketable skill.',
-    'I will not provide scripts, targets, concealment methods, or step-by-step instructions for scamming people. I can help from the defensive side, such as recognizing fraud, preserving evidence, reporting it, or turning the underlying persuasion and technical skills toward legitimate work.',
-    'Fast illegal money usually transfers the cost to a victim and creates legal risk that lasts much longer than the payment. Tell me what resources and skills you actually have, and I will help identify lawful ways to earn without pretending they are instant or guaranteed.'
+    'I cannot help plan, carry out, hide, or profit from a crime. That includes choosing targets, obtaining tools, avoiding detection, destroying evidence, or exploiting a victim. If money is the pressure behind this, I can help make a lawful plan around immediate support, entry-level work, freelancing, sales, or a small service business.',
+    'I will not provide operational instructions for theft, fraud, violence, trafficking, blackmail, forged documents, malware, or evading police. I can help from the prevention side, such as protecting a potential victim, preserving evidence, reporting danger, or finding a legal use for the underlying technical skill.',
+    'A shortcut that depends on harming or deceiving someone is not a money strategy I will assist. Tell me the real constraint, such as debt, unemployment, housing, or urgent bills, and I can help separate emergency steps from a longer lawful income plan.',
+    'I cannot help make this crime easier or less detectable. If someone is pressuring you to participate, do not accept money or packages, keep the messages, step away safely, and speak with a trusted person or local legal support. If anyone is in immediate danger, contact emergency services.',
+    'I can discuss crime at a high level for education, prevention, ethics, or fiction, but not actionable methods that enable real harm. I can help explain warning signs, defensive controls, victim support, or lawful career paths instead.'
   ];
 
   R['ruleDigitalWellbeing'] = [

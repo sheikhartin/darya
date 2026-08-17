@@ -385,6 +385,144 @@
       ['warranty', 'return policy', 'گارانتی', 'مرجوعی'],
       'مرجوعی اجازه می‌دهد در بازه‌ای کوتاه خرید را پس بدهی؛ گارانتی خرابی‌های تعریف‌شده را برای مدت مشخص پوشش می‌دهد. پیش از خرید مدت، استثناها، هزینه‌ی ارسال، تعمیر یا تعویض، اعتبار فروشنده و نیاز به فاکتور یا ثبت محصول را بخوان. عبارت «گارانتی دارد» بدون نام شرکت و شرایط کافی نیست.',
       'A return policy lets you send a purchase back during a short window; a warranty covers defined faults for a stated period. Before buying, read the duration, exclusions, shipping cost, repair versus replacement terms, provider reputation, and receipt or registration requirements. “Includes warranty” means little without the provider and terms.'
+    ),
+    fact(
+      'ai_tool_choice',
+      [
+        'which ai tool should i use',
+        'free vs paid ai tools',
+        'compare free and paid ai tools for a beginner',
+        'how do i choose an ai tool',
+        'کدام ابزار هوش مصنوعی',
+        'ابزار رایگان یا پولی هوش مصنوعی'
+      ],
+      ['ai tools', 'free ai', 'paid ai', 'ابزار هوش مصنوعی'],
+      'اول کار را مشخص کن: نوشتن، تصویر، ویدیو، کدنویسی، صدا یا ارائه. ابزار رایگان را برای یادگیری و آزمایش شروع کن و فقط وقتی پول بده که محدودیت خروجی، سرعت، مجوز تجاری، حریم خصوصی یا همکاری واقعاً مانع شده است. شرایط و قیمت‌ها تغییر می‌کنند؛ پیش از بارگذاری اطلاعات شخصی، سیاست داده و محدودیت سنی را بررسی کن. نوجوان باید از حساب و نظارت مناسب سن استفاده کند و سالمند بهتر است با یک کار کوچک و قابل‌برگشت شروع کند.',
+      'Choose the task first: writing, image, video, code, audio, or presentation. Start with a free tool for learning and prototypes; pay only when output limits, speed, commercial rights, privacy, or collaboration are a real blocker. Plans change, so verify current terms and data policies before uploading personal material. Young users need age-appropriate accounts and adult guidance; older beginners benefit from one small, reversible task at a time.'
+    ),
+    fact(
+      'ai_image_tools',
+      [
+        'how to generate images with ai',
+        'how do i generate an image with ai safely',
+        'free and paid ai image generators',
+        'best workflow for ai images',
+        'ساخت عکس با هوش مصنوعی',
+        'ابزار رایگان و پولی ساخت تصویر'
+      ],
+      ['ai image', 'image generator', 'ساخت تصویر', 'تولید عکس'],
+      'برای تصویر، Microsoft Designer یا Image Creator و Adobe Firefly معمولاً اعتبار رایگان محدود دارند؛ Canva نسخه‌ی رایگان و Pro دارد و Midjourney معمولاً گزینه‌ای پولی است. وضعیت طرح‌ها را همان روز بررسی کن. پرامپت را با سوژه، محیط، نور، ترکیب و نسبت تصویر بنویس، چند نسخه بساز و نتیجه را ویرایش کن. عکس خصوصی، چهره‌ی کودک یا تصویر فرد واقعی را بدون رضایت بارگذاری یا جعل نکن و برای استفاده‌ی تجاری مجوز خروجی را بخوان.',
+      'For images, Microsoft Designer or Image Creator and Adobe Firefly commonly offer limited free credits, Canva has free and paid tiers, and Midjourney is generally paid. Verify current plans. Prompt with subject, setting, light, composition, and aspect ratio, generate variations, then edit rather than expecting one perfect result. Never upload private photos, a child’s face, or imitate a real person without consent, and check commercial-use terms.'
+    ),
+    fact(
+      'ai_video_tools',
+      [
+        'how to make an ai video',
+        'how do i make a short ai video',
+        'free and paid ai video tools',
+        'generate a short video with ai',
+        'ساخت ویدیو با هوش مصنوعی',
+        'ابزار رایگان و پولی ویدیو',
+        'ابزار رایگان و پولی ساخت ویدیو با هوش مصنوعی چیه'
+      ],
+      ['ai video', 'video generator', 'ساخت ویدیو', 'تولید ویدیو'],
+      'برای شروع ویدیوی کوتاه، CapCut، Canva و Adobe Express ابزارهای رایگان با امکانات پولی دارند؛ Runway معمولاً اعتبار آزمایشی و طرح پولی ارائه می‌کند و دسترسی ابزارهایی مثل Sora به منطقه و اشتراک وابسته است. اول متن و shot list بنویس، کلیپ‌های ۵ تا ۱۰ ثانیه‌ای بساز، بعد تدوین، زیرنویس و صدا را جدا انجام بده. چهره و صدای واقعی را بدون رضایت شبیه‌سازی نکن و محتوای مصنوعی گمراه‌کننده را برچسب بزن.',
+      'For a first short video, CapCut, Canva, and Adobe Express have free features plus paid upgrades; Runway commonly has trial credits and paid plans, while access to tools such as Sora depends on region and subscription. Verify current availability. Write a script and shot list, generate short clips, then edit, caption, and mix audio separately. Do not clone real faces or voices without consent, and label synthetic media when it could mislead.'
+    ),
+    fact(
+      'ai_coding_tools',
+      [
+        'free and paid ai coding tools',
+        'ai coding tools for a beginner',
+        'which ai coding tools are good for a beginner',
+        'what free ai coding option is suitable for a teenager',
+        'now i want to learn coding with a free tool',
+        'copilot vs free coding tools',
+        'ابزار هوش مصنوعی برای کدنویسی',
+        'ابزار رایگان کدنویسی با هوش مصنوعی'
+      ],
+      ['ai coding tools', 'copilot', 'replit', 'ابزار کدنویسی هوش مصنوعی'],
+      'VS Code و افزونه‌های رایگان نقطه‌ی شروع خوبی‌اند؛ GitHub Copilot و Replit گزینه‌های رایگان محدود و طرح‌های پولی دارند و شرایطشان ممکن است عوض شود. برای نوجوان، Scratch و Code.org محیط‌های ساده‌تر و آموزشی‌اند. از ابزار بخواه کد را توضیح دهد و تست پیشنهاد کند، اما secret، رمز یا کد خصوصی را بدون مجوز نفرست. هر خط مهم را بخوان، اجرا و تست کن؛ کدی که نمی‌توانی توضیح بدهی هنوز مال تو نیست.',
+      'VS Code and free extensions are a strong starting point; GitHub Copilot and Replit offer limited free options and paid plans whose terms can change. Scratch and Code.org are safer learning environments for younger beginners. Ask AI to explain code and suggest tests, but never paste secrets or private code without permission. Read, run, and test every important part; code you cannot explain is not ready to trust.'
+    ),
+    fact(
+      'podcast_tools',
+      [
+        'how to make a podcast for free',
+        'how can i make a podcast for free',
+        'free and paid podcast tools',
+        'podcast workflow for beginners',
+        'ساخت پادکست رایگان',
+        'چطور رایگان پادکست بسازم',
+        'ابزار رایگان و پولی پادکست'
+      ],
+      ['podcast tools', 'make a podcast', 'ساخت پادکست'],
+      'برای شروع رایگان، با میکروفن گوشی در اتاق نرم ضبط کن و در Audacity یا GarageBand ویرایش کن؛ Spotify for Creators معمولاً میزبانی رایگان دارد. Descript و Riverside امکانات رایگان محدود و طرح پولی برای متن‌محور، ضبط دور و همکاری دارند. طرح‌ها را بررسی کن. قالب، مخاطب و سه اپیزود آزمایشی را قبل از خرید تجهیزات بساز؛ موسیقی دارای حق نشر یا صدای شبیه‌سازی‌شده‌ی بدون رضایت استفاده نکن.',
+      'For a free start, record with a phone in a soft room and edit in Audacity or GarageBand; Spotify for Creators commonly provides free hosting. Descript and Riverside offer limited free features and paid plans for transcript editing, remote recording, and collaboration. Verify current plans. Define the audience and make three pilot episodes before buying gear. Avoid copyrighted music and cloned voices without consent.'
+    ),
+    fact(
+      'docs_slides_tools',
+      [
+        'free and paid tools for docs and slides',
+        'what free and paid tools can make docs and slides',
+        'how should i use ai to make documents and slides',
+        'i want to make one simple slide for my family',
+        'make documents and slides with ai',
+        'google docs vs microsoft 365 vs libreoffice',
+        'ابزار رایگان و پولی سند و اسلاید',
+        'برای سند و اسلاید ابزار رایگان و پولی چی هست',
+        'ساخت اسلاید با هوش مصنوعی'
+      ],
+      [
+        'docs and slides',
+        'google slides',
+        'microsoft 365',
+        'libreoffice',
+        'سند و اسلاید'
+      ],
+      'Google Docs و Slides برای حساب شخصی معمولاً رایگان و مناسب همکاری‌اند؛ LibreOffice رایگان و آفلاین است؛ Microsoft 365 نسخه‌ی اشتراکی کامل و برنامه‌های وب محدودتر دارد؛ Canva نیز رایگان و Pro است. هوش مصنوعی را برای طرح کلی و بازنویسی به‌کار ببر، نه ساختن ادعای بی‌منبع. ابتدا ساختار، سپس محتوا و در آخر طراحی را انجام بده و دسترسی فایل را روی کمترین سطح لازم بگذار.',
+      'Google Docs and Slides are generally free for personal accounts and strong for collaboration; LibreOffice is free and offline; Microsoft 365 provides full subscription apps with more limited web apps; Canva has free and Pro tiers. Use AI for outlines and revision, not unsupported claims. Build structure first, content second, design last, and grant the minimum file access needed.'
+    ),
+    fact(
+      'young_ai_safety',
+      [
+        'how can a child use ai safely',
+        'ai tools for a teenager',
+        'which ai tools are appropriate for a teenager',
+        'i am 14 how can i use ai to make an image safely',
+        'how can a 14 year old use ai to make an image safely',
+        'how can a 14-year-old use ai to make an image safely',
+        'teach a young person to use ai',
+        'استفاده امن نوجوان از هوش مصنوعی',
+        'نوجوان چطور امن از هوش مصنوعی استفاده کنه',
+        'ابزار هوش مصنوعی برای کودک'
+      ],
+      ['child ai safety', 'teen ai', 'هوش مصنوعی نوجوان', 'هوش مصنوعی کودک'],
+      'برای کودک یا نوجوان، ابزار باید با شرط سنی، حساب خانواده یا مدرسه و نظارت بزرگسال سازگار باشد. نام کامل، مدرسه، نشانی، تصویر خصوصی و رمز نباید وارد شود. پاسخ هوش مصنوعی را با کتاب یا منبع آموزشی بررسی کنید و از آن برای توضیح و بازخورد استفاده کنید، نه انجام کامل تکلیف. برای تصویر و صدا، رضایت، کپی‌رایت و آزار همسالان را روشن آموزش دهید.',
+      'For a child or teen, use tools compatible with their age, family or school accounts, and adult supervision. Never enter a full name, school, address, private image, or password. Verify answers with a book or educational source, and use AI for explanation and feedback rather than completing the assignment. Teach consent, copyright, deepfake risk, and peer safety for images and voices.'
+    ),
+    fact(
+      'older_adult_ai_help',
+      [
+        'how can an older person learn ai',
+        'how can an older person learn technology without getting scammed',
+        'i am 72 and want to learn ai without being scammed',
+        'how can a 72 year old learn ai without scams',
+        'how can a 72-year-old learn ai without scams',
+        'teach my elderly parent to use ai',
+        'ai help for seniors',
+        'آموزش هوش مصنوعی به سالمند',
+        'چطور به یک سالمند استفاده از هوش مصنوعی یاد بدم',
+        'کمک به سالمند برای استفاده از فناوری'
+      ],
+      [
+        'older adult ai',
+        'senior technology',
+        'هوش مصنوعی سالمند',
+        'فناوری سالمند'
+      ],
+      'برای سالمند از یک نیاز واقعی مثل نوشتن پیام، خلاصه‌کردن متن یا ساختن اسلاید شروع کنید. فونت و کنتراست را بالا ببرید، میان‌بر روی صفحه بگذارید و مراحل را روی کاغذ بنویسید. هر بار فقط یک کار و یک ابزار. تأکید کنید که هیچ پشتیبانی واقعی رمز، کد بانکی، نصب کنترل از راه دور یا پرداخت فوری نمی‌خواهد و پاسخ پزشکی یا مالی هوش مصنوعی باید با فرد متخصص بررسی شود.',
+      'For an older adult, start with one real need such as drafting a message, summarizing a document, or making a slide. Increase text and contrast, add a home-screen shortcut, and print the steps. Teach one task and one tool at a time. Make clear that legitimate support never demands passwords, bank codes, remote-control software, or urgent payment, and verify medical or financial AI output with a qualified person.'
     )
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);
