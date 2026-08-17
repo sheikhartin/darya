@@ -204,6 +204,38 @@
       return `${separator}${sentence}`;
     },
 
+    _buildMediaRecommendation(request) {
+      const key = request.category;
+      if (!this._usedMediaTitles.has(key)) {
+        this._usedMediaTitles.set(key, new Set());
+      }
+      const used = this._usedMediaTitles.get(key);
+      const result = DaryaKnowledge.recommendMedia(
+        request.category,
+        this.lang.code,
+        request.count,
+        { genre: request.genre, excludedTitles: used }
+      );
+      this._mediaRecommendationState = { ...request };
+      if (!result || result.titles.length === 0) {
+        return this.lang.code === 'fa'
+          ? 'همه‌ی انتخاب‌های این موضوع را در این گفتگو پیشنهاد دادم. اگر ژانر یا رسانه را عوض کنی، انتخاب‌های تازه‌ای دارم.'
+          : 'I have reached the end of this topic’s catalog for this chat. Switch the genre or media type and I can open a fresh shelf.';
+      }
+      result.titles.forEach((title) => used.add(title));
+      let answer = result.text;
+      if (result.exhausted) {
+        answer +=
+          this.lang.code === 'fa'
+            ? '\n\nاین‌ها آخرین انتخاب‌های تازه‌ی این موضوع بودند.'
+            : '\n\nThose were the last unseen choices for this topic.';
+      }
+      this._lastKnowledgeTopic = `media_${request.category}`;
+      this._lastKnowledgeTurn = this.memory.turnCount;
+      this._lastKnowledgeText = result.text;
+      return answer;
+    },
+
     _applySmartOverrides({
       reply,
       rawText,
@@ -215,6 +247,27 @@
     }) {
       const _safetyTurn = matchedRule && matchedRule.topic === 'safety';
       let _overrideFired = false;
+      this._mediaContinuationReply = null;
+
+      // Media continuation is intentionally first among non-safety
+      // overrides. Bare phrases such as «بیشتر» otherwise look like short
+      // conversational answers and can be consumed before the knowledge
+      // layer sees their remembered recommendation context.
+      if (
+        !_safetyTurn &&
+        this._mediaRecommendationState &&
+        DaryaKnowledge.isMoreMediaRequest?.(matchingText)
+      ) {
+        const digitCount = matchingText.match(/[0-9]{1,2}/u);
+        const request = {
+          ...this._mediaRecommendationState,
+          count: digitCount ? Number(digitCount[0]) : 5
+        };
+        const answerText = this._buildMediaRecommendation(request);
+        reply = answerText + this._knowledgeFollowup(answerText);
+        this._mediaContinuationReply = reply;
+        _overrideFired = true;
+      }
 
       // Near-peer young-adult crush override: an 18-20 year old with
       // romantic feelings for a 16-17 year old gets warm practical
@@ -577,6 +630,27 @@
         }
       }
 
+      // A bare continuation such as "more" carries no media noun, so it
+      // cannot pass a normal knowledge lookup. Continue the exact remembered
+      // category and genre before evaluating fresh factual requests.
+      if (
+        !_safetyTurn &&
+        !_overrideFired &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        this._mediaRecommendationState &&
+        DaryaKnowledge.isMoreMediaRequest?.(matchingText)
+      ) {
+        const digitCount = matchingText.match(/[0-9]{1,2}/u);
+        const request = {
+          ...this._mediaRecommendationState,
+          count: digitCount ? Number(digitCount[0]) : 5
+        };
+        const answerText = this._buildMediaRecommendation(request);
+        reply = answerText + this._knowledgeFollowup(answerText);
+        _overrideFired = true;
+      }
+
       // Factual-knowledge override: concrete questions about the world
       // ("tell me about Jupiter", "فیزیک کوانتوم چیه", "چطور پول دربیارم")
       // deserve a direct answer from the factual shelf even when they also
@@ -662,26 +736,50 @@
         DaryaKnowledge.lookup &&
         this._isKnowledgeRequest(matchingText);
       if (_knowledgeOverrideEligible) {
-        const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
-        if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
-          // A general recommendation ask (movies, series, games, anime,
-          // music, books) gets a fresh randomized, era-blending list from
-          // the media pool instead of the same static list every time.
-          const randomized = DaryaKnowledge.randomizeRecommendation
-            ? DaryaKnowledge.randomizeRecommendation(
-                factual.topic,
-                this.lang.code,
-                5,
-                matchingText
-              )
+        const mediaRequest = DaryaKnowledge.detectMediaRequest?.(
+          matchingText,
+          this.lang.code
+        );
+        const continuedMediaRequest =
+          !mediaRequest &&
+          this._mediaRecommendationState &&
+          DaryaKnowledge.isMoreMediaRequest?.(matchingText)
+            ? {
+                ...this._mediaRecommendationState,
+                count:
+                  global.DaryaKnowledgeLists.parseListCount(
+                    matchingText,
+                    this.lang.code
+                  ) || 5
+              }
             : null;
-          const answerText = randomized || factual.text;
-          const followup = this._knowledgeFollowup(answerText);
-          reply = answerText + followup;
-          this._lastKnowledgeTopic = factual.topic;
-          this._lastKnowledgeTurn = this.memory.turnCount;
-          this._lastKnowledgeText = answerText;
+        const activeMediaRequest = mediaRequest || continuedMediaRequest;
+        if (activeMediaRequest) {
+          const answerText = this._buildMediaRecommendation(activeMediaRequest);
+          reply = answerText + this._knowledgeFollowup(answerText);
           _overrideFired = true;
+        } else {
+          const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
+          if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
+            const randomized = DaryaKnowledge.randomizeRecommendation
+              ? DaryaKnowledge.randomizeRecommendation(
+                  factual.topic,
+                  this.lang.code,
+                  global.DaryaKnowledgeLists.parseListCount(
+                    matchingText,
+                    this.lang.code
+                  ) || 5,
+                  matchingText
+                )
+              : null;
+            const answerText = randomized || factual.text;
+            const followup = this._knowledgeFollowup(answerText);
+            reply = answerText + followup;
+            this._lastKnowledgeTopic = factual.topic;
+            this._lastKnowledgeTurn = this.memory.turnCount;
+            this._lastKnowledgeText = answerText;
+            _overrideFired = true;
+          }
         }
       }
 
@@ -854,6 +952,7 @@
       if (
         !_safetyTurn &&
         !_minorAttractionTurn &&
+        !_overrideFired &&
         !isRepeatedGreeting &&
         !isSpamNoise &&
         // A repeated word inside a question usually means the user is
@@ -987,6 +1086,9 @@
         }
       }
 
+      if (this._mediaContinuationReply) {
+        reply = this._mediaContinuationReply;
+      }
       return {
         reply,
         safetyTurn: _safetyTurn,
@@ -1171,6 +1273,10 @@
 
       this._advanceConversationPhase(normalized);
 
+      if (this._mediaContinuationReply) {
+        reply = this._mediaContinuationReply;
+        this._mediaContinuationReply = null;
+      }
       this.memory.rememberBotMessage(reply);
       return reply;
     }
