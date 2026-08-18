@@ -106,7 +106,7 @@ run_smoke() {
 # Single engine test run
 # -------------------------------------------------------------------
 run_engine() {
-  local test_files="tests/ambient-sound.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs"
+  local test_files="tests/ambient-sound.test.mjs tests/dev-server.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs"
 
   if $VERBOSE; then
     # shellcheck disable=SC2086

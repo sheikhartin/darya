@@ -41,6 +41,17 @@ pipeline details live in the [README](README.md) and the upgrade spec
   the previously precached copies indefinitely. The offline e2e
   suite now reads the cache name from `sw.js` rather than pinning
   it.
+- **Updates deliver themselves.** A returning visitor could stay on
+  a stale shell indefinitely: the worker is cache-first, and
+  browsers only re-check `sw.js` on navigation (throttled at that).
+  The app now asks the browser to re-check the worker on load and
+  whenever the tab becomes visible, and reloads itself once, at a
+  safe moment (the start picker, never mid-conversation), after a
+  new worker takes control. `npm start` now runs a dependency-free
+  dev server (`scripts/serve.mjs`) that sends the headers an
+  offline-first PWA needs: `no-store` for `sw.js`, `no-cache` plus
+  `Last-Modified` revalidation for everything else, replacing
+  `python3 -m http.server`, which sent no cache directives at all.
 
 ## [1.4.0] - 2026-08-17
 
