@@ -23,6 +23,12 @@
  * without touching the network at all. The runtime fetch handler also
  * opportunistically caches any same-origin GET that was not precached,
  * so a second visit to any URL this app ever requests is offline-ready.
+ *
+ * Refresh note: a browser re-installs this worker only when its bytes
+ * change, so any release that modifies precached shell content must
+ * also change something in this file (a comment note like this one is
+ * enough); the install then re-runs and re-fetches the changed shell
+ * into the versioned cache.
  */
 
 'use strict';

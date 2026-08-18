@@ -64,7 +64,15 @@
       el.typingStatus.setAttribute('aria-label', chosenLang.ui.typingLabel);
       el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
       el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
-      el.disclaimer.textContent = chosenLang.ui.footerTagline;
+      // The footer line rotates: every new conversation and every
+      // language switch re-runs applyLanguage, and each pass greets the
+      // user with a different line from the active locale's pool, so
+      // the footer always speaks the chosen language and never goes
+      // stale from repetition.
+      el.disclaimer.textContent =
+        chosenLang.ui.footerTaglines[
+          Math.floor(Math.random() * chosenLang.ui.footerTaglines.length)
+        ];
       UI.theme.updateThemeMenuItem();
 
       if (el.breatheTrigger) {

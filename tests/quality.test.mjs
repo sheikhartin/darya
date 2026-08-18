@@ -2333,17 +2333,34 @@ test('ambient UI carries no crisis lines; help stays in the conversation', () =>
   );
   assert.match(html, /<p class="disclaimer" id="disclaimer-text">/u);
 
-  // The footer tagline is friendly and free of support framing and
-  // digits in both locales.
-  const faTagline = fa.match(/footerTagline: '([^']+)'/u);
-  assert.ok(faTagline, 'fa footerTagline exists');
-  assert.doesNotMatch(
-    faTagline[1],
-    /[0-9\u06f0-\u06f9]|بحران|اورژانس|تخصصی|مشاور|پشتیبانی/u
+  // The footer taglines are friendly and free of support framing and
+  // digits in both locales. Every pool member must stay clean, and the
+  // first one must match the static first-paint line in the shell.
+  const faPool = (fa.match(/footerTaglines: \[([\s\S]*?)\]/u) || [])[1];
+  assert.ok(faPool, 'fa footerTaglines pool exists');
+  const faLines = faPool.match(/'([^']+)'/gu) || [];
+  assert.ok(faLines.length >= 4, `fa pool has at least 4 lines`);
+  for (const line of faLines) {
+    assert.doesNotMatch(
+      line,
+      /[0-9\u06f0-\u06f9]|بحران|اورژانس|تخصصی|مشاور|پشتیبانی/u
+    );
+  }
+  assert.ok(
+    html.includes(faLines[0].slice(1, -1)),
+    'static footer matches the first fa pool line'
   );
-  const enTagline = en.match(/footerTagline: '([^']+)'/u);
-  assert.ok(enTagline, 'en footerTagline exists');
-  assert.doesNotMatch(enTagline[1], /[0-9]|crisis|support|help|hotline/iu);
+
+  const enPool = (en.match(/footerTaglines: \[([\s\S]*?)\]/u) || [])[1];
+  assert.ok(enPool, 'en footerTaglines pool exists');
+  const enLines = enPool.match(/'([^']+)'/gu) || [];
+  assert.ok(enLines.length >= 4, `en pool has at least 4 lines`);
+  for (const line of enLines) {
+    assert.doesNotMatch(line, /[0-9]|crisis|support|help|hotline/iu);
+  }
+
+  // The rotation wiring reads from the active locale's pool.
+  assert.match(read('js/app/language.js'), /footerTaglines\[/u);
 
   // The numbers still live exactly where they reach the user: the
   // in-conversation crisis pools, in both languages.
