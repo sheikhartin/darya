@@ -1,7 +1,9 @@
 /**
- * Darya - chat logger.
- * Records the conversation to localStorage so it survives reloads.
- * Classic script version.
+ * Darya - diagnostic logger.
+ * Keeps a small in-memory ring buffer of log entries (console mirror)
+ * for debugging. Nothing is ever persisted: no localStorage, no
+ * network, and the buffer vanishes with the tab, in line with the
+ * privacy policy. Classic script version.
  */
 
 (function (global) {

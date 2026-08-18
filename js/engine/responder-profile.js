@@ -215,6 +215,33 @@
         return pickPool(pools.nameStored).replace('{name}', rawName);
       }
 
+      // Location disclosure ("I live in Tehran", «تهران زندگی می‌کنم»):
+      // stored for the session so "where do I live?" is answered from
+      // memory. A lived-topic turn stores silently, same as age/name.
+      // The recall QUESTION is checked first: «یادته کجا زندگی می‌کنم؟»
+      // contains the same living verb as a disclosure and must never be
+      // parsed as one.
+      const isLocationQuestion =
+        patterns.locationQuestion &&
+        patterns.locationQuestion.test(matchingText);
+      if (
+        !isLocationQuestion &&
+        patterns.locationStatement &&
+        pools.locationStored
+      ) {
+        const locStmt = patterns.locationStatement.exec(matchingText);
+        if (locStmt) {
+          const place = String(locStmt[1] || locStmt[2] || '').trim();
+          if (place.length >= MIN_PROFILE_NAME_LENGTH) {
+            this._userProfile.location = place;
+            if (hasLivedTopic) {
+              return null;
+            }
+            return pickPool(pools.locationStored).replace('{location}', place);
+          }
+        }
+      }
+
       // Combined recall («یادته که گفتم من کی هستم و چند سالمه؟», "do you
       // remember who I am and how old I am?"): both the age and the name
       // question fire on one turn, so the reply must answer from whatever
@@ -265,6 +292,23 @@
           );
         }
         return pickPool(pools.nameUnknown);
+      }
+
+      // Location recall ("where do I live?", «کجا زندگی می‌کنم؟»):
+      // answered from the stored location, or honestly unknown.
+      if (
+        patterns.locationQuestion &&
+        patterns.locationQuestion.test(matchingText)
+      ) {
+        if (this._userProfile.location && pools.locationKnown) {
+          return pickPool(pools.locationKnown).replace(
+            '{location}',
+            this._userProfile.location
+          );
+        }
+        if (pools.locationUnknown) {
+          return pickPool(pools.locationUnknown);
+        }
       }
       return null;
     },

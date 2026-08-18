@@ -256,6 +256,23 @@
     if (!best || best.score < LOOKUP_MIN_SCORE) {
       return null;
     }
+    // Entity refinement: when the winning fact is the capitals list and
+    // a specific country was named, answer with that single capital in
+    // one sentence instead of dumping the whole shelf. The list stays
+    // the fallback for a generic "name some capitals" ask.
+    if (best.fact.id === 'world_capitals') {
+      const singleCapitalAnswer = extractSingleCapital(lower, isFa);
+      if (singleCapitalAnswer) {
+        const requestedCount = parseListCount(lower, langCode);
+        return {
+          topic: best.fact.id,
+          confidence: Math.min(1, best.score / 40),
+          text: requestedCount
+            ? best.fact[isFa ? 'fa' : 'en']
+            : singleCapitalAnswer
+        };
+      }
+    }
     const requested = parseListCount(lower, langCode);
     return {
       topic: best.fact.id,
@@ -266,6 +283,149 @@
         langCode
       )
     };
+  }
+
+  // Country-name aliases for the single-capital refinement, in both
+  // languages. The capitals shelf text is the source of truth for the
+  // city names; this map only locates which country was asked about.
+  const CAPITAL_COUNTRY_ALIASES = [
+    {
+      fa: 'ایران',
+      en: ['iran'],
+      nameEn: 'Iran',
+      cityFa: 'تهران',
+      cityEn: 'Tehran'
+    },
+    {
+      fa: 'فرانسه',
+      en: ['france'],
+      nameEn: 'France',
+      cityFa: 'پاریس',
+      cityEn: 'Paris'
+    },
+    {
+      fa: 'ترکیه',
+      en: ['turkey'],
+      nameEn: 'Turkey',
+      cityFa: 'آنکارا',
+      cityEn: 'Ankara'
+    },
+    {
+      fa: 'آلمان',
+      en: ['germany'],
+      nameEn: 'Germany',
+      cityFa: 'برلین',
+      cityEn: 'Berlin'
+    },
+    {
+      fa: 'ایتالیا',
+      en: ['italy'],
+      nameEn: 'Italy',
+      cityFa: 'رم',
+      cityEn: 'Rome'
+    },
+    {
+      fa: 'انگلیس',
+      en: ['england', 'uk', 'britain', 'united kingdom'],
+      nameEn: 'the UK',
+      cityFa: 'لندن',
+      cityEn: 'London'
+    },
+    {
+      fa: 'بریتانیا',
+      en: [],
+      nameEn: 'the UK',
+      cityFa: 'لندن',
+      cityEn: 'London'
+    },
+    {
+      fa: 'ژاپن',
+      en: ['japan'],
+      nameEn: 'Japan',
+      cityFa: 'توکیو',
+      cityEn: 'Tokyo'
+    },
+    {
+      fa: 'چین',
+      en: ['china'],
+      nameEn: 'China',
+      cityFa: 'پکن',
+      cityEn: 'Beijing'
+    },
+    {
+      fa: 'روسیه',
+      en: ['russia'],
+      nameEn: 'Russia',
+      cityFa: 'مسکو',
+      cityEn: 'Moscow'
+    },
+    {
+      fa: 'مصر',
+      en: ['egypt'],
+      nameEn: 'Egypt',
+      cityFa: 'قاهره',
+      cityEn: 'Cairo'
+    },
+    {
+      fa: 'کانادا',
+      en: ['canada'],
+      nameEn: 'Canada',
+      cityFa: 'اتاوا',
+      cityEn: 'Ottawa'
+    },
+    {
+      fa: 'استرالیا',
+      en: ['australia'],
+      nameEn: 'Australia',
+      cityFa: 'کانبرا',
+      cityEn: 'Canberra'
+    },
+    {
+      fa: 'اسپانیا',
+      en: ['spain'],
+      nameEn: 'Spain',
+      cityFa: 'مادرید',
+      cityEn: 'Madrid'
+    },
+    {
+      fa: 'هند',
+      en: ['india'],
+      nameEn: 'India',
+      cityFa: 'دهلی‌نو',
+      cityEn: 'New Delhi'
+    },
+    {
+      fa: 'برزیل',
+      en: ['brazil'],
+      nameEn: 'Brazil',
+      cityFa: 'برازیلیا',
+      cityEn: 'Brasilia'
+    }
+  ];
+
+  /**
+   * Returns a one-sentence answer for "capital of X" when exactly one
+   * known country is named in the text, otherwise null (generic asks
+   * keep the full list).
+   * @param {string} lower - Lowercased user text.
+   * @param {boolean} isFa - Whether the active language is Persian.
+   * @returns {string|null}
+   */
+  function extractSingleCapital(lower, isFa) {
+    const hits = CAPITAL_COUNTRY_ALIASES.filter((entry) =>
+      isFa
+        ? lower.includes(entry.fa)
+        : entry.en.some((alias) =>
+            new RegExp(`\\b${escapeRegExp(alias)}\\b`, 'iu').test(lower)
+          )
+    );
+    if (hits.length !== 1) {
+      return null;
+    }
+    const hit = hits[0];
+    return isFa
+      ? `پایتخت ${hit.fa} ${hit.cityFa} است.`
+      : `The capital of ${hit.nameEn} is ${hit.cityEn}.`;
   }
 
   // Genre words per language for refining a movie request ("in horror
@@ -815,6 +975,51 @@
     );
   }
 
+  // Iranian/Persian nationality request: routes movie asks to the
+  // dedicated Iranian cinema shelf and music asks to the Persian music
+  // shelf. Matched separately from GENRE_ALIASES because the same word
+  // maps to a different shelf per category.
+  const IRANIAN_REQUEST = /\b(?:iranian|persian)\b|ایرانی|ایران|فارسی/iu;
+
+  /**
+   * Detects a decade/era filter in a media request ("from the 80s",
+   * "1990s movie", «دهه هشتاد میلادی»). Returns { from, to } Gregorian
+   * year bounds or null. Only explicit decade phrasings match, so a
+   * bare year inside a title never becomes a filter.
+   * @param {string} text
+   * @returns {{from: number, to: number}|null}
+   */
+  function detectMediaEra(text) {
+    const t = String(text || '');
+    const en = t.match(/\b(?:from |of |in )?the (\d\d)s\b|\b(19\d0|20\d0)s\b/i);
+    if (en) {
+      const raw = en[1] || en[2];
+      const base =
+        raw.length === 2
+          ? (Number(raw) >= 30 ? 1900 : 2000) + Number(raw)
+          : Number(raw);
+      return { from: base, to: base + 9 };
+    }
+    const fa = t.match(/دهه[\u200c ]?(?:ی )?([۰-۹0-9]{2,4})\s*(میلادی)?/u);
+    if (fa) {
+      const ascii = fa[1].replace(/[۰-۹]/g, (d) =>
+        String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+      );
+      let base = Number(ascii);
+      if (base < 100) {
+        // Two-digit Persian decades ("دهه ۸۰") default to the Gregorian
+        // century only when explicitly marked میلادی; otherwise ambiguous
+        // (Jalali decades), so no filter is applied.
+        if (!fa[2]) {
+          return null;
+        }
+        base = (base >= 30 ? 1900 : 2000) + base;
+      }
+      return { from: base, to: base + 9 };
+    }
+    return null;
+  }
+
   /** Resolve a full media request without letting a stale topic influence it. */
   function detectMediaRequest(text, langCode) {
     if (!text || !MEDIA_REQUEST.test(text)) {
@@ -826,7 +1031,42 @@
     if (!category) {
       return null;
     }
+    // Nationality shelves: an Iranian movie or Persian music ask routes
+    // to the dedicated shelf instead of the international genre pool.
+    // In Persian, «آهنگ ایرانی» and «فیلم ایرانی» are among the most
+    // common asks and previously returned international picks.
+    if (IRANIAN_REQUEST.test(text)) {
+      if (category === 'movie') {
+        return {
+          category,
+          genre: 'iranian',
+          era: detectMediaEra(text),
+          count: parseListCount(text, langCode) || DEFAULT_MEDIA_COUNT
+        };
+      }
+      if (category === 'music') {
+        return {
+          category,
+          genre: 'persian',
+          era: detectMediaEra(text),
+          count: parseListCount(text, langCode) || DEFAULT_MEDIA_COUNT
+        };
+      }
+    }
     const genre = detectMediaGenre(text, category);
+    const era = detectMediaEra(text);
+    // An explicit era ask ("horror movie from the 80s") must stay in
+    // the filterable pool: the specialist knowledge shelves are static
+    // text and cannot honor a decade filter (the "80s horror" ask used
+    // to return 2014-2016 titles).
+    if (era && genre) {
+      return {
+        category,
+        genre,
+        era,
+        count: parseListCount(text, langCode) || DEFAULT_MEDIA_COUNT
+      };
+    }
     // Existing specialist shelves carry details such as platform, era,
     // duration, and true-story status that a broad genre tag cannot retain.
     if (
@@ -857,6 +1097,7 @@
     return {
       category,
       genre,
+      era,
       count: parseListCount(text, langCode) || DEFAULT_MEDIA_COUNT
     };
   }
@@ -883,7 +1124,19 @@
       return null;
     }
     const excluded = options.excludedTitles || new Set();
-    const available = all.filter((item) => !excluded.has(item.t));
+    let available = all.filter((item) => !excluded.has(item.t));
+    // Era filter: honor an explicit decade request ("from the 80s").
+    // When the filter empties the shelf, return null so the caller can
+    // answer honestly instead of serving off-era titles as if they fit.
+    if (options.era) {
+      available = available.filter(
+        (item) =>
+          item.y && item.y >= options.era.from && item.y <= options.era.to
+      );
+      if (!available.length) {
+        return null;
+      }
+    }
     const wanted = Math.max(
       1,
       Math.min(count || DEFAULT_MEDIA_COUNT, MAX_MEDIA_COUNT)

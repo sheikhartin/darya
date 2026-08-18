@@ -16,9 +16,74 @@
     rule(
       'safety',
       100,
+      // Crisis language arrives in every register: formal ("end my
+      // life"), contraction-free ("dont wanna live"), slang ("end it
+      // all"; "kms" is expanded by the normalizer), passive ideation
+      // ("sleep and never wake up", "better off without me"), and
+      // plan/means statements ("I have a plan to end things", "took all
+      // my pills", "bought a rope", "hang myself"). Every branch below
+      // is a genuine cry for help and must reach the crisis pool, never
+      // a goal-coaching or curiosity pool.
       // eslint-disable-next-line max-len
-      /\b(suicide|kill myself|self.?harm|hurt myself|end my life|(?:don'?t|do not) want to live(?! (?:in|here|there|with|near|at))|no reason to live|nothing to live for|no point in living|want to die|wish i were dead|better off dead|i want to disappear forever)\b/i,
+      /\b(suicide|suicidal|kill(?:ing)? myself|self.?harm|hurt(?:ing)? myself|harm(?:ing)? myself|cut(?:ting)? myself(?! (?:shaving|by accident|accidentally|on (?:paper|glass|a)))|end(?:ing)? my (?:own )?life|end it all|(?:don'?t|dont|do not|no longer) (?:wanna|want to|want) (?:live|be alive|exist|wake up|be here)(?! (?:in|here|there|with|near|at))|no reason to live|nothing to live for|no point in living|(?:wanna|want to) die|want to die|wish i (?:were|was) dead|wish i could die|wish i (?:were|was)n'?t (?:here|alive)|better off dead|better off without me|better without me|i want to disappear forever|(?:gonna|going to|about to|planning to|plan to|ready to) (?:end it(?: all)?|kill myself|end my life|take my (?:own )?life)|take my own life|(?:have|got|made) a plan to (?:end|kill|die)|hang(?:ing)? myself|jump(?:ing)? off (?:a|the) (?:bridge|roof|building)|took an overdose|took (?:all|too many) (?:of )?(?:my|the) pills|swallowed (?:all|too many) (?:of )?(?:my|the) pills|took a (?:whole )?bottle of pills|bought a rope(?!.{0,20}(?:climb|boat|dog|swing|tie the|package|moving))|slit my wrists?|sleep and never wake up|never wake up again|not wake up (?:tomorrow|again)|put an end to (?:it all|my life|everything)|life is not worth living|my life is not worth)\b/i,
       R['ruleSafety']
+    ),
+
+    // Method-seeking questions (lethal doses, means, "how to" die) get
+    // a dedicated hard-boundary reply: no information, warm
+    // acknowledgment, immediate crisis resources. Priority sits just
+    // below safety so an explicit first-person ideation statement still
+    // routes to the fuller crisis pool.
+    rule(
+      'safety_method',
+      102,
+      // eslint-disable-next-line max-len
+      /\b(?:how (?:many|much) (?:pills?|tablets?|paracetamol|acetaminophen|ibuprofen|sleeping pills?).{0,30}(?:overdose|die|kill|lethal|fatal)|(?:lethal|fatal|deadly) dos(?:e|age)|how to (?:kill (?:myself|yourself|oneself)|commit suicide|hang (?:myself|yourself)|end (?:my|your) life)|(?:painless|easiest|quickest|best) way to (?:die|kill (?:myself|yourself)|end it)|what (?:height|floor) (?:would|is enough to) kill|how (?:do people|to) overdose)\b/i,
+      R['ruleSafetyMethod']
+    ),
+
+    // Someone else at risk ("my friend wants to kill herself") is a
+    // crisis-adjacent turn: the caller needs concrete guidance and the
+    // hotline, not a topic shrug. Matches third-person subjects tied to
+    // suicide/self-harm vocabulary.
+    rule(
+      'third_party_risk',
+      101,
+      // eslint-disable-next-line max-len
+      /\b(?:my )?(?:friend|sister|brother|mom|mother|dad|father|son|daughter|cousin|roommate|partner|wife|husband|boyfriend|girlfriend|colleague|classmate|neighbor)\b.{0,40}\b(?:wants? to (?:kill (?:her|him|them)sel(?:f|ves)|die|end (?:her|his|their) life)|is suicidal|talk(?:s|ed|ing)? about (?:suicide|killing (?:her|him|them)sel(?:f|ves)|ending it)|threatens? suicide|threatens? to kill (?:her|him|them)sel(?:f|ves)|hurt(?:s|ing)? (?:her|him|them)sel(?:f|ves)|cut(?:s|ting)? (?:her|him|them)sel(?:f|ves))/i,
+      R['ruleThirdPartyRisk']
+    ),
+
+    // Abuse and assault disclosures: believe first, check safety,
+    // point to specialist support. Never the curiosity fallback.
+    rule(
+      'abuse_disclosure',
+      97,
+      // eslint-disable-next-line max-len
+      /\b(?:(?:my )?(?:husband|wife|partner|boyfriend|girlfriend|dad|father|mom|mother|stepdad|stepmom|brother|uncle|ex)\b.{0,30}\b(?:hits?|beats?|hit|beat|slapped|slaps|punche[sd]|chokes?|choked|threatens? (?:to (?:kill|hurt))|abus(?:es|ed|ing))(?: me\b|\b)|i (?:was|got|am being|have been) (?:raped|sexually assaulted|molested|abused|beaten|battered)|someone (?:raped|assaulted|molested) me|domestic (?:violence|abuse)|he (?:hits|beats|chokes) me|she (?:hits|beats|chokes) me|they (?:hit|beat|choke) me|i am (?:scared|afraid) (?:of )?(?:him|her|them) hurting me)\b/i,
+      R['ruleAbuseDisclosure']
+    ),
+
+    // Self-neglect and eating-distress disclosures ("have not eaten in
+    // days", "starving myself", "make myself throw up") get a caring,
+    // body-safety reply with a professional nudge.
+    rule(
+      'eating_distress',
+      96,
+      // eslint-disable-next-line max-len
+      /\b(?:ha(?:ve|ven'?t|vent)(?: not)? eaten (?:in|for) (?:\d+|a few|several|two|three|four|five|many) days?|(?:stopped|can'?t|cannot|refuse to) eat(?:ing)?(?! (?:sugar|meat|gluten|junk|fast food))|starv(?:e|ing) myself|make myself (?:throw up|vomit|sick)|purg(?:e|ing) after (?:meals|eating)|binge and purge|hate my body so much i|too fat to eat|punish myself with food|afraid of food)\b/i,
+      R['ruleEatingDistress']
+    ),
+
+    // Psychosis-adjacent disclosures (command hallucinations, voices)
+    // need urgent professional care framed calmly, never a reflective
+    // "what do you need to say" prompt.
+    rule(
+      'psychosis_risk',
+      96,
+      // eslint-disable-next-line max-len
+      /\b(?:hear(?:ing)? voices (?:that|telling|saying|in my head)|voices (?:are )?telling me to|the voices (?:say|tell|want)|see(?:ing)? things (?:that (?:are not|aren'?t) there|no one else sees)|someone is controlling my (?:thoughts|mind|body)|thoughts are (?:not|n'?t) my own|people are (?:following|watching|after) me every|everyone is conspiring against me)\b/i,
+      R['rulePsychosisRisk']
     ),
 
     rule(

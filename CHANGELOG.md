@@ -5,6 +5,122 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.4.0] - 2026-08-17
+
+### Fixed (safety-critical)
+
+- **Crisis detection now covers the register people actually type in.**
+  The safety rule previously matched only formal phrasings ("kill
+  myself", "end my life"), so slang ("kms", "unalive", "end it all"),
+  apostrophe-free contractions ("dont wanna live"), passive ideation
+  ("I wish I could sleep and never wake up", «کاش می‌مردم», «بهتره که
+  دیگه نباشم»), and plan/means statements ("I bought a rope", "took
+  all my pills", «قرص جمع کردم», «می‌خوام خودمو حلق‌آویز کنم») fell
+  through to goal-coaching pools and were answered with lines like
+  "What is the main thing standing between you and it?". All of these
+  now route to the crisis pool with verified hotlines. "kms"/"kys"/
+  "unalive" are canonicalized by the matching normalizer.
+- **Five new safety-critical rule families in both languages**, each
+  with dedicated, carefully-worded response pools: third-party risk
+  ("my friend wants to kill herself" now gets concrete caregiver
+  guidance instead of "I am not familiar with this subject"), domestic
+  violence and sexual assault disclosures ("my husband hits me", "I
+  was raped", «شوهرم منو می‌زنه», «بهم تجاوز شد» are believed first
+  and pointed to specialist help; previously they could receive "What
+  makes it interesting to you?"), extended food refusal and eating
+  distress, psychosis-adjacent disclosures (command hallucinations),
+  and method-seeking questions, which get a firm, warm refusal with no
+  information and the crisis line.
+- **Joke-softened ideation gets a check-in, never an echo.** "i wanna
+  die lol jk" used to be mirrored back ("So you wanna die lol jk.
+  What's that like for you?"); it now receives a gentle, serious
+  check-in, in both languages.
+- **Session-wide safety mode.** After any safety-critical turn, exit
+  confirmations and farewells switch to crisis-aware copy that
+  restates the hotline (never "I will wish you well"), and the playful
+  huff stays suppressed for the rest of the session.
+- **Death-lexicon guards as a second line of defense.** Any turn
+  containing death or self-harm vocabulary is never echoed by the
+  pronoun reflection or quoted callback, never handed a playful huff
+  or boredom line, and a heavy unmatched turn gets a new caring
+  unknown pool (acknowledgment-first) instead of the curiosity
+  fallback.
+- **The on-page disclaimer now names the hotlines** (123/1480 in
+  Persian, 988/116 123 in English), so crisis resources are always one
+  glance away without typing anything.
+
+### Fixed (correctness)
+
+- **Multi-operator arithmetic is now actually correct.** "2+2*3" used
+  to be answered "2 * 3 = 6" (a fragment of the expression presented
+  as the whole answer). A real expression evaluator (shunting-yard)
+  now handles + - * / ^ ( ) with correct precedence, unary minus, and
+  Persian digits: "2+2*3" is 8, "(2+3)*4" is 20, "-(3+4)*2" is -14.
+  Expressions embedded in prose are never hijacked, and "sqrt of -4"
+  gets an honest "no real square root" instead of the unknown pool.
+- **Specific capital questions get one-sentence answers.** "What is
+  the capital of France?" now answers "The capital of France is
+  Paris." («پایتخت فرانسه پاریس است.») instead of reciting fifteen
+  capitals; generic list asks keep the full shelf.
+- **Live-data questions get honesty first.** "What is bitcoin's price
+  today?", «قیمت دلار چنده», and weather/news/score asks now lead with
+  the offline limitation instead of a timeless background lecture;
+  background questions ("what is bitcoin?") still get the knowledge
+  shelf.
+- **Media filters genuinely filter.** "Persian music" and «آهنگ
+  ایرانی» now return Googoosh, Shajarian, Namjoo, and other Iranian
+  artists from a new dedicated shelf (previously: Bicep and Talk
+  Talk); "Iranian movie" and «فیلم ایرانی» return Kiarostami, Farhadi,
+  Majidi, and Panahi. An "80s horror movie" ask returns only 1980s
+  titles (the horror shelf gained genuine classics), and an era ask
+  the shelf cannot honor gets an honest scoping reply instead of
+  off-era titles presented as if they fit.
+
+### Improved (conversation intelligence)
+
+- **No question is ever repeated verbatim in a session.** The memory
+  now tracks every asked question; pools serve unasked lines first and
+  change register when a topic's questions are spent. Previously an
+  "ok" streak alternated the same two questions forever.
+- **The advice bridge.** After several turns on one lived topic, an
+  explicit "what should I do?" gets a concrete three-small-steps
+  answer instead of a fourth reflective question. Early asks keep the
+  normal reflective pool.
+- **Location joins the session profile.** "I live in Tehran", «اهل
+  شیرازم», and «تو اصفهان زندگی می‌کنم» are remembered; "where do I
+  live?" is answered from memory or honestly declined. Emotional
+  phrasings ("i live in fear") are never stored as cities.
+- **Keyboard mash is detected.** "asdkjhaskdjh" gets the
+  did-not-come-through reply instead of a word-salad response;
+  legitimate consonant-cluster words ("strengths") are unaffected.
+- **Mood summaries stop inventing trends.** A single check-in no
+  longer reads back "the direction is fairly steady"; trend language
+  starts at two samples.
+- **Reply assembly guards.** At most one question per reply: the
+  emotional-shift line no longer stacks onto a reply that already asks
+  something, and never attaches to low-content turns.
+
+### Changed
+
+- The flaky "series and movie asks" regression test now asserts on the
+  deterministic anchor set instead of a random spot-check, removing
+  the suite's only intermittent failure.
+- The logger's header comment falsely claimed conversations were
+  recorded to localStorage; it now correctly documents the in-memory
+  ring buffer (nothing was ever persisted).
+- "Bitcoin is the world first cryptocurrency" typo fixed.
+
+### Validated
+
+- 1452/1452 tests pass, including two new suites: a 77-case
+  adversarial safety corpus (`tests/safety-net.test.mjs`) covering
+  slang, contractions, passive ideation, means statements, third-party
+  risk, abuse, eating distress, psychosis, method-seeking, benign
+  false-positive guards, and crisis-aware exits in both languages; and
+  29 accuracy regression tests
+  (`tests/engine-accuracy.test.mjs`).
+- ESLint (0 warnings), Stylelint, and Prettier are clean.
+
 ## [1.3.0] - 2026-08-16
 
 ### Added

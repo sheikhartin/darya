@@ -16,9 +16,12 @@
     SUBJECT_CONTINUATION_WINDOW,
     SUBJECT_CONTINUATION_MAX_REFRESHES,
     GENERIC_ADVICE_TOPICS,
+    ADVICE_BRIDGE_MIN_TOPIC_TURNS,
     OPENER_SUBJECT_TOPICS,
     reflectPronouns,
-    truncateExcerpt
+    truncateExcerpt,
+    containsDeathLexicon,
+    scoreSentiment
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, SOURCE_SUGGESTION_CHANCE } =
@@ -42,6 +45,11 @@
   const STREAK_EXEMPT_TOPICS = new Set([
     'depression',
     'safety',
+    'safety_method',
+    'third_party_risk',
+    'abuse_disclosure',
+    'eating_distress',
+    'psychosis_risk',
     'grief',
     'grief_hope',
     'anxiety',
@@ -155,6 +163,40 @@
       // BOTH labels: the kept thread topic (the quality scenarios assert
       // loneliness continuity) and the matched rule topic (the passion
       // suites assert the friendship question itself routed).
+      // Advice bridge: after the user has stayed on one lived topic for
+      // several turns, an explicit "what should I do?" is a request for
+      // direction, not another reflective question. Serve the concrete
+      // micro-step bridge instead of drawing a fourth question from the
+      // same topic pool (real transcripts showed a run of interchangeable
+      // topic questions ignoring the direct ask for direction).
+      // "Stayed on" is measured by how many recorded turn frames carry
+      // the subject topic, which is robust against continuation-driven
+      // subject-stamp refreshes.
+      if (
+        matchedRule.topic === 'what_do_i_do' &&
+        this.lang.adviceBridgeResponses &&
+        this.memory.currentSubject &&
+        this.memory.currentSubject.topic &&
+        this.memory.currentSubject.topic !== matchedRule.topic &&
+        // Turns on the subject = rule-matched frames carrying the topic
+        // plus unmatched continuation turns that stayed in the thread
+        // (tracked by continuationRefreshes).
+        this.memory.turnFrames.filter((frame) =>
+          (frame.topics || []).includes(this.memory.currentSubject.topic)
+        ).length +
+          (this.memory.currentSubject.continuationRefreshes || 0) >=
+          ADVICE_BRIDGE_MIN_TOPIC_TURNS
+      ) {
+        this.currentTurnTopics = [
+          ...new Set([
+            this.memory.currentSubject.topic,
+            ...this.currentTurnTopics
+          ])
+        ];
+        return this._pickVaried(this.lang.adviceBridgeResponses, {
+          ignoreQuestionBudget: true
+        });
+      }
       if (
         GENERIC_ADVICE_TOPICS.has(matchedRule.topic) &&
         this.memory.currentSubject &&
@@ -690,7 +732,12 @@
         return continuation;
       }
 
-      if (normalizedUserText && Math.random() < QUOTED_CALLBACK_PROBABILITY) {
+      if (
+        normalizedUserText &&
+        // Never quote a death-adjacent phrase back at the person.
+        !containsDeathLexicon(normalizedUserText) &&
+        Math.random() < QUOTED_CALLBACK_PROBABILITY
+      ) {
         // Circle back to the MOST RECENT topic the person raised, never a
         // random old phrase: a release or filler turn like «ولش کن» must
         // return to the same latest thread every time, so the reply is
@@ -722,6 +769,11 @@
         // knowledge, or honest pools, never echo back as "So tell you X"
         // (the transcript's EN reflection misfire).
         !IMPERATIVE_REQUEST_PATTERN.test(normalizedUserText) &&
+        // A turn carrying death or self-harm vocabulary must never be
+        // mirrored back ("So you wanna die lol jk. What's that like for
+        // you?"). Even a phrasing the safety rules missed cannot be
+        // echoed; the caring check-in below owns such turns.
+        !containsDeathLexicon(normalizedUserText) &&
         Math.random() < PRONOUN_REFLECTION_PROBABILITY
       ) {
         const reflected = reflectPronouns(
@@ -750,10 +802,30 @@
         this.lang.unknownTopicResponses &&
         this.lang.unknownTopicResponses.length > 0
       ) {
-        return this._pickVaried(this.lang.unknownTopicResponses, {
-          ignoreQuestionBudget: true,
-          trackQuestions: false
-        });
+        // Severity gate: the unknown pool's curiosity tone ("what makes
+        // it interesting to you?") is right for "tell me about black
+        // holes" and catastrophic for a heavy disclosure no rule
+        // caught. A negative-sentiment or death-adjacent turn gets the
+        // caring unknown pool instead: acknowledgment first, no
+        // curiosity vocabulary.
+        const heavyUnknown =
+          this.lang.unknownTopicCaringResponses &&
+          this.lang.unknownTopicCaringResponses.length > 0 &&
+          (containsDeathLexicon(normalizedUserText || '') ||
+            scoreSentiment(
+              normalizedUserText || '',
+              this.lang.sentimentLexicon
+            ) < 0 ||
+            this.lastTurnNeedsCare);
+        return this._pickVaried(
+          heavyUnknown
+            ? this.lang.unknownTopicCaringResponses
+            : this.lang.unknownTopicResponses,
+          {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          }
+        );
       }
       this._fallbackToggle = !this._fallbackToggle;
       const pool = this._fallbackToggle
@@ -807,7 +879,7 @@
       // to the pronoun reflection / honest-unknown paths instead of
       // being pinned to a "let us return to the topic" line.
       const isOpenerSubject = OPENER_SUBJECT_TOPICS.has(subject.topic);
-      const pool =
+      let pool =
         specific && specific.length > 0
           ? specific
           : !isOpenerSubject
@@ -816,6 +888,28 @@
             : null;
       if (!pool || pool.length === 0) {
         return null;
+      }
+      // Once every question in the topic pool has been asked this
+      // session, stop recycling them verbatim (the "ok" streak used to
+      // alternate the same two questions forever). Switch to the
+      // generic _default continuation pool, whose lines change register
+      // (invitations, not the same topic questions); when that is spent
+      // too, keep the thread alive with the freshest available line
+      // rather than bouncing to the unknown pool mid-thread.
+      if (this.memory.askedQuestionTexts) {
+        const unasked = pool.filter(
+          (line) => !this.memory.askedQuestionTexts.has(line)
+        );
+        if (unasked.length > 0) {
+          pool = unasked;
+        } else {
+          const fallback = (
+            this.lang.topicSpecificQuestions?.['_default'] || []
+          ).filter((line) => !this.memory.askedQuestionTexts.has(line));
+          if (fallback.length > 0) {
+            pool = fallback;
+          }
+        }
       }
       // Bypass the question budget like the short-answer context path:
       // the follow-up replaces the answered turn one-for-one, so it is

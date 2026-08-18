@@ -101,6 +101,14 @@
     'This question is beyond my knowledge, so it is worth checking a specialized source: Wikipedia for an overview, and a qualified expert or teacher in the field for anything serious.',
     'For this one I would point you to Wikipedia or high-quality educational content on YouTube; if the topic is sensitive or specialized, the opinion of an expert in that field beats any general source.'
   ];
+  // Live-data limitation: questions about current prices, weather,
+  // news, or scores cannot be answered offline. Honesty first, then a
+  // pointer to where the live answer actually lives.
+  R.liveDataResponses = [
+    'I am fully offline, so I cannot see live data like current prices, weather, news, or scores. For that, a quick check of a live source is the only honest answer. Is there a background question about the topic I can help with instead?',
+    'That is live information, and I never touch the network, so I honestly cannot know it. A weather app, a news site, or a price tracker will have the real number. I am happy to talk about the topic itself, though.'
+  ];
+
   R.distressNudges = [
     "It seems like the last few messages have felt pretty heavy. If you'd like, we could pause for a moment: breathe in for a count of four, hold for four, breathe out for four. And if these feelings continue or get more intense, talking with a professional or someone you trust could really help.",
     "I notice this part of our conversation has felt heavy for you. We don't have to solve it all right now; if you want, we can just sit with it for a moment. And if these feelings stick around, being with a professional or someone you trust can make a real difference."
@@ -247,6 +255,18 @@
     'Are you sure you would like to end our conversation? If so, just say goodbye again and I will be on my way. Otherwise, I am still here.',
     'I hear you saying goodbye. If you really want to leave, just confirm and I will wish you well. If not, we can keep talking.',
     'Would you like to end this conversation? If you are sure, say so and I will say goodbye. If not, I am happy to continue.'
+  ];
+  // Crisis-aware exit copy: used instead of exitConfirmMessages and
+  // farewells once a safety-critical turn has happened this session
+  // (see memory.safetyModeSince). No "I will wish you well" phrasing,
+  // the crisis line is restated, and the door stays visibly open.
+  R.exitConfirmCaringMessages = [
+    'We can stop whenever you want, and there is no pressure. Before you go, please keep this close: 988 (US/Canada, call or text, free 24/7) and 116 123 in Europe are always there. If you would rather stay a little longer, I am right here. Say goodbye again to end, or just keep talking.',
+    'Of course we can end here if that is what you need. I just want you to leave with this in hand: 988 (US/Canada) and 116 123 (Europe) are free, 24/7, and staffed by people who care. The door here stays open too. Confirm the goodbye to end, or stay as long as you like.'
+  ];
+  R.caringFarewells = [
+    'Take gentle care of yourself. Please remember: 988 (US/Canada, call or text) and 116 123 (Europe) are free and there around the clock, and so is this quiet space whenever you want to come back.',
+    'Goodbye for now, and please be kind to yourself. If things get heavy again, 988 (US/Canada) and 116 123 (Europe) are always awake, and I will be here whenever you return.'
   ];
   R.repeatedGreetingResponses = [
     'You have greeted a few times now. It seems like you are not quite ready to start yet, and that is completely okay. I am here whenever you are.',

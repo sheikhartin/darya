@@ -126,12 +126,18 @@
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
     unknownTopicResponses: R.unknownTopicResponses,
+    unknownTopicCaringResponses: R.unknownTopicCaringResponses,
+    adviceBridgeResponses: R.adviceBridgeResponses,
     promiseAcknowledgedResponses: R.promiseAcknowledgedResponses,
     promiseCircleBackResponses: R.promiseCircleBackResponses,
     promiseReleasedResponses: R.promiseReleasedResponses,
     topicCallbacks: R.topicCallbacks,
     quotedCallbackTemplates: R.quotedCallbackTemplates,
     distressNudges: R.distressNudges,
+    // Live-data questions (current price/weather/news/score/rate).
+    liveDataPattern:
+      /(?:قیمت (?:امروز|الان|لحظه‌ای|لحظه ای|روز)|قیمت (?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|ارز|بنزین|خودرو)(?:\s|$|چنده|چقدره|چیه)|(?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین) (?:چنده|چقدره|چند شده|چنده امروز)|هوا (?:چطوره|چطور است|چه جوریه|چجوریه|خوبه)|آب و هوا|آب‌وهوا|وضع هوا|دمای (?:هوا|امروز|الان)|اخبار (?:امروز|روز|جدید|تازه)|خبر (?:جدید|تازه|روز)|نتیجه (?:بازی|مسابقه|فوتبال)|کی برد|نرخ (?:ارز|دلار|بهره|تورم امروز))/u,
+    liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
     familyTerms,
@@ -164,6 +170,12 @@
         /(?<!\p{L})(?:دخترم|پسرم|فرزندم|بچه‌ام|بچه‌هام|نوه‌ام|خواهرزاده|برادرزاده|فرزند من|بچه من)(?!\p{L})/iu
     },
     minorAttractionResponses: R['ruleMinorAttraction'],
+    // Joking softener attached to ideation («شوخی کردم», «شوخی بود»):
+    // routes the safety turn to the gentle check-in pool instead of the
+    // full hotline reply (see responder-overrides.js).
+    jokeSoftenerPattern:
+      /(?:شوخی (?:کردم|بود|میکنم|می‌کنم)|مزاح کردم|جدی نگفتم|جدی نبود)\s*[.!؟]?\s*$/u,
+    safetySoftenedResponses: R.safetySoftenedResponses,
     // Neutral probe used for the first half of a split-turn minor
     // attraction disclosure, before the speaker's own age is known.
     minorAttractionProbe: R.minorAttractionProbe,
@@ -208,6 +220,7 @@
     exitStoryPattern,
     exitFalsePositivePattern,
     exitConfirmMessages: R.exitConfirmMessages,
+    exitConfirmCaringMessages: R.exitConfirmCaringMessages,
     greetings: R.greetings,
     greetingsPhase1: R.greetingsPhase1,
     greetingsPhase2: R.greetingsPhase2,
@@ -221,6 +234,7 @@
     greentingsInviting: R.greetingsInviting,
     greentingsReturning: R.greetingsReturning,
     farewells: R.farewells,
+    caringFarewells: R.caringFarewells,
     emptyInputReply: R.emptyInputReply,
     engineErrorReply: R.engineErrorReply,
     foreignLanguageRedirect,
@@ -627,7 +641,14 @@
         // disclosures; combined with the recall cues they must answer from
         // the stored profile (or honestly admit nothing is stored), never
         // capture «کی» as a name.
-        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu
+        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu,
+      // Location disclosure («تهران زندگی می‌کنم», «اهل شیرازم», «تو
+      // اصفهان زندگی می‌کنم»). The place capture is a single Persian
+      // word or two, before the living/from marker.
+      locationStatement:
+        /(?:من )?(?:تو |توی |در )?([\u0600-\u06FF\u200c]{2,20}(?:\s[\u0600-\u06FF\u200c]{2,20})?)\s*(?:زندگی (?:میکنم|می‌کنم|می کنم)|ساکنم|ساکن هستم)|اهل\s+([\u0600-\u06FF\u200c]{2,20})(?:م| هستم| ام)(?!\p{L})/u,
+      locationQuestion:
+        /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the
@@ -654,6 +675,7 @@
     moodAskResponses: R.moodAskResponses,
     moodReflectionPools: R.moodReflectionPools,
     moodSummaryResponses: R.moodSummaryResponses,
+    moodSingleSummaryResponses: R.moodSingleSummaryResponses,
     moodNoDataResponse: R.moodNoDataResponse,
     moodReleaseResponses: R.moodReleaseResponses,
     moodScaleChips: R.moodScaleChips,
@@ -685,7 +707,7 @@
       themeOceanLabel: 'پوسته اقیانوس',
       themeBeachLabel: 'پوسته ساحل',
       disclaimer:
-        'دریا یک همراه شنواست، نه جایگزین راهنمایی تخصصی. در شرایط بحرانی لطفاً با یک متخصص یا خط بحران تماس بگیرید.',
+        'دریا یک همراه شنواست، نه جایگزین راهنمایی تخصصی. در شرایط بحرانی با ۱۲۳ (اورژانس اجتماعی) یا ۱۴۸۰ (مشاوره بهزیستی)، رایگان و شبانه‌روزی، تماس بگیرید.',
       foreignScriptHint: 'لطفاً فقط فارسی بنویسید تا بتونم همراهی‌تان کنم.',
       exportTitle: `گفت‌وگو با ${BOT_NAME}`,
       exportYouLabel: 'شما',

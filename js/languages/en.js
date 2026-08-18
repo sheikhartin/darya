@@ -89,12 +89,20 @@
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
     unknownTopicResponses: R.unknownTopicResponses,
+    unknownTopicCaringResponses: R.unknownTopicCaringResponses,
+    adviceBridgeResponses: R.adviceBridgeResponses,
     promiseAcknowledgedResponses: R.promiseAcknowledgedResponses,
     promiseCircleBackResponses: R.promiseCircleBackResponses,
     promiseReleasedResponses: R.promiseReleasedResponses,
     topicCallbacks: R.topicCallbacks,
     quotedCallbackTemplates: R.quotedCallbackTemplates,
     distressNudges: R.distressNudges,
+    // Live-data questions (current price/weather/news/score/rate).
+    // "today/now/current/latest/right now/at the moment" + a volatile
+    // noun, or the volatile noun with an explicit price/result framing.
+    liveDataPattern:
+      /\b(?:(?:price|worth|value|rate|cost) of .{0,24}(?:today|right now|now|currently|at the moment)|(?:today'?s?|current|latest|live|real.?time) (?:price|weather|news|headlines|score|scores|rate|exchange rate|temperature)|what(?:'?s| is) the (?:weather|news|temperature|score)(?: like)?(?: today| now| outside| tomorrow)?|weather (?:today|now|tomorrow|forecast|like today|like now)|(?:bitcoin|btc|ethereum|gold|dollar|euro|stock|oil) (?:price|rate|worth|value)(?: today| now| right now)?|price of (?:bitcoin|btc|ethereum|gold|dollar|euro|oil)|news (?:today|right now|update)|who (?:won|is winning) (?:the game|the match|today|tonight)|exchange rate)\b/i,
+    liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
     familyTerms,
@@ -126,6 +134,12 @@
         /\b(?:my (?:daughter|son|child|kid|niece|nephew)|daughter's|son's)\b/i
     },
     minorAttractionResponses: R['ruleMinorAttraction'],
+    // Joking softener attached to ideation ("lol jk", "just kidding"):
+    // routes the safety turn to the gentle check-in pool instead of the
+    // full hotline reply (see responder-overrides.js).
+    jokeSoftenerPattern:
+      /\b(?:lol jk|jk|just kidding|just joking|kidding|joking|not really(?:\s*(?:though|tho))?|haha (?:kidding|joking)|only (?:kidding|joking))\b\s*[.!]?\s*$/i,
+    safetySoftenedResponses: R.safetySoftenedResponses,
     // Neutral probe used for the first half of a split-turn minor
     // attraction disclosure, before the speaker's own age is known.
     minorAttractionProbe: R.minorAttractionProbe,
@@ -169,6 +183,7 @@
     exitStoryPattern,
     exitFalsePositivePattern,
     exitConfirmMessages: R.exitConfirmMessages,
+    exitConfirmCaringMessages: R.exitConfirmCaringMessages,
     greetings: R.greetings,
     greetingsPhase1: R.greetingsPhase1,
     greetingsPhase2: R.greetingsPhase2,
@@ -181,6 +196,7 @@
     greentingsInviting: R.greetingsInviting,
     greentingsReturning: R.greetingsReturning,
     farewells: R.farewells,
+    caringFarewells: R.caringFarewells,
     emptyInputReply: R.emptyInputReply,
     engineErrorReply: R.engineErrorReply,
     foreignLanguageRedirect,
@@ -396,7 +412,14 @@
         'no one'
       ],
       nameQuestion:
-        /\b(?:what('?s| is) my name|do you (?:remember|know) my name|who am i|what did i say my name was)\b/i
+        /\b(?:what('?s| is) my name|do you (?:remember|know) my name|who am i|what did i say my name was)\b/i,
+      // Location disclosure ("I live in Tehran", "I'm from Paris").
+      // The capture requires a capital initial so "i live in fear"
+      // never stores an emotion as a city.
+      locationStatement:
+        /\b(?:[Ii] live in|[Ii]'?m living in|[Ii] am living in|[Ii]'?m from|[Ii] am from|[Ii] moved to|[Mm]y city is)\s+([A-Z][A-Za-z'-]+(?:\s+[A-Z][A-Za-z'-]+)?)\b/,
+      locationQuestion:
+        /\b(?:where do i live|where am i from|what(?:'?s| is) my city|do you (?:remember|know) where i (?:live|am from))\b/i
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the
@@ -422,6 +445,7 @@
     moodAskResponses: R.moodAskResponses,
     moodReflectionPools: R.moodReflectionPools,
     moodSummaryResponses: R.moodSummaryResponses,
+    moodSingleSummaryResponses: R.moodSingleSummaryResponses,
     moodNoDataResponse: R.moodNoDataResponse,
     moodReleaseResponses: R.moodReleaseResponses,
     moodScaleChips: R.moodScaleChips,
@@ -454,7 +478,7 @@
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       disclaimer:
-        'Darya is a listening companion, not a substitute for professional help. In a crisis, please contact a professional or a crisis line.',
+        'Darya is a listening companion, not a substitute for professional help. In a crisis, call or text 988 (US/Canada) or 116 123 (Europe), free and 24/7.',
       foreignScriptHint:
         'Please write in English so I can understand and support you.',
       exportTitle: `Conversation with ${BOT_NAME}`,

@@ -1,7 +1,7 @@
 {
   "name": "Darya",
   "short_name": "Darya",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A bilingual (Persian/English) calm conversation companion. Works fully offline once installed.",
   "start_url": "./index.html",
   "scope": "./",

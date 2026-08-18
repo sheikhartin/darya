@@ -345,6 +345,9 @@
       if (this._isQuestionResponse(response)) {
         this.memory.consecutiveQuestions += 1;
         this.memory.askedQuestionTurns.push(this.memory.turnCount);
+        if (this.memory.askedQuestionTexts) {
+          this.memory.askedQuestionTexts.add(response);
+        }
         this.memory.noteBotQuestion(
           response,
           this.currentTurnTopics[0] || this.memory.currentSubject.topic
@@ -388,7 +391,17 @@
       const topic = pending.topic;
       let reply = null;
       if (kind === 'affirm' && topic && this.lang.questionTopics?.has(topic)) {
-        const specific = this.lang.topicSpecificQuestions?.[topic] || [];
+        // Only questions not yet asked this session qualify: once the
+        // topic pool is exhausted, fall to the acknowledgement pools
+        // below instead of recycling the same questions verbatim (the
+        // "ok" streak broken-record failure).
+        const specific = (
+          this.lang.topicSpecificQuestions?.[topic] || []
+        ).filter(
+          (line) =>
+            !this.memory.askedQuestionTexts ||
+            !this.memory.askedQuestionTexts.has(line)
+        );
         if (specific.length) {
           reply = this._pickVaried(specific, {
             ignoreQuestionBudget: true,
@@ -397,12 +410,29 @@
         }
       }
       if (reply === null) {
-        const pool =
+        let pool =
           kind === 'negate'
             ? this.lang.shortAnswerNegateContext
             : kind === 'maybe'
               ? this.lang.shortAnswerMaybeContext
               : this.lang.shortAnswerAffirmContext;
+        // On a long short-answer streak the context pool's questions
+        // run out; once every question line has been asked verbatim,
+        // switch to the non-question lines (or the acknowledgement
+        // pool) instead of repeating a question word-for-word.
+        if (pool && pool.length && this.memory.askedQuestionTexts) {
+          const unspent = pool.filter(
+            (line) =>
+              !this._isQuestionResponse(line) ||
+              !this.memory.askedQuestionTexts.has(line)
+          );
+          pool =
+            unspent.length > 0
+              ? unspent
+              : (this.lang.acknowledgementResponses || []).filter(
+                  (line) => !this._isQuestionResponse(line)
+                );
+        }
         if (pool && pool.length) {
           reply = this._pickVaried(pool, {
             ignoreQuestionBudget: true,
@@ -662,6 +692,22 @@
 
       const recent = this.memory.recentBotMessages;
       let candidates = budgeted.filter((item) => !recent.includes(item));
+
+      // Hard no-repeat for questions: a question asked once this
+      // session is never asked verbatim again while an unasked
+      // alternative exists (the "ok" streak used to alternate the same
+      // two pool questions forever). Statements stay recency-filtered
+      // only, so small pools cannot starve.
+      if (this.memory.askedQuestionTexts && candidates.length > 1) {
+        const fresh = candidates.filter(
+          (item) =>
+            !this._isQuestionResponse(item) ||
+            !this.memory.askedQuestionTexts.has(item)
+        );
+        if (fresh.length > 0) {
+          candidates = fresh;
+        }
+      }
 
       if (candidates.length === 0) {
         const last = recent[recent.length - 1];

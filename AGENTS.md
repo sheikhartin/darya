@@ -64,6 +64,15 @@
   does not require a rewrite.
 - No magic numbers: every literal beyond 0, 1, or empty string becomes
   a named constant.
+- Names are timeless and domain-driven, never change-driven. Every
+  name (a variable, a function, a pool, a test file, a doc) describes
+  what the thing IS in the product, not the change, date, or pull
+  request that introduced it. `engine-accuracy.test.mjs` is right;
+  `correctness-upgrades.test.mjs` or `fixes-2026-08.test.mjs` are
+  wrong, because after merging nobody remembers the upgrade and the
+  name stops meaning anything. The same applies to comments: explain
+  the behavior and the failure mode being prevented, not the release
+  that added the code.
 - Review your own diff as if you were the reviewer. Look for dead code,
   debug logs, inconsistent naming, missing edge cases. Keep the whole
   test suite green before finishing.

@@ -9,6 +9,7 @@
 
   const {
     MEMORY_SIZE,
+    SAFETY_CRITICAL_TOPICS,
     MAX_CONSECUTIVE_SAME_RULE,
     RECENT_BOT_MESSAGES_SIZE,
     SENTIMENT_HISTORY_SIZE,
@@ -92,6 +93,7 @@
     ECHO_ANSWER_MIN_WORDS,
     FILLER_TOPICS,
     GENERIC_ADVICE_TOPICS,
+    ADVICE_BRIDGE_MIN_TOPIC_TURNS,
     OPENER_SUBJECT_TOPICS,
     SUBJECT_CONTINUATION_WINDOW,
     SUBJECT_CONTINUATION_MAX_REFRESHES,
@@ -110,7 +112,8 @@
     truncateExcerpt,
     normalizeForMatching,
     scoreSentiment,
-    reflectPronouns
+    reflectPronouns,
+    containsDeathLexicon
   } = global.DaryaUtilsText;
 
   // Question-echo shape: a short question fragment ending in ؟/? followed
@@ -171,6 +174,17 @@
       // to record on the 1..10 scale, oldest first, capped at the
       // language's moodLogSize. Purely in-memory and session-only.
       this.moodLog = [];
+      // Turn number of the first safety-critical event this session,
+      // or null when none has happened. Once set it never clears: exit
+      // confirmations switch to crisis-aware copy and playful pools
+      // stay suppressed for the rest of the session (see
+      // responder-overrides.js and responder-public.js).
+      this.safetyModeSince = null;
+      // Every question Darya has asked this session, verbatim. A
+      // question asked once is never asked again word-for-word: on an
+      // "ok" streak the old behavior alternated the same two pool
+      // questions forever, which read as a broken record. Session-only.
+      this.askedQuestionTexts = new Set();
     }
 
     /**
@@ -305,6 +319,12 @@
     }
 
     noteBotQuestion(question, topic) {
+      // Session-wide verbatim question log (see askedQuestionTexts):
+      // every asked question is recorded here regardless of which path
+      // served it, so the no-repeat filter in _pickVaried sees them all.
+      if (this.askedQuestionTexts) {
+        this.askedQuestionTexts.add(question);
+      }
       this.pendingQuestions.push({
         question,
         topic,
@@ -532,6 +552,7 @@
 
   global.DaryaUtils = {
     MEMORY_SIZE,
+    SAFETY_CRITICAL_TOPICS,
     MAX_CONSECUTIVE_SAME_RULE,
     RECENT_BOT_MESSAGES_SIZE,
     SENTIMENT_HISTORY_SIZE,
@@ -623,6 +644,7 @@
     SUBJECT_CONTINUATION_WINDOW,
     SUBJECT_CONTINUATION_MAX_REFRESHES,
     GENERIC_ADVICE_TOPICS,
+    ADVICE_BRIDGE_MIN_TOPIC_TURNS,
     OPENER_SUBJECT_TOPICS,
     scriptRatio,
     isValidScript,
@@ -630,6 +652,7 @@
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
+    containsDeathLexicon,
     parseEchoShape,
     ConversationMemory
   };

@@ -16,7 +16,15 @@ used opportunistically if present.
 `node:assert` modules (Node 18+, nothing to `npm install`). Runs the
 unit suites (engine, language, quality, time-utils, ambient-sound) plus
 two browser e2e suites (keyboard and sound-attention) that auto-skip
-when no Chrome/Chromium binary is available. The unit suites exercise
+when no Chrome/Chromium binary is available. Two suites deserve special
+mention: `safety-net.test.mjs` is the adversarial crisis corpus (slang,
+contractions, passive ideation, means statements, third-party risk,
+abuse disclosures, and benign false-positive guards, in both
+languages); it is the most protected file in the suite, and removing
+coverage from it requires an explicit safety review.
+`engine-accuracy.test.mjs` guards answer trustworthiness: arithmetic
+precedence, single-fact extraction, offline-honesty for live data,
+media filters, and the no-verbatim-question-repeat guarantee. The unit suites exercise
 the conversation engine and both language packs directly, no browser
 involved: normalization, script validation, rule matching, exit
 detection, repetition avoidance, the sentiment-based distress nudge
