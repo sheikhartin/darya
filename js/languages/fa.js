@@ -706,11 +706,7 @@
       menuExportTitle: 'دانلود گفتگو',
       themeOceanLabel: 'پوسته اقیانوس',
       themeBeachLabel: 'پوسته ساحل',
-      disclaimerSummary: 'دریا یک همراه شنونده است، نه جایگزین کمک تخصصی.',
-      disclaimerSupport:
-        'اگر لحظه‌ای سختی شد، با ۱۲۳ (اورژانس اجتماعی) یا ۱۴۸۰ (مشاوره بهزیستی) تماس بگیرید؛ رایگان و شبانه‌روزی.',
-      menuSupportLabel: 'پشتیبانی انسانی',
-      menuSupportTitle: 'پشتیبانی انسانی',
+      footerTagline: 'دریا همین‌جاست؛ هر وقت خواستی، حرف بزن.',
       foreignScriptHint: 'لطفاً فقط فارسی بنویسید تا بتونم همراهی‌تان کنم.',
       exportTitle: `گفت‌وگو با ${BOT_NAME}`,
       exportYouLabel: 'شما',

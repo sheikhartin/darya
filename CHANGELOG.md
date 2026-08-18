@@ -19,15 +19,15 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ### Changed (UX)
 
-- **The crisis footer is now progressive and calm.** The always-on
+- **The ambient UI is free of crisis framing.** The always-on
   helpline line under the composer read as clinical before a single
-  word was exchanged. The footer is now a native disclosure whose
-  summary carries only the identity line («دریا یک همراه شنونده
-  است، نه جایگزین کمک تخصصی.»), with the free 24/7 numbers (۱۲۳ /
-  ۱۴۸۰ fa, 988 / 116 123 en) one tap behind it. A new «پشتیبانی
-  انسانی» (Human support) menu item reveals the same disclosure and
-  hands keyboard focus to the numbers. Contextual crisis replies,
-  protected safety topics, and crisis-aware exits are unchanged.
+  word was exchanged, working against the calm-companion promise.
+  The footer now carries a single warm line («دریا همین‌جاست؛ هر
+  وقت خواستی، حرف بزن.»), and no menu item, hotline number, or
+  support wording appears anywhere in the always-visible shell.
+  Crisis help reaches the user where it matters and only there: the
+  contextual safety replies inside the conversation and the
+  crisis-aware exits, both unchanged.
 
 ### Fixed (offline)
 

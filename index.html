@@ -450,20 +450,6 @@
               </span>
               <span class="menu__item-label" id="menu-theme-label">پوسته ساحل</span>
             </button>
-            <button id="menu-support" class="menu__item" type="button" role="menuitem" title="پشتیبانی انسانی">
-              <svg class="menu__item-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path
-                  d="M5.6 5.6l3.5 3.5M14.9 14.9l3.5 3.5M18.4 5.6l-3.5 3.5M9.1 14.9l-3.5 3.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  fill="none"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span class="menu__item-label" id="menu-support-label">پشتیبانی انسانی</span>
-            </button>
           </div>
         </div>
       </header>
@@ -523,17 +509,12 @@
         </button>
       </form>
 
-      <!-- Progressive disclosure: the ambient line only states what Darya
-           is (a listener, not a substitute for professional help) so the
-           default view stays warm; the helpline numbers are one tap away
-           in the reveal, and also arrive contextually inside crisis
-           replies. -->
-      <details class="disclaimer" id="disclaimer-text">
-        <summary id="disclaimer-summary">دریا یک همراه شنونده است، نه جایگزین کمک تخصصی.</summary>
-        <p class="disclaimer__support" id="disclaimer-support">
-          اگر لحظه‌ای سختی شد، با ۱۲۳ (اورژانس اجتماعی) یا ۱۴۸۰ (مشاوره بهزیستی) تماس بگیرید؛ رایگان و شبانه‌روزی.
-        </p>
-      </details>
+      <!-- The ambient footer stays purely warm: no helpline or clinical
+           framing lives in the always-visible shell. When a
+           conversation turns serious, the engine's safety replies
+           carry the numbers inside the chat itself, and the exits
+           restate them for the rest of the session. -->
+      <p class="disclaimer" id="disclaimer-text">دریا همین‌جاست؛ هر وقت خواستی، حرف بزن.</p>
     </div>
 
     <script src="js/text/halfspace-data.js"></script>

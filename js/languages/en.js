@@ -477,12 +477,7 @@
       menuExportTitle: 'Download conversation',
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
-      disclaimerSummary:
-        'Darya is a listening companion, not a substitute for professional help.',
-      disclaimerSupport:
-        'If a moment gets heavy, call or text 988 (US/Canada) or 116 123 (Europe), free and 24/7.',
-      menuSupportLabel: 'Human support',
-      menuSupportTitle: 'Human support',
+      footerTagline: 'Darya is right here, whenever you feel like talking.',
       foreignScriptHint:
         'Please write in English so I can understand and support you.',
       exportTitle: `Conversation with ${BOT_NAME}`,
