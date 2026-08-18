@@ -167,7 +167,8 @@
       // several turns, an explicit "what should I do?" is a request for
       // direction, not another reflective question. Serve the concrete
       // micro-step bridge instead of drawing a fourth question from the
-      // same topic pool (the real-transcript "deaf sequence" failure).
+      // same topic pool (real transcripts showed a run of interchangeable
+      // topic questions ignoring the direct ask for direction).
       // "Stayed on" is measured by how many recorded turn frames carry
       // the subject topic, which is robust against continuation-driven
       // subject-stamp refreshes.
@@ -895,16 +896,16 @@
       // (invitations, not the same topic questions); when that is spent
       // too, keep the thread alive with the freshest available line
       // rather than bouncing to the unknown pool mid-thread.
-      if (this.memory.askedQuestionsEver) {
+      if (this.memory.askedQuestionTexts) {
         const unasked = pool.filter(
-          (line) => !this.memory.askedQuestionsEver.has(line)
+          (line) => !this.memory.askedQuestionTexts.has(line)
         );
         if (unasked.length > 0) {
           pool = unasked;
         } else {
           const fallback = (
             this.lang.topicSpecificQuestions?.['_default'] || []
-          ).filter((line) => !this.memory.askedQuestionsEver.has(line));
+          ).filter((line) => !this.memory.askedQuestionTexts.has(line));
           if (fallback.length > 0) {
             pool = fallback;
           }

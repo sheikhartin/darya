@@ -260,11 +260,11 @@
   // farewells once a safety-critical turn has happened this session
   // (see memory.safetyModeSince). No "I will wish you well" phrasing,
   // the crisis line is restated, and the door stays visibly open.
-  R.exitConfirmCaring = [
+  R.exitConfirmCaringMessages = [
     'We can stop whenever you want, and there is no pressure. Before you go, please keep this close: 988 (US/Canada, call or text, free 24/7) and 116 123 in Europe are always there. If you would rather stay a little longer, I am right here. Say goodbye again to end, or just keep talking.',
     'Of course we can end here if that is what you need. I just want you to leave with this in hand: 988 (US/Canada) and 116 123 (Europe) are free, 24/7, and staffed by people who care. The door here stays open too. Confirm the goodbye to end, or stay as long as you like.'
   ];
-  R.farewellsCaring = [
+  R.caringFarewells = [
     'Take gentle care of yourself. Please remember: 988 (US/Canada, call or text) and 116 123 (Europe) are free and there around the clock, and so is this quiet space whenever you want to come back.',
     'Goodbye for now, and please be kind to yourself. If things get heavy again, 988 (US/Canada) and 116 123 (Europe) are always awake, and I will be here whenever you return.'
   ];

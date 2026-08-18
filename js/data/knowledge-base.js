@@ -261,13 +261,15 @@
     // one sentence instead of dumping the whole shelf. The list stays
     // the fallback for a generic "name some capitals" ask.
     if (best.fact.id === 'world_capitals') {
-      const single = extractSingleCapital(lower, isFa, best.fact);
-      if (single) {
+      const singleCapitalAnswer = extractSingleCapital(lower, isFa);
+      if (singleCapitalAnswer) {
         const requestedCount = parseListCount(lower, langCode);
         return {
           topic: best.fact.id,
           confidence: Math.min(1, best.score / 40),
-          text: requestedCount ? best.fact[isFa ? 'fa' : 'en'] : single
+          text: requestedCount
+            ? best.fact[isFa ? 'fa' : 'en']
+            : singleCapitalAnswer
         };
       }
     }

@@ -345,8 +345,8 @@
       if (this._isQuestionResponse(response)) {
         this.memory.consecutiveQuestions += 1;
         this.memory.askedQuestionTurns.push(this.memory.turnCount);
-        if (this.memory.askedQuestionsEver) {
-          this.memory.askedQuestionsEver.add(response);
+        if (this.memory.askedQuestionTexts) {
+          this.memory.askedQuestionTexts.add(response);
         }
         this.memory.noteBotQuestion(
           response,
@@ -399,8 +399,8 @@
           this.lang.topicSpecificQuestions?.[topic] || []
         ).filter(
           (line) =>
-            !this.memory.askedQuestionsEver ||
-            !this.memory.askedQuestionsEver.has(line)
+            !this.memory.askedQuestionTexts ||
+            !this.memory.askedQuestionTexts.has(line)
         );
         if (specific.length) {
           reply = this._pickVaried(specific, {
@@ -420,11 +420,11 @@
         // run out; once every question line has been asked verbatim,
         // switch to the non-question lines (or the acknowledgement
         // pool) instead of repeating a question word-for-word.
-        if (pool && pool.length && this.memory.askedQuestionsEver) {
+        if (pool && pool.length && this.memory.askedQuestionTexts) {
           const unspent = pool.filter(
             (line) =>
               !this._isQuestionResponse(line) ||
-              !this.memory.askedQuestionsEver.has(line)
+              !this.memory.askedQuestionTexts.has(line)
           );
           pool =
             unspent.length > 0
@@ -698,11 +698,11 @@
       // alternative exists (the "ok" streak used to alternate the same
       // two pool questions forever). Statements stay recency-filtered
       // only, so small pools cannot starve.
-      if (this.memory.askedQuestionsEver && candidates.length > 1) {
+      if (this.memory.askedQuestionTexts && candidates.length > 1) {
         const fresh = candidates.filter(
           (item) =>
             !this._isQuestionResponse(item) ||
-            !this.memory.askedQuestionsEver.has(item)
+            !this.memory.askedQuestionTexts.has(item)
         );
         if (fresh.length > 0) {
           candidates = fresh;

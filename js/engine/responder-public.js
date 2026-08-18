@@ -151,8 +151,8 @@
      */
     farewell() {
       const pool =
-        this.memory.safetyModeSince != null && this.lang.farewellsCaring
-          ? this.lang.farewellsCaring
+        this.memory.safetyModeSince != null && this.lang.caringFarewells
+          ? this.lang.caringFarewells
           : this.lang.farewells;
       const text = this._pickVaried(pool, {
         ignoreQuestionBudget: true,
@@ -172,8 +172,9 @@
      */
     exitConfirmation() {
       const pool =
-        this.memory.safetyModeSince != null && this.lang.exitConfirmCaring
-          ? this.lang.exitConfirmCaring
+        this.memory.safetyModeSince != null &&
+        this.lang.exitConfirmCaringMessages
+          ? this.lang.exitConfirmCaringMessages
           : this.lang.exitConfirmMessages;
       const text = this._pickVaried(pool, {
         ignoreQuestionBudget: true,

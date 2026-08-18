@@ -117,8 +117,8 @@ pipeline details live in the [README](README.md) and the upgrade spec
   slang, contractions, passive ideation, means statements, third-party
   risk, abuse, eating distress, psychosis, method-seeking, benign
   false-positive guards, and crisis-aware exits in both languages; and
-  29 correctness regression tests
-  (`tests/correctness-upgrades.test.mjs`).
+  29 accuracy regression tests
+  (`tests/engine-accuracy.test.mjs`).
 - ESLint (0 warnings), Stylelint, and Prettier are clean.
 
 ## [1.3.0] - 2026-08-16

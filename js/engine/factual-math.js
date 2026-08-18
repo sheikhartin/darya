@@ -163,7 +163,7 @@
    * @param {string} text - Normalized user text.
    * @returns {string|null}
    */
-  function handleFullExpression(engine, text) {
+  function handleCompoundExpression(engine, text) {
     // Pull the longest expression-looking span out of the message. A
     // leading unary minus is part of the expression (-(3+4)*2 = -14).
     const spanMatch = String(text).match(
@@ -308,9 +308,9 @@
     // The legacy two-operand paths below would otherwise answer a
     // FRAGMENT of the expression (the "2*3" inside "2+2*3") and present
     // it as the whole answer.
-    const fullExpression = handleFullExpression(engine, text);
-    if (fullExpression) {
-      return fullExpression;
+    const compoundAnswer = handleCompoundExpression(engine, text);
+    if (compoundAnswer) {
+      return compoundAnswer;
     }
     // Operands support integers and decimals. Persian text may use the
     // Persian decimal separator "٫" (U+066B) or the ASCII dot. The

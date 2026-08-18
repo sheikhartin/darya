@@ -1,10 +1,14 @@
 /**
- * Regression tests for the 2026-08 correctness and intelligence
- * upgrade: the full expression evaluator, single-capital extraction,
- * live-data honesty, media nationality/era filters, location profile
- * memory, mood single-sample summaries, the no-verbatim-question
+ * Accuracy and honesty guarantees for the Darya engine.
+ *
+ * Guards the behaviors that make an answer trustworthy rather than
+ * merely plausible: the arithmetic expression evaluator (multi-operator
+ * input is never answered by a fragment), single-capital extraction,
+ * live-data honesty (offline limits stated up front), media
+ * nationality and era filters, location profile memory, mood summaries
+ * that never invent a trend from one sample, the no-verbatim-question-
  * repeat guarantee, the advice bridge, gibberish detection, and the
- * caring unknown pool.
+ * caring unknown pool for heavy unmatched turns.
  */
 
 'use strict';

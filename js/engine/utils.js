@@ -184,7 +184,7 @@
       // question asked once is never asked again word-for-word: on an
       // "ok" streak the old behavior alternated the same two pool
       // questions forever, which read as a broken record. Session-only.
-      this.askedQuestionsEver = new Set();
+      this.askedQuestionTexts = new Set();
     }
 
     /**
@@ -319,11 +319,11 @@
     }
 
     noteBotQuestion(question, topic) {
-      // Session-wide verbatim question log (see askedQuestionsEver):
+      // Session-wide verbatim question log (see askedQuestionTexts):
       // every asked question is recorded here regardless of which path
       // served it, so the no-repeat filter in _pickVaried sees them all.
-      if (this.askedQuestionsEver) {
-        this.askedQuestionsEver.add(question);
+      if (this.askedQuestionTexts) {
+        this.askedQuestionTexts.add(question);
       }
       this.pendingQuestions.push({
         question,
