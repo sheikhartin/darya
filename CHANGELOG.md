@@ -5,6 +5,41 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.5.0] - 2026-08-18
+
+### Changed (branding)
+
+- **New icon set across every platform.** The launcher icon, PWA
+  icons, favicons, and all Android mipmap densities (legacy, round,
+  and adaptive layers) were regenerated from new Grok-generated
+  artwork (a 1024x1024 JPEG, resized only; no recoloring or
+  retouching). The adaptive background colour is derived from the
+  artwork corner (`#F7F8FA`). Splash screens carry no logo and stay
+  unchanged.
+
+### Changed (UX)
+
+- **The crisis footer is now progressive and calm.** The always-on
+  helpline line under the composer read as clinical before a single
+  word was exchanged. The footer is now a native disclosure whose
+  summary carries only the identity line («دریا یک همراه شنونده
+  است، نه جایگزین کمک تخصصی.»), with the free 24/7 numbers (۱۲۳ /
+  ۱۴۸۰ fa, 988 / 116 123 en) one tap behind it. A new «پشتیبانی
+  انسانی» (Human support) menu item reveals the same disclosure and
+  hands keyboard focus to the numbers. Contextual crisis replies,
+  protected safety topics, and crisis-aware exits are unchanged.
+
+### Fixed (offline)
+
+- **Installed PWAs actually receive the new icons and shell.** The
+  static-assets cache name is bumped to `darya-static-v2` (retiring
+  v1 on activation, as the design intends), and this release's
+  version bump rotates the app-shell cache, so existing installations
+  pick up the new artwork and footer on update instead of serving
+  the previously precached copies indefinitely. The offline e2e
+  suite now reads the cache name from `sw.js` rather than pinning
+  it.
+
 ## [1.4.0] - 2026-08-17
 
 ### Fixed (safety-critical)
