@@ -28,7 +28,8 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache.
+ * into the versioned cache. Shell refresh: 1.5.0 (icons, footer,
+ * update delivery).
  */
 
 'use strict';

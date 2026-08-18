@@ -478,12 +478,9 @@
       themeOceanLabel: 'Ocean theme',
       themeBeachLabel: 'Beach theme',
       footerTaglines: [
-        'Darya is right here, whenever you feel like talking.',
-        'I am here whenever you want to talk.',
-        'Start anywhere; I am listening.',
-        'Take a deep breath; we have time.',
-        'Glad you are here today.',
-        'A fresh chat, a lighter mood.'
+        'Darya is a listening companion, not a replacement for professional guidance.',
+        'Say whatever is on your mind; Darya listens closely and stays with you.',
+        'Tell the sea whatever is in your heart; it listens.'
       ],
       foreignScriptHint:
         'Please write in English so I can understand and support you.',

@@ -22,12 +22,12 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - **The ambient UI is free of crisis framing.** The always-on
   helpline line under the composer read as clinical before a single
   word was exchanged, working against the calm-companion promise.
-  The footer now carries a single warm line that rotates: every new
-  conversation or language switch greets the user with a different
-  short tagline from the active locale's pool («دریا همین‌جاست؛ هر
-  وقت خواستی، حرف بزن.» and friends), and no menu item, hotline
-  number, or support wording appears anywhere in the always-visible
-  shell. Crisis help reaches the user where it matters and only
+  The footer now carries one meaningful line at a time that
+  rotates: every new conversation or language switch greets the user
+  with a different line from the active locale's pool, starting with
+  the identity line «دریا یک همراه شنواست، نه جایگزین راهنمایی
+  تخصصی.», and no menu item, hotline number, or support wording
+  appears anywhere in the always-visible shell. Crisis help reaches the user where it matters and only
   there: the contextual safety replies inside the conversation and
   the crisis-aware exits, both unchanged.
 
