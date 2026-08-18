@@ -1642,6 +1642,33 @@ html[dir='rtl'] .composer__send svg {
   line-height: 1.7;
 }
 
+/* Progressive disclosure: the ambient line stays calm; the numbers live
+   one tap behind the summary. The dotted underline is the only hint
+   that more is available, and the global :focus-visible ring covers
+   keyboard users. */
+.disclaimer summary {
+  display: inline-block;
+  list-style: none;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: currentcolor;
+  text-underline-offset: 3px;
+}
+
+.disclaimer summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclaimer summary:hover {
+  text-decoration-style: solid;
+}
+
+.disclaimer__support {
+  margin-block-start: var(--space-2);
+  margin-inline: auto;
+  max-inline-size: 34rem;
+}
+
 /* --------------------------------------------------------------------- */
 /* Breathing exercise overlay                                           */
 /* 4-7-8 pattern (Relaxing Breath, Dr. Andrew Weil): inhale 4s, hold   */

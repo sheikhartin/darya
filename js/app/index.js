@@ -195,6 +195,16 @@
     ctrl.closeMenu(true);
   });
 
+  // The human-support item reveals the footer disclosure and hands focus
+  // to it. The menu closes without reclaiming focus (restoreFocus false)
+  // so the keyboard and screen reader land exactly on the numbers the
+  // user asked for, not back on the menu trigger.
+  el.menuSupport.addEventListener('click', function () {
+    el.disclaimer.open = true;
+    ctrl.closeMenu(false);
+    el.disclaimerSummary.focus();
+  });
+
   if (el.breatheTrigger) {
     el.breatheTrigger.addEventListener('click', function () {
       DaryaOverlays.showBreatheExercise();

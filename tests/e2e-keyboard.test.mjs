@@ -276,7 +276,7 @@ test(
         'true'
       );
 
-      // 4. The menu exposes exactly the four expected items in order.
+      // 4. The menu exposes exactly the five expected items in order.
       const itemIds = await page.evaluate(() =>
         [...document.querySelectorAll('#menu-popover [role="menuitem"]')].map(
           (el) => el.id
@@ -286,7 +286,8 @@ test(
         'menu-new-chat',
         'menu-export-txt',
         'menu-sound-toggle',
-        'menu-theme-toggle'
+        'menu-theme-toggle',
+        'menu-support'
       ]);
 
       // 5. Arrow keys move focus and wrap at both ends; Home/End jump.
@@ -297,13 +298,15 @@ test(
       await page.keyboard.press('ArrowDown');
       await expectFocused('menu-theme-toggle');
       await page.keyboard.press('ArrowDown');
+      await expectFocused('menu-support');
+      await page.keyboard.press('ArrowDown');
       await expectFocused('menu-new-chat');
       await page.keyboard.press('ArrowUp');
-      await expectFocused('menu-theme-toggle');
+      await expectFocused('menu-support');
       await page.keyboard.press('Home');
       await expectFocused('menu-new-chat');
       await page.keyboard.press('End');
-      await expectFocused('menu-theme-toggle');
+      await expectFocused('menu-support');
 
       // 6. Escape closes the menu and returns focus to the trigger.
       await page.keyboard.press('Escape');

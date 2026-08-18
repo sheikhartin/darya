@@ -64,7 +64,11 @@
       el.typingStatus.setAttribute('aria-label', chosenLang.ui.typingLabel);
       el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
       el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
-      el.disclaimer.textContent = chosenLang.ui.disclaimer;
+      el.menuSupport.setAttribute('aria-label', chosenLang.ui.menuSupportTitle);
+      el.menuSupport.setAttribute('title', chosenLang.ui.menuSupportTitle);
+      el.menuSupportLabel.textContent = chosenLang.ui.menuSupportLabel;
+      el.disclaimerSummary.textContent = chosenLang.ui.disclaimerSummary;
+      el.disclaimerSupport.textContent = chosenLang.ui.disclaimerSupport;
       UI.theme.updateThemeMenuItem();
 
       if (el.breatheTrigger) {

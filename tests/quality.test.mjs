@@ -2319,6 +2319,63 @@ test('beach controls and validation hints remain visible on the bright sky', () 
   );
 });
 
+test('crisis helpline stays one tap away behind the calm footer line', () => {
+  const html = read('index.html');
+  const css = read('css/style.css');
+  const fa = read('js/languages/fa.js');
+  const en = read('js/languages/en.js');
+  const core = read('js/ui/core.js');
+  const language = read('js/app/language.js');
+  const indexJs = read('js/app/index.js');
+
+  // The footer is a native disclosure: collapsed by default, summary
+  // line only, numbers in the reveal paragraph.
+  assert.match(html, /<details class="disclaimer" id="disclaimer-text">/u);
+  assert.match(html, /<summary id="disclaimer-summary">/u);
+  assert.match(
+    html,
+    /<p class="disclaimer__support" id="disclaimer-support">/u
+  );
+
+  // The ambient line carries no hotline branding (no digits at all),
+  // so the default view never reads as clinical.
+  const summary = fa.match(/disclaimerSummary: '([^']+)'/u);
+  assert.ok(summary, 'fa disclaimerSummary exists');
+  assert.doesNotMatch(summary[1], /[0-9\u06f0-\u06f9]/u);
+
+  // ...but the reveal carries the free 24/7 numbers in both locales.
+  assert.match(
+    fa,
+    /disclaimerSupport:[\s\S]*?۱۲۳[\s\S]*?۱۴۸۰[\s\S]*?رایگان و شبانه‌روزی/u
+  );
+  assert.match(
+    en,
+    /disclaimerSupport:[\s\S]*?988[\s\S]*?116 123[\s\S]*?free and 24\/7/u
+  );
+
+  // The menu route reveals the same disclosure and hands focus to it.
+  assert.match(html, /id="menu-support"[^>]*role="menuitem"/u);
+  assert.match(indexJs, /menuSupport[\s\S]*?disclaimer\.open = true/u);
+
+  // Locale switching keeps both footer parts in sync.
+  assert.match(
+    core,
+    /disclaimerSummary: document\.getElementById\('disclaimer-summary'\)/u
+  );
+  assert.match(
+    language,
+    /disclaimerSummary\.textContent = chosenLang\.ui\.disclaimerSummary/u
+  );
+
+  // The summary stays visually quiet: no default triangle, a subtle
+  // dotted underline that only turns solid on hover.
+  assert.match(css, /\.disclaimer summary[\s\S]*?list-style: none/u);
+  assert.match(
+    css,
+    /\.disclaimer summary:hover[\s\S]*?text-decoration-style: solid/u
+  );
+});
+
 test('beach theme has three ocean layers with inline SVG waves and smooth drift', () => {
   const html = read('index.html');
   const css = read('css/style.css');

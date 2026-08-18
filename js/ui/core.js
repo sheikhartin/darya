@@ -32,6 +32,8 @@
     input: document.getElementById('composer-input'),
     sendButton: document.getElementById('composer-send'),
     disclaimer: document.getElementById('disclaimer-text'),
+    disclaimerSummary: document.getElementById('disclaimer-summary'),
+    disclaimerSupport: document.getElementById('disclaimer-support'),
     typingStatus: document.getElementById('typing-row'),
 
     menuTrigger: document.getElementById('menu-trigger'),
@@ -42,6 +44,8 @@
     menuExportTxtLabel: document.getElementById('menu-export-txt-label'),
     menuThemeToggle: document.getElementById('menu-theme-toggle'),
     menuThemeLabel: document.getElementById('menu-theme-label'),
+    menuSupport: document.getElementById('menu-support'),
+    menuSupportLabel: document.getElementById('menu-support-label'),
 
     menuSoundToggle: document.getElementById('menu-sound-toggle'),
     menuSoundLabel: document.getElementById('menu-sound-label'),
