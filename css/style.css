@@ -162,8 +162,22 @@
   /* Chips, tags, small controls: 12px */
   --radius-sm: 12px;
   --radius-full: 999px; /* reserved for small circular icon buttons only */
-  --shadow-soft: 0 6px 18px rgba(3, 12, 15, 0.35);
-  --shadow-elevated: 0 10px 30px rgba(3, 12, 15, 0.42);
+
+  /* --- Elevation: layered, low-opacity ambient shadows. A single dark  */
+  /* blob reads as heavy and smudgy on a dark sea; three stops (a tight  */
+  /* contact shadow, a mid presence, and a wide diffuse lift) give the   */
+  /* panes grounded depth without ever shouting. --shadow-color is an    */
+  /* RGB triplet so the beach theme warms the ambient shadow to sand     */
+  /* instead of a cool navy cast.                                        */
+  --shadow-color: 3, 12, 15;
+  --shadow-soft:
+    0 1px 2px rgba(var(--shadow-color), 0.18),
+    0 2px 6px rgba(var(--shadow-color), 0.12),
+    0 12px 28px rgba(var(--shadow-color), 0.14);
+  --shadow-elevated:
+    0 2px 4px rgba(var(--shadow-color), 0.16),
+    0 8px 18px rgba(var(--shadow-color), 0.12),
+    0 24px 56px rgba(var(--shadow-color), 0.2);
 
   /* --- Glass: a layered, "liquid" material echoing the app icon and   */
   /* Apple's Liquid Glass language (WWDC 2025). Rather than one flat    */
@@ -234,6 +248,9 @@ html[data-theme='beach'] {
   --color-success: #7ac4a8;
   --color-danger: #dc7f5d;
   --color-line: rgba(15, 46, 58, 0.18);
+  /* Warm the ambient shadows to sand brown so they read naturally over
+     the bright beach instead of casting a cool navy haze. */
+  --shadow-color: 91, 61, 35;
   /* The beach composer is a translucent teal panel over sand, which
      composites to #456d5e; a light foam boundary keeps the input edge
      at 3.3:1 while the dark translucent line is invisible. */
@@ -2210,7 +2227,7 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   box-shadow:
     var(--glass-specular),
     0 0 0 1px rgba(0, 0, 0, 0.12),
-    0 0 28px var(--notification-accent),
+    0 0 20px var(--notification-accent),
     var(--shadow-elevated);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 }
@@ -2513,7 +2530,7 @@ html[data-theme='beach'] .beach-scene {
     #f9dda0 54%,
     #edc777 100%
   );
-  box-shadow: 0 0 24px rgba(246, 211, 139, 0.42);
+  box-shadow: 0 0 20px rgba(246, 211, 139, 0.3);
 }
 
 @keyframes sun-breathe {

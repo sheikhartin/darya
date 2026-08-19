@@ -35,6 +35,12 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - **Edges are hairlines, not hard outlines.** The pane rim was softened
   and the chat-bubble tail corner rounded up, so nothing draws a sharp
   one-pixel line.
+- **Elevation is layered and soft, never a heavy halo.** The two shadow
+  tokens are now three-stop, low-opacity ambient shadows (tight contact
+  + mid presence + wide diffuse lift) instead of a single dark blob, and
+  their color warms to sand in Beach so no element ever casts a cold,
+  smudgy shadow. The sun glow and notification bloom were dialed back to
+  match.
 - **No layout jump on theme switch.** The picker's language-lock note and
   theme heading sit in one glass chip in both themes (identical padding
   and radius), so switching Ocean to Beach only swaps the tint and ink.
