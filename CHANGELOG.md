@@ -5,6 +5,28 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.6.0] - 2026-08-19
+
+### Changed (UI)
+
+- **A layered, liquid-glass interface across both themes.** Every surface -
+  the language cards, theme picker, menu, chat bubbles, quick-reply
+  chips, the composer, and the confirm and exit dialogs - now reads as
+  tinted glass floating over the ambient backdrop, taking its cues from
+  Apple's Liquid Glass language rather than a single flat blur: a
+  translucent deep-blue (Ocean) or deep-teal (Beach) body, an angled
+  light-catch, a specular edge highlight with a faint chromatic fringe,
+  and a soft drop shadow. Depth is tiered, mirroring how the material
+  "thickens" with size: large chrome uses a richer blur and full
+  specular, while chat content and small controls stay lighter so long
+  conversations never stack heavy blur. Text contrast holds above the
+  WCAG AA threshold in every state.
+- **The glass degrades gracefully.** Browsers without `backdrop-filter`
+  support, and users who enable `prefers-reduced-transparency` or
+  `prefers-contrast: more`, get a near-opaque pane with a stronger rim
+  instead of a see-through one, so nothing depends on the blur to stay
+  readable.
+
 ## [1.5.0] - 2026-08-18
 
 ### Changed (branding)

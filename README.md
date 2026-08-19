@@ -9,7 +9,7 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 ## Features
 
 - **Bilingual from the start.** Choose Persian or English. The language stays with you for the whole conversation.
-- **Two visual themes.** Ocean (deep, calm blues) or Beach (bright sand and surf). Your preference is remembered between visits.
+- **Two visual themes.** Ocean (deep, calm blues) or Beach (bright sand and surf), each with a soft frosted-glass interface. Your preference is remembered between visits.
 - **Calm ambient soundscapes.** Optional theme-matched background audio (beach or ocean sound loops). Always silent on arrival: you turn it on with the sound toggle, and it is never remembered between visits. It cross-fades smoothly when you switch themes.
 - **Real conversation flow.** Darya recognizes a wide range of topics (family, work, sleep, anxiety, joy, grief, and more), asks thoughtful questions, and keeps track of what matters to you.
 - **Session memory of who you are.** Tell Darya your name, age, or where you live and she remembers it for the rest of the conversation: ask "what is my name?", "چند سالمه؟", or "where do I live?" later and she answers from what you said, honestly, instead of pretending to forget or claiming to know things you never told her. Children get an age-appropriate reply that warmly points to a trusted adult.
