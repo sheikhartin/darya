@@ -120,8 +120,6 @@
   --color-coral-soft: #f1a98d;
   --color-seafoam: #83c3b1;
   --color-warning: #f2b987;
-  --color-danger: #e2805f;
-  --color-line: rgba(234, 243, 239, 0.1);
   /* Semantic roles keep component contrast consistent across themes.
      The surface tokens are the frosted-glass recipe - a pale top glint
      over a translucent deep-blue body - so every panel and control
@@ -209,12 +207,10 @@
     rgba(214, 244, 250, 0.04) 48%,
     rgba(214, 244, 250, 0) 70%
   );
-  /* The rim is a hairline, not a hard outline: the top catch-light and
-     the chromatic fringe carry the edge, so the border stays faint and
-     never reads as a sharp drawn line. */
-  /* The rim is a whisper, not a line: a faint lightening of the pane's
-     own tint so the edge reads as light catching the glass rather than a
-     drawn border. The inset specular highlight carries the definition. */
+  /* The rim is a whisper, not a drawn line: a faint lightening of the
+     pane's own tint so the edge reads as light catching the glass, while
+     the inset specular highlight and the chromatic fringe carry the
+     definition of the pane. */
   --glass-edge: rgba(196, 238, 246, 0.1);
   --glass-specular:
     inset 0 1px 0 rgba(244, 253, 255, 0.5),
@@ -248,9 +244,6 @@ html[data-theme='beach'] {
   --color-coral-soft: #eaa98b;
   --color-seafoam: #6cc4a8;
   --color-warning: #cb7e2c;
-  --color-success: #7ac4a8;
-  --color-danger: #dc7f5d;
-  --color-line: rgba(15, 46, 58, 0.18);
   /* Warm the ambient shadows to sand brown so they read naturally over
      the bright beach instead of casting a cool navy haze. */
   --shadow-color: 91, 61, 35;
@@ -1162,12 +1155,6 @@ html[data-theme='beach'] .picker__theme-heading {
   padding-top: max(var(--space-4), env(safe-area-inset-top, 0px));
   padding-bottom: var(--space-2);
   padding-inline: var(--space-4);
-}
-
-.header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 .header__title {
