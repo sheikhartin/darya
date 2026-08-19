@@ -2163,6 +2163,36 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
   assert.match(app, /focusMenuTriggerSibling\(/u);
 });
 
+test('clearing the chat preserves the jump-to-latest anchor button', () => {
+  // The jump-to-latest pill is a static child of #chat. Wiping the chat
+  // for a new conversation or a return to the picker must keep it in the
+  // DOM: a bare replaceChildren() detaches it, and the message renderer
+  // then inserts before a node that is no longer a child of the chat,
+  // throwing a DOM NotFoundError that stalls the greeting and leaves the
+  // composer locked. Regression guard for that failure.
+  const html = read('index.html');
+  const core = read('js/ui/core.js');
+  const app = readApp();
+
+  // The button lives inside the chat container, before </main>.
+  assert.match(
+    html,
+    /<main[^>]*id="chat"[^>]*>[\s\S]*id="chat-jump"[\s\S]*<\/main>/u,
+    'chat-jump must be a child of the chat container'
+  );
+
+  // The clear helper re-appends the anchor after wiping the messages.
+  assert.match(core, /function clearChat\(\)/u);
+  assert.match(
+    core,
+    /replaceChildren\(\)[\s\S]*appendChild\(elements\.chatJump\)/u,
+    'clearChat must re-append the jump button after clearing'
+  );
+
+  // The app layer clears through the helper, never a bare wipe.
+  assert.doesNotMatch(app, /\.replaceChildren\(\)/u);
+});
+
 test('modal surfaces move focus in, contain it, and restore it', () => {
   const overlays = readOverlays();
   const app = readApp();

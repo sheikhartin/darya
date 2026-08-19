@@ -535,6 +535,28 @@
   }
 
   /**
+   * Clears every message and quick-reply row from the chat, then restores
+   * the jump-to-latest button. The button is a static child of the chat
+   * element, so a bare `replaceChildren()` would detach it and leave the
+   * message renderer inserting before a node that is no longer a child of
+   * the chat (a DOM NotFoundError). Re-appending it after the wipe keeps
+   * the anchor valid, and its visibility state is reset so a leftover
+   * "show" state never leaks into a fresh conversation.
+   */
+  function clearChat() {
+    if (!elements.chat) {
+      return;
+    }
+    elements.chat.replaceChildren();
+    if (elements.chatJump) {
+      elements.chat.appendChild(elements.chatJump);
+      elements.chatJump.classList.remove('chat-jump--show');
+      elements.chatJump.setAttribute('aria-hidden', 'true');
+      elements.chatJump.setAttribute('tabindex', '-1');
+    }
+  }
+
+  /**
    * Renders tappable quick-reply chips after the latest bot message
    * (exercise yes/no answers, mood scale ratings). Each chip is a real
    * button with a 44px hit target; tapping it calls the provided pick
@@ -603,6 +625,7 @@
       jumpToLatest: jumpToLatest,
       appendMessage: appendMessage,
       clearQuickReplies: clearQuickReplies,
+      clearChat: clearChat,
       renderQuickReplies: renderQuickReplies
     }
   };

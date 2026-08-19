@@ -203,9 +203,7 @@
       st.conversationEnded = false;
       st.chatActive = false;
       st.transcript = [];
-      if (el.chat) {
-        el.chat.replaceChildren();
-      }
+      UI.utils.clearChat();
       st.messageCount = 0;
       st.currentTitle = '';
       st.userSpoke = false;
