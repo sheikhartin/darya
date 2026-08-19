@@ -65,6 +65,13 @@
       el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
       el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
       el.disclaimer.textContent = chosenLang.ui.footerTagline;
+      if (el.chatJump) {
+        el.chatJump.setAttribute('aria-label', chosenLang.ui.jumpToLatestLabel);
+        el.chatJump.setAttribute('title', chosenLang.ui.jumpToLatestLabel);
+      }
+      if (el.chatJumpLabel) {
+        el.chatJumpLabel.textContent = chosenLang.ui.jumpToLatestLabel;
+      }
       UI.theme.updateThemeMenuItem();
 
       if (el.breatheTrigger) {

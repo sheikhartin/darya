@@ -236,9 +236,19 @@
       'scroll',
       function () {
         UI.utils.saveScrollPosition();
+        UI.utils.updateJumpButton();
       },
       { passive: true }
     );
+  }
+
+  if (el.chatJump) {
+    el.chatJump.addEventListener('click', function () {
+      UI.utils.jumpToLatest();
+      // Return focus to the composer so keyboard users land where they
+      // can keep talking instead of on a now-dismissed button.
+      UI.utils.focusInputUnlessTouch();
+    });
   }
 
   // ========================================================================

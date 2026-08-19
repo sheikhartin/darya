@@ -455,7 +455,28 @@
       </header>
 
       <main class="chat" id="chat" aria-live="polite">
-        <!-- Messages are injected here by app.js -->
+        <!-- Messages are injected here by app.js, before the jump button. -->
+        <button
+          class="chat-jump"
+          id="chat-jump"
+          type="button"
+          aria-hidden="true"
+          tabindex="-1"
+          aria-label="پرش به آخرین پیام"
+          title="پرش به آخرین پیام"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path
+              d="M12 5v14m0 0l-6-6m6 6l6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="chat-jump__label">جدیدترین</span>
+        </button>
       </main>
 
       <div

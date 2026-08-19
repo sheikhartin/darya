@@ -500,6 +500,7 @@
       newChatConfirmNo: 'Cancel',
       soundOnTitle: 'Ambient sound: on',
       soundOffTitle: 'Ambient sound: off',
+      jumpToLatestLabel: 'Jump to latest',
       soundFallbackMsg:
         'Ambient sound files could not be loaded. Using a generated ambient instead.',
       engineErrorHint: 'A minor issue occurred. The conversation can continue.',

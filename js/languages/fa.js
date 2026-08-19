@@ -727,6 +727,7 @@
       newChatConfirmNo: 'انصراف',
       soundOnTitle: 'پخش صدای محیطی: روشن',
       soundOffTitle: 'پخش صدای محیطی: خاموش',
+      jumpToLatestLabel: 'پرش به آخرین پیام',
       soundFallbackMsg:
         'فایل‌های صدای محیطی بارگذاری نشدند. از صدای تولیدشده به‌جای آن استفاده می‌شود.',
       engineErrorHint: 'یک مشکل کوچک پیش آمد، اما گفتگو می‌تواند ادامه یابد.',

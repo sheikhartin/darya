@@ -42,6 +42,17 @@ pipeline details live in the [README](README.md) and the upgrade spec
   hover (which dropped the frost and let the dark backdrop flood in);
   they brighten their glass body, and the send button no longer scales
   up on hover, so nothing jumps or shakes.
+- **The sound toggle animates instead of snapping.** Turning sound on
+  blooms the speaker waves outward (with a one-beat stagger on the outer
+  arc) while the mute slash sweeps away, and turning it off settles both
+  back, so the switch reads as a calm continuous gesture. The picker
+  toggle, which previously hid its icon parts with `display: none` (an
+  instant swap), now uses the same animated path.
+- **The chat follows the reader, not the other way around.** New bot
+  replies and the typing indicator only auto-scroll when the reader is
+  already near the bottom; when they have scrolled up to re-read, a new
+  glass "jump to latest" pill appears and smooth-scrolls back on tap
+  (honoring `prefers-reduced-motion`).
 - **Elevation is layered and soft, never a heavy halo.** The two shadow
   tokens are now three-stop, low-opacity ambient shadows (tight contact
   + mid presence + wide diffuse lift) instead of a single dark blob, and

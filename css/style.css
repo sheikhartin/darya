@@ -1102,14 +1102,6 @@ html[data-theme='beach'] .picker__theme-heading {
   box-shadow: 0 0 0 3px rgba(127, 190, 176, 0.12);
 }
 
-.picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
-  display: none;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  display: none;
-}
-
 /* --------------------------------------------------------------------- */
 /* App shell */
 /* --------------------------------------------------------------------- */
@@ -1355,6 +1347,73 @@ html[data-theme='beach'] .chat::-webkit-scrollbar-thumb {
   background: rgba(31, 84, 73, 0.5);
   border: 1px solid transparent;
   background-clip: padding-box;
+}
+
+/* Jump-to-latest affordance: a floating glass pill pinned to the bottom
+   of the chat that appears only when the reader has scrolled away from
+   the newest message, and smooth-scrolls back down on tap. It lives
+   inside the scroll container as a sticky row so it never overlaps the
+   composer and never reserves a scroll gap when hidden (opacity +
+   visibility collapse it). */
+.chat-jump {
+  position: sticky;
+  bottom: var(--space-3);
+  align-self: flex-end;
+  margin-inline-end: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 14px;
+  min-height: 40px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--color-foam);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.25s var(--ease-tide),
+    transform 0.25s var(--ease-tide),
+    visibility 0.25s var(--ease-tide),
+    background 0.2s var(--ease-tide),
+    border-color 0.2s var(--ease-tide);
+}
+
+.chat-jump:hover {
+  background: var(--surface-control-hover);
+  border-color: var(--color-seafoam);
+}
+
+.chat-jump--show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.chat-jump svg {
+  flex-shrink: 0;
+}
+
+html[data-theme='beach'] .chat-jump {
+  color: #0f2e3a;
+  background: var(--glass-light);
+  border-color: var(--glass-light-edge);
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
+}
+
+html[data-theme='beach'] .chat-jump:hover {
+  background: var(--glass-light-strong);
 }
 
 .bubble-row {
@@ -2376,11 +2435,18 @@ html[data-theme='beach'] .notification-container--info {
   .menu__item,
   .sound-toggle__wave,
   .sound-toggle__slash,
+  .chat-jump,
   .composer,
   .exit-confirm-bar__btn,
   .confirm-btn {
     animation: none !important;
     transition: none !important;
+  }
+
+  /* The chat auto-scroll and jump-to-latest settle instantly instead of
+     animating, so reduced-motion users are never scrolled through. */
+  .chat {
+    scroll-behavior: auto;
   }
 }
 
@@ -2983,48 +3049,47 @@ html[data-theme='beach'] .breathe-trigger:focus-visible {
 /* inherits .menu__item styling.                                         */
 /* --------------------------------------------------------------------- */
 
-/* Sound toggle icon states: muted (speaker with slash, waves hidden)
-   when off, speaker with waves when on. The slash and waves crossfade
-   via aria-pressed, which app.js keeps in sync with the audio state. */
+/* Sound toggle icon: muted (speaker with slash, waves tucked in) when
+   off, playing (waves radiating out) when on. Rather than a flat
+   crossfade, the waves bloom outward and the slash sweeps away as sound
+   turns on, and both settle back as it turns off, so the switch reads as
+   a calm, continuous gesture instead of an instant swap. Only opacity
+   and transform animate (GPU-composited), and the outer arc lags the
+   inner one by a beat so the ripple travels outward. The default state
+   is off; aria-pressed="true" (kept in sync by app.js) is the on state. */
 .sound-toggle__wave,
 .sound-toggle__slash {
-  transition: opacity 0.25s var(--ease-tide);
+  transition:
+    opacity 0.35s var(--ease-tide),
+    transform 0.35s var(--ease-tide);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sound-toggle__wave {
+  opacity: 0;
+  transform: scale(0.55);
+}
+
+.sound-toggle__wave + .sound-toggle__wave {
+  transition-delay: 0.06s;
 }
 
 .sound-toggle__slash {
-  opacity: 0;
-}
-
-#menu-sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  opacity: 0;
-}
-
-#menu-sound-toggle[aria-pressed='false'] .sound-toggle__slash {
   opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 
-#menu-sound-toggle[aria-pressed='true'] .sound-toggle__wave {
-  opacity: 1;
-}
-
-#menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash {
-  opacity: 0;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  opacity: 0;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__slash {
-  opacity: 1;
-}
-
+#menu-sound-toggle[aria-pressed='true'] .sound-toggle__wave,
 .picker__sound-toggle[aria-pressed='true'] .sound-toggle__wave {
   opacity: 1;
+  transform: scale(1);
 }
 
+#menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash,
 .picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
   opacity: 0;
+  transform: rotate(-24deg) scale(0.6);
 }
 
 /* Theme toggle icon: the ocean (waves) and beach (sun) glyphs both live
