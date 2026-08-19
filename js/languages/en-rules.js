@@ -1610,7 +1610,7 @@
       'calibrated_honesty',
       53,
       // eslint-disable-next-line max-len
-      /\b(?:vaccines cause autism|vaccines are poison|antidepressants are poison|medication is poison|therapy is a scam|therapists just want money|doctors only care about money|medicine makes (?:it|things) worse|no treatment (?:works|helps)|modern medicine is a lie)\b/i,
+      /\b(?:vaccines cause autism|vaccines are poison|antidepressants are poison|medication is poison|therapy is a scam|psychologists just want money|doctors only care about money|medicine makes (?:it|things) worse|no treatment (?:works|helps)|modern medicine is a lie)\b/i,
       R['ruleCalibratedHonesty']
     ),
 

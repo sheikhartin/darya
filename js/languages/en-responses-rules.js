@@ -997,7 +997,7 @@
   ];
 
   R['ruleTrauma'] = [
-    'If your body or mind still reacts after a painful event, that is normal and it is not your fault. Fear, poor sleep, and sudden flashbacks are all part of the brain responding to danger. You do not have to carry this alone; a trauma-informed therapist can help. Where would you like to begin?',
+    'If your body or mind still reacts after a painful event, that is normal and it is not your fault. Fear, poor sleep, and sudden flashbacks are all part of the brain responding to danger. You do not have to carry this alone; a trauma-informed mental health professional can help. Where would you like to begin?',
     'A difficult past can live in the body and return at unexpected moments. That means the wound has not closed, not that you are weak. Talking with a specialist or a safe person is a real step. Which feeling shows up most these days?',
     'I hear that something from the past still weighs on you. Some experiences are large enough that they deserve professional support, and there is no shame in that. Do you have a safe place to talk about it?'
   ];
@@ -1010,13 +1010,13 @@
 
   R['ruleSelfInjury'] = [
     'Hurting yourself is often a way to soothe deep pain or feel a sense of control, not a sign of weakness. I understand and I am not judging you. Please share this with a professional or someone safe; there are gentler ways to find relief. Would you like to talk about what brings that feeling on?',
-    'I can see something very heavy is on your shoulders. Self-harm may help for a moment, but it is not lasting help and it can become dangerous. A therapist can offer real alternatives. If the urge is strong right now, please reach out to someone safe.',
+    'I can see something very heavy is on your shoulders. Self-harm may help for a moment, but it is not lasting help and it can become dangerous. A mental health professional can offer real alternatives. If the urge is strong right now, please reach out to someone safe.',
     'If you are hurting yourself, it means there is a pain you have not found another outlet for. I am here without judgment. And it matters to know that if a wound is deep or dangerous, urgent medical help is needed. Would you like to tell me about it here?'
   ];
 
   R['ruleOcd'] = [
     'Intrusive, repeating thoughts can be deeply distressing, especially when you feel you must do something to calm them. Those thoughts do not reflect who you are; they are a brain pattern, and effective treatment exists. Which thought repeats most?',
-    'Obsessions are like an alarm that keeps ringing by mistake. The more you answer it, by checking or washing, the louder it gets. A therapist using exposure-based methods can help. Would you like to understand how that works?',
+    'Obsessions are like an alarm that keeps ringing by mistake. The more you answer it, by checking or washing, the louder it gets. A clinician using exposure-based methods can help. Would you like to understand how that works?',
     'Having an intrusive thought does not mean you want the thing to happen. Thoughts are not actions. If this pattern is making life hard, talking with a specialist is the right step. Which part has worn you down most?'
   ];
 
@@ -1029,12 +1029,12 @@
   R['ruleAddictionRecovery'] = [
     'Addiction is an illness, not a moral failing. If you are struggling with a substance or behavior, telling a professional or a support group is a brave step. Stopping without support is usually harder and sometimes unsafe. What stage are you in right now?',
     'Relapse is part of the path, not failure. Every new day is a fresh chance. Professional help, medication in some cases, and peer support all genuinely work. Would you like to talk about your triggers or cravings?',
-    'Feeling craving or shame is normal. What matters is not being alone: a safe person, a therapist, or a peer group can lighten the load. What tempts you most right now?'
+    'Feeling craving or shame is normal. What matters is not being alone: a safe person, a mental health professional, or a peer group can lighten the load. What tempts you most right now?'
   ];
 
   R['rulePregnancyLoss'] = [
     'Losing a pregnancy or baby is a real and deep grief that often goes unseen. Sadness, anger, and even guilt are all natural, though it was not your fault. You have every right to feel this loss as heavy as it is. Would you like to talk about it?',
-    'I hear how painful this has been. This is not a loss you caused, and your body is not to blame. If the grief lingers, a therapist or a support group of people who have been through this can help. How are you coping?',
+    'I hear how painful this has been. This is not a loss you caused, and your body is not to blame. If the grief lingers, a mental health professional or a support group of people who have been through this can help. How are you coping?',
     'Pregnancy loss sometimes goes unnamed because others never saw it, but the pain is real. Allow yourself to mourn the person you lost, even if no one else understands. What keeps their memory alive for you?'
   ];
 
@@ -1046,7 +1046,7 @@
 
   R['ruleSuicideBereavement'] = [
     'Losing someone to suicide is a complicated grief: sadness mixed with anger, guilt, and unanswered questions. Asking why over and over, or blaming yourself, is natural, but it was not your fault. Would you tell me about them?',
-    'I hear how heavy this loss is. Grief after suicide can feel lonelier than other grief, because people do not know what to say. A therapist or a support group for this specific loss can offer a safe space. What comes up for you most these days?',
+    'I hear how heavy this loss is. Grief after suicide can feel lonelier than other grief, because people do not know what to say. A mental health professional or a support group for this specific loss can offer a safe space. What comes up for you most these days?',
     'If you keep thinking you could have prevented it, know that this is a burden no one should carry alone, and you could not control their thoughts. Do not walk this road by yourself. How are you coping with those thoughts?'
   ];
 
