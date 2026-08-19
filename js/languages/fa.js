@@ -648,7 +648,17 @@
       locationStatement:
         /(?:من )?(?:تو |توی |در )?([\u0600-\u06FF\u200c]{2,20}(?:\s[\u0600-\u06FF\u200c]{2,20})?)\s*(?:زندگی (?:میکنم|می‌کنم|می کنم)|ساکنم|ساکن هستم)|اهل\s+([\u0600-\u06FF\u200c]{2,20})(?:م| هستم| ام)(?!\p{L})/u,
       locationQuestion:
-        /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u
+        /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u,
+      // Preference disclosure («دوست دارم قهوه», «از شلوغی بدم میاد»):
+      // the liked/disliked object is captured after the like/dislike verb
+      // (or after «بدم میاد از»/«متنفرم از»). The capture is bounded and
+      // trimmed, so it stores a noun phrase, never a full sentence.
+      preferenceStatement:
+        /(?<!\p{L})(?:من )?(?:عاشق|بدم میاد از|بدم می‌آد از|متنفرم از|علاقه دارم به)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s*(?:[.!؟]|$)|(?<!\p{L})(?:از)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s+(?:بدم میاد|بدم می‌آد|متنفرم)/iu,
+      // Preference recall («چی دوست دارم؟», «از چی بدم میاد؟»): answered
+      // from the most recently stored preference, never invented.
+      preferenceQuestion:
+        /(?<!\p{L})(?:چی (?:دوست دارم|دوس دارم|بدم میاد|بدم می‌آد|متنفرم)|از چی (?:خوشم میاد|خوشم می‌آد|بدم میاد|متنفرم)|یادته چی (?:دوست دارم|دوس دارم|بدم میاد)|یادت هست چی دوست دارم|سلیقه‌ام چیه|سلیقه ام چیه)/u
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the

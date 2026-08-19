@@ -310,6 +310,64 @@
           return pickPool(pools.locationUnknown);
         }
       }
+
+      // Preference disclosure (\"I love coffee\", «از شلوغی بدم میاد»): the
+      // user names something they like or dislike, and Darya stores it so
+      // a later recall (\"what do I like?\", «چی دوست دارم؟») is answered
+      // from memory instead of an evasive line. A lived-topic turn stores
+      // silently (the emotional reply wins), same as age/name/location.
+      const isPreferenceQuestion =
+        patterns.preferenceQuestion &&
+        patterns.preferenceQuestion.test(matchingText);
+      if (
+        !isPreferenceQuestion &&
+        patterns.preferenceStatement &&
+        pools.preferenceStored
+      ) {
+        const prefStmt = patterns.preferenceStatement.exec(matchingText);
+        if (prefStmt) {
+          // The statement pattern has two capture shapes: the object after
+          // the verb («عاشق قهوه هستم», "I love coffee") in group 1, and
+          // the object before the verb («از شلوغی بدم میاد») in group 2.
+          let pref = String(prefStmt[1] || prefStmt[2] || '').trim();
+          // Strip a trailing Persian copula so «عاشق قهوه هستم» stores
+          // «قهوه», not «قهوه هستم».
+          pref = pref
+            .replace(/(?:\s+)?(?:هستم|هست|است|ام|ای|یم|ید|ند|ه)$/u, '')
+            .trim();
+          if (pref.length >= MIN_PROFILE_NAME_LENGTH) {
+            this._userProfile.preferences.push(pref);
+            if (hasLivedTopic) {
+              return null;
+            }
+            return pickPool(pools.preferenceStored).replace(
+              '{preference}',
+              pref
+            );
+          }
+        }
+      }
+
+      // Preference recall (\"what do I like?\", «چی دوست دارم؟»): answered
+      // from the most recently stated preference, or honestly unknown.
+      // The .test() guard is required so a non-recall turn never falls
+      // through to the unknown pool.
+      if (
+        patterns.preferenceQuestion &&
+        patterns.preferenceQuestion.test(matchingText) &&
+        pools.preferenceKnown
+      ) {
+        const knownPrefs = this._userProfile.preferences;
+        if (knownPrefs.length > 0) {
+          return pickPool(pools.preferenceKnown).replace(
+            '{preference}',
+            knownPrefs[knownPrefs.length - 1]
+          );
+        }
+        if (pools.preferenceUnknown) {
+          return pickPool(pools.preferenceUnknown);
+        }
+      }
       return null;
     },
 

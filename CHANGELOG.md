@@ -108,6 +108,35 @@ pipeline details live in the [README](README.md) and the upgrade spec
   and "what is going on" route to the greeting pool instead of the
   unknown fallback.
 
+### Improved (wellbeing, identity, and memory)
+
+- **Sixteen uncovered lived-experience topics** now route to a caring,
+  non-diagnosing pool in both languages: ADHD and neurodivergence,
+  autism, trauma and PTSD, panic attacks, non-suicidal self-injury,
+  OCD, bipolar, addiction and recovery, pregnancy loss, infertility,
+  suicide bereavement, terminal illness, coming out, immigration, body
+  image, and friendship breakups. Each names the experience, keeps the
+  non-clinician boundary, and points to professional support when it is
+  severe or persistent.
+- **Session preference memory.** Stating something you love, hate, or
+  cannot stand is remembered, and "what do I like?" / «چی دوست دارم؟» is
+  answered from memory with a "you remembered" acknowledgment, or
+  honestly unknown. Ambiguous phrasings (polite requests like «دوست دارم
+  برام یک جک بگی», or "i would love to...") are never mis-captured.
+- **Calibrated honesty.** A false or harmful health claim ("vaccines
+  cause autism", "therapy is a scam") validates the feeling while gently
+  correcting the claim, never endorsing it.
+- **The connection nudge.** Explicit isolation ("I have no one to talk
+  to") gets a gentle nudge toward telling a real person, instead of just
+  echoing the loneliness.
+- **Broader knowledge shelf.** Mental-health literacy (OCD, ADHD,
+  bipolar, trauma, panic, autism), health literacy (sleep hygiene,
+  stress physiology), and personal finance (budgeting, emergency funds)
+  now answer framed questions in both languages.
+- **67 wellbeing regression scenarios** cover every new topic, the
+  preference memory, calibrated honesty, the connection nudge, and a
+  proof that crisis rules still fire many turns into a session.
+
 ### Improved (hostility handling)
 
 - **Directed insults always get a calm boundary.** A Darya-directed

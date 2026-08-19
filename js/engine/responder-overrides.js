@@ -846,13 +846,13 @@
           // answer, and personal disclosures («پول ندارم», «قرضم
           // زیاده») never name those markers, so they stay empathetic.
           (matchedRule?.topic === 'money' && // eslint-disable-next-line max-len
-            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate)\b/i.test(
+            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate|budget|budgeting|savings|emergency fund)\b/i.test(
               matchingText
             ) ||
               // Persian world-economics markers (normalized forms for
               // تورم/بورس/بیت‌کوین/کریپتو/صندوق بین‌المللی).
               // eslint-disable-next-line max-len
-              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول)(?!\p{L})/iu.test(
+              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول|بودجه|بودجه بندی|پس انداز|صندوق اضطراری)(?!\p{L})/iu.test(
                 matchingText
               )))) &&
         DaryaKnowledge &&

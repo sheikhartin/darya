@@ -419,7 +419,14 @@
       locationStatement:
         /\b(?:[Ii] live in|[Ii]'?m living in|[Ii] am living in|[Ii]'?m from|[Ii] am from|[Ii] moved to|[Mm]y city is)\s+([A-Z][A-Za-z'-]+(?:\s+[A-Z][A-Za-z'-]+)?)\b/,
       locationQuestion:
-        /\b(?:where do i live|where am i from|what(?:'?s| is) my city|do you (?:remember|know) where i (?:live|am from))\b/i
+        /\b(?:where do i live|where am i from|what(?:'?s| is) my city|do you (?:remember|know) where i (?:live|am from))\b/i,
+      // Preference disclosure ("I love coffee", "I hate crowds"): the
+      // liked/disliked object is captured after the like/dislike verb.
+      preferenceStatement:
+        /\b(?:i (?:love|hate|really like|dislike|enjoy|cant stand|can'?t stand))\s+(.{2,40}?)(?:[.!?]|$)/iu,
+      // Preference recall ("what do I like?", "what do I hate?").
+      preferenceQuestion:
+        /\b(?:what do i (?:like|love|hate|enjoy)|do you remember what i (?:like|love|hate)|what am i into)\b/i
     },
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the

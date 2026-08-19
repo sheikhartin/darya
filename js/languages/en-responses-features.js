@@ -290,6 +290,19 @@
     noneKnown: [
       'Anything you share in this conversation stays with me. You have not told me your name or age yet; whenever you like, tell me and I will remember.',
       'Honestly, you have not told me your name or age yet. If you do, I will keep them right here.'
+    ],
+    preferenceStored: [
+      'I will remember: {preference}. Now I know it matters to you.',
+      '{preference}, got it. It stays with me.',
+      'Noted: {preference}. I like getting to know your tastes.'
+    ],
+    preferenceKnown: [
+      'You said {preference} matters to you, and I remembered.',
+      'From what you told me, {preference} is important to you. I held on to that.'
+    ],
+    preferenceUnknown: [
+      'Honestly, you have not told me what you like or dislike yet; if you do, I will remember.',
+      'I do not know your preferences yet. Tell me something you love or cannot stand, and I will keep it.'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -282,6 +282,22 @@
     noneKnown: [
       'هر چیزی که در همین گفتگو بگویی، پیشم می‌ماند. هنوز نه اسمت را گفته‌ای نه سنت را؛ هر وقت خواستی بگو تا یادم بماند.',
       'راستش هنوز چیزی درباره‌ی اسم یا سنت نگفتی؛ اگر بگویی، همین‌جا نگهش می‌دارم.'
+    ],
+    // Liked/disliked preferences: stored so a recall ("what do I like?")
+    // is answered from memory, and the "you remembered" phrasing makes
+    // the continuity feel real instead of silently correcting a follow-up.
+    preferenceStored: [
+      'یادم می‌ماند: {preference}. از این به بعد می‌دانم برایت مهم است.',
+      '{preference}، فهمیدم. پیشم می‌ماند.',
+      'باشه، {preference} را یادداشت کردم. از شناختن سلیقه‌ات خوشحالم.'
+    ],
+    preferenceKnown: [
+      'گفتی {preference} را دوست داری یا برایت مهم است و یادم مانده.',
+      'طبق چیزی که خودت گفتی، {preference} برایت مهم است. یادم مانده.'
+    ],
+    preferenceUnknown: [
+      'راستش هنوز چیزی درباره‌ی سلیقه‌ات نگفته‌ای؛ اگر بگویی، یادم می‌ماند.',
+      'هنوز نمی‌دانم چه چیزی را دوست داری یا از چه چیزی بدم می‌آید. بگو تا یادم بماند.'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);
