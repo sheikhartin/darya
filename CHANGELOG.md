@@ -5,6 +5,52 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.5.0] - 2026-08-18
+
+### Changed (branding)
+
+- **New icon set across every platform.** The launcher icon, PWA
+  icons, favicons, and all Android mipmap densities (legacy, round,
+  and adaptive layers) were regenerated from new ChatGPT-generated
+  artwork (an 800x800 PNG, resized only; no recoloring or
+  retouching). The adaptive background colour is derived from the
+  artwork corner (`#F0F1F3`). Splash screens carry no logo and stay
+  unchanged.
+
+### Changed (UX)
+
+- **The ambient UI is free of crisis framing.** The always-on
+  helpline line under the composer read as clinical before a single
+  word was exchanged, working against the calm-companion promise.
+  The footer states one fixed identity line, «دریا یک همراه شنواست،
+  نه جایگزین راهنمایی تخصصی.», honest about what Darya is and is
+  not, and no menu item, hotline number, or support wording appears
+  anywhere in the always-visible shell. Crisis help reaches the user where it matters and only
+  there: the contextual safety replies inside the conversation and
+  the crisis-aware exits, both unchanged.
+
+### Fixed (offline)
+
+- **Installed PWAs actually receive the new icons and shell.** The
+  static-assets cache name is bumped to `darya-static-v2` (retiring
+  v1 on activation, as the design intends), and this release's
+  version bump rotates the app-shell cache, so existing installations
+  pick up the new artwork and footer on update instead of serving
+  the previously precached copies indefinitely. The offline e2e
+  suite now reads the cache name from `sw.js` rather than pinning
+  it.
+- **Updates deliver themselves.** A returning visitor could stay on
+  a stale shell indefinitely: the worker is cache-first, and
+  browsers only re-check `sw.js` on navigation (throttled at that).
+  The app now asks the browser to re-check the worker on load and
+  whenever the tab becomes visible, and reloads itself once, at a
+  safe moment (the start picker, never mid-conversation), after a
+  new worker takes control. `npm start` now runs a dependency-free
+  dev server (`scripts/serve.mjs`) that sends the headers an
+  offline-first PWA needs: `no-store` for `sw.js`, `no-cache` plus
+  `Last-Modified` revalidation for everything else, replacing
+  `python3 -m http.server`, which sent no cache directives at all.
+
 ## [1.4.0] - 2026-08-17
 
 ### Fixed (safety-critical)

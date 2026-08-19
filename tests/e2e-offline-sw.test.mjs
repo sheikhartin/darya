@@ -155,6 +155,18 @@ function readPackageVersion() {
 }
 
 /**
+ * Reads the static-assets cache name from sw.js so the test follows
+ * the name through bumps instead of pinning a revision that ages.
+ * @returns {string}
+ */
+function readStaticCacheName() {
+  const source = readFileSync(path.join(PROJECT_ROOT, 'sw.js'), 'utf8');
+  const match = source.match(/STATIC_CACHE_NAME = '([^']+)'/);
+  assert.ok(match, 'sw.js must declare STATIC_CACHE_NAME');
+  return match[1];
+}
+
+/**
  * Extracts the string literals of an array declaration from sw.js.
  * @param {string} source - sw.js source
  * @param {string} arrayName - the const name (PRECACHE_URLS / STATIC_URLS)
@@ -231,7 +243,7 @@ test(
 
       const version = readPackageVersion();
       const shellCacheName = `darya-cache-v${version}`;
-      const staticCacheName = 'darya-static-v1';
+      const staticCacheName = readStaticCacheName();
 
       // The worker's cache keys are absolute URLs; sw.js lists relative
       // paths ("./js/..."). Normalize both sides to URL pathnames so

@@ -64,7 +64,7 @@
       el.typingStatus.setAttribute('aria-label', chosenLang.ui.typingLabel);
       el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
       el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
-      el.disclaimer.textContent = chosenLang.ui.disclaimer;
+      el.disclaimer.textContent = chosenLang.ui.footerTagline;
       UI.theme.updateThemeMenuItem();
 
       if (el.breatheTrigger) {

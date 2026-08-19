@@ -23,15 +23,24 @@
  * without touching the network at all. The runtime fetch handler also
  * opportunistically caches any same-origin GET that was not precached,
  * so a second visit to any URL this app ever requests is offline-ready.
+ *
+ * Refresh note: a browser re-installs this worker only when its bytes
+ * change, so any release that modifies precached shell content must
+ * also change something in this file (a comment note like this one is
+ * enough); the install then re-runs and re-fetches the changed shell
+ * into the versioned cache. Shell refresh: 1.5.0 (icons, footer,
+ * update delivery, identity tagline).
  */
 
 'use strict';
 
 let CACHE_NAME = 'darya-cache-fallback';
 
-// Long-lived cache for immutable assets (fonts, icons, audio). Named
-// once and reused across app versions; see the header comment.
-const STATIC_CACHE_NAME = 'darya-static-v1';
+// Long-lived cache for immutable assets (fonts, icons, audio). The
+// name is reused across app versions and bumped only when supposedly
+// immutable content actually changes (icon artwork, fonts); the
+// activate handler retires the predecessor so caches never stack.
+const STATIC_CACHE_NAME = 'darya-static-v3';
 
 // Set to true only after the current install has fully precached the
 // new app shell. The activate handler uses this to avoid purging old
@@ -50,6 +59,7 @@ const PRECACHE_URLS = [
   './js/app/conversation.js',
   './js/app/menu.js',
   './js/app/sound.js',
+  './js/app/update.js',
   './js/engine/index.js',
   './js/engine/utils-constants.js',
   './js/engine/utils-text.js',

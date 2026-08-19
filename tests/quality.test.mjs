@@ -2319,6 +2319,53 @@ test('beach controls and validation hints remain visible on the bright sky', () 
   );
 });
 
+test('ambient UI carries no crisis lines; help stays in the conversation', () => {
+  const html = read('index.html');
+  const fa = read('js/languages/fa.js');
+  const en = read('js/languages/en.js');
+
+  // The app shell is the always-visible surface, so no hotline numbers
+  // or crisis vocabulary may appear anywhere in it. The footer is a
+  // single warm line and nothing else.
+  assert.doesNotMatch(
+    html,
+    /۱۲۳|۱۴۸۰|اورژانس|بحران|988|116\s*123|hotline|crisis/u
+  );
+  assert.match(html, /<p class="disclaimer" id="disclaimer-text">/u);
+
+  // The footer states one fixed identity line: honest about what Darya
+  // is and is not. The exact wording is the product's chosen voice, so
+  // the suite pins it, keeps the static first paint in sync, and still
+  // bans hotline numbers, crisis vocabulary, digits, and support
+  // branding from the ambient footer.
+  const faTagline = (fa.match(/footerTagline:\s*'([^']+)'/u) || [])[1];
+  assert.ok(faTagline, 'fa footerTagline exists');
+  assert.equal(faTagline, 'دریا یک همراه شنواست، نه جایگزین راهنمایی تخصصی.');
+  assert.ok(html.includes(faTagline), 'static footer matches the fa tagline');
+
+  const enTagline = (en.match(/footerTagline:\s*'([^']+)'/u) || [])[1];
+  assert.ok(enTagline, 'en footerTagline exists');
+  assert.equal(
+    enTagline,
+    'Darya is a listening companion, not a replacement for professional guidance.'
+  );
+  assert.doesNotMatch(
+    `${faTagline}${enTagline}`,
+    /[0-9\u06f0-\u06f9]|بحران|اورژانس|پشتیبانی|crisis|hotline|helpline/u
+  );
+
+  // The numbers still live exactly where they reach the user: the
+  // in-conversation crisis pools, in both languages.
+  const faTopics = read('js/languages/fa-responses-topics.js');
+  const faBase = read('js/languages/fa-responses-base.js');
+  assert.match(faTopics, /۱۲۳[\s\S]*?۱۴۸۰/u);
+  assert.ok(/۱۲۳|۱۴۸۰/u.test(faBase));
+  const enTopics = read('js/languages/en-responses-topics.js');
+  const enBase = read('js/languages/en-responses-base.js');
+  assert.ok(/988/u.test(enTopics));
+  assert.ok(/988/u.test(enBase));
+});
+
 test('beach theme has three ocean layers with inline SVG waves and smooth drift', () => {
   const html = read('index.html');
   const css = read('css/style.css');

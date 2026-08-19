@@ -9,8 +9,10 @@ Fonts are self-hosted in `fonts/` (converted to WOFF2). A service worker (`sw.js
 Nothing to build. Serve the folder over HTTPS (or `localhost`, which browsers treat as secure for this purpose):
 
 ```bash
-python3 -m http.server 8080
+npm start
 ```
+
+`npm start` runs `node scripts/serve.mjs` (port 8080 by default), which sends the cache headers an offline-first PWA needs: `no-store` for `sw.js` so worker updates are always noticed, and `no-cache` everywhere else.
 
 Open in Chrome or Edge on desktop or Android and use "Install app" or "Add to Home screen." On iOS Safari, use the Share button then "Add to Home Screen."
 

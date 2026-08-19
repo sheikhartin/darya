@@ -11,6 +11,7 @@
  *   - conversation.js: startConversation, exit flow, sendMessage
  *   - menu.js:         menu popover keyboard/pointer behavior
  *   - sound.js:        sound toggle sync, bilingual UI text
+ *   - update.js:       worker re-checks and the safe update reload
  */
 (function (global) {
   'use strict';
@@ -61,7 +62,8 @@
     global.DaryaAppLanguage.create(ctrl),
     global.DaryaAppConversation.create(ctrl),
     global.DaryaAppMenu.create(ctrl),
-    global.DaryaAppSound.create(ctrl)
+    global.DaryaAppSound.create(ctrl),
+    global.DaryaAppUpdate.create(ctrl)
   );
 
   // ========================================================================
@@ -284,6 +286,9 @@
   // The file:// protocol (local file open) does not support service
   // workers and throws a TypeError if we try, which confuses users.
   // GitHub Pages and other HTTP-based deployments work normally.
+  // After registering, ask for an immediate worker re-check so a
+  // returning visitor picks up a freshly deployed shell on this load
+  // instead of waiting for the next navigation.
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('./sw.js').catch(function (error) {
@@ -292,6 +297,7 @@
           error
         );
       });
+      ctrl.checkForUpdate();
     });
   }
 

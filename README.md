@@ -509,6 +509,18 @@ the mipmap PNGs, the adaptive-icon XML in `mipmap-anydpi-v26`, and the
 whenever you change the icon. The CI workflow runs the same step on
 every build, so the shipped APK always carries the real icon.
 
+The web side has two delivery details an icon swap must not forget:
+
+- The PWA icons and favicons under `assets/icons/` are precached into
+  the service worker's static-assets cache, which is filled once per
+  cache name and never re-fetched afterwards. Bump `STATIC_CACHE_NAME`
+  in `sw.js` whenever the icon artwork changes, or already-installed
+  PWAs keep serving the previous icons forever; activation retires the
+  superseded cache automatically.
+- Browsers only reinstall the worker when the `sw.js` bytes change, so
+  any change that affects precached content (icons included) must also
+  touch `sw.js`; see the refresh note in its header comment.
+
 ### One-time keystore setup
 
 The release keystore is never committed. Generate it once and back it
