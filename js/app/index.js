@@ -324,6 +324,9 @@
     }
   }
   UI.theme.applyTheme(storedTheme || UI.constants.DEFAULT_THEME);
+  // The picker is shown on arrival, so the document title rotates between
+  // Persian and English until a conversation begins.
+  ctrl.startTitleRotation();
   DaryaAmbient.initBeachWaveVariation();
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();

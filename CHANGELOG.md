@@ -66,6 +66,38 @@ pipeline details live in the [README](README.md) and the upgrade spec
   the footer ignore long-press text selection, so the packaged
   Android/WebView build never pops the native copy callout on controls;
   conversation bubbles stay selectable.
+- **The breathe trigger fades in instead of popping.** After an
+  emotionally heavy turn, the breathing-exercise button now scales and
+  fades into the header (only opacity and transform animate, and it
+  stays out of the tab order while hidden), so the header never jumps.
+- **The document title now speaks both languages on the picker.** While
+  the language picker is showing, the page title alternates between the
+  Persian and English app titles every six seconds; the moment a
+  conversation starts it locks to the chosen language. English-only
+  visitors are no longer left staring at a Persian tab title.
+
+### Improved (knowledge and tooling)
+
+- **A neutral worldview and ideology shelf.** Darya can now explain 39
+  worldviews, mindsets, and political-philosophical ideologies in both
+  languages: stoicism, existentialism and its neighbors, growth mindset,
+  minimalism, ikigai, wabi-sabi, hygge and lagom, Taoism and Zen,
+  skepticism through pragmatism, humanism and transhumanism, effective
+  altruism, longtermism, and a neutral tour of democracy, liberalism,
+  conservatism, socialism, communism, anarchism, libertarianism, fascism,
+  populism, nationalism, progressivism, secularism, feminism, and
+  environmentalism. Every entry is descriptive and non-endorsing, and
+  violent extremism is named plainly and never softened.
+- **93 mindsets-and-ideologies regression scenarios** cover the factual
+  shelf in both languages plus the emotional registers around it: a calm
+  learner gets the fact, a depressed disclosure that names nihilism stays
+  on the caring thread, and a hateful blanket statement about a group is
+  met with calm de-escalation, never agreement.
+- **`run-tests.sh` runs the whole suite.** The runner now discovers every
+  `tests/*.test.mjs` file automatically instead of a hand-maintained
+  subset, so new test files run without manual list edits. The browser
+  e2e suites skip cleanly (not fail) when no Chrome/Chromium binary is
+  present.
 
 ### Fixed (engine)
 

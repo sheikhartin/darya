@@ -120,7 +120,7 @@ function findChromeBinary() {
 
 test(
   'quick-reply chips render and route a chip tap back through the engine',
-  { timeout: 90000 },
+  { timeout: 90000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     const chromePath = findChromeBinary();
@@ -233,7 +233,7 @@ test(
 
 test(
   'exercise chips advance the guided breathing flow in a real browser',
-  { timeout: 90000 },
+  { timeout: 90000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     const chromePath = findChromeBinary();

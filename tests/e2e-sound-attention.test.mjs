@@ -156,7 +156,7 @@ async function launchChrome() {
 
 test(
   'a legacy sound cookie never enables sound at boot; a tap on the toggle starts it',
-  { timeout: 60000 },
+  { timeout: 60000, skip: !findChromeBinary() },
   async (t) => {
     // A stale "on" cookie written by an old version must not start
     // audio or flip the toggle on: every visit boots silent, and only a
@@ -238,7 +238,7 @@ test(
 
 test(
   'a real tap on the picker sound toggle starts playback and keeps it playing',
-  { timeout: 60000 },
+  { timeout: 60000, skip: !findChromeBinary() },
   async (t) => {
     // Regression guard for the "turns on for a second, then turns off"
     // bug. A real touch tap fires pointerdown before click. Sound is
@@ -319,7 +319,7 @@ test(
 
 test(
   'notifications render as a centered icon-only badge with the message in aria-label',
-  { timeout: 60000 },
+  { timeout: 60000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     let browser;

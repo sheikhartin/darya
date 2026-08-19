@@ -2971,10 +2971,29 @@ html[data-theme='beach'] .backdrop__depth-breath {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  /* Hidden by default: collapsed with a gentle fade-and-scale reveal when
+     a heavy turn arms it. Only opacity and transform animate; visibility
+     keeps the collapsed state out of the tab order and accessibility
+     tree. The button stays in-flow, so the header title and menu never
+     shift when it appears. */
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.55);
+  pointer-events: none;
   transition:
+    opacity 0.3s var(--ease-tide),
+    transform 0.3s var(--ease-tide),
+    visibility 0.3s var(--ease-tide),
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide);
+}
+
+.breathe-trigger[aria-hidden='false'] {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 /* Expand the invisible tap target to the recommended 44px while keeping

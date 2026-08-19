@@ -56,6 +56,28 @@ if ! [[ "$ROUNDS" =~ ^[0-9]+$ ]] || [ "$ROUNDS" -lt 1 ]; then
 fi
 
 # -------------------------------------------------------------------
+# Test file discovery
+# -------------------------------------------------------------------
+# Enumerate every *.test.mjs file so the runner can never drift out of
+# sync with the suite: a newly added test file runs automatically with no
+# manual list maintenance.
+TEST_FILES=()
+for file in tests/*.test.mjs; do
+  [ -e "$file" ] && TEST_FILES+=("$file")
+done
+
+# Multi-round mode excludes the browser e2e suites to keep rounds fast;
+# they still run in a single --engine-only or default "all" pass (and
+# auto-skip cleanly when no Chrome/Chromium binary is present).
+UNIT_TEST_FILES=()
+for file in "${TEST_FILES[@]}"; do
+  case "$file" in
+    */e2e-*) ;;
+    *) UNIT_TEST_FILES+=("$file") ;;
+  esac
+done
+
+# -------------------------------------------------------------------
 # Helpers: parse TAP output for pass/fail counts
 # -------------------------------------------------------------------
 parse_engine_result() {
@@ -106,17 +128,13 @@ run_smoke() {
 # Single engine test run
 # -------------------------------------------------------------------
 run_engine() {
-  local test_files="tests/ambient-sound.test.mjs tests/dev-server.test.mjs tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs"
-
   if $VERBOSE; then
-    # shellcheck disable=SC2086
-    node --test --test-reporter spec $test_files 2>&1
+    node --test --test-reporter spec "${TEST_FILES[@]}" 2>&1
     return $?
   fi
 
   local output
-  # shellcheck disable=SC2086
-  output="$(node --test --test-reporter tap $test_files 2>&1)"
+  output="$(node --test --test-reporter tap "${TEST_FILES[@]}" 2>&1)"
   local rc=$?
   local parsed
   parsed="$(parse_engine_result "$output")"
@@ -170,11 +188,11 @@ run_multi_round() {
   for i in $(seq 1 "$total"); do
     if $VERBOSE; then
       echo "--- Round $i / $total ---"
-      node --test --test-reporter spec tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs 2>&1
+      node --test --test-reporter spec "${UNIT_TEST_FILES[@]}" 2>&1
       local rc=$?
     else
       local output
-      output="$(node --test --test-reporter tap tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs 2>&1)"
+      output="$(node --test --test-reporter tap "${UNIT_TEST_FILES[@]}" 2>&1)"
       local rc=$?
     fi
 

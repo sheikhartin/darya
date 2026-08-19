@@ -109,16 +109,18 @@
      */
     function showBreatheTrigger() {
       if (el.breatheTrigger) {
-        el.breatheTrigger.hidden = false;
+        // aria-hidden drives both the CSS reveal transition and the
+        // accessibility tree: false = visible and focusable.
+        el.breatheTrigger.setAttribute('aria-hidden', 'false');
       }
     }
 
     /**
-     * Hides the breathe trigger button.
+     * Hides the breathe trigger button (smooth collapse via CSS).
      */
     function hideBreatheTrigger() {
       if (el.breatheTrigger) {
-        el.breatheTrigger.hidden = true;
+        el.breatheTrigger.setAttribute('aria-hidden', 'true');
       }
     }
 

@@ -157,7 +157,7 @@ async function visibleFocusableIds(page) {
 
 test(
   'chat menu follows the WAI-ARIA keyboard contract in a real browser',
-  { timeout: 60000 },
+  { timeout: 60000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     const chromePath = findChromeBinary();
@@ -454,7 +454,7 @@ test(
 );
 test(
   'modal dialogs trap Tab focus and restore focus on Escape',
-  { timeout: 60000 },
+  { timeout: 60000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     const chromePath = findChromeBinary();
