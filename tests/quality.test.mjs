@@ -3076,7 +3076,7 @@ test('beach translucent panel text clears WCAG AA on idle and hover', () => {
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.notification-container \{[^}]*background: var\(--color-tide\)/u
+    /html\[data-theme='beach'\] \.notification-container \{[^}]*background: var\(--surface-panel\)/u
   );
 });
 
@@ -3549,21 +3549,27 @@ test('ocean picker option titles and muted notes clear WCAG AA text contrast', (
   );
 });
 
-test('beach picker muted text sits on a light pill over the animated waves', () => {
+test('picker muted text keeps one chip across themes so switching never reflows', () => {
   const css = read('css/style.css');
-  // The beach lang-lock and theme-heading render over drifting
-  // semi-transparent wave layers; dark ink there measures 2.1-3.8:1 and
-  // shifts with the animation. A light backing pill (like the picker
-  // note) must keep the text readable.
+  // The lang-lock note and theme heading sit in a glass chip in BOTH
+  // themes with identical padding and radius; only the tint and ink
+  // swap on theme change, so the picker never jumps (a chip that
+  // appears on switch would visibly reflow the layout). The chip also
+  // keeps the muted text above 4.5:1 over the drifting backdrop/waves.
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?background: rgba\(240, 235, 218, 0\.85\);/u,
-    'the beach lang-lock must have a light backing pill'
+    /\.picker__lang-lock \{[\s\S]*?padding: var\(--space-1\) var\(--space-3\);/u,
+    'the lang-lock chip pads its text in the base theme'
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?padding: var\(--space-1\) var\(--space-3\);/u,
-    'the beach lang-lock pill must pad its text'
+    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?background: var\(--glass-light\);/u,
+    'the beach lang-lock swaps to the light glass chip'
+  );
+  assert.match(
+    css,
+    /\.picker__theme-heading \{[\s\S]*?border-radius: var\(--radius-md\)/u,
+    'the theme heading shares the same chip radius as the lang-lock'
   );
 });
 

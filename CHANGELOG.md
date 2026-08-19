@@ -26,6 +26,22 @@ pipeline details live in the [README](README.md) and the upgrade spec
   `prefers-contrast: more`, get a near-opaque pane with a stronger rim
   instead of a see-through one, so nothing depends on the blur to stay
   readable.
+- **No flat elements remain.** The header icon buttons, the sound toggle,
+  and the secondary (Cancel/No/Close) buttons were ghost or flat pills
+  and now read as glass: dark frost in Ocean, and a frosted light pane
+  in Beach, mirroring Liquid Glass's light/dark adaptivity. The solid
+  coral accents keep a subtle top highlight so they read as tinted glass
+  rather than flat paint.
+- **Edges are hairlines, not hard outlines.** The pane rim was softened
+  and the chat-bubble tail corner rounded up, so nothing draws a sharp
+  one-pixel line.
+- **No layout jump on theme switch.** The picker's language-lock note and
+  theme heading sit in one glass chip in both themes (identical padding
+  and radius), so switching Ocean to Beach only swaps the tint and ink.
+- **UI chrome is not selectable.** Picker text, menu items, dialogs, and
+  the footer ignore long-press text selection, so the packaged
+  Android/WebView build never pops the native copy callout on controls;
+  conversation bubbles stay selectable.
 
 ## [1.5.0] - 2026-08-18
 

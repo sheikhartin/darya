@@ -195,12 +195,14 @@
     rgba(214, 244, 250, 0.04) 48%,
     rgba(214, 244, 250, 0) 70%
   );
-  --glass-edge: rgba(196, 238, 246, 0.3);
+  /* The rim is a hairline, not a hard outline: the top catch-light and
+     the chromatic fringe carry the edge, so the border stays faint and
+     never reads as a sharp drawn line. */
+  --glass-edge: rgba(196, 238, 246, 0.16);
   --glass-specular:
     inset 0 1px 0 rgba(244, 253, 255, 0.5),
     inset 1px 1px 0 rgba(150, 235, 250, 0.1),
-    inset -1px -1px 0 rgba(255, 150, 190, 0.06),
-    inset 0 0 0 1px rgba(196, 238, 246, 0.06);
+    inset -1px -1px 0 rgba(255, 150, 190, 0.06);
   --glass-specular-soft: inset 0 1px 0 rgba(244, 253, 255, 0.35);
 
   /* --- Motion --- */
@@ -247,13 +249,33 @@ html[data-theme='beach'] {
     rgba(255, 255, 255, 0.03) 48%,
     rgba(255, 255, 255, 0) 70%
   );
-  --glass-edge: rgba(240, 247, 244, 0.34);
+  --glass-edge: rgba(240, 247, 244, 0.22);
   --glass-specular:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 1px 1px 0 rgba(255, 255, 255, 0.1),
-    inset -1px -1px 0 rgba(255, 220, 200, 0.08),
-    inset 0 0 0 1px rgba(240, 247, 244, 0.08);
+    inset -1px -1px 0 rgba(255, 220, 200, 0.08);
   --glass-specular-soft: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  /* Light glass: small chrome (header buttons, note chips, the sound
+     toggle) sits on the bright sky, so it flips to a frosted light pane
+     with dark ink, mirroring Liquid Glass's light/dark adaptivity. The
+     panels and bubbles keep the dark frost above so light text clears
+     AA contrast. */
+  --glass-light:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.12) 100%
+    ),
+    rgba(200, 221, 229, 0.66);
+  --glass-light-strong:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.18) 100%
+    ),
+    rgba(212, 230, 236, 0.8);
+  --glass-light-edge: rgba(255, 255, 255, 0.62);
+  --glass-light-specular: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 * {
@@ -356,6 +378,27 @@ html:not(.no-theme-transition) .breathe-trigger {
   outline: 2.5px solid var(--border-focus);
   outline-offset: 2px;
   border-radius: 6px;
+}
+
+/* --------------------------------------------------------------------- */
+/* UI chrome is not selectable. In the packaged Android/WebView build a  */
+/* long-press on a menu label, dialog line, or the footer pops the       */
+/* native text-selection callout, which reads as a broken, non-native    */
+/* experience. Conversation bubbles and the composer input stay          */
+/* selectable so users can copy what Darya (or they) wrote.              */
+/* --------------------------------------------------------------------- */
+
+.picker,
+.header,
+.menu__popover,
+.theme-picker,
+.exit-confirm-bar,
+.confirm-container,
+.notification-container,
+.disclaimer {
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* --------------------------------------------------------------------- */
@@ -866,24 +909,6 @@ html[data-theme='beach'] .bird-shadows {
   color: var(--color-foam-dim);
 }
 
-.picker__note {
-  font-size: 12px;
-  color: var(--color-foam-dim);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  gap: var(--space-2);
-}
-
-html[data-theme='beach'] .picker__note {
-  background: rgba(255, 255, 255, 0.55);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--color-on-sky);
-  text-shadow: none;
-}
-
 .picker__note-sep {
   opacity: 0.6;
 }
@@ -893,15 +918,23 @@ html[data-theme='beach'] .picker__note {
 /* Each language variant sits on its own line.                           */
 /* --------------------------------------------------------------------- */
 
+/* The lang-lock note and theme heading both sit in a small glass chip in
+   BOTH themes, so switching theme only swaps the chip tint and ink and
+   never reflows the picker (a chip that appears or disappears on switch
+   would visibly jump the layout). The chip also guarantees the muted
+   text keeps its 4.5:1 legibility over whatever drifts behind it. */
 .picker__lang-lock {
   font-size: 11.5px;
-  color: var(--color-foam-dim);
+  color: var(--text-secondary);
   text-align: center;
   margin: -4px 0 0;
   line-height: 1.7;
-  /* 0.75 opacity left the muted note at 4.45:1 on the backdrop gradient,
-     just under the 4.5:1 AA threshold; 0.9 keeps the subtle look while
-     clearing it with margin on every backdrop tone. */
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-specular-soft);
   opacity: 0.9;
 }
 
@@ -912,27 +945,30 @@ html[data-theme='beach'] .picker__note {
 .picker__theme-heading {
   font-size: 12px;
   font-weight: 400;
-  color: var(--color-foam-dim);
+  color: var(--text-secondary);
   text-align: center;
   margin: 0;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
-  opacity: 0.8;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-specular-soft);
+  opacity: 0.9;
 }
 
-/* The beach lang-lock and theme-heading sit over the animated
-   semi-transparent wave layers, whose drifting teal tones leave dark ink
-   at 2.1-3.8:1 (unstable). A light pill like the picker note gives both
-   text blocks a stable, readable backing. */
+/* Beach swaps the chip to light glass with dark ink; the box model is
+   identical to ocean so the theme switch never moves the picker. */
 html[data-theme='beach'] .picker__lang-lock,
 html[data-theme='beach'] .picker__theme-heading {
   color: var(--color-on-sky);
-  opacity: 0.85;
-  background: rgba(240, 235, 218, 0.85);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
+  background: var(--glass-light);
+  border-color: var(--glass-light-edge);
+  box-shadow: var(--glass-light-specular);
 }
 
 /* --------------------------------------------------------------------- */
@@ -1010,10 +1046,12 @@ html[data-theme='beach'] .picker__theme-heading {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: transparent;
-  border: none;
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
   border-radius: 50%;
   color: var(--color-foam-dim);
+  box-shadow: var(--glass-specular-soft);
   cursor: pointer;
   transition:
     color 0.2s var(--ease-tide),
@@ -1369,7 +1407,7 @@ html[dir='ltr'] .bubble-row--bot {
 .bubble--user {
   background: var(--color-seafoam);
   color: var(--color-abyss-deep);
-  border-radius: var(--radius-md) var(--radius-md) 4px var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 8px var(--radius-md);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     var(--shadow-soft);
@@ -1380,7 +1418,7 @@ html[dir='ltr'] .bubble-row--bot {
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 8px;
   position: relative;
   box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   animation: rise-in 0.3s var(--ease-tide) both;
@@ -1627,6 +1665,7 @@ html[data-theme='beach'] .quick-reply {
   border: none;
   background: var(--color-coral);
   color: var(--color-abyss-deep);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1800,12 +1839,13 @@ html[data-theme='beach'] .breathe-countdown {
   padding: 8px 20px;
   font-size: 13px;
   font-family: var(--font-body);
-  background: transparent;
-  border: 1px solid rgba(234, 243, 239, 0.25);
-  color: var(--color-foam-dim);
+  background: var(--surface-control-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   border-radius: var(--radius-md);
   cursor: pointer;
   min-height: 44px;
+  box-shadow: var(--glass-specular-soft);
   transition:
     border-color 0.15s var(--ease-tide),
     color 0.15s var(--ease-tide);
@@ -1882,6 +1922,7 @@ html[data-theme='beach'] .breathe-countdown {
   background: var(--color-coral);
   color: var(--color-abyss-deep);
   border-color: var(--color-coral);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .exit-confirm-bar__btn--yes:hover {
@@ -1890,7 +1931,7 @@ html[data-theme='beach'] .breathe-countdown {
 }
 
 .exit-confirm-bar__btn--no {
-  background: transparent;
+  background: var(--surface-control-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
@@ -1917,7 +1958,6 @@ html[data-theme='beach'] .exit-confirm-bar__btn--yes:hover {
 
 html[data-theme='beach'] .exit-confirm-bar__btn--no {
   color: rgba(240, 247, 244, 0.65);
-  border-color: rgba(15, 46, 58, 0.2);
 }
 
 html[data-theme='beach'] .exit-confirm-bar__btn--no:hover {
@@ -2073,6 +2113,7 @@ html[data-theme='beach'] .confirm-title {
   background: var(--color-coral);
   color: var(--color-abyss-deep);
   border-color: var(--color-coral);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .confirm-btn--yes:hover {
@@ -2081,7 +2122,7 @@ html[data-theme='beach'] .confirm-title {
 }
 
 .confirm-btn--no {
-  background: transparent;
+  background: var(--surface-control-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
@@ -2104,7 +2145,6 @@ html[data-theme='beach'] .confirm-btn--yes:hover {
 
 html[data-theme='beach'] .confirm-btn--no {
   color: rgba(240, 247, 244, 0.65);
-  border-color: rgba(15, 46, 58, 0.2);
 }
 
 html[data-theme='beach'] .confirm-btn--no:hover {
@@ -2203,12 +2243,12 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   color: var(--notification-accent);
 }
 
-/* Beach theme override for the notification badge. The beach panel is
-   also dark teal, so the luminous severity accents keep working; a
-   solid background (not translucent) keeps the glow exact over the
-   bright sand. */
+/* Beach theme override for the notification badge. The badge shares the
+   same glass surface token as the ocean badge, so it reads as one
+   material across themes; the beach frost is near-opaque, which keeps
+   the luminous severity glow exact over the bright sand. */
 html[data-theme='beach'] .notification-container {
-  background: var(--color-tide);
+  background: var(--surface-panel);
 }
 
 html[data-theme='beach'] .notification-container--error {
@@ -2693,7 +2733,6 @@ html[data-theme='beach'] .backdrop__scrim {
 }
 
 html[data-theme='beach'] .picker__intro,
-html[data-theme='beach'] .picker__note,
 html[data-theme='beach'] .header {
   color: var(--color-on-sky);
 }
@@ -2707,7 +2746,6 @@ html[data-theme='beach'] .picker__intro-en {
   color: var(--color-on-sky-link);
 }
 
-html[data-theme='beach'] .picker__note,
 html[data-theme='beach'] .picker__intro-sep {
   color: var(--color-on-sky-dim);
 }
@@ -2716,6 +2754,10 @@ html[data-theme='beach'] .picker__intro-sep {
    ink surfaces (kept in sync with the solid opaque overrides below). */
 html[data-theme='beach'] .picker__sound-toggle {
   color: var(--color-on-sky-dim);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-light-specular);
 }
 
 html[data-theme='beach'] .picker__sound-toggle:hover {
@@ -2728,16 +2770,12 @@ html[data-theme='beach'] .picker__sound-toggle[aria-pressed='true'] {
 
 /* Beach menu popover: frosted light glass over the sky, with dark ink. */
 html[data-theme='beach'] .menu__popover {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.5) 0%,
-      rgba(255, 255, 255, 0.18) 100%
-    ),
-    rgba(200, 221, 229, 0.6);
+  background: var(--glass-light);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 8px 24px rgba(15, 46, 58, 0.18);
+  border-color: var(--glass-light-edge);
+  box-shadow:
+    var(--glass-light-specular),
+    0 8px 24px rgba(15, 46, 58, 0.18);
 }
 
 html[data-theme='beach'] .menu__item {
@@ -2750,12 +2788,6 @@ html[data-theme='beach'] .menu__item:hover {
 
 html[data-theme='beach'] .menu__item-icon {
   color: #28645a;
-}
-
-/* Beach picker note: use dark ink instead of text-shadow halo. */
-html[data-theme='beach'] .picker__note {
-  text-shadow: none;
-  color: var(--color-on-sky);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2905,17 +2937,22 @@ html[data-theme='beach'] .backdrop__depth-breath {
 
 html[data-theme='beach'] .breathe-trigger {
   color: #2f7384;
-  border-color: rgba(47, 115, 132, 0.45);
-  background: rgba(200, 221, 229, 0.88);
-  box-shadow: 0 2px 10px rgba(91, 61, 35, 0.08);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
 }
 
 html[data-theme='beach'] .breathe-trigger:hover,
 html[data-theme='beach'] .breathe-trigger:focus-visible {
   color: #286573;
   border-color: #286573;
-  background: rgba(200, 221, 229, 0.95);
-  box-shadow: 0 4px 14px rgba(91, 61, 35, 0.12);
+  background: var(--glass-light-strong);
+  box-shadow:
+    var(--glass-light-specular),
+    0 4px 14px rgba(91, 61, 35, 0.12);
 }
 
 /* --------------------------------------------------------------------- */
@@ -2984,17 +3021,22 @@ html[data-theme='beach'] .theme-toggle__beach {
    sky chip (hover darkens a step further to preserve the feedback). */
 html[data-theme='beach'] .menu__trigger {
   color: #1a5f6d;
-  border-color: rgba(26, 95, 109, 0.55);
-  background: rgba(200, 221, 229, 0.88);
-  box-shadow: 0 2px 10px rgba(91, 61, 35, 0.08);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
 }
 
 html[data-theme='beach'] .menu__trigger:hover,
 html[data-theme='beach'] .menu__trigger[aria-expanded='true'] {
   color: #14505f;
   border-color: #14505f;
-  background: rgba(200, 221, 229, 0.95);
-  box-shadow: 0 4px 14px rgba(91, 61, 35, 0.12);
+  background: var(--glass-light-strong);
+  box-shadow:
+    var(--glass-light-specular),
+    0 4px 14px rgba(91, 61, 35, 0.12);
 }
 
 html[data-theme='beach'] .input-hint {
@@ -3124,13 +3166,4 @@ html[data-theme='beach'] .picker__intro-fa {
 
 html[data-theme='beach'] .picker__intro-en {
   color: var(--color-on-sky-link);
-}
-
-/* Beach picker note: solid background pill for readability. */
-html[data-theme='beach'] .picker__note {
-  background: rgba(240, 235, 218, 0.85);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--color-on-sky);
-  text-shadow: none;
 }
