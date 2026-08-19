@@ -212,7 +212,10 @@
   /* The rim is a hairline, not a hard outline: the top catch-light and
      the chromatic fringe carry the edge, so the border stays faint and
      never reads as a sharp drawn line. */
-  --glass-edge: rgba(196, 238, 246, 0.16);
+  /* The rim is a whisper, not a line: a faint lightening of the pane's
+     own tint so the edge reads as light catching the glass rather than a
+     drawn border. The inset specular highlight carries the definition. */
+  --glass-edge: rgba(196, 238, 246, 0.1);
   --glass-specular:
     inset 0 1px 0 rgba(244, 253, 255, 0.5),
     inset 1px 1px 0 rgba(150, 235, 250, 0.1),
@@ -266,7 +269,7 @@ html[data-theme='beach'] {
     rgba(255, 255, 255, 0.03) 48%,
     rgba(255, 255, 255, 0) 70%
   );
-  --glass-edge: rgba(240, 247, 244, 0.22);
+  --glass-edge: rgba(240, 247, 244, 0.14);
   --glass-specular:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 1px 1px 0 rgba(255, 255, 255, 0.1),
@@ -291,7 +294,7 @@ html[data-theme='beach'] {
       rgba(255, 255, 255, 0.18) 100%
     ),
     rgba(212, 230, 236, 0.8);
-  --glass-light-edge: rgba(255, 255, 255, 0.62);
+  --glass-light-edge: rgba(255, 255, 255, 0.4);
   --glass-light-specular: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
@@ -1090,12 +1093,12 @@ html[data-theme='beach'] .picker__theme-heading {
 
 .picker__sound-toggle:hover {
   color: var(--color-foam);
-  background: rgba(127, 190, 176, 0.08);
+  background: var(--surface-control-hover);
 }
 
 .picker__sound-toggle[aria-pressed='true'] {
   color: var(--color-foam);
-  background: rgba(127, 190, 176, 0.14);
+  background: var(--surface-control-hover);
   box-shadow: 0 0 0 3px rgba(127, 190, 176, 0.12);
 }
 
@@ -1226,7 +1229,9 @@ html[data-theme='beach'] .picker__theme-heading {
 .menu__trigger[aria-expanded='true'] {
   color: var(--color-foam);
   border-color: var(--color-seafoam);
-  background: rgba(127, 190, 176, 0.08);
+  /* Brighten the glass body instead of swapping in a transparent tint,
+     which used to drop the frost and let the dark backdrop flood in. */
+  background: var(--surface-control-hover);
 }
 
 .menu__popover {
@@ -1742,11 +1747,10 @@ html[dir='rtl'] .composer__send svg {
 
 .composer__send:hover:not(:disabled) {
   background: var(--color-coral-soft);
-  transform: scale(1.06);
 }
 
 .composer__send:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .composer__send:disabled {
@@ -2917,15 +2921,15 @@ html[data-theme='beach'] .backdrop__depth-breath {
 }
 
 /* The breathe trigger is the menu trigger's sibling in the header, so
-   it shares the same hover language: a soft seafoam fill with a glowing
-   border. (The beach theme overrides both with its sky-blue pill
-   treatment below.) */
+   it shares the same hover language: brighten the glass body and lift
+   the rim, never swap in a transparent tint. (The beach theme overrides
+   both with its light-glass treatment below.) */
 .breathe-trigger:hover,
 .breathe-trigger:focus-visible {
   cursor: pointer;
   color: var(--color-foam);
   border-color: var(--color-seafoam);
-  background: rgba(127, 190, 176, 0.08);
+  background: var(--surface-control-hover);
 }
 
 /* Wind icon subtle animation: gentle sway */

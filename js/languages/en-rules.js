@@ -153,7 +153,7 @@
       'greeting',
       65,
       // eslint-disable-next-line max-len
-      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
+      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up|what is up|whats new|what's new|what is new|whats going on|what's going on|what is going on)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHey']
     ),
 

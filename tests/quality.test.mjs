@@ -2952,26 +2952,27 @@ test('picker, menu, and composer share one panel, timing, and hover language', (
     css,
     /\.menu__popover[\s\S]*?animation: menu-in 0\.22s/u,
     'menu entrance must respect the 200ms motion floor'
-  ); // Hover fills use one consistent translucent seafoam tint across the
-  // menu trigger, the breathe trigger (its header sibling), and the
-  // picker sound toggle. The tint is a literal string, so its regex
-  // metacharacters (parens, dot) are escaped before interpolation.
+  ); // Hover brightens the glass body instead of swapping in a transparent
+  // tint (which used to drop the frost and let the dark backdrop flood
+  // in), shared across the menu trigger, the breathe trigger, and the
+  // picker sound toggle. The literal's regex metacharacters (parens) are
+  // escaped before interpolation.
   const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-  const seafoamFill = escapeRegExp('rgba(127, 190, 176, 0.08)');
+  const hoverFill = escapeRegExp('var(--surface-control-hover)');
   assert.match(
     css,
-    new RegExp(`\\.menu__trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    new RegExp(`\\.menu__trigger:hover[\\s\\S]*?background: ${hoverFill}`),
     'menu trigger hover fill'
   );
   assert.match(
     css,
-    new RegExp(`\\.breathe-trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    new RegExp(`\\.breathe-trigger:hover[\\s\\S]*?background: ${hoverFill}`),
     'breathe trigger must share the menu trigger hover fill'
   );
   assert.match(
     css,
     new RegExp(
-      `\\.picker__sound-toggle:hover[\\s\\S]*?background: ${seafoamFill}`
+      `\\.picker__sound-toggle:hover[\\s\\S]*?background: ${hoverFill}`
     ),
     'picker sound toggle hover fill'
   );

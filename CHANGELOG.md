@@ -34,7 +34,14 @@ pipeline details live in the [README](README.md) and the upgrade spec
   rather than flat paint.
 - **Edges are hairlines, not hard outlines.** The pane rim was softened
   and the chat-bubble tail corner rounded up, so nothing draws a sharp
-  one-pixel line.
+  one-pixel line. The rim is tuned to a whisper of the pane's own tint
+  (rather than a distinct color), so it reads as light catching the
+  glass instead of a drawn border.
+- **Hover brightens glass instead of dimming it.** The menu, breathe,
+  and sound-toggle buttons no longer swap in a transparent tint on
+  hover (which dropped the frost and let the dark backdrop flood in);
+  they brighten their glass body, and the send button no longer scales
+  up on hover, so nothing jumps or shakes.
 - **Elevation is layered and soft, never a heavy halo.** The two shadow
   tokens are now three-stop, low-opacity ambient shadows (tight contact
   + mid presence + wide diffuse lift) instead of a single dark blob, and
@@ -48,6 +55,15 @@ pipeline details live in the [README](README.md) and the upgrade spec
   the footer ignore long-press text selection, so the packaged
   Android/WebView build never pops the native copy callout on controls;
   conversation bubbles stay selectable.
+
+### Fixed (engine)
+
+- **Common check-ins answer like a companion, not an echo.** The Persian
+  «چه خبر؟» and its tails («چه خبری؟», «چه خبره؟», «چه خبرها؟») now
+  route to the how-are-you pool instead of the ambiguous-input echo
+  («کمی بیشتر توضیح بده»), and the English "what is new", "what is up",
+  and "what is going on" route to the greeting pool instead of the
+  unknown fallback.
 
 ## [1.5.0] - 2026-08-18
 

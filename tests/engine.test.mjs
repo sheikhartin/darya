@@ -801,6 +801,45 @@ test('FA greeting tail does not swallow a how-are-you compound', () => {
   }
 });
 
+test('FA «چه خبر» is a check-in, never an ambiguous-input echo', () => {
+  // «چه خبر؟» (what is new) is an everyday Persian check-in. It must
+  // route to the how-are-you pool and never fall through to the
+  // ambiguous-input echo («کمی بیشتر توضیح بده»).
+  for (const input of ['چه خبر؟', 'چه خبری؟', 'چه خبره؟', 'چه خبرها؟']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(input);
+    assert.ok(
+      engine.currentTurnTopics.includes('smalltalk_howareyou'),
+      `${input} should route to how-are-you, got: ${JSON.stringify(engine.currentTurnTopics)} -> "${reply}"`
+    );
+    assert.ok(
+      !FA.ambiguousInputResponses.includes(reply),
+      `${input} must not echo the ambiguous pool: "${reply}"`
+    );
+  }
+});
+
+test('EN "what is new" and casual check-ins are greetings, not fallbacks', () => {
+  // "what is new", "what is up", and "what is going on" are everyday
+  // check-ins in the same register as "what is up". They must route to
+  // the greeting pool, never to the ambiguous or unknown pools.
+  for (const input of [
+    'what is new',
+    'whats new',
+    "what's new",
+    'what is up',
+    'what is going on',
+    'whats going on'
+  ]) {
+    const engine = freshEngine(EN);
+    const reply = engine.respond(input);
+    assert.ok(
+      engine.currentTurnTopics.includes('greeting'),
+      `${input} should route to greeting, got: ${JSON.stringify(engine.currentTurnTopics)} -> "${reply}"`
+    );
+  }
+});
+
 test('FA mid-conversation greeting mirrors fresh and breaks greeting loops', () => {
   const repeatedPool = new Set(FA.repeatedGreetingResponses);
   // A fresh greeting after real turns mirrors the user's word.
