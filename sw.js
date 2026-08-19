@@ -40,7 +40,7 @@ let CACHE_NAME = 'darya-cache-fallback';
 // name is reused across app versions and bumped only when supposedly
 // immutable content actually changes (icon artwork, fonts); the
 // activate handler retires the predecessor so caches never stack.
-const STATIC_CACHE_NAME = 'darya-static-v2';
+const STATIC_CACHE_NAME = 'darya-static-v3';
 
 // Set to true only after the current install has fully precached the
 // new app shell. The activate handler uses this to avoid purging old

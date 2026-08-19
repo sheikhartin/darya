@@ -11,10 +11,10 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 - **New icon set across every platform.** The launcher icon, PWA
   icons, favicons, and all Android mipmap densities (legacy, round,
-  and adaptive layers) were regenerated from new Grok-generated
-  artwork (a 1024x1024 JPEG, resized only; no recoloring or
+  and adaptive layers) were regenerated from new ChatGPT-generated
+  artwork (an 800x800 PNG, resized only; no recoloring or
   retouching). The adaptive background colour is derived from the
-  artwork corner (`#F7F8FA`). Splash screens carry no logo and stay
+  artwork corner (`#F0F1F3`). Splash screens carry no logo and stay
   unchanged.
 
 ### Changed (UX)
