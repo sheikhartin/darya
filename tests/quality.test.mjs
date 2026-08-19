@@ -2333,32 +2333,26 @@ test('ambient UI carries no crisis lines; help stays in the conversation', () =>
   );
   assert.match(html, /<p class="disclaimer" id="disclaimer-text">/u);
 
-  // The footer taglines stay meaningful but clinical-free: identity
-  // honesty is welcome («نه جایگزین راهنمایی تخصصی»), hotline
-  // numbers, crisis vocabulary, digits, and support branding are not.
-  // The first pool member must match the static first-paint line.
-  const faPool = (fa.match(/footerTaglines: \[([\s\S]*?)\]/u) || [])[1];
-  assert.ok(faPool, 'fa footerTaglines pool exists');
-  const faLines = faPool.match(/'([^']+)'/gu) || [];
-  assert.ok(faLines.length >= 3, `fa pool has at least 3 lines`);
-  for (const line of faLines) {
-    assert.doesNotMatch(line, /[0-9\u06f0-\u06f9]|بحران|اورژانس|پشتیبانی/u);
-  }
-  assert.ok(
-    html.includes(faLines[0].slice(1, -1)),
-    'static footer matches the first fa pool line'
+  // The footer states one fixed identity line: honest about what Darya
+  // is and is not. The exact wording is the product's chosen voice, so
+  // the suite pins it, keeps the static first paint in sync, and still
+  // bans hotline numbers, crisis vocabulary, digits, and support
+  // branding from the ambient footer.
+  const faTagline = (fa.match(/footerTagline:\s*'([^']+)'/u) || [])[1];
+  assert.ok(faTagline, 'fa footerTagline exists');
+  assert.equal(faTagline, 'دریا یک همراه شنواست، نه جایگزین راهنمایی تخصصی.');
+  assert.ok(html.includes(faTagline), 'static footer matches the fa tagline');
+
+  const enTagline = (en.match(/footerTagline:\s*'([^']+)'/u) || [])[1];
+  assert.ok(enTagline, 'en footerTagline exists');
+  assert.equal(
+    enTagline,
+    'Darya is a listening companion, not a replacement for professional guidance.'
   );
-
-  const enPool = (en.match(/footerTaglines: \[([\s\S]*?)\]/u) || [])[1];
-  assert.ok(enPool, 'en footerTaglines pool exists');
-  const enLines = enPool.match(/'([^']+)'/gu) || [];
-  assert.ok(enLines.length >= 3, `en pool has at least 3 lines`);
-  for (const line of enLines) {
-    assert.doesNotMatch(line, /[0-9]|crisis|hotline|helpline|988/u);
-  }
-
-  // The rotation wiring reads from the active locale's pool.
-  assert.match(read('js/app/language.js'), /footerTaglines\[/u);
+  assert.doesNotMatch(
+    `${faTagline}${enTagline}`,
+    /[0-9\u06f0-\u06f9]|بحران|اورژانس|پشتیبانی|crisis|hotline|helpline/u
+  );
 
   // The numbers still live exactly where they reach the user: the
   // in-conversation crisis pools, in both languages.

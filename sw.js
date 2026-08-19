@@ -29,7 +29,7 @@
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
  * into the versioned cache. Shell refresh: 1.5.0 (icons, footer,
- * update delivery).
+ * update delivery, identity tagline).
  */
 
 'use strict';
