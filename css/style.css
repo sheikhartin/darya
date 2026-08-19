@@ -1183,16 +1183,19 @@ html[data-theme='beach'] .picker__theme-heading {
   justify-content: center;
   width: 34px;
   height: 34px;
+  padding: 0;
   background: var(--surface-control);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
+  box-shadow: var(--glass-specular-soft);
   cursor: pointer;
   transition:
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
-    background 0.2s var(--ease-tide);
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
 }
 
 /* Expand the invisible tap target to the recommended 44px while keeping
@@ -2950,11 +2953,13 @@ html[data-theme='beach'] .backdrop__depth-breath {
   justify-content: center;
   width: 34px;
   height: 34px;
+  padding: 0;
   background: var(--surface-control);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
+  box-shadow: var(--glass-specular-soft);
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
@@ -2973,7 +2978,8 @@ html[data-theme='beach'] .backdrop__depth-breath {
     visibility 0.3s var(--ease-tide),
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
-    background 0.2s var(--ease-tide);
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
 }
 
 .breathe-trigger[aria-hidden='false'] {
