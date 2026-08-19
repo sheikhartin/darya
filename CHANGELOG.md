@@ -76,6 +76,29 @@ pipeline details live in the [README](README.md) and the upgrade spec
   and "what is going on" route to the greeting pool instead of the
   unknown fallback.
 
+### Improved (hostility handling)
+
+- **Directed insults always get a calm boundary.** A Darya-directed
+  insult - "you are worthless", "you are a joke", «تو بی ارزشی»,
+  «تو یه جوکی», a dismissal like "shut up" / «خفه شو», a sarcastic
+  "thanks for nothing asshole" / «ممنون از هیچی احمق», or a bare
+  "worthless bot" / «ربات بی ارزش» - now routes to the boundary pool
+  regardless of which benign rule the words happen to match. Previously
+  "you are worthless" was misread as the user's own self-esteem,
+  "you are a joke" got frustration, and "thanks for nothing asshole"
+  got a genuine gratitude reply.
+- **Insults are never mirrored back.** The quoted callback and pronoun
+  reflection no longer echo a hostile phrase ("you are a lying piece of
+  shit" → "that phrase still has weight"), and a profane turn is never
+  quoted on a later turn.
+- **Third-party vents stay on their real thread.** "my boss is a moron"
+  and «رئیس من یه احمق تمام عیاره» stay work complaints, never the
+  boundary pool or app feedback (the «تم» app-feedback keyword no longer
+  falsely matches inside «تمام»), and profanity like «کیرم تو این
+  برنامه» de-escalates instead of falling to the unknown pool.
+- **"why do you exist?" / «چرا وجود داری؟»** now gets a self-aware reply
+  instead of a knowledge shrug.
+
 ## [1.5.0] - 2026-08-18
 
 ### Changed (branding)

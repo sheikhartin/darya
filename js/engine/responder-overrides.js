@@ -400,6 +400,36 @@
         _overrideFired = true;
       }
 
+      // Darya-directed hostility (insult, bullying, crude language aimed
+      // at the companion) takes priority over any benign rule the words
+      // happen to match: a sarcastic "thanks", a joke-sounding phrase, or
+      // a bare "you are worthless" that the self-esteem rule would
+      // otherwise read as the user's own. It fires regardless of
+      // matchedRule so a directed insult is never answered with
+      // gratitude, a joke, or a mistaken emotional read. Safety-critical
+      // and minor-attraction turns are untouched, and a genuine testing
+      // message still gets the warm testInput pool above this boundary.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        this.currentTurnDialogueAct !== 'test_input'
+      ) {
+        const hostilityType = this._detectDaryaHarassment(
+          rawText,
+          matchingText
+        );
+        if (hostilityType === 'sexual' && this.lang.sexualHarassmentResponses) {
+          reply = this._pickVaried(this.lang.sexualHarassmentResponses);
+          _overrideFired = true;
+        } else if (
+          hostilityType === 'abuse' &&
+          this.lang.daryaHarassmentResponses
+        ) {
+          reply = this._pickVaried(this.lang.daryaHarassmentResponses);
+          _overrideFired = true;
+        }
+      }
+
       // Guided therapeutic exercises (see responder-exercises.js): the
       // user requests an exercise ("breathing exercise", "تمرین تنفس") or
       // answers the active exercise flow with yes/no/ok. An explicit
@@ -1104,6 +1134,9 @@
         // attached to a question must never replace the answer with a
         // de-escalation lecture (the transcript's «دستم درد میکنه الاغ»
         // failure). Pure insults that match no rule still de-escalate.
+        // The early Darya-directed guard above runs first, so this block
+        // must not overwrite an already-chosen boundary reply.
+        !_overrideFired &&
         !matchedRule &&
         matchedRule?.topic !== 'meta_feedback' &&
         matchedRule?.topic !== 'self_improvement' &&
