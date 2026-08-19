@@ -428,6 +428,42 @@
       preferenceQuestion:
         /\b(?:what do i (?:like|love|hate|enjoy)|do you remember what i (?:like|love|hate)|what am i into)\b/i
     },
+    // Life-facts memory (see responder-lifefacts.js): statements and
+    // recalls for the kinds of facts people state about their lives, so a
+    // later recall question answers from memory. Subject nouns stay in a
+    // fixed list (family, pets, possessions) so a stray sentence never
+    // stores noise. Capture layout (group indices) matches the handler:
+    // profession/name statements put the subject in group 1 and the value
+    // in group 2; count puts the number (value) in group 1 and the noun
+    // (subject) in group 2; relationship puts the status (value) in group
+    // 1. Recalls capture only the subject in group 1 (relationship has no
+    // subject capture).
+    lifeFacts: {
+      statements: {
+        profession:
+          /\bmy (sister|brother|mother|mom|mum|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|aunt|uncle|cousin|grandmother|grandfather|grandma|grandpa|best friend|boss|roommate) (?:is|works as)(?! (?:called|named))(?: a | an )?([a-z][a-z ]{1,28}?)(?:[.!?]|$)/iu,
+        name: /\bmy (dog|cat|pet|bird|fish|sister|brother|mother|mom|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|boss|roommate)(?:'s| is)? (?:name is|is called|is named|called|named) ([A-Za-z][A-Za-z'-]{1,28})\b/iu,
+        count:
+          /\bi have (one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) (kids|children|siblings|brothers|sisters|cats|dogs|pets|cousins|grandchildren)\b/iu,
+        relationship:
+          /\bi am (married|single|divorced|engaged|separated|widowed|in a relationship)\b/iu
+      },
+      recalls: {
+        // Each recall keeps exactly one capturing group (the subject in
+        // group 1) so the handler never reads the wrong group. The verb
+        // slot is deliberately permissive (do/work as/job/profession/work)
+        // so both "what does my sister do" and "what is my sister's job"
+        // match without a second capturing group.
+        profession:
+          /\bwhat (?:does|do|is) my (sister|brother|mother|mom|mum|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|aunt|uncle|cousin|grandmother|grandfather|grandma|grandpa|best friend|boss|roommate)(?:'s)? (?:do|work as|job|profession|work)\b/iu,
+        name: /\bwhat is my (dog|cat|pet|bird|fish|sister|brother|mother|mom|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|boss|roommate)(?:'s)? (?:name|called|named)\b/iu,
+        count:
+          /\bhow many (kids|children|siblings|brothers|sisters|cats|dogs|pets|cousins|grandchildren) do i have\b/iu,
+        relationship:
+          /\bam i (married|single|divorced|engaged|separated|widowed|in a relationship)\b/iu
+      }
+    },
+    lifeFactPools: R.lifeFactPools,
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the
     // user says "I'll tell you later" (or releases a pending promise

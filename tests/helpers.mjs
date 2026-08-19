@@ -92,6 +92,7 @@ const SCRIPT_ORDER = [
   'js/engine/responder-rules.js',
   'js/engine/responder-entity.js',
   'js/engine/responder-profile.js',
+  'js/engine/responder-lifefacts.js',
   'js/engine/responder-overrides.js',
   'js/engine/responder-recall.js',
   'js/engine/responder-promise.js',

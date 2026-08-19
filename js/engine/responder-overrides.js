@@ -560,13 +560,19 @@
             reply = profileReply;
             _overrideFired = true;
           } else {
-            const promise = this._applyPromiseOverrides({
-              matchingText,
-              matchedRule
-            });
-            if (promise.fired) {
-              reply = promise.reply;
+            const lifeFactReply = this._handleLifeFactsTurn(matchingText);
+            if (lifeFactReply) {
+              reply = lifeFactReply;
               _overrideFired = true;
+            } else {
+              const promise = this._applyPromiseOverrides({
+                matchingText,
+                matchedRule
+              });
+              if (promise.fired) {
+                reply = promise.reply;
+                _overrideFired = true;
+              }
             }
           }
         }

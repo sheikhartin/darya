@@ -162,6 +162,13 @@ class DaryaResponseEngine {
       // Session-only, cleared with the engine, never persisted.
       preferences: []
     };
+    // Life-facts memory (see responder-lifefacts.js): arbitrary facts the
+    // user states about their life, stored by kind + subject so a later
+    // recall ("what does my sister do?", "what is my dog called?") is
+    // answered from memory instead of an evasive line. Kinds: profession,
+    // name, count, and relationship status. Session-only and cleared with
+    // the engine, never persisted.
+    this._lifeFacts = new Map();
     // Last math/factual follow-up sentence, so consecutive answers never
     // append the same redirect twice in a row (the full answer string is
     // what lands in recentBotMessages, so pool recency filtering alone

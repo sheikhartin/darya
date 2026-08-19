@@ -108,6 +108,24 @@ pipeline details live in the [README](README.md) and the upgrade spec
   and "what is going on" route to the greeting pool instead of the
   unknown fallback.
 
+### Improved (life-facts memory)
+
+- **Arbitrary life facts are remembered and recalled.** Beyond the basic
+  profile (name, age, location, preferences), Darya now stores four
+  kinds of facts people state about their lives and recalls them later,
+  in both languages: a profession ("my sister is a nurse" /
+  «خواهرم پرستاره» -> "what does my sister do?"), a name of a person or
+  pet ("my dog is named Rex" / «اسم سگم رکس هست»), a count ("I have two
+  kids" / «دو تا بچه دارم»), and a relationship status ("I am married" /
+  «من متاهلم»). A recall always answers from memory, or honestly unknown,
+  never inventing a fact, and a new statement replaces a contradictory
+  old one for the same subject.
+- **42 memory-and-consistency regression scenarios** exercise long
+  multi-turn threads: facts recalled after digressions, corrections
+  replacing earlier values, multiple subjects staying distinct, memory
+  surviving hostile turns and unrelated chatter, and session-only
+  guarantees (a fresh engine forgets).
+
 ### Improved (wellbeing, identity, and memory)
 
 - **Sixteen uncovered lived-experience topics** now route to a caring,
