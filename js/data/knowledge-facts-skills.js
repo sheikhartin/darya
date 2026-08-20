@@ -90,10 +90,17 @@
         'how to debug code',
         'debugging steps',
         'my code does not work how do i debug',
+        'javascript typeerror how do i debug',
+        'my javascript throws a typeerror how do i debug it systematically',
+        'javascript throws a typeerror',
+        'typeerror debugging',
+        'debug systematically',
         'چطور کد رو دیباگ کنم',
+        'کدم typeerror میده چطور دیباگش کنم',
+        'اصولی دیباگ کنم',
         'مراحل دیباگ کردن'
       ],
-      ['debugging', 'debug code', 'دیباگ'],
+      ['debugging', 'debug code', 'typeerror', 'دیباگ'],
       'دیباگ را با حدس تصادفی شروع نکن: خطا را بازتولید کن، ورودی و خروجی مورد انتظار را بنویس، پیام خطا و stack trace را کامل بخوان، مسئله را به کوچک‌ترین نمونه کاهش بده و با breakpoint یا log مرز درست و غلط را پیدا کن. سپس علت ریشه‌ای را اصلاح کن و یک تست بنویس که همان خطا دوباره برنگردد.',
       'Do not debug by random edits. Reproduce the failure, write expected versus actual behavior, read the full error and stack trace, reduce it to the smallest case, then use a debugging tool or targeted logs to find the boundary between correct and incorrect state. Fix the root cause and add a regression test that would catch it again.'
     ),

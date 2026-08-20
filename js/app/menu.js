@@ -8,7 +8,7 @@
 
   /**
    * Creates the menu functions.
-   * @param {object} ctrl - Shared controller state (see app.js)
+   * @param {object} ctrl - Shared controller state (see js/app/index.js)
    * @returns {object} Functions for the chat menu
    */
   function createMenu(ctrl) {

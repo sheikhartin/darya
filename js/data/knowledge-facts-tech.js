@@ -166,7 +166,10 @@
         'github copilot',
         'ai coding assistant',
         'coding with ai',
-        'how should a beginner use ai coding assistants responsibly'
+        'how should a beginner use ai coding assistants responsibly',
+        'how should i use ai coding assistants responsibly',
+        'responsible use of ai coding assistants',
+        'use ai coding tools without becoming dependent'
       ],
       weak: ['copilot', 'cursor', 'کدنویس', 'coding assistant'],
       weakSafe: true,
@@ -213,8 +216,8 @@
         'freelance',
         'remote'
       ],
-      fa: 'چند مسیر واقعی برای یک توسعه‌دهنده: اول، فریلنسری روی پلتفرم‌های بین‌المللی مثل Upwork و Fiverr که به رزومه و نمونه‌کار نیاز دارد؛ دوم، کار راه دور (ریموت) برای شرکت‌های خارجی که این روزها برای توسعه‌دهنده‌های باتجربه رایج است؛ سوم، ساختن محصول کوچک خودت مثل یک سرویس یا اپ که در طول زمان درآمد غیرفعال بسازد. قدم اول مشترک همه‌ی این‌ها یک چیز است: یک نمونه‌کار قوی از پروژه‌های واقعی.',
-      en: 'Several real paths exist for a developer: freelance on international platforms like Upwork and Fiverr, which requires a strong portfolio; remote work for companies abroad, increasingly common for experienced developers; or building your own small product such as a service or app that can generate passive income over time. The shared first step is one thing: a solid portfolio of real projects.'
+      fa: 'برای درآمد از توسعه‌ی نرم‌افزار چند مسیر واقعی هست: استخدام محلی، پروژه‌ی کوچک برای کسب‌وکارهای واقعی، پشتیبانی و آموزش، فریلنسری قانونی، یا ساخت محصولی که مشتری حاضر است بابت حل مسئله‌اش پول بدهد. از وعده‌ی «درآمد غیرفعال» و پول سریع فاصله بگیر؛ نگهداری، فروش و پشتیبانی خودشان کارند. قدم مشترک یک نمونه‌کار کوچک و قابل‌استفاده، توضیح روشن مسئله و تماس مستقیم با مشتری یا کارفرمای معتبر است. برای کار خارجی، شرایط روز پلتفرم، تحریم، قرارداد، مالیات و دریافت قانونی وجه را پیش از ساخت حساب یا قبول پروژه بررسی کن و هیچ محدودیتی را دور نزن.',
+      en: 'Real software-income paths include local employment, small projects for actual businesses, support and teaching, lawful freelancing, or a product customers will pay to use because it solves a problem. Be skeptical of passive-income and quick-money promises; maintenance, sales, and support are work. The common first step is a small usable portfolio, a clear problem statement, and direct contact with verified clients or employers. For cross-border work, check current platform eligibility, sanctions, contracts, tax, and lawful payment options before opening an account or accepting work, and do not evade restrictions.'
     },
     {
       id: 'career_advice',
@@ -279,8 +282,8 @@
         'work',
         'remote'
       ],
-      fa: 'فریلنسری یعنی فروش مهارت به صورت پروژه‌ای به کارفرماهای مختلف به جای استخدام ثابت. برای شروع از ایران، چند نکته‌ی عملی: نمونه‌کار انگلیسی و رزومه‌ی حرفه‌ای بساز، روی پلتفرم‌های بین‌المللی که با شرایط ایرانی‌ها سازگارند حساب باز کن، و از پروژه‌های کوچک شروع کن تا امتیاز و نظر مثبت بگیری. نکته‌ی مهم: همیشه شرایط دریافت وجه و قوانین کشورت را بررسی کن و درباره‌ی مسائل مالی، نظر یک متخصص را هم داشته باش.',
-      en: 'Freelancing means selling your skill project by project to different clients instead of holding one job. To start, build a strong English portfolio and professional resume, open accounts on international platforms that work in your region, and begin with small projects to earn ratings and reviews. Always check the payment options and the regulations in your country, and treat financial questions with professional advice.'
+      fa: 'فریلنسری یعنی فروش مهارت به‌صورت پروژه‌ای، اما از ایران باید واقعیت قرارداد، تحریم، شرایط استفاده‌ی پلتفرم، مالیات و دریافت قانونی وجه را پیش از هر تعهد بررسی کرد؛ قوانین و دسترسی‌ها تغییر می‌کنند و دریا آفلاین نمی‌تواند آن‌ها را تأیید کند. با مشتری محلی یا کانالی که صریحاً کاربران محل تو را می‌پذیرد، پروژه‌ی کوچک، محدوده‌ی مکتوب، تحویل مرحله‌ای و نمونه‌کار حرفه‌ای شروع کن. هویت یا مکان جعلی نساز و برای گرفتن کار پول نده. اگر پرداخت یا قرارداد مبهم است، از حسابدار یا مشاور حقوقی معتبر کمک بگیر.',
+      en: 'Freelancing is project-based work, but from Iran you need to verify contracts, sanctions, platform terms, tax, and lawful payment options before committing. Access and rules change, and offline Darya cannot certify them. Start through a local client or a channel that explicitly accepts users in your location, with a small scope, written terms, staged delivery, and a professional portfolio. Do not fake identity or location, and never pay for the promise of work. If payment or contract terms are unclear, consult a qualified accountant or legal professional.'
     },
     {
       id: 'remote_work',
@@ -312,8 +315,8 @@
       weak: ['تورم', 'گرونی', 'اقتصاد', 'inflation', 'economy', 'قیمت'],
       weakSafe: true,
       hints: ['ایران', 'پول', 'بازار', 'iran', 'money'],
-      fa: 'تورم یعنی بالا رفتن عمومی و مداوم قیمت‌ها که قدرت خرید پول را کم می‌کند. در ایران، ترکیبی از عوامل ساختاری مثل وابستگی به نفت، تحریم‌ها، کسری بودجه و انتظارات تورمی باعث شده تورم بالا و مزمن شود. این یک بحث پیچیده‌ی اقتصادی است و تحلیل دقیق آن تخصص می‌خواهد؛ اما برای زندگی روزمره، مدیریت هزینه، پس‌انداز به ارز یا دارایی‌های ضد تورم و بالا بردن درآمد، ابزارهای معمول مردم است.',
-      en: 'Inflation is a general, sustained rise in prices that erodes the purchasing power of money. In Iran, a combination of structural factors such as oil dependence, sanctions, budget deficits, and inflation expectations has produced high and persistent inflation. It is a complex economic issue that needs expert analysis; in daily life, people typically respond with tighter budgeting, savings in inflation-resistant assets, and higher income.'
+      fa: 'تورم یعنی افزایش عمومی و مداوم سطح قیمت‌ها و کاهش قدرت خرید پول؛ گران‌شدن یک کالا به‌تنهایی تورم نیست. در ایران عواملی مانند کسری بودجه و رشد پول، محدودیت تولید و تجارت، تحریم و نرخ ارز، شوک انرژی و انتظار تورمی می‌توانند هم‌زمان اثر بگذارند و وزنشان در دوره‌های مختلف محل بحث است. عدد امروز را باید از مرکز آمار و منابع اقتصادی روز دید، نه از قفسه‌ی آفلاین. برای زندگی روزمره، اول جریان نقد، خوراک، مسکن، دارو و بدهی پرخطر را مدیریت کن؛ هیچ دارایی «ضد تورم» تضمینی نیست و تصمیم سرمایه‌گذاری واقعی به مشاور معتبر نیاز دارد.',
+      en: 'Inflation is a broad sustained rise in the price level that erodes purchasing power; one item becoming expensive is not inflation by itself. In Iran, fiscal deficits and money growth, production and trade constraints, sanctions and exchange rates, energy shocks, and expectations can interact, with their relative weight disputed across periods. Today’s figure belongs to current Statistical Center and economic sources, not an offline shelf. In daily life, prioritize cash flow, food, housing, medicine, and dangerous debt. No inflation hedge is guaranteed, and a real investment decision needs qualified advice.'
     },
     {
       id: 'emigration',
@@ -340,8 +343,8 @@
         'study',
         'work'
       ],
-      fa: 'مهاجرت موضوعی است که ذهن خیلی از جوانان ایرانی را درگیر کرده. مسیرهای اصلی: تحصیلی (با ویزای دانشجویی)، کاری (با جاب‌آفر از یک شرکت خارجی)، سرمایه‌گذاری و خانوادگی. برای توسعه‌دهنده‌ها مسیر کاری واقعی‌تر است: رزومه و نمونه‌کار انگلیسی، یادگیری زبان مقصد، و جست‌وجوی مستقیم در سایت‌های کاریابی بین‌المللی. هر مسیری هزینه، زمان و ریسک خودش را دارد؛ تصمیم را با تحقیق و نه با تبلیغ بگیر.',
-      en: 'Emigration is a topic on many young Iranians’ minds. The main routes are study (student visa), work (a job offer from an employer abroad), investment, and family sponsorship. For developers the work route is the most realistic: an English resume and portfolio, learning the destination language, and applying directly on international job boards. Every path has its own cost, time, and risk; decide from research, not from hype.'
+      fa: 'مهاجرت مسیر واحد یا تضمینی ندارد. راه‌های قانونی ممکن است تحصیل، کار، خانواده، پژوهش یا برنامه‌های رسمی دیگر باشند و صلاحیت، حق کار، هزینه و زمانشان پیوسته تغییر می‌کند. ابتدا هدف، زبان، رزومه و مدرک، وضعیت سربازی، شبکه‌ی حمایت و برنامه‌ی شکست یا برگشت را روشن کن؛ سپس فقط سایت رسمی دولت یا سفارت مقصد را بررسی کن. وعده‌ی ویزای تضمینی، داستان‌سازی، مدرک جعلی، قاچاق یا پرداخت به «آشنای داخل سفارت» هشدار جدی است. جابه‌جایی به شهر دیگر یا ساختن سابقه از داخل هم می‌تواند مرحله‌ی اول باشد؛ تصمیم را با داده و متخصص دارای مجوز بگیر، نه تبلیغ.',
+      en: 'Migration has no single guaranteed route. Lawful paths may include study, work, family, research, or other official programs, and eligibility, work rights, cost, and timing change continuously. Clarify your goal, language, resume and credentials, conscription status, support network, and failure or return plan, then rely on the destination government or embassy site. Guaranteed visas, fabricated stories, false documents, smuggling, or payment to an alleged embassy insider are serious warnings. Moving internally or building experience from home can also be a first stage. Decide from evidence and licensed advice, not advertising.'
     },
     {
       id: 'military_service',
@@ -355,8 +358,8 @@
       weak: ['سربازی', 'سرباز', 'معافیت', 'endorsement'],
       weakSafe: true,
       hints: ['ایران', 'پسر', 'دانشگاه', 'iran', 'service'],
-      fa: 'سربازی (خدمت سربازی) برای مردان ایرانی معمولاً دو سال تعهد نظامی است که در سن‌های مشخص باید انجام شود. راه‌های معافیت و کوتاه‌شدن دوره (مثل تحصیل، شرایط پزشکی، کفالت و برخی شرایط خاص) وجود دارد، اما قوانینش مرتب تغییر می‌کند و جزئیاتش تخصصی است. برای اطلاعات دقیق و به‌روز باید به منابع رسمی و کارشناسان مراجعه کنی؛ من نمی‌توانم جایگزین آن‌ها باشم.',
-      en: 'Military service in Iran is a roughly two-year obligation for young men that must be completed at the designated age. Exemptions and shortened terms exist for reasons such as education, medical conditions, family support, and special cases, but the rules change often and the details are specialized. For accurate, current information you need official sources and experts; I cannot stand in for them.'
+      fa: 'خدمت وظیفه در ایران برای بسیاری از مردان مشمول اجباری است، اما مدت یک عدد ثابت برای همه نیست و به نوع مأموریت، منطقه، بومی‌بودن و مقررات روز وابسته است. اطلاعیه‌های سال‌های اخیر برای دوره‌های مختلف از حدود ۱۴ تا ۲۱ ماه و برای بعضی امریه‌های غیرنظامی تا ۲۴ ماه گفته‌اند؛ «میانگین» با حکم پرونده‌ی تو فرق دارد. تحصیل، پزشکی، کفالت و شرایط خانوادگی ممکن است اثر داشته باشند. پیش از تصمیم درباره‌ی کار، تحصیل، سفر یا مهاجرت، آخرین اعلام سازمان وظیفه عمومی فراجا و ستاد کل و در صورت نیاز مشاور حقوقی معتبر را بررسی کن. دریا آفلاین است و معافیت یا مدت تو را تأیید نمی‌کند.',
+      en: 'Compulsory service applies to many eligible Iranian men, but duration is not one fixed number and depends on assignment, region, local status, and current rules. Recent announcements have described periods from roughly 14 to 21 months, with some nonmilitary amriye assignments reaching 24 months; an average is not a ruling on your case. Education, medical review, family-care status, and other conditions may matter. Before decisions about work, study, travel, or migration, check the latest Public Conscription Organization and General Staff information and qualified legal advice where needed. Offline Darya cannot confirm an exemption or your duration.'
     },
     {
       id: 'iran_internet',
@@ -407,7 +410,7 @@
       weak: ['خرید', 'خریدم', 'قیمت', 'buy', 'shopping', 'price'],
       weakSafe: true,
       hints: ['خرید', 'بودجه', 'قیمت', 'buy', 'budget', 'price'],
-      fa: 'یک روش ساده و حرفه‌ای برای هر خریدی:\n۱) نیاز را مشخص کن: این کالا برای چه کاری است و هر روز چقدر استفاده می‌شود؟\n۲) بودجه‌ی واقعی تعیین کن و یک سقف ثابت بگذار؛ قبل از دیدن گزینه‌ها، نه بعد از آن.\n۳) دو یا سه گزینه در رنج بودجه انتخاب کن و فقط همان‌ها را مقایسه کن؛ مقایسه‌ی بی‌نهایت گیج می‌کند.\n۴) نظرات کاربران واقعی و تجربه‌های خرید را بخوان، مخصوصاً درباره‌ی دوام و خدمات پس از فروش.\n۵) گارانتی و پشتیبانی در ایران را جدی بگیر؛ گاهی ارزان‌ترین گزینه بعداً گران‌تر تمام می‌شود.\n۶) قیمت‌ها در ایران سریع تغییر می‌کنند؛ به‌جای تکیه به یک رقم ثابت (مثلاً «زیر ۲۰ میلیون»)، قیمت لحظه‌ای را در چند فروشگاه معتبر مقایسه کن تا تصمیمت از روز اول درست باشد.',
+      fa: 'یک روش ساده و حرفه‌ای برای هر خریدی:\n۱) نیاز را مشخص کن: این کالا برای چه کاری است و هر روز چقدر استفاده می‌شود؟\n۲) بودجه‌ی واقعی تعیین کن و یک سقف ثابت بگذار؛ قبل از دیدن گزینه‌ها، نه بعد از آن.\n۳) دو یا سه گزینه در محدوده‌ی بودجه انتخاب کن و فقط همان‌ها را مقایسه کن؛ مقایسه‌ی بی‌نهایت گیج می‌کند.\n۴) نقد حرفه‌ای، تجربه‌ی کاربران و سیاست مرجوعی را جداگانه بخوان، مخصوصاً درباره‌ی دوام و خدمات پس از فروش.\n۵) هزینه‌ی مالکیت مثل لوازم، تعمیر، انرژی و قطعه را هم حساب کن؛ ارزان‌ترین انتخاب ممکن است بعداً پرهزینه شود.\n۶) قیمت‌ها در ایران سریع تغییر می‌کنند؛ دریا رقم ثابت کالا نمی‌دهد. قیمت زنده را همان روز در چند فروشگاه مستقل مقایسه کن.',
       en: 'A simple, professional method for any purchase:\n1) Define the need: what is this item for and how often will it be used daily?\n2) Set a realistic budget and fix a hard ceiling before you look at options, not after.\n3) Pick two or three candidates in the budget band and compare only those; endless comparison causes confusion.\n4) Read real user reviews and purchase experiences, especially about durability and after-sales service.\n5) Take warranty and local support seriously; sometimes the cheapest option ends up costing more later.\n6) Prices change quickly in Iran; instead of trusting one fixed figure, compare live prices across a few trusted stores so your decision holds up.'
     },
     {
@@ -534,8 +537,8 @@
         'store',
         'online'
       ],
-      fa: 'برای خرید در ایران چند مسیر اصلی هست: دیجی‌کالا و ترب برای کالای نو و مقایسه‌ی قیمت، دیوار و شیپور برای خرید دست‌دوم با بودجه‌ی کمتر، و آمازون برای کالاهای خارجی اگر ارسالش به ایران ممکن باشد. قیمت‌ها در ایران سریع تغییر می‌کنند؛ پس به‌جای تکیه به یک رقم ثابت، قیمت لحظه‌ای را در دو یا سه فروشگاه مقایسه کن. اگر بودجه‌ات محدود است، جست‌وجوی دست‌دوم در دیوار و شیپور گاهی تا نصف قیمت نو می‌رسد.',
-      en: 'For buying in Iran there are a few main routes: Digikala and Torob for new goods and price comparison, Divar and Sheypoor for used items on a tighter budget, and Amazon for foreign goods when shipping to Iran is possible. Prices in Iran change quickly, so instead of trusting one fixed figure, compare live prices across two or three stores. If your budget is tight, searching used listings on Divar or Sheypoor can sometimes reach half the price of new.'
+      fa: 'برای خرید در ایران می‌توانی فروشگاه‌های دارای هویت و گارانتی روشن را برای کالای نو، موتورهای مقایسه مانند ترب را برای دیدن چند فروشنده، و پلتفرم‌هایی مانند دیوار و شیپور را برای دست‌دوم بررسی کنی. دریا قیمت ثابت هیچ کالا را نمی‌گوید، چون بازار سریع تغییر می‌کند؛ قیمت زنده، موجودی، اعتبار فروشنده، مرجوعی و هزینه‌ی ارسال را همان روز از چند منبع مستقل تطبیق بده. برای دست‌دوم حضوری تست کن، شماره‌سریال و مالکیت را ببین و رسید بگیر. برای رزرو خارج از پلتفرم یا پیشنهاد غیرعادی پیش‌پرداخت نده.',
+      en: 'In Iran, consider identified sellers with clear warranty terms for new goods, comparison services such as Torob for viewing multiple sellers, and marketplaces such as Divar or Sheypoor for used goods. Darya does not quote a fixed product price because product prices change quickly; compare live price, stock, seller reputation, returns, and delivery across independent sources that day. Test used goods in person, verify serial number and ownership, and get a receipt. Do not send an off-platform deposit for a reservation or an implausible offer.'
     },
     {
       id: 'app_stores_iran',

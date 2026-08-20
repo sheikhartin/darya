@@ -81,6 +81,10 @@
     exitConfirmShown: false,
     /** @type {boolean} True when a conversation is actually in progress. */
     chatActive: false,
+    /** @type {boolean} True while the reader is following the live edge.
+     * Only a deliberate scroll away from the bottom turns this off; new
+     * content must not mistake its own added height for user intent. */
+    followingLatest: true,
     /** @type {number} Monotonic counter to invalidate stale async replies. */
     conversationGeneration: 0,
     /** @type {Array} Conversation transcript entries. */
@@ -336,52 +340,35 @@
   // Scroll management
   // ========================================================================
 
-  /** Session storage key for persisting scroll position across page reloads. */
-  var SESSION_KEY = 'darya_scroll_pos';
   /** Distance (px) from the bottom edge still treated as "at the latest
    * message" for auto-scroll and jump-button purposes. */
   var SCROLL_BOTTOM_MARGIN = 80;
-
-  /**
-   * Saves the current scroll position of the chat container to sessionStorage.
-   * Best-effort only; failures are silently ignored.
-   */
-  function saveScrollPosition() {
-    try {
-      if (state.chatActive && elements.chat) {
-        sessionStorage.setItem(SESSION_KEY, String(elements.chat.scrollTop));
-      }
-    } catch (e) {
-      // sessionStorage may be disabled or full
-    }
-  }
-
-  /**
-   * Restores a previously saved scroll position, if one exists.
-   * Uses requestAnimationFrame to wait for DOM layout to settle.
-   */
-  function restoreScrollPosition() {
-    try {
-      var pos = sessionStorage.getItem(SESSION_KEY);
-      if (pos !== null && elements.chat) {
-        requestAnimationFrame(function () {
-          elements.chat.scrollTop = Number(pos);
-        });
-      }
-    } catch (e) {
-      // sessionStorage may be disabled
-    }
-  }
+  /** Time allowed for the smooth jump animation to settle before its final
+   * exact positioning and state check. */
+  var JUMP_SCROLL_SETTLE_MS = 450;
+  /** True between scheduling and completing a programmatic live-edge move. */
+  var scrollToLatestPending = false;
+  /** @type {number|null} Timer for completion of a smooth jump. */
+  var jumpScrollTimer = null;
 
   /**
    * Scrolls the chat container to the bottom, revealing the latest message.
    * Uses requestAnimationFrame to wait for the DOM to update first.
    */
   function scrollToBottom() {
+    state.followingLatest = true;
+    scrollToLatestPending = true;
+    if (jumpScrollTimer !== null) {
+      clearTimeout(jumpScrollTimer);
+      jumpScrollTimer = null;
+    }
+    setJumpButtonVisible(false);
     requestAnimationFrame(function () {
       if (elements.chat) {
         elements.chat.scrollTop = elements.chat.scrollHeight;
       }
+      scrollToLatestPending = false;
+      updateJumpButton();
     });
   }
 
@@ -404,16 +391,13 @@
   }
 
   /**
-   * Syncs the jump-to-latest button's visibility and focusability with the
-   * current scroll position: it appears only while the reader is scrolled
-   * away from the newest message, and is hidden (and unfocusable) when the
-   * view is already at the edge.
+   * Applies the jump control's visual, pointer, and tab-order state.
+   * @param {boolean} show - True only while the reader left the live edge
    */
-  function updateJumpButton() {
+  function setJumpButtonVisible(show) {
     if (!elements.chatJump) {
       return;
     }
-    var show = state.chatActive && !isNearBottom();
     elements.chatJump.classList.toggle('chat-jump--show', show);
     elements.chatJump.setAttribute('aria-hidden', show ? 'false' : 'true');
     if (show) {
@@ -424,13 +408,34 @@
   }
 
   /**
-   * Scrolls to the bottom only when the reader is already near it,
-   * mirroring how every mainstream chat app follows a live conversation.
-   * When the reader has scrolled away, the view is left alone and the
-   * jump-to-latest button is surfaced instead.
+   * Syncs the jump-to-latest control from explicit follow state. Added
+   * content increases scrollHeight before the scheduled scroll runs, so a
+   * post-insert geometry check alone would falsely look like the reader had
+   * scrolled up. followingLatest records actual reader intent instead.
+   */
+  function updateJumpButton() {
+    setJumpButtonVisible(state.chatActive && !state.followingLatest);
+  }
+
+  /**
+   * Records a real chat-scroll event. Programmatic moves are ignored until
+   * they settle; every other scroll updates whether the reader is following
+   * the live edge and therefore whether the jump control is needed.
+   */
+  function handleChatScroll() {
+    if (!scrollToLatestPending) {
+      state.followingLatest = isNearBottom();
+    }
+    updateJumpButton();
+  }
+
+  /**
+   * Follows new output only while the reader is already following the live
+   * edge. A reader who deliberately moved upward keeps their exact context
+   * and gets the jump control instead.
    */
   function scrollToBottomIfNear() {
-    if (isNearBottom()) {
+    if (state.followingLatest || isNearBottom()) {
       scrollToBottom();
     } else {
       updateJumpButton();
@@ -449,11 +454,30 @@
     var reduceMotion =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    state.followingLatest = true;
+    scrollToLatestPending = true;
+    setJumpButtonVisible(false);
     elements.chat.scrollTo({
       top: elements.chat.scrollHeight,
       behavior: reduceMotion ? 'auto' : 'smooth'
     });
-    updateJumpButton();
+
+    if (jumpScrollTimer !== null) {
+      clearTimeout(jumpScrollTimer);
+    }
+    var finishJump = function () {
+      jumpScrollTimer = null;
+      if (elements.chat) {
+        elements.chat.scrollTop = elements.chat.scrollHeight;
+      }
+      scrollToLatestPending = false;
+      updateJumpButton();
+    };
+    if (reduceMotion) {
+      requestAnimationFrame(finishJump);
+    } else {
+      jumpScrollTimer = setTimeout(finishJump, JUMP_SCROLL_SETTLE_MS);
+    }
   }
 
   // ========================================================================
@@ -469,9 +493,18 @@
    * @param {string} text - Message text content
    */
   function appendMessage(sender, text) {
+    // Capture the follow decision before inserting the row. Measuring after
+    // insertion sees the new scrollHeight and can falsely classify a reader
+    // who was at the bottom as having scrolled away.
+    var shouldFollowLatest =
+      sender === 'user' || state.followingLatest || isNearBottom();
+    var displayText =
+      sender === 'bot' && state.lang?.normalizeOutput
+        ? state.lang.normalizeOutput(text)
+        : text;
     var time = formatTimestamp();
     var msgId = 'msg-' + state.messageCount;
-    state.transcript.push({ sender: sender, text: text, time: time });
+    state.transcript.push({ sender: sender, text: displayText, time: time });
     state.messageCount += 1;
 
     if (sender === 'user') {
@@ -487,7 +520,7 @@
 
     var bubble = document.createElement('div');
     bubble.className = 'bubble bubble--' + sender;
-    bubble.textContent = text;
+    bubble.textContent = displayText;
     // The page root stays RTL regardless of the active language (so the
     // picker layout never shifts), so each bubble declares its own text
     // direction: English bubbles lay out LTR while Persian ones stay RTL.
@@ -502,7 +535,6 @@
 
     wrapper.appendChild(bubble);
     wrapper.appendChild(meta);
-    saveScrollPosition();
     row.appendChild(wrapper);
     // Insert before the jump-to-latest button (the chat's last child) so
     // that floating affordance stays pinned at the end of the transcript.
@@ -511,13 +543,14 @@
     } else {
       elements.chat.appendChild(row);
     }
-    // A user send always reveals the new bubble; a bot reply only follows
-    // the view if the reader was already near the bottom (otherwise the
-    // jump button surfaces and the reader keeps their place).
-    if (sender === 'user') {
+    // A user send always returns to the live edge. Bot output follows only
+    // when the pre-insert snapshot says the reader was already following;
+    // otherwise their reading position is preserved and the jump appears.
+    if (shouldFollowLatest) {
       scrollToBottom();
     } else {
-      scrollToBottomIfNear();
+      state.followingLatest = false;
+      updateJumpButton();
     }
   }
 
@@ -544,6 +577,12 @@
    * "show" state never leaks into a fresh conversation.
    */
   function clearChat() {
+    state.followingLatest = true;
+    scrollToLatestPending = false;
+    if (jumpScrollTimer !== null) {
+      clearTimeout(jumpScrollTimer);
+      jumpScrollTimer = null;
+    }
     if (!elements.chat) {
       return;
     }
@@ -567,6 +606,7 @@
    * @param {function(string): void} onPick - Called with the chosen label
    */
   function renderQuickReplies(chips, onPick) {
+    var shouldFollowLatest = state.followingLatest || isNearBottom();
     clearQuickReplies();
     if (!elements.chat || !chips || chips.length === 0) {
       return;
@@ -594,7 +634,12 @@
     } else {
       elements.chat.appendChild(row);
     }
-    scrollToBottomIfNear();
+    if (shouldFollowLatest) {
+      scrollToBottom();
+    } else {
+      state.followingLatest = false;
+      updateJumpButton();
+    }
   }
 
   const DaryaUI = {
@@ -603,8 +648,7 @@
     constants: {
       THEME_COOKIE_NAME: THEME_COOKIE_NAME,
       THEME_COOKIE_MAX_AGE_DAYS: THEME_COOKIE_MAX_AGE_DAYS,
-      DEFAULT_THEME: DEFAULT_THEME,
-      SESSION_KEY: SESSION_KEY
+      DEFAULT_THEME: DEFAULT_THEME
     },
     theme: {
       applyTheme: applyTheme,
@@ -617,10 +661,9 @@
       focusInputUnlessTouch: focusInputUnlessTouch,
       formatTimestamp: formatTimestamp,
       hasForeignLetters: hasForeignLetters,
-      saveScrollPosition: saveScrollPosition,
-      restoreScrollPosition: restoreScrollPosition,
       scrollToBottom: scrollToBottom,
       scrollToBottomIfNear: scrollToBottomIfNear,
+      handleChatScroll: handleChatScroll,
       updateJumpButton: updateJumpButton,
       jumpToLatest: jumpToLatest,
       appendMessage: appendMessage,

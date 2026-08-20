@@ -54,7 +54,7 @@
 
     /**
      * Shows a modal confirmation dialog before resetting the conversation.
-     * The `onConfirm` callback is provided by app.js (routes to showPicker).
+     * The `onConfirm` callback is provided by js/app/index.js (routes to showPicker).
      *
      * If a confirmation dialog is already visible, or if no language pack
      * is loaded, this function is a no-op.

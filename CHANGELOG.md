@@ -5,6 +5,126 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [Unreleased]
+
+### Added
+
+- Three fully offline knowledge modules add deeper software engineering and
+  defensive cybersecurity; practical work, guarding, inflation, migration,
+  conscription, family, and appearance guidance; and conflict history with
+  special coverage of Iran and the Middle East. Security learning is limited
+  to explicitly authorized scopes and controlled labs, while history separates
+  causes, claims, triggers, conduct, civilian impact, and outcomes without
+  treating responsibility as automatically equal.
+- Darya can now explain her own codebase architecture, deterministic response
+  pipeline, session-only privacy model, PWA and Capacitor packaging, and test
+  strategy. Repository, web/PWA, and Myket destinations are presented as
+  three separate bullet lines instead of burying URLs inside prose.
+- `KNOWLEDGE-SOURCES.md` records the source hierarchy, durable-versus-live
+  boundary, source families, social-listening limits, and eight independent
+  review lenses used for the expansion.
+- A cultural-language layer now recognizes 38 global English slang terms
+  and 29 Persian or Dari expressions, gives direct context-qualified
+  definitions, and routes natural usage without literal keyword mistakes.
+  Coverage includes British and Irish, Australian, Nigerian, South African,
+  Singaporean, Iranian, Afghan Persian, gaming, dating, and internet
+  registers. Darya stays explicit that this is curated knowledge rather than
+  nationality, age, or lived cultural experience.
+- Age-context rules add practical support for child online safety and school
+  bullying, teen peer pressure and private-image coercion, adult caregiver
+  strain, and older-adult retirement, technology learning, and scam risks.
+- Bounded playful-chaos prompts are available only when explicitly requested
+  on light turns, and serious pivots immediately return to the normal caring
+  pipeline.
+- New society and safety layers cover sex-work definitions and policy debates,
+  exploitation and exit support, pornography literacy and compulsive use,
+  addiction recovery, Iranian legal caution, and refusals for procurement,
+  advertising, distribution, concealment, or enforcement-evasion requests.
+- The travel shelf now spans major cultural regions and sites across Iran,
+  world-heritage planning, responsible tourism, and explicitly hypothetical
+  Moon, Mars, and solar-system itineraries. Live travel safety and legal facts
+  remain outside the offline shelf.
+- Cultural-humor entries explain translation limits and provide clean Persian,
+  dry, and travel jokes without using protected groups as punchlines.
+
+### Improved
+
+- Another 348 bilingual decisions exercise every new fact through direct
+  lookup and the live engine, plus difficult three-turn personas, unauthorized
+  cyber requests, clean link layout, no-fixed-product-price policy, war
+  non-equivalence, migration fraud, Iranian conscription caution, Persian code
+  points, and every offline load surface.
+- Persian technical questions can naturally contain established Latin terms
+  such as DNS, HTTP, PWA, CTF, `race condition`, and `threat model` without
+  being mistaken for a request to switch the whole conversation to English.
+- Shopping answers no longer include a sample product price or a promised
+  used-versus-new discount. Iranian users get current-price comparison,
+  ownership-cost, warranty, repairability, and scam checks instead.
+- More than one hundred new bilingual decisions cover natural slang,
+  definitions, age groups, regional English, Dari expressions, ambiguity
+  guards, literal-word false positives, multi-turn age context, and safe
+  transitions out of playful conversation.
+- Forty-eight additional hard, three-turn persona simulations now mix rude,
+  skeptical, exhausted, playful, grieving, impatient, and excited users with
+  programming, office documents, AI, media, practical life, Iranian daily
+  pressures, world knowledge, and Darya self-knowledge.
+- The offline shelf adds responsible AI study guidance, broader TypeError
+  debugging language, cozy games, horror anime, and spelled-out English
+  decade filters. Darya's capability replies now state both her practical
+  range and her offline, session, action, and professional limits.
+- Unknown-input replies stay honest without falling back to repetitive
+  "not familiar" language; they now engage the concrete reference, event,
+  or emotion needed to continue naturally.
+- Sixty-two focused society, travel, sensitive-topic, cultural-humor, legal
+  boundary, bilingual parity, and false-positive decisions protect the new
+  coverage.
+
+### Fixed
+
+- Explicit software, guarding, employment, migration, conscription, and
+  historical questions now outrank stale work or emotional context, while
+  personal disclosures remain supportive. Defensive hacked-account and
+  phishing questions route to recovery guidance; attempts to hack Wi-Fi,
+  steal accounts, bypass logins, build keyloggers or botnets, launch DDoS,
+  or evade antivirus receive a firm lawful-alternatives boundary.
+- Live-edge scrolling now records reader intent before inserting a message.
+  New messages stay visible automatically while the reader is at the bottom;
+  the jump control appears only after a deliberate scroll into history, and
+  sending or jumping re-engages live following.
+- Every bundled Persian response and fact now uses Iranian Persian `ی`
+  (U+06CC) and `ک` (U+06A9). A final display guard converts Arabic Yeh,
+  Alef Maksura, and Kaf if dynamic output ever introduces them.
+- The menu and contextual breathing controls now use locked 34px square
+  geometry, native button appearance resets, and a 50% radius, so their
+  glass bodies render as exact circles in both themes.
+- The breathing control now uses a dedicated high-arousal classifier
+  instead of every serious topic. Explicit breathing requests and current
+  first-person panic, anxiety, overwhelm, or anger can surface it, while
+  greetings such as «سلامتی؟», informational and third-person mentions,
+  resolved feelings, urgent medical symptoms, and safety-critical turns do
+  not. Its button reveal now keeps the intended soft fade and scale
+  transition instead of being overridden by the theme transition cascade.
+- Starting, ending, or resetting a conversation clears the unsent composer
+  draft, height, hint, and scroll position. The RTL textarea scrollbar is
+  visually hidden while remaining scrollable, removing the dark seam that
+  could appear along its left edge.
+- Documentation and source comments now match the real module names, five-part
+  response-pack layout, same-origin PWA update traffic, local theme storage,
+  contextual crisis UI, browser-test split, and current app-shell size.
+
+### Validated
+
+- The complete Node gate passes 2,412 tests with zero failures; ESLint,
+  Stylelint, Prettier, and `git diff --check` are clean.
+- The shell and HTTP smoke suite passes 330 checks. The new 348-decision
+  intelligence suite also passes 15 repeated rounds without a failure.
+- Capacitor Android sync succeeds, and root, generated web, service-worker,
+  and packaged Android runtime assets are byte-aligned.
+- The nine real-browser tests skip cleanly because this sandbox has no Chrome
+  or Chromium binary. A Gradle APK/AAB compile is not available here because
+  Java and the Android SDK are not installed; CI or a configured Android
+  workstation must run those two platform-specific gates.
+
 ## [1.6.0] - 2026-08-19
 
 ### Changed (UI)
@@ -576,8 +696,9 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - **Notifications redesigned.** The toast card is now a centered glow
   badge with per-severity icons, keeping WCAG AA contrast in both
   themes.
-- **Persian normalization audit.** ئ to ی and Arabic look-alike (ي/ك/ة/ؤ)
-  variants were added across rules, keywords, stopwords, and lexicons;
+- **Persian normalization audit.** ئ to ی and Arabic look-alike code points
+  (U+064A, U+0643, U+0629, U+0624) were normalized across rules, keywords,
+  stopwords, and lexicons;
   every ئ in a matching structure carries its normalized twin.
 - **Question-echo hardening.** Echo answers fire only on short
   fragments and never override higher-intent rules.
@@ -604,8 +725,10 @@ pipeline details live in the [README](README.md) and the upgrade spec
 - Browser e2e suites pass: WAI-ARIA keyboard contract, sound attention,
   and quick-reply chips.
 - ESLint (0 warnings), Stylelint, and Prettier are clean.
-- Fully offline: no network calls anywhere; the service worker precaches
-  the complete app shell and self-hosted fonts and audio.
+- Fully offline after the initial shell load: no chat data or inference call
+  leaves the device; the service worker precaches the complete app shell and
+  self-hosted fonts and audio. A hosted browser still uses same-origin static
+  requests and service-worker update checks.
 
 ## [1.1.0] - 2026-08-08
 

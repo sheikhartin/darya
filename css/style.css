@@ -394,9 +394,22 @@ html:not(.no-theme-transition) .backdrop__horizon {
     visibility 0.5s var(--ease-tide);
 }
 
-html:not(.no-theme-transition) .menu__trigger,
+html:not(.no-theme-transition) .menu__trigger {
+  transition:
+    border-color 0.35s var(--ease-tide),
+    color 0.35s var(--ease-tide),
+    background 0.35s var(--ease-tide),
+    box-shadow 0.35s var(--ease-tide);
+}
+
+/* Keep the contextual reveal in this higher-specificity theme rule. If the
+   opacity and transform entries are omitted here, this declaration wins over
+   .breathe-trigger below and the control pops into view instead of fading. */
 html:not(.no-theme-transition) .breathe-trigger {
   transition:
+    opacity 0.36s var(--ease-tide),
+    transform 0.36s var(--ease-tide),
+    visibility 0.36s var(--ease-tide),
     border-color 0.35s var(--ease-tide),
     color 0.35s var(--ease-tide),
     background 0.35s var(--ease-tide),
@@ -516,7 +529,7 @@ html[data-theme='beach'] .backdrop__horizon {
 }
 
 /* --------------------------------------------------------------------- */
-/* Ocean-theme bubbles: populated by app.js with randomized position,    */
+/* Ocean-theme bubbles: populated by ambient-visuals.js with randomized */
 /* size, drift, and timing per bubble (not a repeating formula), so they */
 /* never read as a sequential row.                                      */
 /* --------------------------------------------------------------------- */
@@ -1198,16 +1211,24 @@ html[data-theme='beach'] .picker__theme-heading {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  inline-size: 34px;
+  min-inline-size: 34px;
+  max-inline-size: 34px;
+  block-size: 34px;
+  min-block-size: 34px;
+  max-block-size: 34px;
+  aspect-ratio: 1;
   padding: 0;
+  appearance: none;
   background: var(--surface-control);
+  background-clip: padding-box;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
-  border-radius: var(--radius-full);
+  border-radius: 50%;
   box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
+  line-height: 0;
   transition:
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
@@ -1221,7 +1242,7 @@ html[data-theme='beach'] .picker__theme-heading {
   content: '';
   position: absolute;
   inset: -5px;
-  border-radius: var(--radius-full);
+  border-radius: 50%;
 }
 
 .menu__trigger:hover,
@@ -1720,6 +1741,9 @@ html[data-theme='beach'] .quick-reply {
 .composer__input {
   flex: 1;
   resize: none;
+  appearance: none;
+  overflow-y: hidden;
+  scrollbar-width: none;
   /* The input is the composer's primary touch target: line-height 1.7
      at 16px plus 8px vertical padding lands at 43.2px, a whisker under
      the 44px target-size guideline. A min-height floor keeps the resting
@@ -1728,12 +1752,22 @@ html[data-theme='beach'] .quick-reply {
   max-height: 140px;
   background: transparent;
   border: none;
+  box-shadow: none;
   color: var(--color-foam);
   font-family: var(--font-body);
   /* 16px minimum prevents iOS Safari from auto-zooming on focus. */
   font-size: 16px;
   line-height: 1.7;
   padding: 8px 4px;
+}
+
+/* The textarea remains wheel, touch, and keyboard scrollable after it reaches
+   its height cap, but its native RTL scrollbar is hidden. Chromium places
+   that scrollbar on the inline-start edge, where it otherwise looks like a
+   stray dark vertical border inside the composer. */
+.composer__input::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .composer__input::placeholder {
@@ -3008,17 +3042,25 @@ html[data-theme='beach'] .backdrop__depth-breath {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  inline-size: 34px;
+  min-inline-size: 34px;
+  max-inline-size: 34px;
+  block-size: 34px;
+  min-block-size: 34px;
+  max-block-size: 34px;
+  aspect-ratio: 1;
   padding: 0;
+  appearance: none;
   background: var(--surface-control);
+  background-clip: padding-box;
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
-  border-radius: var(--radius-full);
+  border-radius: 50%;
   box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   flex-shrink: 0;
+  line-height: 0;
   position: relative;
   /* Hidden by default: collapsed with a gentle fade-and-scale reveal when
      a heavy turn arms it. Only opacity and transform animate; visibility
@@ -3027,12 +3069,12 @@ html[data-theme='beach'] .backdrop__depth-breath {
      shift when it appears. */
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.55);
+  transform: translateY(3px) scale(0.9);
   pointer-events: none;
   transition:
-    opacity 0.3s var(--ease-tide),
-    transform 0.3s var(--ease-tide),
-    visibility 0.3s var(--ease-tide),
+    opacity 0.36s var(--ease-tide),
+    transform 0.36s var(--ease-tide),
+    visibility 0.36s var(--ease-tide),
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide),
@@ -3042,7 +3084,7 @@ html[data-theme='beach'] .backdrop__depth-breath {
 .breathe-trigger[aria-hidden='false'] {
   opacity: 1;
   visibility: visible;
-  transform: scale(1);
+  transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
@@ -3052,7 +3094,7 @@ html[data-theme='beach'] .backdrop__depth-breath {
   content: '';
   position: absolute;
   inset: -5px;
-  border-radius: var(--radius-full);
+  border-radius: 50%;
 }
 
 /* The breathe trigger is the menu trigger's sibling in the header, so
@@ -3125,7 +3167,7 @@ html[data-theme='beach'] .breathe-trigger:focus-visible {
    a calm, continuous gesture instead of an instant swap. Only opacity
    and transform animate (GPU-composited), and the outer arc lags the
    inner one by a beat so the ripple travels outward. The default state
-   is off; aria-pressed="true" (kept in sync by app.js) is the on state. */
+   is off; aria-pressed="true" (synced by app/sound.js) is the on state. */
 .sound-toggle__wave,
 .sound-toggle__slash {
   transition:

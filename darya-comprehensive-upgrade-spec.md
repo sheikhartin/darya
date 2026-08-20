@@ -658,15 +658,15 @@ No new external dependencies required. All features implemented using:
 
 ---
 
-## 10. Implementation Status (v1.2.3)
+## 10. Implementation Status (v1.6.0)
 
-All scoped phases for v1.2.0, the v1.2.1 hardening round, and the
-v1.2.2-v1.2.3 release-pipeline fixes are complete and validated. The
-implementation deliberately kept the zero-dependency, offline-first
-architecture: every feature below runs in the browser with no network
-calls.
+The scoped engine, safety, offline, accessibility, Android, and interface
+phases through v1.6.0 are implemented. Conversation processing remains
+local and runtime-independent of external APIs. A hosted PWA still fetches
+its own static files and same-origin update metadata, while the packaged
+Android app serves the same bundle locally.
 
-### 10.1 Delivered in v1.2.0 through v1.2.3
+### 10.1 Delivered in v1.2.0 through v1.6.0
 
 | Area | Delivered | Where |
 | --- | --- | --- |
@@ -675,6 +675,8 @@ calls.
 | Guided exercises | Turn-based state machine: breathing, grounding, body scan, thought record; yes/no chips per step; graceful stop/decline | js/engine/responder-exercises.js, both language packs |
 | Mood tracker | Request, 1..10 scale chips, band reflection, later read-back of the recorded arc and direction | js/engine/responder-mood.js, both language packs |
 | Quick-reply chips | Tappable chips under Darya replies (exercise steps, mood scale); rendered by UI, keyboard/pointer accessible, RTL-aware | js/ui/core.js, js/app/composer.js, css/style.css |
+| Live-edge scrolling | New content follows automatically only while the reader is at the bottom; deliberate history reading is preserved behind an accessible jump control | js/ui/core.js, js/app/index.js, tests/e2e-keyboard.test.mjs |
+| Iranian Persian output | All bundled responses use Persian Yeh/Keheh, with a display-only guard against Arabic look-alike code points | js/languages/fa.js, fa response/data files, tests/quality.test.mjs |
 | Context window | Summarized conversation context maintained across turns for reference | js/engine/context-window.js |
 | Emotion analyzer | Structured emotion scoring feeding tone calibration | js/engine/emotion-analyzer.js |
 | Personality engine | Consistency guardrails for Darya's calm companion voice | js/engine/personality-engine.js |
@@ -688,6 +690,14 @@ calls.
 | App-command honesty | Theme/sound requests are answered by pointing to the real UI control, never fake compliance | js/engine/responder-overrides.js, both language packs' ruleAppCommand pools |
 | Persona conversations | 26 persona-based scenario fixtures across both languages (new parent, night-shift worker, divorce, harassment threat, tech frustration, self-worth, and more), each asserting dialogue act and topic per turn | tests/scenarios/persona-*.json and fa-persona-*.json |
 | Daily-life topic routing | Gym anxiety, dating-app fatigue, remote-work isolation, postpartum, and pet-loss each route to their own empathetic pools in both languages; EN/FA topic parity is enforced by tests | js/languages/en-rules.js, fa-rules.js, en-responses-rules.js, fa-responses-rules.js |
+| Cultural language | Direct, context-qualified meanings for global English, Iranian Persian, internet slang, and a verified Dari subset; natural use routes through ordinary topic memory without literal cooking/family collisions | js/languages/en-culture.js, fa-culture.js, js/engine/responder-cultural.js |
+| Life-stage support | Practical child online safety and bullying, teen peer-pressure and image-coercion boundaries, adult caregiver strain, and older-adult retirement, technology, and scam guidance | both cultural language packs and tests/recent-life-intelligence.test.mjs |
+| Bounded playfulness | Explicit light-turn requests can produce surprising prompts; safety and serious topic pivots immediately reclaim the response pipeline | both cultural language packs, responder-rules.js |
+| Hard companion corpus | 48 three-turn personas combine informal, rude, skeptical, exhausted, and playful moods with programming, documents, AI, media, Iran-specific pressures, world knowledge, safety, and app self-knowledge | tests/practical-wisdom-intelligence.test.mjs |
+| Media and study expansion | Responsible AI study guidance, TypeError debugging variants, cozy games, horror anime, and named English decade filters | knowledge-facts-education.js, knowledge-facts-skills.js, media-pool.js, knowledge-base.js |
+| Sensitive society coverage | Sex work, exploitation, pornography literacy and compulsion, addiction recovery, Iranian legal caution, and operational refusal boundaries | knowledge-facts-society.js, en-society.js, fa-society.js |
+| Travel and cultural sites | Stable cultural guidance across Iran and the world, responsible planning, live-risk disclaimers, and explicitly hypothetical planetary tourism | knowledge-facts-travel.js, both society rule packs |
+| Cross-cultural humor | Humor theory, translation limits, and clean context-aware joke pools that avoid identity stereotypes | knowledge-facts-society.js, both society rule packs |
 | Hostile-transcript routing | The real Persian transcript failures are fixed: «چندتا فیلم/بازی/کتاب بهم معرفی کن» open the knowledge shelves, «الان چه سالیه» answers the calendar, «جیگرم/عسلم» stay greetings, «گاوی مگه» de-escalates instead of the boredom line, and «باهوش‌تر بودی» opens meta_feedback | js/data/knowledge-base.js, knowledge-facts-*.js, fa-vocabulary.js, fa-rules.js, both response packs |
 | Comparison and crush rules | «تویوتا بهتره یا بوگاتی» gets the criterion question (never the shopping dodge), crush confessions keep the crush thread above family, and age-gap crushes (30+ years) still get the balanced age_gap guidance | js/languages/en-rules.js, fa-rules.js, en-responses-contexts.js, fa-responses-rules.js |
 | Emotion calibration fixes | The FA grieving keyword «فوت» no longer matches inside «فوتبال» (a football comparison never gets a "من اینجا با تو هستم" prefix); warmth prefixes no longer stack onto comparison, crush, procrastination, dating-apps, or pet-loss pools | js/engine/responder-emotion.js, responder-overrides.js, responder-phase.js |
@@ -702,31 +712,21 @@ calls.
 
 ### 10.2 Validation
 
-- 921/921 tests pass across the engine, language, quality, time-utils,
-  foundation, knowledge-world, wild-conversations, wild-daily-2026,
-  wild-passions-2026, ambient-sound, and browser e2e suites.
-- 4 browser e2e suites pass, including the WAI-ARIA keyboard contract
-  in a real browser, sound attention, quick-reply chips (mood +
-  exercise chips), and the offline service-worker contract (the worker
-  precaches the full shell and static assets, and the app loads with
-  the network fully gone).
-- 126 dialogue scenario fixtures pass in both languages, covering the
-  26 persona conversations, 10 daily-life threads (gym anxiety, dating
-  apps, remote work, postpartum, pet loss), cross-turn profile and
-  question-recall memory, crisis and safety cascades, and the topic and
-  knowledge domains.
-- Smoke test passes 291/291 checks (structure, JS syntax, HTTP asset
-  serving).
-- 20/20 repeated stress rounds of the engine suite pass with no flaky
-  failures; the new wild-daily-2026 suite is stable across 8 consecutive
-  runs (randomized pool selection never trips a false assertion).
-- ESLint (0 warnings), Stylelint, and Prettier checks are clean.
-- Re-validated for v1.2.3 with the full dev dependencies installed: the
-  browser e2e suites now run against a real Chrome (nothing is skipped),
-  two verbose stress rounds of the engine suite pass 2/2, and actionlint
-  1.7.12 reports zero issues on the Android build workflow.
+- `npm test` runs every unit and static regression suite named in
+  `package.json`, including safety, memory, bilingual parity, current-life,
+  cultural-language, age-context, and false-positive coverage.
+- `./run-tests.sh` discovers every `tests/*.test.mjs` file automatically,
+  runs the smoke gate, and supports repeated engine-only stress rounds.
+- `npm run test:e2e` covers keyboard and modal focus, quick replies,
+  service-worker offline behavior, ambient sound, and notifications. These
+  suites skip cleanly when a compatible Chrome or Chromium binary is absent.
+- The dialogue scenario directory contains 126 multi-turn fixtures across
+  both languages. New routing work also carries focused positive and
+  false-positive matrices outside those JSON fixtures.
+- `npm run test:full` requires zero ESLint warnings plus clean Stylelint,
+  Prettier, and Node test results.
 
-### 10.3 Not in v1.2.0 through v1.2.3 (per user decisions)
+### 10.3 Not in v1.2.0 through v1.6.0 (per product decisions)
 
 - Persistent memory across sessions (session-only by design).
 - Voice input/output, social features, external integrations,
@@ -735,6 +735,5 @@ calls.
 
 ---
 
-*Document Version: 1.2.3*
-*Last Updated: August 13, 2026*
-*Author: Buffy (AI Assistant)*
+*Document Version: 1.6.0*
+*Last Updated: August 20, 2026*

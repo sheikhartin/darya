@@ -8,7 +8,7 @@
 
   /**
    * Creates the language-selection functions.
-   * @param {object} ctrl - Shared controller state (see app.js)
+   * @param {object} ctrl - Shared controller state (see js/app/index.js)
    * @returns {object} Functions for language selection and the picker
    */
   function createLanguage(ctrl) {
@@ -188,6 +188,7 @@
       ctrl.setTypingVisible(false);
       ctrl.DaryaOverlays.dismissBreathe();
       ctrl.DaryaOverlays.hideExitConfirmBar();
+      ctrl.clearComposer();
       st.pendingExit = false;
       st.exitConfirmBusy = false;
       el.app.hidden = true;
@@ -224,11 +225,6 @@
         }
       }
       window.scrollTo(0, 0);
-      try {
-        sessionStorage.removeItem(UI.constants.SESSION_KEY);
-      } catch (e) {
-        /* ignore */
-      }
       // Move focus to the first language option so keyboard users land on
       // a sensible control after choosing "New chat".
       if (el.pickerFa) {

@@ -606,3 +606,139 @@ test(
     }
   }
 );
+
+test(
+  'chat follows the live edge and offers jump only after a reader scrolls up',
+  { timeout: 60000, skip: !findChromeBinary() },
+  async () => {
+    const server = await startStaticServer();
+    const chromePath = findChromeBinary();
+    let browser;
+    try {
+      browser = await chromium.launch({
+        executablePath: chromePath,
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-gpu',
+          '--mute-audio',
+          '--disable-dev-shm-usage',
+          '--force-prefers-reduced-motion'
+        ]
+      });
+      const page = await browser.newPage({
+        viewport: { width: 390, height: 700 }
+      });
+      await page.goto(`http://127.0.0.1:${server.address().port}/`, {
+        waitUntil: 'load'
+      });
+      await clickWithRetry(page, '#picker-en');
+      await waitForPageFunction(
+        page,
+        () => {
+          const input = document.getElementById('composer-input');
+          return input && !input.disabled;
+        },
+        null,
+        E2E_WAIT_MS.GREETING
+      );
+
+      // Grow a long transcript while following. Every insertion should stay
+      // pinned without ever surfacing the jump control.
+      const liveState = await page.evaluate(async () => {
+        for (let i = 0; i < 36; i += 1) {
+          window.DaryaUI.utils.appendMessage(
+            'bot',
+            `Live edge message ${i + 1}: enough text to wrap onto another line.`
+          );
+        }
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve))
+        );
+        const chat = document.getElementById('chat');
+        const jump = document.getElementById('chat-jump');
+        return {
+          distance: chat.scrollHeight - chat.scrollTop - chat.clientHeight,
+          jumpVisible: jump.classList.contains('chat-jump--show'),
+          following: window.DaryaUI.state.followingLatest
+        };
+      });
+      assert.ok(
+        liveState.distance <= 1,
+        `live edge distance ${liveState.distance}`
+      );
+      assert.equal(liveState.jumpVisible, false);
+      assert.equal(liveState.following, true);
+
+      // A deliberate scroll upward disables follow mode. New bot output must
+      // preserve that reading position and expose the one-click return.
+      const readingState = await page.evaluate(async () => {
+        const chat = document.getElementById('chat');
+        chat.scrollTop = 0;
+        chat.dispatchEvent(new Event('scroll'));
+        const before = chat.scrollTop;
+        window.DaryaUI.utils.appendMessage(
+          'bot',
+          'A new message arrived while the reader was reviewing history.'
+        );
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve))
+        );
+        return {
+          before,
+          after: chat.scrollTop,
+          jumpVisible: document
+            .getElementById('chat-jump')
+            .classList.contains('chat-jump--show'),
+          following: window.DaryaUI.state.followingLatest
+        };
+      });
+      assert.equal(readingState.after, readingState.before);
+      assert.equal(readingState.jumpVisible, true);
+      assert.equal(readingState.following, false);
+
+      await clickWithRetry(page, '#chat-jump');
+      await waitForPageFunction(
+        page,
+        () => {
+          const chat = document.getElementById('chat');
+          return chat.scrollHeight - chat.scrollTop - chat.clientHeight <= 1;
+        },
+        null,
+        E2E_WAIT_MS.FOCUS
+      );
+      assert.equal(
+        await page.evaluate(() =>
+          document
+            .getElementById('chat-jump')
+            .classList.contains('chat-jump--show')
+        ),
+        false
+      );
+
+      // Returning to the edge re-engages follow mode for later messages.
+      const resumed = await page.evaluate(async () => {
+        window.DaryaUI.utils.appendMessage(
+          'bot',
+          'The next live message should remain visible automatically.'
+        );
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve))
+        );
+        const chat = document.getElementById('chat');
+        return {
+          distance: chat.scrollHeight - chat.scrollTop - chat.clientHeight,
+          following: window.DaryaUI.state.followingLatest
+        };
+      });
+      assert.ok(resumed.distance <= 1, `resumed distance ${resumed.distance}`);
+      assert.equal(resumed.following, true);
+    } finally {
+      if (browser) {
+        await browser.close().catch(() => {});
+      }
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  }
+);

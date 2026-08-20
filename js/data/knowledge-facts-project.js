@@ -31,13 +31,137 @@
         'where is the code',
         'where is the repo',
         'where is the source',
-        'is darya open source'
+        'is darya open source',
+        'where can i download darya',
+        'download darya',
+        'darya website',
+        'darya myket',
+        'لینک مخزن خودت رو بده',
+        'لینک مخزن خودت را بده',
+        'تو رو کجا میتونم دانلود کنم',
+        'تو را کجا میتوانم دانلود کنم',
+        'دانلود دریا',
+        'سایت دریا',
+        'مایکت دریا'
       ],
-      weak: ['سورس', 'کد پروژه', 'project source'],
+      weak: ['سورس', 'کد پروژه', 'project source', 'darya download'],
       weakSafe: true,
-      hints: ['دریا', 'darya', 'پروژه', 'project', 'کد', 'code'],
-      fa: 'دریا یک همراه گفتگوی متن‌باز و کاملاً آفلاین است؛ همه‌چیز داخل مرورگر خودت اجرا می‌شود و هیچ داده‌ای جمع نمی‌کند. سورس‌کد پروژه در گیت‌هاب و در آدرس github.com/sheikhartin/darya قرار دارد. پروژه بدون فریم‌ورک و با جاوااسکریپت و CSS خالص ساخته شده و به‌صورت PWA نصب می‌شود؛ یعنی بعد از اولین بار، حتی بدون اینترنت هم کار می‌کند.',
-      en: 'Darya is an open-source, fully offline conversation companion: everything runs inside your browser and no data is collected. The source code lives on GitHub at github.com/sheikhartin/darya. The project is built with plain JavaScript and CSS, no frameworks, and installs as a PWA, so after the first load it works even without the internet.'
+      hints: [
+        'دریا',
+        'darya',
+        'پروژه',
+        'project',
+        'کد',
+        'code',
+        'دانلود',
+        'download'
+      ],
+      fa: 'دریا متن‌باز است و از مسیرهای رسمی زیر می‌توانی به آن دسترسی داشته باشی:\n\n- مخزن و سورس‌کد: https://github.com/sheikhartin/darya\n- نسخه‌ی وب و PWA: https://sheikhartin.github.io/darya/\n- نسخه‌ی اندروید در مایکت: https://myket.ir/app/com.darya.companion\n\nنسخه‌ی وب پس از نخستین بارگذاری موفق آفلاین کار می‌کند و نسخه‌ی اندروید دارایی‌ها را داخل برنامه دارد. لینک‌ها را عمداً جدا نگه داشتم تا خواندن و کپی‌کردنشان تمیز باشد.',
+      en: 'Darya is open source and available through these official routes:\n\n- Repository and source: https://github.com/sheikhartin/darya\n- Web app and PWA: https://sheikhartin.github.io/darya/\n- Android app on Myket: https://myket.ir/app/com.darya.companion\n\nThe web app works offline after one successful initial load, while the Android build bundles its assets. The links are deliberately separated so they remain clean to read and copy.'
+    },
+    {
+      id: 'darya_architecture',
+      keywords: [
+        'how does darya codebase work',
+        'darya codebase architecture',
+        'darya behind the scenes',
+        'how are darya responses generated',
+        'کدبیس دریا چطور کار میکند',
+        'معماری کد دریا',
+        'پشت صحنه دریا',
+        'جواب های دریا چطور ساخته میشوند'
+      ],
+      weak: [
+        'darya codebase',
+        'darya architecture',
+        'کدبیس دریا',
+        'معماری دریا',
+        'پشت صحنه دریا'
+      ],
+      weakSafe: true,
+      hints: ['engine', 'code', 'response', 'موتور', 'کد', 'پاسخ'],
+      fa: 'پشت صحنه‌ی دریا یک موتور محلی و قاعده‌محور است، نه مدل زبانی مولد. اسکریپت‌های کلاسیک جاوااسکریپت بدون فریم‌ورک به ترتیب مشخص بارگذاری می‌شوند. متن برای تطبیق نرمال می‌شود، قاعده‌های دارای اولویت موضوع و خطر را پیدا می‌کنند، تحلیل لحن و حافظه‌ی همان نشست زمینه می‌دهند و قفسه‌ی دانش آفلاین برای پرسش‌های مشخص امتیاز می‌گیرد. سپس پاسخ از مجموعه‌های فارسی یا انگلیسی انتخاب، از نظر تکرار و ایمنی بازبینی و به رابط فرستاده می‌شود. این طراحی سریع، خصوصی و قابل‌آزمایش است، اما مثل یک مدل آنلاین دانش نامحدود یا استدلال آزاد ندارد.',
+      en: 'Behind the scenes, Darya is a local rule-based engine, not a generative cloud service. Framework-free classic JavaScript files load in a fixed dependency order. Input is normalized for matching, priority rules detect topic and risk, tone analysis and session memory provide context, and the offline knowledge shelf scores concrete questions. A response is then selected from the Persian or English packs, checked for repetition and safety, and sent to the interface. This design is fast, private, and testable, but it does not have unlimited knowledge or open-ended reasoning like an online model.'
+    },
+    {
+      id: 'darya_response_pipeline',
+      keywords: [
+        'darya response pipeline',
+        'how does darya understand messages',
+        'does darya use machine learning',
+        'مراحل ساخت پاسخ دریا',
+        'دریا پیام را چطور میفهمد',
+        'آیا دریا از یادگیری ماشین استفاده میکند'
+      ],
+      weak: [
+        'response pipeline',
+        'rule based darya',
+        'موتور پاسخ دریا',
+        'قاعده محور'
+      ],
+      weakSafe: true,
+      hints: ['normalize', 'rule', 'memory', 'نرمال', 'قاعده', 'حافظه'],
+      fa: 'مسیر هر پیام دریا به شکل خلاصه این است:\n\n1. اعتبارسنجی زبان و نرمال‌سازی برای تطبیق، در حالی که متن اصلی برای نمایش حفظ می‌شود.\n2. بررسی فوری بحران، آزار، خطر و مرزهای عملیاتی.\n3. تطبیق قاعده‌های اولویت‌دار و تشخیص موضوع، قصد و لحن.\n4. مراجعه به دانش، محاسبه یا پیشنهاد رسانه فقط وقتی درخواست روشن و امتیاز کافی است.\n5. استفاده از زمینه‌ی نشست، جلوگیری از تکرار و تنظیم تعداد سؤال.\n6. انتخاب پاسخ و ثبت همان نوبت در حافظه‌ی موقت.\n\nهیچ پیام چت برای استنتاج به سرور یا API فرستاده نمی‌شود. «فهمیدن» در اینجا یعنی ترکیب الگو، امتیاز و زمینه، نه خودآگاهی.',
+      en: 'Each Darya message follows this simplified path:\n\n1. Validate language and normalize a matching copy while preserving the original display text.\n2. Check crisis, abuse, danger, and operational boundaries first.\n3. Match priority rules and classify topic, intent, and tone.\n4. Use knowledge, calculation, or media recommendation only for a clear sufficiently confident request.\n5. Apply session context, repetition control, and the question budget.\n6. Select the reply and record the turn in temporary memory.\n\nNo chat message is sent to a server or inference API. Understanding here means patterns, scoring, and context, not consciousness.'
+    },
+    {
+      id: 'darya_offline_packaging',
+      keywords: [
+        'how does darya work offline',
+        'darya pwa and android packaging',
+        'does darya apk need internet',
+        'دریا چطور آفلاین کار میکند',
+        'بسته بندی pwa و اندروید دریا',
+        'آیا apk دریا اینترنت میخواهد'
+      ],
+      weak: [
+        'darya offline',
+        'darya pwa',
+        'darya apk',
+        'دریا آفلاین',
+        'اپ دریا'
+      ],
+      weakSafe: true,
+      hints: ['cache', 'service worker', 'capacitor', 'کش', 'اندروید'],
+      fa: 'در PWA، service worker پوسته‌ی کامل برنامه شامل HTML، CSS، اسکریپت‌ها، دانش، فونت، آیکن و صدا را پس از نخستین بارگذاری موفق cache می‌کند. نصب ناقص نباید نسخه‌ی سالم قبلی را پاک کند. برای اندروید، اسکریپت sync همین دارایی‌های وب را در پوشه‌ی تولیدی می‌چیند و Capacitor آن‌ها را داخل APK یا AAB کپی می‌کند؛ موتور گفتگو به شبکه وابسته نیست. نسخه‌ی میزبانی‌شده برای دریافت فایل اولیه و بررسی به‌روزرسانی همان مبدأ به اینترنت نیاز دارد، اما متن گفتگو را به سرویس بیرونی نمی‌فرستد. وضعیت روز قیمت، هوا، خبر، ویزا و قانون همچنان از توان قفسه‌ی آفلاین بیرون است.',
+      en: 'In the PWA, a service worker caches the full shell, including HTML, CSS, scripts, knowledge, fonts, icons, and audio, after the first successful load. A partial install must not remove the previous good shell. For Android, the sync script assembles the same web assets and Capacitor copies them inside the APK or AAB, so the conversation engine has no network dependency. The hosted version needs a connection for its first files and same-origin update checks, but it does not send chat text to an outside service. Live prices, weather, news, visas, and laws remain outside an offline shelf.'
+    },
+    {
+      id: 'darya_privacy_storage',
+      keywords: [
+        'where does darya store my chat',
+        'does darya send or save conversations',
+        'darya privacy architecture',
+        'دریا چت من را کجا ذخیره میکند',
+        'آیا دریا گفتگو را میفرستد یا ذخیره میکند',
+        'معماری حریم خصوصی دریا'
+      ],
+      weak: [
+        'darya privacy',
+        'darya chat storage',
+        'حریم خصوصی دریا',
+        'ذخیره چت دریا'
+      ],
+      weakSafe: true,
+      hints: ['chat', 'data', 'storage', 'گفتگو', 'داده', 'ذخیره'],
+      fa: 'گفتگو و زمینه‌ی دریا فقط در حافظه‌ی نشست فعلی‌اند و با بستن برنامه یا شروع گفتگوی تازه از بین می‌روند. تاریخچه‌ی چت، پروفایل، تحلیل رفتار یا شناسه‌ی دستگاه روی سرور وجود ندارد. تنها ترجیح ماندگار رابط، پوسته‌ی Ocean یا Beach است که در ذخیره‌سازی محلی و یک fallback کوچک cookie نگه داشته می‌شود. خروجی گفتگو فقط وقتی ساخته می‌شود که خودت Export را بزنی و فایل روی دستگاهت دانلود شود. در نسخه‌ی وب، مرورگر برای فایل‌های ثابت و به‌روزرسانی service worker با همان میزبان تماس می‌گیرد؛ این ترافیک شامل متن چت نیست.',
+      en: 'Darya keeps the conversation and context only in memory for the current session, and a new chat or closed app clears it. There is no server-side chat history, profile, behavioral analytics, or device identifier. The only persistent interface preference is the Ocean or Beach theme, stored locally with a small cookie fallback. A conversation file is created only when you choose Export and is downloaded to your device. In the hosted web version, the browser contacts the same host for static files and service-worker updates; that traffic does not contain chat text.'
+    },
+    {
+      id: 'darya_testing_contributing',
+      keywords: [
+        'how is darya tested',
+        'how do i contribute to darya',
+        'darya test architecture',
+        'دریا چطور تست میشود',
+        'چطور در توسعه دریا مشارکت کنم',
+        'معماری تست دریا'
+      ],
+      weak: ['darya tests', 'contribute darya', 'تست های دریا', 'مشارکت دریا'],
+      weakSafe: true,
+      hints: ['test', 'github', 'pull request', 'تست', 'گیت هاب'],
+      fa: 'دریا چند لایه آزمون دارد: تست‌های Node برای موتور، زبان، دانش، ایمنی و گفتگوهای چندنوبتی؛ تست‌های کیفیت برای ترتیب اسکریپت و پوشش service worker؛ smoke test برای نحو، فایل و HTTP؛ و تست مرورگر برای صفحه‌کلید، focus، PWA آفلاین، صدا و رفتار اسکرول. lint، stylelint و Prettier هم دروازه‌ی تغییرند. برای مشارکت، یک مسئله‌ی محدود انتخاب کن، تست شکست‌خورده بساز، تغییر را در شاخه‌ی جدا انجام بده، کل دروازه را اجرا و pull request با توضیح علت باز کن. فایل‌های تولیدی www و دارایی همگام‌شده‌ی اندروید منبع اصلی نیستند؛ ریشه‌ی وب منبع حقیقت است.',
+      en: 'Darya has several test layers: Node tests for the engine, languages, knowledge, safety, and multi-turn conversations; quality checks for classic-script order and service-worker coverage; a smoke suite for syntax, files, and HTTP; and browser suites for keyboard use, focus, offline PWA behavior, sound, and scrolling. ESLint, Stylelint, and Prettier are also gates. To contribute, choose a bounded issue, create a failing regression, work on a focused branch, run the full gate, and open a pull request explaining why. Generated www and synchronized Android web assets are not the source of truth; the web root is.'
     },
     {
       id: 'career_plan_tech',
@@ -389,7 +513,7 @@
         'recommend',
         'best'
       ],
-      fa: 'چند بازی خوب به تفکیک پلتفرم:\nپی‌سی: «ویچر ۳»، «سیبرپانک ۲۰۷۷»، «پرتال ۲» و «استاردیو ولی».\nپلی‌استیشن: «گاد آو وار»، «آخرین بازمانده از ما» و «سایه‌ی کولوسوس».\nایکس‌باکس: «هیلو: اینفینیت»، «گیم‌پس» و «فورزا هورایزن».\nنینتندو سوییچ: «زِلدا: نفس وحش» و «ماریو اوديسی».\nبازی‌های چندنفره و آرام: «اسنک براس» و «فلافل».',
+      fa: 'چند بازی خوب به تفکیک پلتفرم:\nپی‌سی: «ویچر ۳»، «سیبرپانک ۲۰۷۷»، «پرتال ۲» و «استاردیو ولی».\nپلی‌استیشن: «گاد آو وار»، «آخرین بازمانده از ما» و «سایه‌ی کولوسوس».\nایکس‌باکس: «هیلو: اینفینیت»، «گیم‌پس» و «فورزا هورایزن».\nنینتندو سوییچ: «زِلدا: نفس وحش» و «ماریو اودیسی».\nبازی‌های چندنفره و آرام: «اسنک براس» و «فلافل».',
       en: 'A few good games by platform:\nPC: The Witcher 3, Cyberpunk 2077, Portal 2, and Stardew Valley.\nPlayStation: God of War, The Last of Us, and Shadow of the Colossus.\nXbox: Halo Infinite, Game Pass, and Forza Horizon.\nNintendo Switch: Zelda: Breath of the Wild and Mario Odyssey.\nFor calm multiplayer fun: Snackbar and Fall Guys.'
     }
   ]);

@@ -909,7 +909,9 @@
 
   const MEDIA_WORDS = {
     movie: /(?:\bmovies?\b|\bfilms?\b|فیلم|سینما)/iu,
-    series: /(?:\bseries\b|\btv shows?\b|\bshows?\b|سریال|مینی سریال)/iu,
+    series:
+      // eslint-disable-next-line max-len
+      /(?:\bseries\b|\btv shows?\b|\b(?:a|some|good|best|new|short) shows?\b|\b(?:recommend|suggest) shows?\b|سریال|مینی سریال)/iu,
     game: /(?:\bgames?\b|\bvideo games?\b|بازی|گیم)/iu,
     anime: /(?:\banime\b|انیمه)/iu,
     music: /(?:\bmusic\b|\bsongs?\b|\balbums?\b|موسیقی|آهنگ|البوم|آلبوم)/iu,
@@ -919,7 +921,7 @@
   };
   const MEDIA_REQUEST =
     // eslint-disable-next-line max-len
-    /(?:\brecommend\b|\bsuggest\b|\bgive me\b|\bshow me\b|\bname (?:me |some |a few )?\b|\bwhat should i (?:watch|read|play|listen to)\b|\bto (?:watch|read|play|listen to)\b|\bbest\b|\btop\b|\bmore\b|پیشنهاد|معرفی|بگو|چی (?:ببینم|بخونم|گوش بدم|بازی کنم)|چه (?:ببینم|بخونم|گوش بدم|بازی کنم)|بهترین|بیشتر)/iu;
+    /(?:\brecommend\b|\bsuggest\b|\bgive me\b|\bshow me\b|\bname (?:me |some |a few )?\b|\bwhat should i (?:watch|read|play|listen to)\b|\bto (?:watch|read|play|listen to)\b|\bbest\b|\btop\b|پیشنهاد|معرفی|بگو|چی (?:ببینم|بخونم|گوش بدم|بازی کنم)|چه (?:ببینم|بخونم|گوش بدم|بازی کنم)|بهترین|بیشتر)/iu;
   const MORE_REQUEST =
     // eslint-disable-next-line max-len
     /^(?:please\s+)?(?:tell me\s+)?(?:suggest\s+)?(?:\d+\s+)?(?:more|another|others?|new ones?|different ones?)(?:\s+please)?$|^(?:بازم|بیشتر|بیش تر|چندتای? دیگه|یکی دیگه|موارد دیگه|پیشنهاد دیگه)(?: لطفا)?$/iu;
@@ -941,6 +943,7 @@
     puzzle: /\bpuzzles?\b|معمایی/iu,
     adventure: /\badventure\b|ماجراجویی/iu,
     simulation: /\bsimulation\b|\bsim\b|شبیه سازی/iu,
+    cozy: /\bcozy\b|\bcosy\b|دنج|کم فشار|آروم|آرام/iu,
     platformer: /\bplatformer\b|سکوبازی/iu,
     action: /\baction\b|اکشن/iu,
     slice_of_life: /\bslice of life\b|روزمره/iu,
@@ -989,8 +992,24 @@
    * @param {string} text
    * @returns {{from: number, to: number}|null}
    */
+  const ENGLISH_DECADE_WORDS = new Map([
+    ['sixties', 1960],
+    ['seventies', 1970],
+    ['eighties', 1980],
+    ['nineties', 1990],
+    ['two thousands', 2000],
+    ['twenty tens', 2010]
+  ]);
+
   function detectMediaEra(text) {
     const t = String(text || '');
+    const namedEra = t.match(
+      /\b(?:the )?(sixties|seventies|eighties|nineties|two thousands|twenty tens)\b/iu
+    );
+    if (namedEra) {
+      const base = ENGLISH_DECADE_WORDS.get(namedEra[1].toLowerCase());
+      return { from: base, to: base + 9 };
+    }
     const en = t.match(/\b(?:from |of |in )?the (\d\d)s\b|\b(19\d0|20\d0)s\b/i);
     if (en) {
       const raw = en[1] || en[2];
@@ -1080,9 +1099,13 @@
     }
     if (
       category === 'game' &&
+      genre !== 'cozy' &&
+      // Existing game genres and platform or era requests retain their
+      // detailed specialist shelves. Cozy is the one filterable exception,
+      // because the broad modern-games fact contains high-pressure titles.
       (genre ||
         // eslint-disable-next-line max-len
-        /\b(?:pc|ps[1-5]|playstation|xbox|switch|classic|retro|modern|new|mobile|android|online|multiplayer|relaxing|cozy)\b|پی سی|پلی استیشن|ایکس باکس|سوییچ|قدیمی|جدید|موبایل|اندروید|آنلاین|اروم|آروم/iu.test(
+        /\b(?:pc|ps[1-5]|playstation|xbox|switch|classic|retro|modern|new|mobile|android|online|multiplayer)\b|پی سی|پلی استیشن|ایکس باکس|سوییچ|قدیمی|جدید|موبایل|اندروید|آنلاین/iu.test(
           text
         ))
     ) {

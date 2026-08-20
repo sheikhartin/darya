@@ -117,11 +117,6 @@
   // to them is a core reflective-listening technique and carries no
   // grammar risk, since their words are inserted verbatim.
 
-  // Gentle, optional coping offer shown when several consecutive messages
-  // read as emotionally heavy. Not a diagnosis, not a substitute for
-  // professional support, just a caring pause and a well-known,
-  // low-risk grounding technique (paced breathing).
-
   // Simple, well-known ELIZA-style pronoun reflection. English's pronoun
   // morphology is simple enough (unlike Persian's verb-carried person
   // marking) that a careful word-swap stays grammatical for short,
@@ -203,7 +198,7 @@
   // confirmation.
   const exitFalsePositivePattern =
     // eslint-disable-next-line max-len
-    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b/i;
+    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b|\bleave\s+(?:sex work|prostitution|escorting)\b/i;
 
   // Phase 1 (warm presence): the very first greeting should establish Darya
   // as a calm, non-judgmental presence with a gentle opening.

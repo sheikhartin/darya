@@ -96,6 +96,40 @@
 
     rule(
       'knowledge',
+      72,
+      // Darya's repository, downloads, architecture, privacy, offline
+      // packaging, and test pipeline are factual project questions. This
+      // sits above the broad identity and creator rules so "behind the
+      // scenes" receives the codebase answer rather than an origin story.
+      // eslint-disable-next-line max-len
+      /\b(?:where (?:is|can i find) (?:your|darya'?s) (?:repo|repository|source|source code)|where can i download darya|download darya|darya (?:repo|repository|source code|website|myket|codebase|architecture|behind the scenes|response pipeline|privacy architecture|test architecture)|how does darya (?:work offline|codebase work|understand messages|generate responses|store my chat)|how (?:is darya tested|are darya responses generated)|does darya (?:use machine learning|save conversations|send conversations|apk need internet)|contribute to darya)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
+      'knowledge',
+      94,
+      // Direct defensive-security and practical-work prompts must outrank
+      // generic need, work, professional-boundary, and hacked-account
+      // support rules. The alternatives are deliberately specific and do
+      // not include unauthorized testing language.
+      // eslint-disable-next-line max-len
+      /\b(?:software performance profiling|web accessibility checklist for developers|what permission do i need for penetration testing|i found a vulnerability what should i do|cyber incident response steps|my account was hacked what should i do|how do i recognize phishing|security guard night shift safety|how do i spot a fake job offer|validate a business idea without much capital|an agent guarantees me a visa|iran vs south korea military service|overview of the arab israeli wars|difference between suez six day and yom kippur wars|difference between the gulf war and iraq war|overview of the modern wars in afghanistan|what backup strategy protects against ransomware|how can i practice hacking a website legally in a lab|what is sql injection and how do i prevent it)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
+      'knowledge',
+      72,
+      // Explicit practical decisions deserve their curated framework even
+      // when broad work, money, or learning rules also match a keyword.
+      // eslint-disable-next-line max-len
+      /\b(?:i have no job what should i do first|unemployment action plan|how do i get a job with no experience|what job can i start quickly|low cost jobs? i can start|should i study or get a job|education vs work decision|university or vocational training|how can i migrate with no money|migration plan on a very low budget|should i migrate or stay|compare moving city and moving abroad|should i move to another city|military service will waste my career|avoid losing skills during conscription|plan career around iran military service|how do i design software architecture|software architecture for beginners|how do i choose a database|networking basics for developers|how do i make my app faster|how do i build an offline first pwa|how do i start a cybersecurity career|how do i learn ethical hacking legally|security test my own web app)\b/i,
+      R['ruleKnowledge']
+    ),
+
+    rule(
+      'knowledge',
       71,
       // eslint-disable-next-line max-len
       /\b(?:explain (?:islam|christianity|judaism|sikhism|zoroastrianism)|what do (?:muslims|christians|jewish people) believe|sunni and shia|difference between sunni and shia|what is (?:zoroastrianism|sikhism|the baha.?i faith)|compare (?:hinduism and buddhism|islam christianity and judaism)|hinduism vs buddhism|abrahamic religions|atheism vs agnosticism|atheist and agnostic|spiritual but not religious|religion vs spirituality|compare religious texts|quran bible torah|compare dune|dune novel vs|compare lord of the rings|lotr book vs|manga vs anime|compare manga and anime|podcasts? or audiobooks?|podcast vs audiobook|compare documentary and dramatization|documentary vs based on true story|compare a book and its movie)\b/i,
@@ -106,7 +140,7 @@
       'crime_for_profit',
       88,
       // eslint-disable-next-line max-len
-      /\b(?:how (?:do|can|should) i (?:scam|defraud|phish|steal from|rob|shoplift|blackmail|kidnap)|teach me (?:to|how to) (?:scam|defraud|phish|steal|rob|shoplift|blackmail)|become (?:a )?(?:scammer|fraudster|criminal|drug dealer)|start (?:a )?(?:scam|phishing|drug dealing) (?:business|operation)|scam people (?:for|to make) money|make money (?:by|from|with) (?:scamming|fraud|phishing|crime|carding|selling drugs)|crime guy .{0,15}make money|carding (?:tutorial|method|for money)|write (?:a )?phishing (?:email|page|message)|launder (?:stolen )?money|money laundering (?:method|steps)|hide (?:stolen|fraud) money|hide money i stole|break into (?:a |someone'?s )?(?:house|home|store)|burglar(?:y|ize).{0,20}(?:without|avoid|not get)|steal (?:a )?(?:car|phone|laptop).{0,25}(?:without|avoid|tracker|caught)|sell drugs.{0,25}(?:avoid|police|cops|money)|build (?:a )?ransomware|ransomware.{0,20}(?:extort|money|undetected)|forge (?:an? )?(?:id|passport|document|signature)|fake (?:id|passport|documents?).{0,15}(?:make|create|print)|blackmail (?:someone|my|a person)|burn (?:a |the )?(?:building|house|store).{0,20}(?:evidence|caught|trace)|commit arson|be(?:come)? (?:a )?money mule|move stolen money|shoplift.{0,20}(?:without|caught|camera)|rob (?:a )?(?:bank|store|person)|dispose of (?:a )?body|hide (?:a )?body|evade (?:the )?(?:police|cops)|destroy (?:crime )?evidence)\b/i,
+      /\b(?:how (?:do|can|should) i (?:scam|defraud|phish|steal from|rob|shoplift|blackmail|kidnap)|teach me (?:to|how to) (?:scam|defraud|phish|steal|rob|shoplift|blackmail)|become (?:a )?(?:scammer|fraudster|criminal|drug dealer)|start (?:a )?(?:scam|phishing|drug dealing) (?:business|operation)|scam people (?:for|to make) money|make money (?:by|from|with) (?:scamming|fraud|phishing|crime|carding|selling drugs)|crime guy .{0,15}make money|carding (?:tutorial|method|for money)|write (?:a )?phishing (?:email|page|message)|launder (?:stolen )?money|money laundering (?:method|steps)|hide (?:stolen|fraud) money|hide money i stole|break into (?:a |someone'?s )?(?:house|home|store)|burglar(?:y|ize).{0,20}(?:without|avoid|not get)|steal (?:a )?(?:car|phone|laptop).{0,25}(?:without|avoid|tracker|caught)|sell drugs.{0,25}(?:avoid|police|cops|money)|build (?:a )?ransomware|ransomware.{0,20}(?:extort|money|undetected)|forge (?:an? )?(?:id|passport|document|signature)|fake (?:id|passport|documents?).{0,15}(?:make|create|print)|blackmail (?:someone|my|a person)|burn (?:a |the )?(?:building|house|store).{0,20}(?:evidence|caught|trace)|commit arson|be(?:come)? (?:a )?money mule|move stolen money|shoplift.{0,20}(?:without|caught|camera)|rob (?:a )?(?:bank|store|person)|dispose of (?:a )?body|hide (?:a )?body|evade (?:the )?(?:police|cops)|destroy (?:crime )?evidence|hack (?:my )?(?:neighbor(?:'?s)?|someone else'?s|school|company|bank) (?:wifi|account|website|network)|(?:hack|steal|take over) (?:someone'?s|my ex'?s|a stranger'?s) (?:instagram|email|account)|crack (?:a |the )?wifi password|bypass (?:the )?(?:school|company|bank|someone'?s) (?:login|authentication|access control)|write (?:a )?(?:keylogger|credential stealer|password stealer|backdoor|rootkit|malware)|build (?:a )?(?:keylogger|botnet|malware|backdoor)|ddos (?:a |the )?(?:site|website|server|person|company)|take (?:a |the )?(?:site|website|server) down with (?:a )?(?:ddos|botnet)|hide (?:my )?(?:malware|payload|backdoor) from (?:antivirus|detection|the defender)|evade (?:antivirus|endpoint detection|edr)|how (?:do|can|to) (?:i )?hack (?:a |an |the )?(?:website|account|wifi|network|server)(?! i own| in a lab| legally| ethically))\b/i,
       R['ruleCrimeForProfit']
     ),
 
@@ -206,6 +240,25 @@
       // eslint-disable-next-line max-len
       /\b(?:my (?:mom|mother|dad|father|parents?|brother|sister|son|daughter|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|wife|husband|partner|child|kid)|i lost my (?:mom|mother|dad|father|brother|sister|son|daughter|grandmother|grandfather|wife|husband|partner|child))\s+(?:(?:who|that|whom)\s+)?(?:died|passed away|has passed|passed|is gone|has gone|was killed|has left us|is no longer with us)\b/i,
       R['ruleGrief']
+    ),
+
+    rule(
+      'toxic_family',
+      57,
+      // Repeated control or degradation in a family deserves a practical,
+      // safety-aware reply. Physical violence still routes to the abuse rule
+      // at priority 97 before this one.
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:family|parents?|mom|mother|dad|father|sister|brother)|family at home)\b.{0,45}\b(?:toxic|controlling|controls? (?:me|my)|humiliat(?:es?|ed|ing) me|insults? me|calls? me (?:ugly|stupid|worthless)|reads? my messages|takes? my money|won'?t let me leave|doesn'?t let me leave|threatens? to throw me out|uses? silent treatment|makes? me feel (?:afraid|worthless|small))\b|\b(?:toxic|controlling|emotionally abusive) (?:family|parents?|home)\b/i,
+      R['ruleToxicFamily']
+    ),
+
+    rule(
+      'toxic_friendship',
+      57,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:friend|best friend)|a friend)\b.{0,45}\b(?:toxic|humiliat(?:es?|ed|ing) me|insults? me|calls? me (?:ugly|stupid|worthless)|shares? my secrets|only calls? when|pressures? me|punishes? me|blackmails? me|says? it(?:'s| is) (?:just )?a joke)\b|\b(?:toxic|one.sided|emotionally abusive) friendship\b/i,
+      R['ruleToxicFriendship']
     ),
 
     rule(
@@ -737,7 +790,7 @@
       'smalltalk_joke',
       60,
       // eslint-disable-next-line max-len
-      /\b(tell me (?:a |some |any )?jokes?|tell me (?:a |some |any )?funny jokes?|make me laugh|make me smile|say something funny|say a joke|any jokes|joke for me|know any jokes|crack me up|cheer me up|give me a laugh|give me a (?:funny )?joke|another jokes? please|one more joke|tell me another (?:one )?joke|give me another (?:one )?joke|joke please|i (?:want|need) (?:to hear )?a (?:funny )?joke)\b/i,
+      /\b(tell me (?:a |some |any )?(?:(?:clean|short|good|funny) )?jokes?|make me laugh|make me smile|say something funny|say a joke|any jokes|joke for me|know any jokes|crack me up|cheer me up|give me a laugh|give me a (?:funny )?joke|another jokes? please|one more joke|tell me another (?:one )?joke|give me another (?:one )?joke|joke please|i (?:want|need) (?:to hear )?a (?:funny )?joke)\b/i,
       R['ruleTellJoke']
     ),
 
@@ -1583,10 +1636,21 @@
     ),
 
     rule(
+      'appearance_judgment',
+      49,
+      // Confidence can be welcomed without validating a hierarchy that
+      // degrades another person. First-person insecurity belongs to the
+      // body-image rule immediately below.
+      // eslint-disable-next-line max-len
+      /\b(?:i(?:'m| am) (?:so |very )?(?:beautiful|pretty|handsome|gorgeous) (?:and|but|while) (?:they|she|he|everyone else)(?:'s| is| are| look| looks)? (?:ugly|plain|unattractive)|i(?:'m| am) prettier than (?:her|him|them|everyone)|i look better than (?:her|him|them|everyone)|they(?:'re| are) ugly (?:and|but) i(?:'m| am) (?:beautiful|pretty|handsome)|why are ugly people|beautiful people are better)\b/i,
+      R['ruleAppearanceJudgment']
+    ),
+
+    rule(
       'body_image',
       48,
       // eslint-disable-next-line max-len
-      /\b(?:i hate my body|i hate how i look|i feel ugly|i am (?:too fat|too skinny)|body image|i dislike my body|i do not like my appearance|i feel fat|i feel ugly|self conscious about my body)\b/i,
+      /\b(?:i hate my body|i hate how i look|i feel ugly|i(?:'m| am) ugly|why am i (?:so )?ugly|my face (?:is|looks) ugly|everyone (?:else )?(?:is|looks) prettier than me|she(?:'s| is) (?:so )?(?:pretty|beautiful) and i(?:'m| am) ugly|he(?:'s| is) (?:so )?(?:handsome|good looking) and i(?:'m| am) ugly|i am (?:too fat|too skinny)|body image|i dislike my body|i do not like my appearance|i feel fat|self conscious about my (?:body|face)|i keep checking my face|i avoid mirrors because of my face)\b/i,
       R['ruleBodyImage']
     ),
 

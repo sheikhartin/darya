@@ -176,24 +176,10 @@
     'uh'
   ]);
 
-  // Low-engagement / boredom meta-signals: when the conversation has been
-  // idle or shallow for several turns (e.g. brief acknowledgements with no
-  // emotional depth), Darya gently invites a more substantive direction.
-
-  // Wellbeing check responses: when the user asks how Darya is doing
-  // after a serious or emotionally heavy conversation, these responses
-  // acknowledge the care behind the question before returning focus
-  // to the user.
-
   /**
-   * Fallback reply displayed when the engine encounters an unexpected
-   * error during response generation (e.g. a reference error or logic
-   * fault). Unlike emptyInputReply: R.emptyInputReply, this message acknowledges that the
-   * user said something but Darya could not process it, making it
-   * semantically correct for error scenarios rather than implying the
-   * user went quiet.
+   * Returns the English-only redirect used after script validation fails.
+   * @returns {string}
    */
-
   function foreignLanguageRedirect() {
     // eslint-disable-next-line max-len
     return `I'm ${BOT_NAME}, and I can only have this conversation in English so I can support you well. Could you write your message in English so we can continue?`;
@@ -257,6 +243,10 @@
     loneliness_online: 0.7,
     therapy_help: 0.7,
     family_conflict: 0.7,
+    toxic_family: 0.8,
+    toxic_friendship: 0.65,
+    body_image: 0.65,
+    appearance_judgment: 0.3,
     professional_boundary: 0.9,
     grief: 0.9,
     chronic_illness: 0.85,

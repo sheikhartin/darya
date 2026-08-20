@@ -10,7 +10,7 @@
 
   /**
    * Creates the sound-integration functions.
-   * @param {object} ctrl - Shared controller state (see app.js)
+   * @param {object} ctrl - Shared controller state (see js/app/index.js)
    * @returns {object} Functions for ambient sound UI integration
    */
   function createSound(ctrl) {

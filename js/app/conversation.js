@@ -9,7 +9,7 @@
 
   /**
    * Creates the conversation-flow functions.
-   * @param {object} ctrl - Shared controller state (see app.js)
+   * @param {object} ctrl - Shared controller state (see js/app/index.js)
    * @returns {object} Functions for the conversation lifecycle
    */
   function createConversation(ctrl) {
@@ -31,7 +31,7 @@
       st.messageCount = 0;
       st.currentTitle = '';
       st.userSpoke = false;
-      ctrl.setHint('');
+      ctrl.clearComposer();
       el.input.setAttribute('placeholder', st.lang.ui.placeholderDefault);
       ctrl.setComposerBusy(true);
       hideBreatheTrigger();
@@ -42,9 +42,10 @@
       }
 
       ctrl.setComposerBusy(false);
-      if (el.chat && el.chat.children.length > 0) {
-        UI.utils.restoreScrollPosition();
-      }
+      // Every conversation begins at its own live edge. Conversation history
+      // is not persisted, so restoring a prior session's scroll offset would
+      // only strand the fresh greeting above the bottom.
+      UI.utils.scrollToBottom();
       UI.utils.focusInputUnlessTouch();
       // If the user stays silent after the greeting, Darya gently opens
       // the conversation herself after a short, randomized pause (the
@@ -102,8 +103,8 @@
     }
 
     /**
-     * Shows the breathe trigger button (available after emotionally heavy
-     * conversational moments).
+     * Shows the optional breathing control after an explicit request or a
+     * current, first-person high-arousal disclosure.
      */
     function showBreatheTrigger() {
       if (el.breatheTrigger) {
@@ -143,6 +144,7 @@
         st.conversationEnded = true;
         st.pendingExit = false;
         el.input.setAttribute('placeholder', st.lang.ui.placeholderEnded);
+        ctrl.clearComposer();
         hideBreatheTrigger();
         ctrl.setComposerBusy(false);
         st.exitConfirmBusy = false;
@@ -169,7 +171,7 @@
       st.userSpoke = true;
       var generation = st.conversationGeneration;
       UI.utils.appendMessage('user', text);
-      el.input.value = '';
+      ctrl.clearComposer();
       ctrl.setComposerBusy(true);
 
       var isExit = st.engine.isExitCommand(text);
@@ -188,6 +190,7 @@
         st.conversationEnded = true;
         st.pendingExit = false;
         el.input.setAttribute('placeholder', st.lang.ui.placeholderEnded);
+        ctrl.clearComposer();
         hideBreatheTrigger();
         ctrl.setComposerBusy(false);
         return;
@@ -249,7 +252,7 @@
 
       ctrl.setComposerBusy(false);
 
-      if (st.engine && st.engine.lastTurnNeedsCare) {
+      if (st.engine && st.engine.lastTurnShouldOfferBreathing) {
         showBreatheTrigger();
       } else {
         hideBreatheTrigger();

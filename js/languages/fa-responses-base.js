@@ -7,10 +7,9 @@
  * suggestions, session check-ins, smalltalk, humor, gratitude, emoji
  * replies, greetings (phase 1/2, open, inviting, returning), idle
  * openers, professional-boundary lines, and the empty-input and
- * engine-error replies. The topic pools live in
- * fa-responses-topics.js and the feature pools in
- * fa-responses-features.js; the three part files fill the same object
- * in load order, so it is complete before fa-rules.js and the fa.js
+ * engine-error replies. Topic, rule, context, and feature pools live in
+ * the other four fa-responses-*.js files. All five response part files
+ * fill the same object in load order before fa-rules.js and the fa.js
  * pack assembler read from it.
  */
 
@@ -25,13 +24,10 @@
 
   const R = (global.DaryaFaResponses = global.DaryaFaResponses || {});
   // Response pools are registered onto the shared DaryaFaResponses
-  // object across three part files.
+  // object across five focused part files.
 
   // Long lines in this file are intentional (embedded response strings).
 
-  R.emptyInputReply =
-    'می‌شنوم که سکوت کرده‌اید. هر وقت آماده بودید، صحبت کنید.';
-  R.engineErrorReply = 'لطفاً جمله‌تان را دوباره بگویید؛ متوجه نشدم.';
   R.emptyInputReply =
     'می‌شنوم که سکوت کرده‌اید. هر وقت آماده بودید، صحبت کنید.';
   R.engineErrorReply = 'لطفاً جمله‌تان را دوباره بگویید؛ متوجه نشدم.';

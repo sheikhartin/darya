@@ -115,11 +115,6 @@
   // earlier words back to them is a core reflective-listening technique
   // and carries no grammar risk (their words are inserted verbatim).
 
-  // Gentle, optional coping offer shown when several consecutive messages
-  // read as emotionally heavy. Not a diagnosis, not a substitute for
-  // professional support, just a caring pause and a well-known,
-  // low-risk grounding technique (paced breathing).
-
   // Pronoun-swap reflection is intentionally NOT enabled for Persian: verb
   // conjugation carries person/number in the verb ending itself (not just
   // a separate pronoun), so a naive word-swap would frequently produce

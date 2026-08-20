@@ -3,17 +3,19 @@
 **Effective date:** August 2026
 
 Darya is a bilingual (Persian and English) conversation companion that
-runs entirely on your device. This policy describes what the app does
-with your information. The short version: Darya collects nothing, sends
-nothing, and stores nothing beyond a local theme preference.
+processes conversations entirely on your device. This policy describes
+what the app does with your information. The short version: Darya collects
+no personal data, sends no conversation text anywhere, and stores nothing
+beyond a local theme preference.
 
 ## What Darya does
 
-Darya is a local-first application. The conversation engine, all
-response patterns, and all knowledge content are bundled inside the app
-and run on your device. Darya makes **no network requests at any time**.
-No conversation text, no usage statistics, and no device information
-ever leave your device.
+Darya is a local-first application. The conversation engine, all response
+patterns, and all knowledge content are bundled inside the app and run on
+your device. No conversation text, usage statistics, or device information
+is transmitted. A hosted PWA downloads its own static files and checks its
+same-origin service worker for updates; those requests contain no chat data
+and contact no inference, analytics, advertising, or tracking service.
 
 ## Data we collect
 
@@ -29,9 +31,9 @@ ever leave your device.
 
 Your conversation exists only in memory for the current session and is
 gone when you close the app or tab. The only persistent data is your
-visual theme preference (Ocean or Beach), stored as a small local
-cookie so the app can restore it on your next visit. There is no
-persistent chat history.
+visual theme preference (Ocean or Beach), stored in local browser storage
+with a small cookie fallback so the app can restore it on your next visit.
+There is no persistent chat history.
 
 ## Children
 

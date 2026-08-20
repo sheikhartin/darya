@@ -230,3 +230,64 @@ for (const [prior, target, expected] of SWITCH_SCENARIOS) {
     assert.match(reply, expected);
   });
 }
+
+test('horror anime requests stay inside the dedicated horror shelf', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('recommend five short horror anime');
+  const allowed = new Set([
+    'Mononoke',
+    'Shiki',
+    'Another',
+    'Devilman Crybaby',
+    'Higurashi When They Cry',
+    // The shared title parser splits display descriptions at a colon.
+    'Theatre of Darkness'
+  ]);
+  assert.equal(numberedLines(reply).length, 5);
+  assert.ok(
+    titles(reply).every((title) => allowed.has(title)),
+    reply
+  );
+  assert.ok(engine.currentTurnTopics.includes('knowledge'));
+});
+
+test('cozy game requests never return high-pressure game shelves', () => {
+  const engine = freshEngine(FA);
+  const reply = engine.respond('سه بازی آروم و کم فشار پیشنهاد بده');
+  const allowed = new Set([
+    'Stardew Valley',
+    'Spiritfarer',
+    'A Short Hike',
+    'Unpacking',
+    'Dorfromantik',
+    'Coffee Talk',
+    // The shared title parser treats a colon as the description boundary.
+    'Alba'
+  ]);
+  assert.equal(numberedLines(reply).length, 3);
+  assert.ok(
+    titles(reply).every((title) => allowed.has(title)),
+    reply
+  );
+  assert.ok(engine.currentTurnTopics.includes('knowledge'));
+});
+
+test('spelled-out English decades filter media by era', () => {
+  const reply = freshEngine(EN).respond('recommend an eighties horror movie');
+  const years = numberedLines(reply).map((line) =>
+    Number(line.match(/\((\d{4})\)/u)?.[1])
+  );
+  assert.ok(years.length > 0, reply);
+  assert.ok(
+    years.every((year) => year >= 1980 && year <= 1989),
+    reply
+  );
+});
+
+test('the verb show me does not become a stale TV-series request', () => {
+  const engine = freshEngine(EN);
+  engine.respond('recommend a drama series');
+  const reply = engine.respond('now show me how to use XLOOKUP');
+  assert.match(reply, /XLOOKUP|Excel|match/i);
+  assert.doesNotMatch(reply, /Dark \(|Detectorists|Severance/u);
+});

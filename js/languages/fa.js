@@ -11,8 +11,10 @@
   // regex patterns, and knowledge entries).
   /* eslint-disable max-len */
 
-  // Load response pools from the data file.
+  // Load response pools and the curated cultural-language layer.
   var R = global.DaryaFaResponses;
+  var culture = global.DaryaFaCulture;
+  var society = global.DaryaFaSociety;
   var halfSpace = global.DaryaHalfspace.halfSpace;
 
   const BOT_NAME = 'دریا';
@@ -21,15 +23,6 @@
   // some fonts/keyboards produce.
   const SCRIPT_RANGE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
-  /**
-   * Normalizes raw Persian input for reliable pattern matching: unifies
-   * look-alike Arabic/Persian characters and collapses ASCII whitespace.
-   * Zero-width non-joiners (half-spaces, e.g. "می‌خواهم") are intentionally
-   * left intact since they are meaningful in Persian orthography.
-   */
-  // Arabic-Indic and Extended Arabic-Indic digits, mapped to their
-  // Persian (Eastern Arabic) equivalents, so "1" written with a different
-  // regional digit set still reads consistently.
   /**
    * Normalizes raw Persian input for reliable pattern matching. This goes
    * a fair bit further than a plain character swap:
@@ -61,6 +54,19 @@
    */
   function normalize(text) {
     return halfSpace(text);
+  }
+
+  /**
+   * Applies a final display-only code-point guard without changing spacing,
+   * punctuation, or the user's own text. Iranian Persian output uses Farsi
+   * Yeh and Keheh, never their Arabic look-alikes.
+   * @param {string} text - Generated Persian response
+   * @returns {string}
+   */
+  function normalizeOutput(text) {
+    return String(text)
+      .replace(/[\u064a\u0649]/gu, 'ی')
+      .replace(/\u0643/gu, 'ک');
   }
 
   /**
@@ -101,7 +107,11 @@
     selfAwareness,
     foreignLanguageRedirect
   } = global.DaryaFaData;
-  const rules = global.DaryaFaRules;
+  const rules = [
+    ...global.DaryaFaRules,
+    ...((culture && culture.rules) || []),
+    ...((society && society.rules) || [])
+  ];
 
   const fa = {
     code: 'fa',
@@ -113,9 +123,16 @@
     // "ok", "باشه"), so only a message that is mostly foreign script
     // gets the polite redirect to write in Persian.
     minScriptRatio: 0.6,
+    // Technical identifiers are normal inside Persian software questions and
+    // do not count as a foreign-language switch for script validation.
+    scriptExemptPattern:
+      /\b(?:API|BDD|CD|CI|CSS|CTF|DNS|Git|GitHub|HTML|HTTP|HTTPS|JSON|Linux|MFA|MongoDB|Node\.js|NoSQL|OWASP|PostgreSQL|PWA|Python|REST|SIEM|SOC|SQL injection|SQL|TCP|TLS|TypeScript|UNHCR|WCAG|Wi-Fi|WiFi|WPA2|WPA3|race condition|service worker|threat model|pull request)\b/giu,
     normalize,
+    normalizeOutput,
     bindPrefixesForMatching,
     rules,
+    culture,
+    society,
     trivialCaptures,
     genericFallbacks: R.genericFallbacks,
     strategyShiftFallbacks: R.strategyShiftFallbacks,
