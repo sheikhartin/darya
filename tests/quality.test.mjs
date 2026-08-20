@@ -2186,6 +2186,47 @@ test('tab-order sibling scan ignores collapsed controls and tabindex -1', () => 
   );
 });
 
+test('cursor glint tracks the pointer but yields to reduced motion and touch', () => {
+  // The tracked specular glint is decorative: it must follow the pointer
+  // over interactive glass (via closest + --glint-x/--glint-y) while
+  // bailing out for reduced-motion and touch-primary devices, so it never
+  // animates for a user who asked for stillness or flashes on a tap.
+  const glint = read('js/ui/glint.js');
+  const css = read('css/style.css');
+
+  assert.match(glint, /mousemove/u, 'glint tracks pointer movement');
+  assert.match(
+    glint,
+    /closest\(GLINT_SELECTOR\)/u,
+    'glint targets hovered glass'
+  );
+  assert.match(
+    glint,
+    /--glint-x/u,
+    'glint writes the horizontal light position'
+  );
+  assert.match(glint, /--glint-y/u, 'glint writes the vertical light position');
+  assert.match(
+    glint,
+    /prefers-reduced-motion: reduce/,
+    'glint honors reduced motion'
+  );
+  assert.match(glint, /pointer: coarse/, 'glint skips touch-primary devices');
+
+  // The highlight itself ships with a reduced-motion fallback so the
+  // hover fade does not animate for reduced-motion users.
+  assert.match(
+    css,
+    /radial-gradient\([\s\S]*?var\(--glint-x[\s\S]*?var\(--glint-y/,
+    'glint highlight is positioned by the tracked coordinates'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.menu__trigger::before[\s\S]*?transition: none;/u,
+    'glint highlight disables its transition under reduced motion'
+  );
+});
+
 test('clearing the chat preserves the jump-to-latest anchor button', () => {
   // The jump-to-latest pill is a static child of #chat. Wiping the chat
   // for a new conversation or a return to the picker must keep it in the

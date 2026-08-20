@@ -89,6 +89,7 @@ const PRECACHE_URLS = [
   './js/engine/responder-exercises.js',
   './js/engine/responder-mood.js',
   './js/ui/core.js',
+  './js/ui/glint.js',
   './js/ui/ambient-visuals.js',
   './js/ui/ambient-sound-data.js',
   './js/ui/ambient-sound-helpers.js',

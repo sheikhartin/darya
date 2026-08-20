@@ -21,6 +21,7 @@
   var DaryaOverlays = global.DaryaOverlays;
   var DaryaExport = global.DaryaExport;
   var DaryaLogger = global.DaryaLogger;
+  var DaryaGlint = global.DaryaGlint;
   var DaryaAmbient = global.DaryaAmbient;
   var DaryaAmbientSound = global.DaryaAmbientSound;
   var DaryaLang = global.DaryaLang;
@@ -39,6 +40,7 @@
     DaryaOverlays,
     DaryaExport,
     DaryaLogger,
+    DaryaGlint,
     DaryaAmbient,
     DaryaAmbientSound,
     DaryaLang,
@@ -327,6 +329,7 @@
   // The picker is shown on arrival, so the document title rotates between
   // Persian and English until a conversation begins.
   ctrl.startTitleRotation();
+  DaryaGlint.init();
   DaryaAmbient.initBeachWaveVariation();
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();

@@ -153,12 +153,12 @@
   --space-6: 28px;
 
   /* --- Layout: design-system radii --- */
-  /* Panels (picker, menu popover): 24px */
-  --radius-lg: 24px;
-  /* Buttons, inputs, theme picker: 16px */
-  --radius-md: 16px;
-  /* Chips, tags, small controls: 12px */
-  --radius-sm: 12px;
+  /* Panels (picker, menu popover): 28px */
+  --radius-lg: 28px;
+  /* Buttons, inputs, theme picker: 18px */
+  --radius-md: 18px;
+  /* Chips, tags, small controls: 14px */
+  --radius-sm: 14px;
   --radius-full: 999px; /* reserved for small circular icon buttons only */
 
   /* --- Elevation: layered, low-opacity ambient shadows. A single dark  */
@@ -169,57 +169,57 @@
   /* instead of a cool navy cast.                                        */
   --shadow-color: 3, 12, 15;
   --shadow-soft:
-    0 1px 2px rgba(var(--shadow-color), 0.18),
-    0 2px 6px rgba(var(--shadow-color), 0.12),
-    0 12px 28px rgba(var(--shadow-color), 0.14);
+    0 1px 2px rgba(var(--shadow-color), 0.14),
+    0 2px 8px rgba(var(--shadow-color), 0.1),
+    0 14px 32px rgba(var(--shadow-color), 0.1);
   --shadow-elevated:
-    0 2px 4px rgba(var(--shadow-color), 0.16),
-    0 8px 18px rgba(var(--shadow-color), 0.12),
-    0 24px 56px rgba(var(--shadow-color), 0.2);
+    0 2px 4px rgba(var(--shadow-color), 0.12),
+    0 10px 22px rgba(var(--shadow-color), 0.1),
+    0 28px 64px rgba(var(--shadow-color), 0.16);
 
-  /* --- Glass: a layered, "liquid" material echoing the app icon and   */
-  /* Apple's Liquid Glass language (WWDC 2025). Rather than one flat    */
-  /* blur, the pane is built from the layers Apple describes: a         */
-  /* translucent deep-blue body (--glass-frost, so light text keeps its */
-  /* contrast), a pale cyan rim (--glass-edge), an angled light-catch   */
-  /* (--glass-sheen), a specular edge highlight with a faint chromatic  */
-  /* fringe (--glass-specular, the cue generic glassmorphism always     */
-  /* skips), and the --shadow-* drop shadows that lift it. Backdrop     */
-  /* blur + saturation froth the ambient glow behind the pane.          */
-  /* Depth is tiered, mirroring Liquid Glass's "material thickens with  */
-  /* size": large chrome (cards, menus, the composer, dialogs) uses the */
-  /* richer --glass-blur + full specular, while small controls and the  */
-  /* chat content use --glass-blur-soft + a single top catch-light, so  */
-  /* long conversations never stack heavy blur. The blur ships          */
-  /* unprefixed (matching the existing overlays); a @supports fallback  */
-  /* near the end of this file raises the frost to near-opaque where    */
-  /* blur is unavailable, and prefers-reduced-transparency plus         */
-  /* prefers-contrast do the same for users who ask for them.           */
-  --glass-blur: 20px;
-  --glass-blur-soft: 12px;
-  --glass-saturate: 180%;
-  --glass-frost: rgba(20, 63, 72, 0.44);
-  --glass-frost-strong: rgba(24, 74, 84, 0.6);
+  /* --- Glass: a calm frosted material, not layered optics. A single   */
+  /* translucent deep-blue body (--glass-frost, opaque enough that      */
+  /* light text keeps its contrast), a pale top-lit rim (--glass-edge), */
+  /* one angled light-catch (--glass-sheen), and one top specular       */
+  /* catch-light (--glass-specular). The chromatic fringe and the       */
+  /* second specular inset are gone so the pane reads as softly frosted */
+  /* rather than a stack of artificial reflections, and the backdrop    */
+  /* blur is a whisper that grounds the pane instead of a feature.      */
+  /* Depth is tiered: large chrome (cards, menus, the composer,         */
+  /* dialogs) uses the richer --glass-blur, while small controls and    */
+  /* chat content use --glass-blur-soft so long conversations never     */
+  /* stack heavy blur. A @supports fallback near the end of this file   */
+  /* raises the frost to near-opaque where blur is unavailable, and     */
+  /* prefers-reduced-transparency plus prefers-contrast do the same     */
+  /* for users who ask for them.                                        */
+  --glass-blur: 14px;
+  --glass-blur-soft: 8px;
+  --glass-saturate: 120%;
+  --glass-frost: rgba(20, 63, 72, 0.58);
+  --glass-frost-strong: rgba(24, 74, 84, 0.74);
+  /* Chat bubbles are the content layer: near-opaque so text sits on a
+     stable surface instead of floating on translucent glass. */
+  --bubble-frost: rgba(20, 63, 72, 0.84);
   --glass-sheen: linear-gradient(
     158deg,
-    rgba(214, 244, 250, 0.5) 0%,
-    rgba(214, 244, 250, 0.14) 24%,
-    rgba(214, 244, 250, 0.04) 48%,
-    rgba(214, 244, 250, 0) 70%
+    rgba(214, 244, 250, 0.32) 0%,
+    rgba(214, 244, 250, 0.08) 30%,
+    rgba(214, 244, 250, 0) 65%
   );
   /* The rim is a whisper, not a drawn line: a faint lightening of the
-     pane's own tint so the edge reads as light catching the glass, while
-     the inset specular highlight and the chromatic fringe carry the
-     definition of the pane. */
-  --glass-edge: rgba(196, 238, 246, 0.1);
-  --glass-specular:
-    inset 0 1px 0 rgba(244, 253, 255, 0.5),
-    inset 1px 1px 0 rgba(150, 235, 250, 0.1),
-    inset -1px -1px 0 rgba(255, 150, 190, 0.06);
-  --glass-specular-soft: inset 0 1px 0 rgba(244, 253, 255, 0.35);
+     pane's own tint so the edge reads as light catching the glass. The
+     top specular catch-light carries the rest of the definition. */
+  --glass-edge: rgba(196, 238, 246, 0.14);
+  --glass-specular: inset 0 1px 0 rgba(244, 253, 255, 0.32);
+  --glass-specular-soft: inset 0 1px 0 rgba(244, 253, 255, 0.24);
 
   /* --- Motion --- */
   --ease-tide: cubic-bezier(0.37, 0, 0.24, 1);
+
+  /* Cursor-tracked glass glint: a whisper-light radial highlight that
+     follows the pointer across interactive glass (see the glint section
+     at the end of this file). Kept at a whisper opacity on purpose. */
+  --glint-color: rgba(255, 255, 255, 0.09);
 }
 
 /* English gets its own, equally considered type pairing rather than
@@ -255,19 +255,16 @@ html[data-theme='beach'] {
      its contrast; the rim, sheen, and specular carry the glass feel. */
   --glass-frost: rgba(31, 84, 73, 0.86);
   --glass-frost-strong: rgba(40, 100, 90, 0.94);
+  --bubble-frost: rgba(31, 84, 73, 0.94);
   --glass-sheen: linear-gradient(
     158deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.1) 24%,
-    rgba(255, 255, 255, 0.03) 48%,
-    rgba(255, 255, 255, 0) 70%
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0) 65%
   );
-  --glass-edge: rgba(240, 247, 244, 0.14);
-  --glass-specular:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 1px 1px 0 rgba(255, 255, 255, 0.1),
-    inset -1px -1px 0 rgba(255, 220, 200, 0.08);
-  --glass-specular-soft: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-edge: rgba(240, 247, 244, 0.16);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-specular-soft: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   /* Light glass: small chrome (header buttons, note chips, the sound
      toggle) sits on the bright sky, so it flips to a frosted light pane
      with dark ink, mirroring Liquid Glass's light/dark adaptivity. The
@@ -289,6 +286,9 @@ html[data-theme='beach'] {
     rgba(212, 230, 236, 0.8);
   --glass-light-edge: rgba(255, 255, 255, 0.4);
   --glass-light-specular: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  /* On the bright beach, light-glass panels are already near-white, so
+     the tracked glint needs a touch more presence to stay visible. */
+  --glint-color: rgba(255, 255, 255, 0.14);
 }
 
 * {
@@ -1485,8 +1485,7 @@ html[dir='ltr'] .bubble-row--bot {
 }
 
 .bubble--bot {
-  background: var(--surface-panel);
-  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  background: var(--bubble-frost);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 8px;
@@ -3264,4 +3263,71 @@ html[data-theme='beach'] .picker__intro-fa {
 
 html[data-theme='beach'] .picker__intro-en {
   color: var(--color-on-sky-link);
+}
+
+/* --------------------------------------------------------------------- */
+/* Cursor-tracked glass glint: a whisper-light highlight that follows    */
+/* the pointer across interactive glass, so the material reads as lit    */
+/* from the user's hand instead of a flat texture. Decorative only: the  */
+/* highlight is pointer-events none, and js/ui/glint.js skips the        */
+/* tracking on touch input and prefers-reduced-motion, so it never       */
+/* competes with the calm core or with assistive tech.                  */
+/* --------------------------------------------------------------------- */
+
+/* Elements that carry the glint but are not yet a containing block.     */
+.picker__option,
+.theme-picker__option,
+.menu__item,
+.quick-reply,
+.confirm-container {
+  position: relative;
+}
+
+.picker__option::after,
+.theme-picker__option::after,
+.menu__item::after,
+.menu__popover::after,
+.quick-reply::after,
+.confirm-container::after,
+.picker__sound-toggle::after,
+.menu__trigger::before,
+.breathe-trigger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    150px circle at var(--glint-x, 50%) var(--glint-y, 50%),
+    var(--glint-color),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-tide);
+  pointer-events: none;
+}
+
+.picker__option:hover::after,
+.theme-picker__option:hover::after,
+.menu__item:hover::after,
+.menu__popover:hover::after,
+.quick-reply:hover::after,
+.confirm-container:hover::after,
+.picker__sound-toggle:hover::after,
+.menu__trigger:hover::before,
+.breathe-trigger:hover::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker__option::after,
+  .theme-picker__option::after,
+  .menu__item::after,
+  .menu__popover::after,
+  .quick-reply::after,
+  .confirm-container::after,
+  .picker__sound-toggle::after,
+  .menu__trigger::before,
+  .breathe-trigger::before {
+    transition: none;
+  }
 }
