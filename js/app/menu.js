@@ -84,12 +84,24 @@
     function focusMenuTriggerSibling(step) {
       var focusables = [
         ...document.querySelectorAll(
-          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'a[href]:not([tabindex="-1"]), ' +
+            'button:not([disabled]):not([tabindex="-1"]), ' +
+            'input:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), ' +
+            'select:not([disabled]):not([tabindex="-1"]), ' +
+            '[tabindex]:not([tabindex="-1"])'
         )
       ].filter(function (node) {
-        // Keep only visible elements; hidden picker/menu items are
-        // excluded via offsetParent being null.
-        return node.offsetParent !== null;
+        // Keep only elements that are actually rendered and in the real
+        // tab order. Hidden picker/menu items are excluded via offsetParent
+        // being null (display: none); the breathe trigger and the
+        // jump-to-latest pill collapse via visibility:hidden, which keeps
+        // them out of the tab order even though their offsetParent stays
+        // non-null, so they are filtered on computed visibility here.
+        if (node.offsetParent === null) {
+          return false;
+        }
+        return global.getComputedStyle(node).visibility !== 'hidden';
       });
       var index = focusables.indexOf(el.menuTrigger);
       if (index === -1) {

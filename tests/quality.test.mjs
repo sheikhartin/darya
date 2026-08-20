@@ -2163,6 +2163,29 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
   assert.match(app, /focusMenuTriggerSibling\(/u);
 });
 
+test('tab-order sibling scan ignores collapsed controls and tabindex -1', () => {
+  // The menu's Tab-close handler must land on a control that is genuinely
+  // in the tab order. offsetParent alone is not enough: the breathe
+  // trigger and the jump-to-latest pill collapse via visibility:hidden
+  // (so they can animate their reveal), which keeps offsetParent non-null
+  // while still removing them from the real tab order. The scan must
+  // exclude both display:none and visibility:hidden elements, and skip
+  // tabindex="-1" controls (programmatically focusable but not tabbable).
+  // Regression guard for the tab-walk overshoot that left focus stranded
+  // off the menu trigger.
+  const menu = read('js/app/menu.js');
+  assert.match(
+    menu,
+    /getComputedStyle\([^)]*\)\.visibility !== 'hidden'/u,
+    'sibling scan filters on computed visibility'
+  );
+  assert.match(
+    menu,
+    /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/u,
+    'sibling scan excludes tabindex -1 controls from the tab order'
+  );
+});
+
 test('clearing the chat preserves the jump-to-latest anchor button', () => {
   // The jump-to-latest pill is a static child of #chat. Wiping the chat
   // for a new conversation or a return to the picker must keep it in the

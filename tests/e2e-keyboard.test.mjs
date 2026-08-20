@@ -53,12 +53,18 @@ const MIME_TYPES = {
 };
 
 /**
- * The same visible-focusable rule the app itself uses (offsetParent
- * non-null), so the test's expectations match the real tab order.
+ * The same rendered-and-tabbable rule the app itself uses: an element
+ * participates in the real tab order only when it is rendered (not
+ * display:none) and not collapsed via visibility:hidden. tabindex="-1"
+ * elements are programmatically focusable but skipped by the tab order,
+ * so they are excluded from the interactive selector clauses too.
  */
 const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), ' +
-  'select:not([disabled]), textarea:not([disabled]), ' +
+  'a[href]:not([tabindex="-1"]), ' +
+  'button:not([disabled]):not([tabindex="-1"]), ' +
+  'input:not([disabled]):not([tabindex="-1"]), ' +
+  'select:not([disabled]):not([tabindex="-1"]), ' +
+  'textarea:not([disabled]):not([tabindex="-1"]), ' +
   '[tabindex]:not([tabindex="-1"])';
 
 /**
@@ -149,7 +155,12 @@ async function visibleFocusableIds(page) {
   return page.evaluate(
     (selector) =>
       [...document.querySelectorAll(selector)]
-        .filter((el) => el.offsetParent !== null && !el.hidden)
+        .filter((el) => {
+          if (el.offsetParent === null) {
+            return false;
+          }
+          return getComputedStyle(el).visibility !== 'hidden';
+        })
         .map((el) => el.id),
     FOCUSABLE_SELECTOR
   );
