@@ -45,12 +45,18 @@
     DaryaAmbientSound,
     DaryaLang,
 
-    // Reply pacing: long enough that the typing indicator reads as a real
-    // reply being composed, short enough that sending never feels laggy.
-    // The old 1.5-2.3s window made a one-line answer take two seconds and
-    // read as a stuck, unoptimized app on fast devices.
-    MIN_REPLY_DELAY_MS: 550,
-    MAX_REPLY_DELAY_MS: 950,
+    // Reply pacing: a random base window that lets the typing indicator
+    // breathe like a real conversation, plus a per-character component so
+    // longer replies take visibly longer to compose. The base window is
+    // deliberately wide (1.5-4s) so the rhythm never feels scripted.
+    MIN_REPLY_DELAY_MS: 1500,
+    MAX_REPLY_DELAY_MS: 4000,
+
+    /** Extra per-character delay so reply length shapes the pacing. */
+    EXTRA_DELAY_PER_CHAR_MS: 3,
+
+    /** Upper bound for the length-based component of the reply delay. */
+    EXTRA_DELAY_MAX_MS: 1500,
 
     /** Proactive idle opener delay range (ms): Darya speaks first after
      * the greeting if the user stays silent. Randomized per conversation
