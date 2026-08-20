@@ -7,8 +7,28 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-21
+
 ### Added
 
+- Nine new offline knowledge modules deepen the breadth shelf: 13 individual
+  programming languages plus specific and all-together comparisons; art
+  history from cave painting through the Renaissance, Impressionism, Cubism,
+  Surrealism, Abstract Expressionism, Pop Art, Minimalism, conceptual and
+  deliberately weird contemporary art, sculpture, famous statues, and design
+  principles; social and communication platforms (Reddit, Facebook/Meta,
+  Google, Google+, WhatsApp, Signal, X/Twitter, Discord, LinkedIn, Snapchat,
+  Twitch, YouTube); markets, crypto, and tech companies (Nasdaq, Ethereum,
+  Dogecoin, NVIDIA, Microsoft, SpaceX, OpenAI, Apple, Amazon, Tesla, Netflix);
+  tech stacks across eras (LAMP, MEAN/MERN, Jamstack, serverless,
+  microservices versus monolith, mobile, desktop, and SaaS architectures);
+  generations from Boomers to Gen Alpha with decade trends from the 1990s to
+  the 2020s; teaching and learning guides; natural healthy foods; and sports
+  supplements (protein powders, creatine, amino acids, pre-workout,
+  electrolytes, and caffeine) with evidence and safety guidance.
+- A 52-case bilingual knowledge-breadth suite exercises every new module
+  through direct lookup and the live engine, including evasive-answer and
+  cross-topic safeguards.
 - Three fully offline knowledge modules add deeper software engineering and
   defensive cybersecurity; practical work, guarding, inflation, migration,
   conscription, family, and appearance guidance; and conflict history with
@@ -49,6 +69,9 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ### Improved
 
+- Reply pacing now feels like a person composing: a random 1.5 to 4 second
+  base delay plus a length-scaled component, so longer answers take visibly
+  longer while short ones still land promptly.
 - Another 348 bilingual decisions exercise every new fact through direct
   lookup and the live engine, plus difficult three-turn personas, unauthorized
   cyber requests, clean link layout, no-fixed-product-price policy, war
