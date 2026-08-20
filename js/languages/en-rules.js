@@ -1215,6 +1215,16 @@
     // deserve a humble acknowledgement even when worded harshly, so this
     // topic is also excluded from the frustration/harassment override in
     // the engine.
+    // The user notices Darya repeating herself, in any mood from annoyed
+    // to playful; acknowledge plainly and vary instead of dodging.
+    rule(
+      'repeat_complaint',
+      64,
+      // eslint-disable-next-line max-len
+      /\b(?:you(?:'re| are) (?:so |really |very )?(?:repeating (?:yourself|the same thing)|repetitive)|you keep repeating|you said that (?:already|before)|you already said that|same answer again|same response again|you keep saying the same|your answers? (?:are|is) repetitive|you are being repetitive|you repeated yourself|again with the same|not this again|you just said that)\b/i,
+      R['ruleRepeatComplaint']
+    ),
+
     rule(
       'meta_feedback',
       62,
@@ -1472,6 +1482,16 @@
       // eslint-disable-next-line max-len
       /\b(?:what did you (?:do|get up to) (?:today|this morning|this afternoon|this evening)|how was your day|how'?s your day|what have you been (?:doing|up to)|how did (?:your )?day (?:go|goes|went)|what was your day like)\b/i,
       R['ruleAboutDaryaDay']
+    ),
+
+    // A casual "what are you doing" is a check-in, not a request for a
+    // capability list; answer "right here with you" (English).
+    rule(
+      'about_darya_now',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(?:what are you (?:doing|up to)|what'?re you (?:doing|up to)|whatcha doing|what r u doing|what are u doing)\b[?!.]*$/i,
+      R['ruleAboutDaryaNow']
     ),
 
     // Apology advice: "how do I apologize without making it about

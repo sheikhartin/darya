@@ -279,7 +279,7 @@
       'smalltalk_capability',
       60,
       pw(
-        'چیکار می‌تونی بکنی|چیکار میتونی بکنی|چیکار می تونی بکنی|چه کمکی می‌تونی بکنی|چه کمکی میتونی بکنی|چه کمکی می تونی بکنی|چیکار میکنی|چه کاری بلدی|چه کاری ازت برمیاد|چه کاری ازت بر میاد|چه کاری از تو برمیاد|چه کاری از تو بر میاد|چی ازت برمیاد|چی ازت بر میاد|چطور میتونی کمکم کنی|چیکار می‌کنی|چیکار می کنی|چیکاره هستی|تو چیکاره هستی|چیکاره ای|چیکاره‌ای|چه کارهایی میتونی و نمیتونی انجام بدی|چه کارهایی می‌تونی و نمی‌تونی انجام بدی|دقیقا چه کارهایی میتونی|دقیقاً چه کارهایی میتونی|توانایی ها و محدودیت هات'
+        'چیکار می‌تونی بکنی|چیکار میتونی بکنی|چیکار می تونی بکنی|چه کمکی می‌تونی بکنی|چه کمکی میتونی بکنی|چه کمکی می تونی بکنی|چه کاری بلدی|چه کاری ازت برمیاد|چه کاری ازت بر میاد|چه کاری از تو برمیاد|چه کاری از تو بر میاد|چی ازت برمیاد|چی ازت بر میاد|چطور میتونی کمکم کنی|چیکاره هستی|تو چیکاره هستی|چیکاره ای|چیکاره‌ای|چه کارهایی میتونی و نمیتونی انجام بدی|چه کارهایی می‌تونی و نمی‌تونی انجام بدی|دقیقا چه کارهایی میتونی|دقیقاً چه کارهایی میتونی|توانایی ها و محدودیت هات'
       ),
       R['ruleSmalltalkCapability']
     ),
@@ -1490,6 +1490,20 @@
       R['ruleApology']
     ),
 
+    // The user notices Darya repeating herself («بازم همینو گفتی», «داری
+    // خودتو تکرار میکنی», «جواب تکراری دادی») in any mood, from annoyed
+    // to playful. Darya acknowledges it plainly, promises to vary, and
+    // invites a fresh angle instead of dodging. Sits above meta_feedback
+    // (62) so a repetition complaint always gets this reply.
+    rule(
+      'repeat_complaint',
+      64,
+      pw(
+        'بازم همینو گفتی|باز هم همینو گفتی|بازم همینو میگی|باز هم همینو میگی|دوباره همینو گفتی|دوباره گفتی|همینو قبلا گفتی|همینو قبلاً گفتی|قبلا گفتی|قبلاً گفتی|داری تکرار میکنی|داری تکرار می‌کنی|داری خودتو تکرار میکنی|داری خودتو تکرار می‌کنی|خودتو تکرار کردی|داری جواب تکراری میدی|جواب تکراری دادی|جوابات تکراریه|جواب هات تکراریه|همش یه حرفو میزنی|همش یه جواب میدی|تکراری گفتی|تکراری میگی|بازم همون جواب|بازم همون حرف|چرا جوابات تکراریه|جوابت مثل قبله'
+      ),
+      R['ruleRepeatComplaint']
+    ),
+
     // Feedback aimed at Darya herself: how she quotes words, how well she
     // understands the message chain, how "smart" she is, requests for a
     // swear-word dictionary, open-question style, and so on. These turns
@@ -1898,6 +1912,20 @@
         'امروز چیکار کردی|امروز چیکار میکنی|امروز چیکار می‌کنی|امروز چیکار داشتی|روزت چطور بود|روزت چطور گذشت|امروز چه کردی|امروز چه بلایی سرت اومده'
       ),
       R['ruleAboutDaryaDay']
+    ),
+
+    // A bare «چیکار میکنی» in everyday Persian is usually a casual
+    // check-in ("what are you doing right now?"), not a question about
+    // Darya's abilities. The ability reading («چه کاری بلدی», «چیکار
+    // میتونی بکنی») stays on smalltalk_capability, while this rule answers
+    // "I am right here with you." It sits above smalltalk_capability (60)
+    // and the day forms keep their own rule via the negative lookbehind.
+    rule(
+      'about_darya_now',
+      62,
+      // eslint-disable-next-line max-len
+      /(?<!امروز )(?<!دیروز )(?<!دیشب )چیکار (?:میکنی|می‌کنی|می کنی)(?:\s+(?:الان|حالا|همین حالا|همین الان))?[\s!؟.?]*$/u,
+      R['ruleAboutDaryaNow']
     ),
 
     // Health rule extension: add medical symptom keywords.
