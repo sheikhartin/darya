@@ -685,6 +685,35 @@
       // rule already claimed the turn, and only within a few turns of the
       // original reply, so a mid-conversation "one more" that means
       // something else stays untouched.
+      //
+      // Two gates keep the follow-up safe while letting it win over a
+      // low-priority social rule (a compliment like «آفرین» must not
+      // swallow «یکی دیگه بگو» after jokes). A bare follow-up («یکی
+      // دیگه») still requires no other rule to have claimed the turn, but
+      // an explicit one that names the continuation («یه جک دیگه», «یکی
+      // دیگه بگو», "tell me another") overrides a matched social rule.
+      const entertainmentFresh =
+        this._lastEntertainmentKind &&
+        this.memory.turnCount - this._lastEntertainmentTurn <= 3;
+      const bareEntertainmentFollowup =
+        this.lang.code === 'fa'
+          ? // eslint-disable-next-line max-len
+            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|بازم بگو|باز هم بگو|دوباره|دوباره بگو|یه بار دیگه|یه بار دیگه بگو|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
+              matchingText
+            )
+          : /^(?:another one|one more|another|again|once more|one more time|more please|another please)[.!?]*$/i.test(
+              matchingText
+            );
+      const explicitEntertainmentFollowup =
+        this.lang.code === 'fa'
+          ? // eslint-disable-next-line max-len
+            /(?:یکی دیگه بگو|یکی دیگر بگو|یه (?:جک|جوک|لطیفه) دیگه|یک (?:جک|جوک|لطیفه) دیگه|(?:جک|جوک|لطیفه) دیگه بگو|بازم (?:جک|جوک|لطیفه)|بازم بگو|یه (?:داستان|قصه) دیگه|(?:داستان|قصه) دیگه بگو|یه حقیقت دیگه|فکت دیگه)/u.test(
+              matchingText
+            )
+          : // eslint-disable-next-line max-len
+            /(?:another (?:joke|one|story|fact)|one more (?:joke|story|fact)|tell (?:me )?another|another (?:one|please|story|fact|joke))/i.test(
+              matchingText
+            );
       if (
         !_safetyTurn &&
         !_minorAttractionTurn &&
@@ -692,17 +721,10 @@
         !_overrideFired &&
         !isRepeatedGreeting &&
         !isSpamNoise &&
-        !matchedRule &&
-        this._lastEntertainmentKind &&
-        this.memory.turnCount - this._lastEntertainmentTurn <= 3 &&
-        (this.lang.code === 'fa'
-          ? // eslint-disable-next-line max-len
-            /^(?:یکی دیگه|یکی دیگر|یه یکی دیگه|یک یکی دیگه|بازم|باز هم|بازم بگو|باز هم بگو|دوباره|دوباره بگو|یه بار دیگه|یه بار دیگه بگو|یک بار دیگر|بعدی|یه جک دیگه|یه داستان دیگه|یه فکت دیگه|یه حقیقت دیگه)[!.؟]*$/u.test(
-              matchingText
-            )
-          : /^(?:another one|one more|another|again|once more|one more time|more please|another please)[.!?]*$/i.test(
-              matchingText
-            ))
+        entertainmentFresh &&
+        (bareEntertainmentFollowup
+          ? !matchedRule
+          : explicitEntertainmentFollowup)
       ) {
         const kind = this._lastEntertainmentKind;
         if (kind === 'joke' && this.lang.ruleTellJoke) {

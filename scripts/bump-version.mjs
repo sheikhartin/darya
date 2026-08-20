@@ -112,6 +112,16 @@ function bumpLock(content, newVersion, packageName) {
   );
 }
 
+/** Bumps the shipped-version constant in the offline engine. */
+function bumpJsConstant(content, newVersion) {
+  return replaceOnce(
+    content,
+    /const DARYA_VERSION = '[^']+';/,
+    () => `const DARYA_VERSION = '${newVersion}';`,
+    'DARYA_VERSION constant'
+  );
+}
+
 /** Bumps the Android local build defaults and their comment. */
 function bumpGradle(content, newVersion, versionCode) {
   let updated = replaceOnce(
@@ -179,6 +189,19 @@ async function main() {
       relPath: 'manifest.json',
       extractOld: (content) => JSON.parse(content).version,
       update: (content) => bumpJson(content, newVersion)
+    },
+    {
+      relPath: 'js/engine/utils-constants.js',
+      extractOld: (content) => {
+        const m = content.match(/const DARYA_VERSION = '([^']+)';/);
+        if (!m) {
+          throw new Error(
+            'No DARYA_VERSION constant found in utils-constants.js'
+          );
+        }
+        return m[1];
+      },
+      update: (content) => bumpJsConstant(content, newVersion)
     },
     {
       relPath: 'android/app/build.gradle',

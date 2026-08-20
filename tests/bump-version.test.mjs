@@ -80,6 +80,11 @@ async function makeFixture(options = {}) {
       ''
     ].join('\n')
   );
+  await mkdir(path.join(dir, 'js', 'engine'), { recursive: true });
+  await writeFile(
+    path.join(dir, 'js', 'engine', 'utils-constants.js'),
+    `const DARYA_VERSION = '${FIXTURE_VERSION}';\n`
+  );
   return dir;
 }
 
@@ -107,6 +112,10 @@ async function readFixture(dir) {
     gradle: await readFile(
       path.join(dir, 'android', 'app', 'build.gradle'),
       'utf8'
+    ),
+    constants: await readFile(
+      path.join(dir, 'js', 'engine', 'utils-constants.js'),
+      'utf8'
     )
   };
 }
@@ -132,6 +141,7 @@ test('bump_1_3_1_syncs_all_four_files_and_keeps_dependency_entries', async () =>
       files.gradle,
       /\/\/ tag \(1\.3\.1 -> versionCode 131, versionName "1\.3\.1"\)\./
     );
+    assert.match(files.constants, /const DARYA_VERSION = '1\.3\.1';/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

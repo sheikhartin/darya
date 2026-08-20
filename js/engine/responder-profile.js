@@ -326,14 +326,20 @@
       ) {
         const prefStmt = patterns.preferenceStatement.exec(matchingText);
         if (prefStmt) {
-          // The statement pattern has two capture shapes: the object after
-          // the verb («عاشق قهوه هستم», "I love coffee") in group 1, and
-          // the object before the verb («از شلوغی بدم میاد») in group 2.
-          let pref = String(prefStmt[1] || prefStmt[2] || '').trim();
+          // The statement pattern has three capture shapes: the object
+          // after the verb («عاشق قهوه هستم», "I love coffee") in group 1,
+          // the object before a dislike verb («از شلوغی بدم میاد») in
+          // group 2, and the object before «دوست دارم» («قهوه رو خیلی
+          // دوست دارم») in group 3.
+          let pref = String(
+            prefStmt[1] || prefStmt[2] || prefStmt[3] || ''
+          ).trim();
           // Strip a trailing Persian copula so «عاشق قهوه هستم» stores
-          // «قهوه», not «قهوه هستم».
+          // «قهوه», not «قهوه هستم». A bare «ه» is deliberately NOT
+          // stripped: it is part of many ordinary objects («قهوه»,
+          // «میوه», «خانه») and removing it mangles the stored word.
           pref = pref
-            .replace(/(?:\s+)?(?:هستم|هست|است|ام|ای|یم|ید|ند|ه)$/u, '')
+            .replace(/(?:\s+)?(?:هستم|هست|است|ام|ای|یم|ید|ند)$/u, '')
             .trim();
           if (pref.length >= MIN_PROFILE_NAME_LENGTH) {
             this._userProfile.preferences.push(pref);
