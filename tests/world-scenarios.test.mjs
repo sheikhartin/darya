@@ -222,7 +222,7 @@ const SCENARIOS = [
       {
         text: 'what are you doing?',
         topic: 'about_darya_now',
-        mustMatch: 'here|listen|talking'
+        mustMatch: 'here|listen|talking|conversation|attention'
       },
       { text: 'what can you do?', topic: 'smalltalk_capability' }
     ]
