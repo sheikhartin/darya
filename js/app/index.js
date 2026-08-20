@@ -21,6 +21,7 @@
   var DaryaOverlays = global.DaryaOverlays;
   var DaryaExport = global.DaryaExport;
   var DaryaLogger = global.DaryaLogger;
+  var DaryaGlint = global.DaryaGlint;
   var DaryaAmbient = global.DaryaAmbient;
   var DaryaAmbientSound = global.DaryaAmbientSound;
   var DaryaLang = global.DaryaLang;
@@ -39,6 +40,7 @@
     DaryaOverlays,
     DaryaExport,
     DaryaLogger,
+    DaryaGlint,
     DaryaAmbient,
     DaryaAmbientSound,
     DaryaLang,
@@ -236,9 +238,19 @@
       'scroll',
       function () {
         UI.utils.saveScrollPosition();
+        UI.utils.updateJumpButton();
       },
       { passive: true }
     );
+  }
+
+  if (el.chatJump) {
+    el.chatJump.addEventListener('click', function () {
+      UI.utils.jumpToLatest();
+      // Return focus to the composer so keyboard users land where they
+      // can keep talking instead of on a now-dismissed button.
+      UI.utils.focusInputUnlessTouch();
+    });
   }
 
   // ========================================================================
@@ -314,6 +326,10 @@
     }
   }
   UI.theme.applyTheme(storedTheme || UI.constants.DEFAULT_THEME);
+  // The picker is shown on arrival, so the document title rotates between
+  // Persian and English until a conversation begins.
+  ctrl.startTitleRotation();
+  DaryaGlint.init();
   DaryaAmbient.initBeachWaveVariation();
   DaryaAmbient.initBubbles();
   DaryaAmbient.initOceanParticles();

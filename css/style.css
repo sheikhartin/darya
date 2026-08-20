@@ -120,17 +120,19 @@
   --color-coral-soft: #f1a98d;
   --color-seafoam: #83c3b1;
   --color-warning: #f2b987;
-  --color-danger: #e2805f;
-  --color-line: rgba(234, 243, 239, 0.1);
-  /* Semantic roles keep component contrast consistent across themes. */
+  /* Semantic roles keep component contrast consistent across themes.
+     The surface tokens are the frosted-glass recipe - a pale top glint
+     over a translucent deep-blue body - so every panel and control
+     shares one glass treatment, and it stays theme-scoped via the
+     --glass-* custom properties below. */
   --surface-app: var(--color-abyss-deep);
-  --surface-panel: var(--color-tide);
-  --surface-panel-hover: var(--color-tide-soft);
-  --surface-control: var(--color-tide);
-  --surface-control-hover: var(--color-tide-soft);
+  --surface-panel: var(--glass-sheen), var(--glass-frost);
+  --surface-panel-hover: var(--glass-sheen), var(--glass-frost-strong);
+  --surface-control: var(--glass-sheen), var(--glass-frost);
+  --surface-control-hover: var(--glass-sheen), var(--glass-frost-strong);
   --text-primary: var(--color-foam);
   --text-secondary: var(--color-foam-dim);
-  --border-subtle: var(--color-line);
+  --border-subtle: var(--glass-edge);
   --border-strong: var(--color-seafoam);
   --border-focus: var(--color-seafoam);
   /* Input field boundaries need their own stronger line: 1.4.11 calls
@@ -151,18 +153,89 @@
   --space-6: 28px;
 
   /* --- Layout: design-system radii --- */
-  /* Panels (picker, menu popover): 24px */
-  --radius-lg: 24px;
-  /* Buttons, inputs, theme picker: 16px */
-  --radius-md: 16px;
-  /* Chips, tags, small controls: 12px */
-  --radius-sm: 12px;
+  /* Panels (picker, menu popover): 28px */
+  --radius-lg: 28px;
+  /* Buttons, inputs, theme picker: 18px */
+  --radius-md: 18px;
+  /* Chips, tags, small controls: 14px */
+  --radius-sm: 14px;
   --radius-full: 999px; /* reserved for small circular icon buttons only */
-  --shadow-soft: 0 6px 18px rgba(3, 12, 15, 0.35);
-  --shadow-elevated: 0 10px 30px rgba(3, 12, 15, 0.42);
+
+  /* --- Elevation: layered, low-opacity ambient shadows. A single dark  */
+  /* blob reads as heavy and smudgy on a dark sea; three stops (a tight  */
+  /* contact shadow, a mid presence, and a wide diffuse lift) give the   */
+  /* panes grounded depth without ever shouting. --shadow-color is an    */
+  /* RGB triplet so the beach theme warms the ambient shadow to sand     */
+  /* instead of a cool navy cast.                                        */
+  --shadow-color: 3, 12, 15;
+  --shadow-soft:
+    0 1px 2px rgba(var(--shadow-color), 0.14),
+    0 2px 8px rgba(var(--shadow-color), 0.1),
+    0 14px 32px rgba(var(--shadow-color), 0.1);
+  --shadow-elevated:
+    0 2px 4px rgba(var(--shadow-color), 0.12),
+    0 10px 22px rgba(var(--shadow-color), 0.1),
+    0 28px 64px rgba(var(--shadow-color), 0.16);
+
+  /* --- Glass: a calm frosted material, not layered optics. A single   */
+  /* translucent deep-blue body (--glass-frost, opaque enough that      */
+  /* light text keeps its contrast), a pale top-lit rim (--glass-edge), */
+  /* one angled light-catch (--glass-sheen), and one top specular       */
+  /* catch-light (--glass-specular). The chromatic fringe and the       */
+  /* second specular inset are gone so the pane reads as softly frosted */
+  /* rather than a stack of artificial reflections, and the backdrop    */
+  /* blur is a whisper that grounds the pane instead of a feature.      */
+  /* Depth is tiered: large chrome (cards, menus, the composer,         */
+  /* dialogs) uses the richer --glass-blur, while small controls and    */
+  /* chat content use --glass-blur-soft so long conversations never     */
+  /* stack heavy blur. A @supports fallback near the end of this file   */
+  /* raises the frost to near-opaque where blur is unavailable, and     */
+  /* prefers-reduced-transparency plus prefers-contrast do the same     */
+  /* for users who ask for them.                                        */
+  --glass-blur: 14px;
+  --glass-blur-soft: 8px;
+  --glass-saturate: 120%;
+  --glass-frost: rgba(20, 63, 72, 0.58);
+  --glass-frost-strong: rgba(24, 74, 84, 0.74);
+  /* Chat bubbles are the content layer: near-opaque so text sits on a
+     stable surface instead of floating on translucent glass. */
+  --bubble-frost: rgba(20, 63, 72, 0.84);
+  /* A soft diagonal reflection on each bubble, echoing the panel sheen
+     so the messages share the same light direction as the chrome. */
+  --user-bubble-sheen: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0) 48%
+  );
+  --bot-bubble-sheen: linear-gradient(
+    158deg,
+    rgba(214, 244, 250, 0.14) 0%,
+    rgba(214, 244, 250, 0) 52%
+  );
+  --glass-sheen: linear-gradient(
+    158deg,
+    rgba(214, 244, 250, 0.32) 0%,
+    rgba(214, 244, 250, 0.08) 30%,
+    rgba(214, 244, 250, 0) 65%
+  );
+  /* The rim is a whisper, not a drawn line: a faint lightening of the
+     pane's own tint so the edge reads as light catching the glass. The
+     top specular catch-light carries the rest of the definition. */
+  --glass-edge: rgba(196, 238, 246, 0.14);
+  --glass-specular: inset 0 1px 0 rgba(244, 253, 255, 0.32);
+  --glass-specular-soft: inset 0 1px 0 rgba(244, 253, 255, 0.24);
+  /* Circular icon buttons need a clearly visible rim on the dark sea:
+     the faint panel edge would leave a 34px disc with no readable
+     boundary. A brighter hairline keeps the circle crisp. */
+  --circle-rim: rgba(196, 238, 246, 0.34);
 
   /* --- Motion --- */
   --ease-tide: cubic-bezier(0.37, 0, 0.24, 1);
+
+  /* Cursor-tracked glass glint: a whisper-light radial highlight that
+     follows the pointer across interactive glass (see the glint section
+     at the end of this file). Kept at a whisper opacity on purpose. */
+  --glint-color: rgba(255, 255, 255, 0.09);
 }
 
 /* English gets its own, equally considered type pairing rather than
@@ -187,13 +260,51 @@ html[data-theme='beach'] {
   --color-coral-soft: #eaa98b;
   --color-seafoam: #6cc4a8;
   --color-warning: #cb7e2c;
-  --color-success: #7ac4a8;
-  --color-danger: #dc7f5d;
-  --color-line: rgba(15, 46, 58, 0.18);
+  /* Warm the ambient shadows to sand brown so they read naturally over
+     the bright beach instead of casting a cool navy haze. */
+  --shadow-color: 91, 61, 35;
   /* The beach composer is a translucent teal panel over sand, which
      composites to #456d5e; a light foam boundary keeps the input edge
      at 3.3:1 while the dark translucent line is invisible. */
   --border-input: rgba(240, 247, 244, 0.65);
+  /* Glass frost over bright sand must stay deep-teal so light text keeps
+     its contrast; the rim, sheen, and specular carry the glass feel. */
+  --glass-frost: rgba(31, 84, 73, 0.86);
+  --glass-frost-strong: rgba(40, 100, 90, 0.94);
+  --bubble-frost: rgba(31, 84, 73, 0.94);
+  --glass-sheen: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  --glass-edge: rgba(240, 247, 244, 0.16);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-specular-soft: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  /* Light glass: small chrome (header buttons, note chips, the sound
+     toggle) sits on the bright sky, so it flips to a frosted light pane
+     with dark ink, mirroring Liquid Glass's light/dark adaptivity. The
+     panels and bubbles keep the dark frost above so light text clears
+     AA contrast. */
+  --glass-light:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.12) 100%
+    ),
+    rgba(200, 221, 229, 0.66);
+  --glass-light-strong:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.18) 100%
+    ),
+    rgba(212, 230, 236, 0.8);
+  --glass-light-edge: rgba(255, 255, 255, 0.4);
+  --glass-light-specular: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  /* On the bright beach, light-glass panels are already near-white, so
+     the tracked glint needs a touch more presence to stay visible. */
+  --glint-color: rgba(255, 255, 255, 0.14);
 }
 
 * {
@@ -296,6 +407,27 @@ html:not(.no-theme-transition) .breathe-trigger {
   outline: 2.5px solid var(--border-focus);
   outline-offset: 2px;
   border-radius: 6px;
+}
+
+/* --------------------------------------------------------------------- */
+/* UI chrome is not selectable. In the packaged Android/WebView build a  */
+/* long-press on a menu label, dialog line, or the footer pops the       */
+/* native text-selection callout, which reads as a broken, non-native    */
+/* experience. Conversation bubbles and the composer input stay          */
+/* selectable so users can copy what Darya (or they) wrote.              */
+/* --------------------------------------------------------------------- */
+
+.picker,
+.header,
+.menu__popover,
+.theme-picker,
+.exit-confirm-bar,
+.confirm-container,
+.notification-container,
+.disclaimer {
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* --------------------------------------------------------------------- */
@@ -758,9 +890,11 @@ html[data-theme='beach'] .bird-shadows {
   padding: var(--space-4);
   min-height: 52px;
   background: var(--surface-panel);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
   cursor: pointer;
   transition:
     border-color 0.2s var(--ease-tide),
@@ -770,12 +904,12 @@ html[data-theme='beach'] .bird-shadows {
 
 .picker__option:hover {
   border-color: var(--color-seafoam);
-  background: var(--color-tide-soft);
-  box-shadow: var(--shadow-elevated);
+  background: var(--surface-panel-hover);
+  box-shadow: var(--glass-specular), var(--shadow-elevated);
 }
 
 .picker__option:active {
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
 }
 
 .picker__option-title {
@@ -804,24 +938,6 @@ html[data-theme='beach'] .bird-shadows {
   color: var(--color-foam-dim);
 }
 
-.picker__note {
-  font-size: 12px;
-  color: var(--color-foam-dim);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  gap: var(--space-2);
-}
-
-html[data-theme='beach'] .picker__note {
-  background: rgba(255, 255, 255, 0.55);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--color-on-sky);
-  text-shadow: none;
-}
-
 .picker__note-sep {
   opacity: 0.6;
 }
@@ -831,15 +947,23 @@ html[data-theme='beach'] .picker__note {
 /* Each language variant sits on its own line.                           */
 /* --------------------------------------------------------------------- */
 
+/* The lang-lock note and theme heading both sit in a small glass chip in
+   BOTH themes, so switching theme only swaps the chip tint and ink and
+   never reflows the picker (a chip that appears or disappears on switch
+   would visibly jump the layout). The chip also guarantees the muted
+   text keeps its 4.5:1 legibility over whatever drifts behind it. */
 .picker__lang-lock {
   font-size: 11.5px;
-  color: var(--color-foam-dim);
+  color: var(--text-secondary);
   text-align: center;
   margin: -4px 0 0;
   line-height: 1.7;
-  /* 0.75 opacity left the muted note at 4.45:1 on the backdrop gradient,
-     just under the 4.5:1 AA threshold; 0.9 keeps the subtle look while
-     clearing it with margin on every backdrop tone. */
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-specular-soft);
   opacity: 0.9;
 }
 
@@ -850,27 +974,30 @@ html[data-theme='beach'] .picker__note {
 .picker__theme-heading {
   font-size: 12px;
   font-weight: 400;
-  color: var(--color-foam-dim);
+  color: var(--text-secondary);
   text-align: center;
   margin: 0;
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
-  opacity: 0.8;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-specular-soft);
+  opacity: 0.9;
 }
 
-/* The beach lang-lock and theme-heading sit over the animated
-   semi-transparent wave layers, whose drifting teal tones leave dark ink
-   at 2.1-3.8:1 (unstable). A light pill like the picker note gives both
-   text blocks a stable, readable backing. */
+/* Beach swaps the chip to light glass with dark ink; the box model is
+   identical to ocean so the theme switch never moves the picker. */
 html[data-theme='beach'] .picker__lang-lock,
 html[data-theme='beach'] .picker__theme-heading {
   color: var(--color-on-sky);
-  opacity: 0.85;
-  background: rgba(240, 235, 218, 0.85);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
+  background: var(--glass-light);
+  border-color: var(--glass-light-edge);
+  box-shadow: var(--glass-light-specular);
 }
 
 /* --------------------------------------------------------------------- */
@@ -891,8 +1018,9 @@ html[data-theme='beach'] .picker__theme-heading {
   gap: 4px;
   padding: var(--space-3) var(--space-2);
   min-height: 44px;
-  background: var(--color-tide);
-  border: 1px solid var(--color-line);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   color: var(--color-foam-dim);
   cursor: pointer;
@@ -913,7 +1041,7 @@ html[data-theme='beach'] .picker__theme-heading {
 .theme-picker__option[aria-pressed='true'] {
   border-color: var(--color-seafoam);
   color: var(--color-foam);
-  background: var(--color-tide-soft);
+  background: var(--surface-control-hover);
   /* The same soft seafoam halo the composer uses on focus-within, so
      the selected segment and the focused input share one language. */
   box-shadow: 0 0 0 2px rgba(127, 190, 176, 0.15);
@@ -947,14 +1075,17 @@ html[data-theme='beach'] .picker__theme-heading {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: transparent;
-  border: none;
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--circle-rim);
   border-radius: 50%;
   color: var(--color-foam-dim);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   transition:
     color 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide),
+    border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
 }
 
@@ -972,21 +1103,13 @@ html[data-theme='beach'] .picker__theme-heading {
 
 .picker__sound-toggle:hover {
   color: var(--color-foam);
-  background: rgba(127, 190, 176, 0.08);
+  background: var(--surface-control-hover);
 }
 
 .picker__sound-toggle[aria-pressed='true'] {
   color: var(--color-foam);
-  background: rgba(127, 190, 176, 0.14);
+  background: var(--surface-control-hover);
   box-shadow: 0 0 0 3px rgba(127, 190, 176, 0.12);
-}
-
-.picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
-  display: none;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  display: none;
 }
 
 /* --------------------------------------------------------------------- */
@@ -1051,12 +1174,6 @@ html[data-theme='beach'] .picker__theme-heading {
   padding-inline: var(--space-4);
 }
 
-.header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
 .header__title {
   margin: 0;
   font-family: var(--font-display);
@@ -1083,15 +1200,19 @@ html[data-theme='beach'] .picker__theme-heading {
   justify-content: center;
   width: 34px;
   height: 34px;
-  background: transparent;
-  border: 1px solid var(--color-line);
+  padding: 0;
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   transition:
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
-    background 0.2s var(--ease-tide);
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
 }
 
 /* Expand the invisible tap target to the recommended 44px while keeping
@@ -1107,7 +1228,9 @@ html[data-theme='beach'] .picker__theme-heading {
 .menu__trigger[aria-expanded='true'] {
   color: var(--color-foam);
   border-color: var(--color-seafoam);
-  background: rgba(127, 190, 176, 0.08);
+  /* Brighten the glass body instead of swapping in a transparent tint,
+     which used to drop the frost and let the dark backdrop flood in. */
+  background: var(--surface-control-hover);
 }
 
 .menu__popover {
@@ -1117,9 +1240,10 @@ html[data-theme='beach'] .picker__theme-heading {
   max-width: calc(100vw - 2 * var(--space-3));
   min-width: 216px;
   background: var(--surface-panel);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
   padding: var(--space-2);
   z-index: 10;
   animation: menu-in 0.22s var(--ease-tide) both;
@@ -1170,7 +1294,7 @@ html[data-theme='beach'] .picker__theme-heading {
 }
 
 .menu__item:hover {
-  background: var(--color-tide-soft);
+  background: var(--glass-frost-strong);
 }
 
 .menu__item-icon {
@@ -1230,6 +1354,73 @@ html[data-theme='beach'] .chat::-webkit-scrollbar-thumb {
   background: rgba(31, 84, 73, 0.5);
   border: 1px solid transparent;
   background-clip: padding-box;
+}
+
+/* Jump-to-latest affordance: a floating glass pill pinned to the bottom
+   of the chat that appears only when the reader has scrolled away from
+   the newest message, and smooth-scrolls back down on tap. It lives
+   inside the scroll container as a sticky row so it never overlaps the
+   composer and never reserves a scroll gap when hidden (opacity +
+   visibility collapse it). */
+.chat-jump {
+  position: sticky;
+  bottom: var(--space-3);
+  align-self: flex-end;
+  margin-inline-end: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 14px;
+  min-height: 40px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--color-foam);
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.25s var(--ease-tide),
+    transform 0.25s var(--ease-tide),
+    visibility 0.25s var(--ease-tide),
+    background 0.2s var(--ease-tide),
+    border-color 0.2s var(--ease-tide);
+}
+
+.chat-jump:hover {
+  background: var(--surface-control-hover);
+  border-color: var(--color-seafoam);
+}
+
+.chat-jump--show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.chat-jump svg {
+  flex-shrink: 0;
+}
+
+html[data-theme='beach'] .chat-jump {
+  color: #0f2e3a;
+  background: var(--glass-light);
+  border-color: var(--glass-light-edge);
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
+}
+
+html[data-theme='beach'] .chat-jump:hover {
+  background: var(--glass-light-strong);
 }
 
 .bubble-row {
@@ -1302,17 +1493,21 @@ html[dir='ltr'] .bubble-row--bot {
 }
 
 .bubble--user {
-  background: var(--color-seafoam);
+  background: var(--user-bubble-sheen), var(--color-seafoam);
   color: var(--color-abyss-deep);
-  border-radius: var(--radius-md) var(--radius-md) 4px var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 8px var(--radius-md);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    var(--shadow-soft);
 }
 
 .bubble--bot {
-  background: var(--surface-panel);
+  background: var(--bot-bubble-sheen), var(--bubble-frost);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 8px;
   position: relative;
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   animation: rise-in 0.3s var(--ease-tide) both;
 }
 
@@ -1397,8 +1592,10 @@ html[dir='ltr'] .bubble-row--bot .bubble-meta {
   font-size: 13.5px;
   color: var(--color-foam);
   background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
+  box-shadow: var(--glass-specular-soft);
   cursor: pointer;
   transition:
     border-color 0.2s var(--ease-tide),
@@ -1418,14 +1615,7 @@ html[dir='ltr'] .bubble-row--bot .bubble-meta {
 }
 
 html[data-theme='beach'] .quick-reply {
-  background: rgba(31, 84, 73, 0.88);
-  border-color: rgba(15, 46, 58, 0.15);
   color: #f0f7f4;
-}
-
-html[data-theme='beach'] .quick-reply:hover {
-  background: #28645a;
-  border-color: #6cc4a8;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1512,9 +1702,11 @@ html[data-theme='beach'] .quick-reply:hover {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
   background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
   margin: var(--space-2) var(--space-3);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
   transition:
     border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
@@ -1557,9 +1749,12 @@ html[data-theme='beach'] .quick-reply:hover {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: none;
+  /* Transparent border reserves the ring so the disabled state can swap
+     in a hairline without a 2px layout shift. */
+  border: 1px solid transparent;
   background: var(--color-coral);
   color: var(--color-abyss-deep);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1567,7 +1762,7 @@ html[data-theme='beach'] .quick-reply:hover {
   transition:
     transform 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide),
-    opacity 0.2s,
+    border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
 }
 
@@ -1619,15 +1814,21 @@ html[dir='rtl'] .composer__send svg {
 
 .composer__send:hover:not(:disabled) {
   background: var(--color-coral-soft);
-  transform: scale(1.06);
 }
 
 .composer__send:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .composer__send:disabled {
-  opacity: 0.35;
+  /* Muted frosted glass instead of a dimmed coral blob: a coral disc at
+     low opacity over the dark composer read as a muddy dark smudge, so
+     the idle state reuses the same glass circle the other icon buttons
+     share, with a dimmed arrow to signal it is not yet available. */
+  background: var(--surface-control);
+  color: var(--color-foam-dim);
+  border-color: var(--circle-rim);
+  box-shadow: var(--glass-specular-soft);
   cursor: not-allowed;
 }
 
@@ -1661,7 +1862,9 @@ html[dir='rtl'] .composer__send svg {
   justify-content: center;
   background: rgba(4, 15, 20, 0.85);
   animation: reveal 0.35s var(--ease-tide) both;
-  cursor: pointer;
+  /* Only the close button is interactive; the backdrop and the exercise
+     itself must not advertise a click with a pointer cursor. */
+  cursor: default;
   backdrop-filter: blur(4px);
 }
 
@@ -1677,6 +1880,7 @@ html[data-theme='beach'] .breathe-overlay {
 }
 
 .breathe-circle {
+  position: relative;
   width: 140px;
   height: 140px;
   border-radius: 50%;
@@ -1688,15 +1892,41 @@ html[data-theme='beach'] .breathe-overlay {
   box-shadow:
     0 0 30px rgba(127, 190, 176, 0.15),
     inset 0 0 20px rgba(127, 190, 176, 0.06);
-  transition: transform 4s var(--ease-tide);
+  transition:
+    transform 4s var(--ease-tide),
+    box-shadow 4s var(--ease-tide);
 }
 
+/* A soft specular glint at the top-left reads as light reflecting off a
+   rounded glass surface, without adding motion of its own. */
+.breathe-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 28%,
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0) 46%
+  );
+  pointer-events: none;
+}
+
+/* The glow breathes with the phase: it brightens as the circle grows on
+   the inhale and settles back as it shrinks on the exhale, so the light
+   itself carries the rhythm rather than a separate animation. */
 .breathe-circle--grow {
   transform: scale(1.2);
+  box-shadow:
+    0 0 52px rgba(127, 190, 176, 0.32),
+    inset 0 0 28px rgba(127, 190, 176, 0.1);
 }
 
 .breathe-circle--shrink {
   transform: scale(1);
+  box-shadow:
+    0 0 30px rgba(127, 190, 176, 0.15),
+    inset 0 0 20px rgba(127, 190, 176, 0.06);
 }
 
 .breathe-label {
@@ -1733,12 +1963,13 @@ html[data-theme='beach'] .breathe-countdown {
   padding: 8px 20px;
   font-size: 13px;
   font-family: var(--font-body);
-  background: transparent;
-  border: 1px solid rgba(234, 243, 239, 0.25);
-  color: var(--color-foam-dim);
+  background: var(--surface-control-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   border-radius: var(--radius-md);
   cursor: pointer;
   min-height: 44px;
+  box-shadow: var(--glass-specular-soft);
   transition:
     border-color 0.15s var(--ease-tide),
     color 0.15s var(--ease-tide);
@@ -1775,8 +2006,10 @@ html[data-theme='beach'] .breathe-countdown {
   margin-bottom: var(--space-2);
   padding: var(--space-3) var(--space-4);
   background: var(--surface-panel);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
   animation: reveal 0.25s var(--ease-tide) both;
 }
 
@@ -1813,6 +2046,7 @@ html[data-theme='beach'] .breathe-countdown {
   background: var(--color-coral);
   color: var(--color-abyss-deep);
   border-color: var(--color-coral);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .exit-confirm-bar__btn--yes:hover {
@@ -1821,7 +2055,7 @@ html[data-theme='beach'] .breathe-countdown {
 }
 
 .exit-confirm-bar__btn--no {
-  background: transparent;
+  background: var(--surface-control-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
@@ -1829,11 +2063,6 @@ html[data-theme='beach'] .breathe-countdown {
 .exit-confirm-bar__btn--no:hover {
   color: var(--text-primary);
   border-color: var(--color-seafoam);
-}
-
-html[data-theme='beach'] .exit-confirm-bar {
-  background: rgba(31, 84, 73, 0.88);
-  border-color: rgba(15, 46, 58, 0.15);
 }
 
 html[data-theme='beach'] .exit-confirm-bar__label {
@@ -1853,7 +2082,6 @@ html[data-theme='beach'] .exit-confirm-bar__btn--yes:hover {
 
 html[data-theme='beach'] .exit-confirm-bar__btn--no {
   color: rgba(240, 247, 244, 0.65);
-  border-color: rgba(15, 46, 58, 0.2);
 }
 
 html[data-theme='beach'] .exit-confirm-bar__btn--no:hover {
@@ -1935,7 +2163,10 @@ html[data-theme='beach'] .exit-confirm-bar__btn--no:hover {
   justify-content: center;
   background: rgba(4, 15, 20, 0.85);
   animation: reveal 0.3s var(--ease-tide) both;
-  cursor: pointer;
+  /* The backdrop may still cancel the dialog, but the two action buttons
+     are the interactive affordance; the dimmed backdrop must not show a
+     pointer cursor everywhere. */
+  cursor: default;
   backdrop-filter: blur(4px);
 }
 
@@ -1950,12 +2181,13 @@ html[data-theme='beach'] .confirm-overlay {
   gap: var(--space-4);
   padding: var(--space-6);
   background: var(--surface-panel);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   max-width: 360px;
   width: 90%;
   cursor: default;
-  box-shadow: var(--shadow-elevated);
+  box-shadow: var(--glass-specular), var(--shadow-elevated);
 }
 
 .confirm-title {
@@ -2008,6 +2240,7 @@ html[data-theme='beach'] .confirm-title {
   background: var(--color-coral);
   color: var(--color-abyss-deep);
   border-color: var(--color-coral);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .confirm-btn--yes:hover {
@@ -2016,7 +2249,7 @@ html[data-theme='beach'] .confirm-title {
 }
 
 .confirm-btn--no {
-  background: transparent;
+  background: var(--surface-control-hover);
   color: var(--text-secondary);
   border-color: var(--border-subtle);
 }
@@ -2024,11 +2257,6 @@ html[data-theme='beach'] .confirm-title {
 .confirm-btn--no:hover {
   color: var(--text-primary);
   border-color: var(--color-seafoam);
-}
-
-html[data-theme='beach'] .confirm-container {
-  background: rgba(31, 84, 73, 0.96);
-  border-color: rgba(15, 46, 58, 0.15);
 }
 
 html[data-theme='beach'] .confirm-btn--yes {
@@ -2044,7 +2272,6 @@ html[data-theme='beach'] .confirm-btn--yes:hover {
 
 html[data-theme='beach'] .confirm-btn--no {
   color: rgba(240, 247, 244, 0.65);
-  border-color: rgba(15, 46, 58, 0.2);
 }
 
 html[data-theme='beach'] .confirm-btn--no:hover {
@@ -2108,10 +2335,11 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   background: var(--surface-panel);
   border: 1px solid var(--notification-accent);
   box-shadow:
+    var(--glass-specular),
     0 0 0 1px rgba(0, 0, 0, 0.12),
-    0 0 28px var(--notification-accent),
+    0 0 20px var(--notification-accent),
     var(--shadow-elevated);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 }
 
 .notification-container--error {
@@ -2142,12 +2370,12 @@ html[data-theme='beach'] .confirm-btn--no:hover {
   color: var(--notification-accent);
 }
 
-/* Beach theme override for the notification badge. The beach panel is
-   also dark teal, so the luminous severity accents keep working; a
-   solid background (not translucent) keeps the glow exact over the
-   bright sand. */
+/* Beach theme override for the notification badge. The badge shares the
+   same glass surface token as the ocean badge, so it reads as one
+   material across themes; the beach frost is near-opaque, which keeps
+   the luminous severity glow exact over the bright sand. */
 html[data-theme='beach'] .notification-container {
-  background: var(--color-tide);
+  background: var(--surface-panel);
 }
 
 html[data-theme='beach'] .notification-container--error {
@@ -2165,6 +2393,59 @@ html[data-theme='beach'] .notification-container--info {
 @media (prefers-reduced-motion: reduce) {
   .notification-overlay {
     animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------- */
+/* Glass fallbacks: the frosted panes must stay readable even without     */
+/* the blur that normally does the separation work.                       */
+/* --------------------------------------------------------------------- */
+
+/* Legacy engines without backdrop-filter get a near-opaque frost so text
+   keeps its contrast; the pane still reads as tinted glass via the rim,
+   sheen, and shadow. */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  :root {
+    --glass-frost: rgba(20, 63, 72, 0.94);
+    --glass-frost-strong: rgba(24, 74, 84, 0.97);
+  }
+
+  html[data-theme='beach'] {
+    --glass-frost: rgba(31, 84, 73, 0.97);
+    --glass-frost-strong: rgba(40, 100, 90, 0.99);
+  }
+}
+
+/* Users who ask the OS to reduce transparency get the same near-opaque
+   treatment, honouring the preference instead of forcing frosted layers. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-frost: rgba(20, 63, 72, 0.95);
+    --glass-frost-strong: rgba(24, 74, 84, 0.98);
+  }
+
+  html[data-theme='beach'] {
+    --glass-frost: rgba(31, 84, 73, 0.98);
+    --glass-frost-strong: rgba(40, 100, 90, 1);
+  }
+}
+
+/* Increased contrast mirrors Apple's "Increase Contrast" material
+   modifier: the pane goes opaque and the rim brightens to a clearly
+   visible edge, keeping the glass readable without the translucency. */
+@media (prefers-contrast: more) {
+  :root {
+    --glass-frost: rgba(20, 63, 72, 0.97);
+    --glass-frost-strong: rgba(24, 74, 84, 1);
+    --glass-edge: rgba(214, 244, 250, 0.7);
+  }
+
+  html[data-theme='beach'] {
+    --glass-frost: rgba(31, 84, 73, 0.99);
+    --glass-frost-strong: rgba(40, 100, 90, 1);
+    --glass-edge: rgba(255, 255, 255, 0.7);
   }
 }
 
@@ -2201,11 +2482,18 @@ html[data-theme='beach'] .notification-container--info {
   .menu__item,
   .sound-toggle__wave,
   .sound-toggle__slash,
+  .chat-jump,
   .composer,
   .exit-confirm-bar__btn,
   .confirm-btn {
     animation: none !important;
     transition: none !important;
+  }
+
+  /* The chat auto-scroll and jump-to-latest settle instantly instead of
+     animating, so reduced-motion users are never scrolled through. */
+  .chat {
+    scroll-behavior: auto;
   }
 }
 
@@ -2359,7 +2647,7 @@ html[data-theme='beach'] .beach-scene {
     #f9dda0 54%,
     #edc777 100%
   );
-  box-shadow: 0 0 24px rgba(246, 211, 139, 0.42);
+  box-shadow: 0 0 20px rgba(246, 211, 139, 0.3);
 }
 
 @keyframes sun-breathe {
@@ -2579,7 +2867,6 @@ html[data-theme='beach'] .backdrop__scrim {
 }
 
 html[data-theme='beach'] .picker__intro,
-html[data-theme='beach'] .picker__note,
 html[data-theme='beach'] .header {
   color: var(--color-on-sky);
 }
@@ -2593,7 +2880,6 @@ html[data-theme='beach'] .picker__intro-en {
   color: var(--color-on-sky-link);
 }
 
-html[data-theme='beach'] .picker__note,
 html[data-theme='beach'] .picker__intro-sep {
   color: var(--color-on-sky-dim);
 }
@@ -2602,6 +2888,10 @@ html[data-theme='beach'] .picker__intro-sep {
    ink surfaces (kept in sync with the solid opaque overrides below). */
 html[data-theme='beach'] .picker__sound-toggle {
   color: var(--color-on-sky-dim);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-light-specular);
 }
 
 html[data-theme='beach'] .picker__sound-toggle:hover {
@@ -2612,11 +2902,14 @@ html[data-theme='beach'] .picker__sound-toggle[aria-pressed='true'] {
   color: var(--color-on-sky);
 }
 
-/* Beach menu popover: sky-inspired translucent backdrop with dark ink. */
+/* Beach menu popover: frosted light glass over the sky, with dark ink. */
 html[data-theme='beach'] .menu__popover {
-  background: #c8dde5;
-  border-color: rgba(15, 46, 58, 0.2);
-  box-shadow: 0 8px 24px rgba(15, 46, 58, 0.14);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-color: var(--glass-light-edge);
+  box-shadow:
+    var(--glass-light-specular),
+    0 8px 24px rgba(15, 46, 58, 0.18);
 }
 
 html[data-theme='beach'] .menu__item {
@@ -2629,12 +2922,6 @@ html[data-theme='beach'] .menu__item:hover {
 
 html[data-theme='beach'] .menu__item-icon {
   color: #28645a;
-}
-
-/* Beach picker note: use dark ink instead of text-shadow halo. */
-html[data-theme='beach'] .picker__note {
-  text-shadow: none;
-  color: var(--color-on-sky);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2723,17 +3010,40 @@ html[data-theme='beach'] .backdrop__depth-breath {
   justify-content: center;
   width: 34px;
   height: 34px;
-  background: transparent;
-  border: 1px solid var(--color-line);
+  padding: 0;
+  background: var(--surface-control);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  /* Hidden by default: collapsed with a gentle fade-and-scale reveal when
+     a heavy turn arms it. Only opacity and transform animate; visibility
+     keeps the collapsed state out of the tab order and accessibility
+     tree. The button stays in-flow, so the header title and menu never
+     shift when it appears. */
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.55);
+  pointer-events: none;
   transition:
+    opacity 0.3s var(--ease-tide),
+    transform 0.3s var(--ease-tide),
+    visibility 0.3s var(--ease-tide),
     border-color 0.2s var(--ease-tide),
     color 0.2s var(--ease-tide),
-    background 0.2s var(--ease-tide);
+    background 0.2s var(--ease-tide),
+    box-shadow 0.2s var(--ease-tide);
+}
+
+.breathe-trigger[aria-hidden='false'] {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 /* Expand the invisible tap target to the recommended 44px while keeping
@@ -2746,15 +3056,15 @@ html[data-theme='beach'] .backdrop__depth-breath {
 }
 
 /* The breathe trigger is the menu trigger's sibling in the header, so
-   it shares the same hover language: a soft seafoam fill with a glowing
-   border. (The beach theme overrides both with its sky-blue pill
-   treatment below.) */
+   it shares the same hover language: brighten the glass body and lift
+   the rim, never swap in a transparent tint. (The beach theme overrides
+   both with its light-glass treatment below.) */
 .breathe-trigger:hover,
 .breathe-trigger:focus-visible {
   cursor: pointer;
   color: var(--color-foam);
   border-color: var(--color-seafoam);
-  background: rgba(127, 190, 176, 0.08);
+  background: var(--surface-control-hover);
 }
 
 /* Wind icon subtle animation: gentle sway */
@@ -2783,17 +3093,22 @@ html[data-theme='beach'] .backdrop__depth-breath {
 
 html[data-theme='beach'] .breathe-trigger {
   color: #2f7384;
-  border-color: rgba(47, 115, 132, 0.45);
-  background: rgba(200, 221, 229, 0.88);
-  box-shadow: 0 2px 10px rgba(91, 61, 35, 0.08);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
 }
 
 html[data-theme='beach'] .breathe-trigger:hover,
 html[data-theme='beach'] .breathe-trigger:focus-visible {
   color: #286573;
   border-color: #286573;
-  background: rgba(200, 221, 229, 0.95);
-  box-shadow: 0 4px 14px rgba(91, 61, 35, 0.12);
+  background: var(--glass-light-strong);
+  box-shadow:
+    var(--glass-light-specular),
+    0 4px 14px rgba(91, 61, 35, 0.12);
 }
 
 /* --------------------------------------------------------------------- */
@@ -2803,48 +3118,47 @@ html[data-theme='beach'] .breathe-trigger:focus-visible {
 /* inherits .menu__item styling.                                         */
 /* --------------------------------------------------------------------- */
 
-/* Sound toggle icon states: muted (speaker with slash, waves hidden)
-   when off, speaker with waves when on. The slash and waves crossfade
-   via aria-pressed, which app.js keeps in sync with the audio state. */
+/* Sound toggle icon: muted (speaker with slash, waves tucked in) when
+   off, playing (waves radiating out) when on. Rather than a flat
+   crossfade, the waves bloom outward and the slash sweeps away as sound
+   turns on, and both settle back as it turns off, so the switch reads as
+   a calm, continuous gesture instead of an instant swap. Only opacity
+   and transform animate (GPU-composited), and the outer arc lags the
+   inner one by a beat so the ripple travels outward. The default state
+   is off; aria-pressed="true" (kept in sync by app.js) is the on state. */
 .sound-toggle__wave,
 .sound-toggle__slash {
-  transition: opacity 0.25s var(--ease-tide);
+  transition:
+    opacity 0.35s var(--ease-tide),
+    transform 0.35s var(--ease-tide);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sound-toggle__wave {
+  opacity: 0;
+  transform: scale(0.55);
+}
+
+.sound-toggle__wave + .sound-toggle__wave {
+  transition-delay: 0.06s;
 }
 
 .sound-toggle__slash {
-  opacity: 0;
-}
-
-#menu-sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  opacity: 0;
-}
-
-#menu-sound-toggle[aria-pressed='false'] .sound-toggle__slash {
   opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 
-#menu-sound-toggle[aria-pressed='true'] .sound-toggle__wave {
-  opacity: 1;
-}
-
-#menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash {
-  opacity: 0;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__wave {
-  opacity: 0;
-}
-
-.picker__sound-toggle[aria-pressed='false'] .sound-toggle__slash {
-  opacity: 1;
-}
-
+#menu-sound-toggle[aria-pressed='true'] .sound-toggle__wave,
 .picker__sound-toggle[aria-pressed='true'] .sound-toggle__wave {
   opacity: 1;
+  transform: scale(1);
 }
 
+#menu-sound-toggle[aria-pressed='true'] .sound-toggle__slash,
 .picker__sound-toggle[aria-pressed='true'] .sound-toggle__slash {
   opacity: 0;
+  transform: rotate(-24deg) scale(0.6);
 }
 
 /* Theme toggle icon: the ocean (waves) and beach (sun) glyphs both live
@@ -2862,17 +3176,22 @@ html[data-theme='beach'] .theme-toggle__beach {
    sky chip (hover darkens a step further to preserve the feedback). */
 html[data-theme='beach'] .menu__trigger {
   color: #1a5f6d;
-  border-color: rgba(26, 95, 109, 0.55);
-  background: rgba(200, 221, 229, 0.88);
-  box-shadow: 0 2px 10px rgba(91, 61, 35, 0.08);
+  border-color: var(--glass-light-edge);
+  background: var(--glass-light);
+  backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
+  box-shadow:
+    var(--glass-light-specular),
+    0 2px 10px rgba(91, 61, 35, 0.08);
 }
 
 html[data-theme='beach'] .menu__trigger:hover,
 html[data-theme='beach'] .menu__trigger[aria-expanded='true'] {
   color: #14505f;
   border-color: #14505f;
-  background: rgba(200, 221, 229, 0.95);
-  box-shadow: 0 4px 14px rgba(91, 61, 35, 0.12);
+  background: var(--glass-light-strong);
+  box-shadow:
+    var(--glass-light-specular),
+    0 4px 14px rgba(91, 61, 35, 0.12);
 }
 
 html[data-theme='beach'] .input-hint {
@@ -2907,14 +3226,10 @@ html:not([data-theme='beach']) .input-hint {
   border-color: rgba(240, 185, 134, 0.18);
 }
 
-html[data-theme='beach'] .picker__option {
-  background: rgba(31, 84, 73, 0.88);
-  border-color: rgba(15, 46, 58, 0.18);
-  color: #f0f7f4;
-}
-
+/* Beach language cards inherit the glass surface tokens (deep-teal frost
+   plus the top sheen); only the hover rim and lift need sand-tuned
+   values, since the bright sky sits behind the pane. */
 html[data-theme='beach'] .picker__option:hover {
-  background: rgba(40, 100, 90, 0.95);
   border-color: var(--color-on-sky-link);
   box-shadow: 0 6px 20px rgba(91, 61, 35, 0.15);
 }
@@ -2937,23 +3252,16 @@ html[data-theme='beach'] .picker__option-desc {
 }
 
 html[data-theme='beach'] .bubble--user {
-  background: var(--color-on-sky);
+  background: var(--user-bubble-sheen), var(--color-on-sky);
   color: #f0f7f4;
 }
 
 html[data-theme='beach'] .bubble--bot {
-  background: rgba(31, 84, 73, 0.88);
-  border-color: rgba(15, 46, 58, 0.15);
   color: #f0f7f4;
 }
 
 html[data-theme='beach'] .bubble-row--bot .bubble-meta {
   color: var(--color-on-sky-dim);
-}
-
-html[data-theme='beach'] .composer {
-  background: rgba(31, 84, 73, 0.82);
-  border-color: var(--border-input);
 }
 
 html[data-theme='beach'] .composer:focus-within {
@@ -2981,10 +3289,9 @@ html[data-theme='beach'] .composer__input::placeholder {
   color: rgba(240, 247, 244, 0.55);
 }
 
-/* Beach theme-picker segments need solid, opaque surfaces. */
+/* Beach theme-picker segments inherit the glass surface tokens; only the
+   dimmer resting label needs its own ink tone. */
 html[data-theme='beach'] .theme-picker__option {
-  background: rgba(31, 84, 73, 0.82);
-  border-color: rgba(15, 46, 58, 0.18);
   color: rgba(240, 247, 244, 0.75);
 }
 
@@ -2998,7 +3305,6 @@ html[data-theme='beach'] .theme-picker__option[aria-pressed='true'] {
      ink is invisible against the teal panel (1.8:1). */
   border-color: #a8d9cc;
   color: #f0f7f4;
-  background: rgba(40, 100, 90, 0.92);
   /* Halo parity with the ocean pressed state and the beach composer
      focus-within ring, translated to the beach luminous foam. */
   box-shadow: 0 0 0 2px rgba(168, 217, 204, 0.2);
@@ -3017,11 +3323,69 @@ html[data-theme='beach'] .picker__intro-en {
   color: var(--color-on-sky-link);
 }
 
-/* Beach picker note: solid background pill for readability. */
-html[data-theme='beach'] .picker__note {
-  background: rgba(240, 235, 218, 0.85);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--color-on-sky);
-  text-shadow: none;
+/* --------------------------------------------------------------------- */
+/* Cursor-tracked glass glint: a whisper-light highlight that follows    */
+/* the pointer across interactive glass, so the material reads as lit    */
+/* from the user's hand instead of a flat texture. Decorative only: the  */
+/* highlight is pointer-events none, and js/ui/glint.js skips the        */
+/* tracking on touch input and prefers-reduced-motion, so it never       */
+/* competes with the calm core or with assistive tech.                  */
+/* --------------------------------------------------------------------- */
+
+/* Elements that carry the glint but are not yet a containing block.     */
+.picker__option,
+.theme-picker__option,
+.menu__item,
+.quick-reply,
+.confirm-container {
+  position: relative;
+}
+
+.picker__option::after,
+.theme-picker__option::after,
+.menu__item::after,
+.menu__popover::after,
+.quick-reply::after,
+.confirm-container::after,
+.picker__sound-toggle::after,
+.menu__trigger::before,
+.breathe-trigger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    150px circle at var(--glint-x, 50%) var(--glint-y, 50%),
+    var(--glint-color),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-tide);
+  pointer-events: none;
+}
+
+.picker__option:hover::after,
+.theme-picker__option:hover::after,
+.menu__item:hover::after,
+.menu__popover:hover::after,
+.quick-reply:hover::after,
+.confirm-container:hover::after,
+.picker__sound-toggle:hover::after,
+.menu__trigger:hover::before,
+.breathe-trigger:hover::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker__option::after,
+  .theme-picker__option::after,
+  .menu__item::after,
+  .menu__popover::after,
+  .quick-reply::after,
+  .confirm-container::after,
+  .picker__sound-toggle::after,
+  .menu__trigger::before,
+  .breathe-trigger::before {
+    transition: none;
+  }
 }

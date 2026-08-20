@@ -14,6 +14,50 @@
   function createLanguage(ctrl) {
     const { UI, el, st } = ctrl;
 
+    /** Milliseconds each title stays before rotating on the picker. */
+    const TITLE_ROTATION_MS = 6000;
+
+    let titleRotationTimer = null;
+    let titleRotationIndex = 0;
+
+    /**
+     * Stops the picker title rotation and leaves the current title fixed.
+     */
+    function stopTitleRotation() {
+      if (titleRotationTimer !== null && titleRotationTimer !== undefined) {
+        clearInterval(titleRotationTimer);
+        titleRotationTimer = null;
+      }
+    }
+
+    /**
+     * Starts the picker title rotation: while the language picker is
+     * showing (before a conversation begins), the document title alternates
+     * between the Persian and English app titles so neither audience is
+     * left guessing at a language it cannot read. It stops the moment a
+     * conversation starts and the title locks to the chosen language.
+     */
+    function startTitleRotation() {
+      stopTitleRotation();
+      const faTitle =
+        (ctrl.DaryaLang &&
+          ctrl.DaryaLang.fa &&
+          ctrl.DaryaLang.fa.ui.appTitle) ||
+        'دریا · همراه گفتگوی آرام';
+      const enTitle =
+        (ctrl.DaryaLang &&
+          ctrl.DaryaLang.en &&
+          ctrl.DaryaLang.en.ui.appTitle) ||
+        'Darya · A Calm Conversation Companion';
+      const titles = [faTitle, enTitle];
+      el.pageTitle.textContent = titles[0];
+      titleRotationIndex = 0;
+      titleRotationTimer = setInterval(function () {
+        titleRotationIndex = (titleRotationIndex + 1) % titles.length;
+        el.pageTitle.textContent = titles[titleRotationIndex];
+      }, TITLE_ROTATION_MS);
+    }
+
     /**
      * Applies the chosen language to the entire UI: sets dir/lang attributes,
      * updates all text labels, and configures the engine.
@@ -65,6 +109,13 @@
       el.menuNewChatLabel.textContent = chosenLang.ui.menuNewChat;
       el.menuExportTxtLabel.textContent = chosenLang.ui.menuExportLabel;
       el.disclaimer.textContent = chosenLang.ui.footerTagline;
+      if (el.chatJump) {
+        el.chatJump.setAttribute('aria-label', chosenLang.ui.jumpToLatestLabel);
+        el.chatJump.setAttribute('title', chosenLang.ui.jumpToLatestLabel);
+      }
+      if (el.chatJumpLabel) {
+        el.chatJumpLabel.textContent = chosenLang.ui.jumpToLatestLabel;
+      }
       UI.theme.updateThemeMenuItem();
 
       if (el.breatheTrigger) {
@@ -113,6 +164,7 @@
      * @param {object} chosenLang
      */
     function selectLanguage(chosenLang) {
+      stopTitleRotation();
       applyLanguage(chosenLang);
       el.picker.hidden = true;
       el.app.hidden = false;
@@ -151,9 +203,7 @@
       st.conversationEnded = false;
       st.chatActive = false;
       st.transcript = [];
-      if (el.chat) {
-        el.chat.replaceChildren();
-      }
+      UI.utils.clearChat();
       st.messageCount = 0;
       st.currentTitle = '';
       st.userSpoke = false;
@@ -184,12 +234,15 @@
       if (el.pickerFa) {
         el.pickerFa.focus();
       }
+      startTitleRotation();
     }
 
     return {
       applyLanguage,
       selectLanguage,
-      showPicker
+      showPicker,
+      startTitleRotation,
+      stopTitleRotation
     };
   }
 

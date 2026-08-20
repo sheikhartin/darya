@@ -378,6 +378,67 @@
       ],
       fa: 'قبل از هر چیز یک هشدار جدی: ترید (معامله‌گری کوتاه‌مدت، فارکس با اهرم، و باینری) پرریسک‌ترین شکل بازارهای مالی است و اکثر افراد تازه‌کار در آن ضرر می‌کنند؛ تبلیغ «سود تضمینی» یا «درآمد آسان از ترید» تقریباً همیشه کلاهبرداری است. اگر باز هم می‌خواهی یاد بگیری، مسیر درست این است: اول مفاهیم پایه را از منابع معتبر و رایگان بیاموز، با حساب آزمایشی (دمو) تمرین کن، هرگز با پولی که نیاز داری یا قرضی وارد نشو، و هرگز به وعده‌ی سود سریع اعتماد نکن. بازار هیچ تضمینی ندارد و سرمایه می‌تواند کاملاً از بین برود. این متن توصیه‌ی مالی نیست؛ برای تصمیم مالی واقعی با یک مشاور معتبر و دارای مجوز مشورت کن.',
       en: 'Before anything, a serious warning: short-term trading, leveraged forex, and binary options are the riskiest corners of the financial markets, and most beginners lose money; any promise of "guaranteed profit" or "easy income from trading" is almost certainly a scam. If you still want to learn, the honest path is: learn the basics from free, reputable sources first, practice on a demo account, never trade with money you need or have borrowed, and never trust a promise of fast returns. The market offers no guarantees and your capital can be lost entirely. This is not financial advice; for a real decision, consult a qualified, licensed advisor.'
+    },
+
+    {
+      id: 'budgeting_basics',
+      keywords: [
+        'بودجه بندی چیه',
+        'چطور بودجه بندی کنم',
+        'how to budget',
+        'budgeting for beginners',
+        'what is budgeting'
+      ],
+      weak: ['budget', 'budgeting', 'بودجه'],
+      weakSafe: true,
+      hints: ['money', 'finance', 'پول', 'مالی'],
+      fa: 'بودجه‌بندی یعنی برنامه‌ای برای اینکه پولت کجا برود. یک روش ساده‌ی «۵۰/۳۰/۲۰» است: حدود ۵۰ درصد برای نیازها (مسکن، غذا)، ۳۰ درصد برای خواسته‌ها و ۲۰ درصد برای پس‌انداز و بدهی. قدم اول، پیگیری یک ماه خرج‌هاست تا بفهمی الگوی واقعی‌ات چیست. بودجه ابزار آگاهی است، نه تنبیه.',
+      en: 'Budgeting is a plan for where your money goes. A simple 50/30/20 method allocates roughly 50 percent to needs (housing, food), 30 percent to wants, and 20 percent to saving and debt. The first step is tracking one month of spending to learn your real pattern. A budget is a tool for awareness, not punishment.'
+    },
+    {
+      id: 'emergency_fund',
+      keywords: [
+        'صندوق اضطراری چیه',
+        'چقدر پس انداز اضطراری',
+        'what is an emergency fund',
+        'how much emergency fund',
+        'emergency fund basics'
+      ],
+      weak: ['emergency fund', 'صندوق اضطراری', 'پس انداز اضطراری'],
+      weakSafe: true,
+      hints: ['money', 'save', 'پول', 'پس انداز'],
+      fa: 'صندوق اضطراری پولی است که فقط برای هزینه‌های غیرمنتظره (تعمیر، بیکاری، درمان) کنار می‌گذاری تا مجبور نشوی بدهی بگیری. پیشنهاد رایج سه تا شش ماه هزینه‌ی زندگی است، اما حتی یک ماه هم شروع خوبی است. آن را جدا و در دسترس ولی نه خیلی راحت نگه دار.',
+      en: 'An emergency fund is money set aside only for unexpected costs such as repairs, job loss, or medical care, so you do not have to go into debt. The common guideline is three to six months of living expenses, but even one month is a good start. Keep it separate and accessible, but not too easy to spend.'
+    },
+    {
+      id: 'sleep_hygiene',
+      keywords: [
+        'بهداشت خواب چیه',
+        'چطور بهتر بخوابم',
+        'what is sleep hygiene',
+        'how to sleep better',
+        'sleep hygiene tips'
+      ],
+      weak: ['sleep hygiene', 'بهداشت خواب'],
+      weakSafe: true,
+      hints: ['sleep', 'insomnia', 'خواب', 'بی خوابی'],
+      fa: 'بهداشت خواب یعنی عادت‌هایی که خواب را بهتر می‌کنند: ساعت خواب و بیداری ثابت، اتاق تاریک و خنک، دوری از صفحه‌ی نمایش و کافئین نزدیک شب، و استفاده از رختخواب فقط برای خواب. اگر بی‌خوابی ادامه‌دار شد، یک پزشک می‌تواند علت‌های جسمی یا روانی را بررسی کند.',
+      en: 'Sleep hygiene means habits that improve sleep: a consistent sleep and wake time, a dark cool room, avoiding screens and caffeine near bedtime, and using the bed only for sleep. If insomnia persists, a doctor can check for physical or psychological causes.'
+    },
+    {
+      id: 'stress_physiology',
+      keywords: [
+        'استرس با بدن چه می کند',
+        'کورتیزول چیه',
+        'what does stress do to the body',
+        'what is cortisol',
+        'stress physiology'
+      ],
+      weak: ['cortisol', 'کورتیزول', 'stress response'],
+      weakSafe: true,
+      hints: ['stress', 'body', 'استرس', 'بدن'],
+      fa: 'استرس پاسخ «جنگ یا گریز» بدن است: مغز هورمون‌هایی مثل کورتیزول و آدرنالین آزاد می‌کند تا برای خطر آماده شوی. این واکنش برای خطر کوتاه‌مدت مفید است، اما استرس مزمن می‌تواند خواب، گوارش، ایمنی و خلق را به هم بریزد. ورزش، تنفس آرام و خواب کافی به تنظیم دوباره‌ی بدن کمک می‌کنند.',
+      en: 'Stress is the body fight-or-flight response: the brain releases hormones such as cortisol and adrenaline to prepare for danger. This is useful for short-term threat, but chronic stress can disturb sleep, digestion, immunity, and mood. Exercise, slow breathing, and enough sleep help the body regulate again.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

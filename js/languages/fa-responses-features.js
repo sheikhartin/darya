@@ -282,6 +282,85 @@
     noneKnown: [
       'هر چیزی که در همین گفتگو بگویی، پیشم می‌ماند. هنوز نه اسمت را گفته‌ای نه سنت را؛ هر وقت خواستی بگو تا یادم بماند.',
       'راستش هنوز چیزی درباره‌ی اسم یا سنت نگفتی؛ اگر بگویی، همین‌جا نگهش می‌دارم.'
+    ],
+    // Liked/disliked preferences: stored so a recall ("what do I like?")
+    // is answered from memory, and the "you remembered" phrasing makes
+    // the continuity feel real instead of silently correcting a follow-up.
+    preferenceStored: [
+      'یادم می‌ماند: {preference}. از این به بعد می‌دانم برایت مهم است.',
+      '{preference}، فهمیدم. پیشم می‌ماند.',
+      'باشه، {preference} را یادداشت کردم. از شناختن سلیقه‌ات خوشحالم.'
+    ],
+    preferenceKnown: [
+      'گفتی {preference} را دوست داری یا برایت مهم است و یادم مانده.',
+      'طبق چیزی که خودت گفتی، {preference} برایت مهم است. یادم مانده.'
+    ],
+    preferenceUnknown: [
+      'راستش هنوز چیزی درباره‌ی سلیقه‌ات نگفته‌ای؛ اگر بگویی، یادم می‌ماند.',
+      'هنوز نمی‌دانم چه چیزی را دوست داری یا از چه چیزی بدم می‌آید. بگو تا یادم بماند.'
+    ]
+  };
+
+  // ------------------------------------------------------------------
+  // Life-facts memory pools (see responder-lifefacts.js). The {subject}
+  // and {value} placeholders are filled from the stored fact.
+  // ------------------------------------------------------------------
+  R.lifeFactPools = {
+    professionStored: [
+      'یادم می‌ماند {subject} تو {value} است.',
+      'باشه، {subject} تو {value} است. یادداشت شد.',
+      'فهمیدم، {subject} تو {value} است. نگه‌اش می‌دارم.'
+    ],
+    professionKnown: [
+      'خودت گفتی {subject} تو {value} است و یادم مانده.',
+      '{subject} تو {value} است، همان که قبلاً گفتی.',
+      'طبق چیزی که گفتی، {subject} تو {value} است.'
+    ],
+    professionUnknown: [
+      'راستش هنوز نگفته‌ای {subject} تو چکاره است؛ اگر بگویی، یادم می‌ماند.',
+      'نمی‌دانم {subject} تو چکاره است. می‌گویی؟'
+    ],
+    nameStored: [
+      'یادم می‌ماند اسم {subject} تو {value} است.',
+      'باشه، {value} اسم {subject} تو است.',
+      'فهمیدم، {subject} تو {value} نام دارد.'
+    ],
+    nameKnown: [
+      'اسم {subject} تو {value} است و یادم مانده.',
+      '{value} اسم {subject} تو است، همان که قبلاً گفتی.',
+      'طبق چیزی که گفتی، {subject} تو {value} نام دارد.'
+    ],
+    nameUnknown: [
+      'راستش هنوز نگفته‌ای اسم {subject} تو چیست؛ اگر بگویی، یادم می‌ماند.',
+      'نمی‌دانم اسم {subject} تو چیست. می‌گویی؟'
+    ],
+    countStored: [
+      'یادم می‌ماند {value} {subject} داری.',
+      'باشه، {value} {subject} داری. یادداشت شد.',
+      'فهمیدم، {value} {subject} داری.'
+    ],
+    countKnown: [
+      'خودت گفتی {value} {subject} داری و یادم مانده.',
+      '{value} {subject} داری، همان که قبلاً گفتی.',
+      'طبق چیزی که گفتی، {value} {subject} داری.'
+    ],
+    countUnknown: [
+      'راستش هنوز نگفته‌ای چند {subject} داری؛ اگر بگویی، یادم می‌ماند.',
+      'نمی‌دانم چند {subject} داری. می‌گویی؟'
+    ],
+    relationshipStored: [
+      'یادم می‌ماند {value} هستی.',
+      'باشه، {value} هستی. یادداشت شد.',
+      'فهمیدم، {value} هستی.'
+    ],
+    relationshipKnown: [
+      'خودت گفتی {value} هستی و یادم مانده.',
+      '{value} هستی، همان که قبلاً گفتی.',
+      'طبق چیزی که گفتی، {value} هستی.'
+    ],
+    relationshipUnknown: [
+      'راستش هنوز نگفته‌ای وضعیت رابطه‌ات چیست؛ اگر بگویی، یادم می‌ماند.',
+      'نمی‌دانم متاهلی یا مجرد. می‌گویی؟'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

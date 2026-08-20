@@ -153,7 +153,7 @@
       'greeting',
       65,
       // eslint-disable-next-line max-len
-      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
+      /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up|what is up|whats new|what's new|what is new|whats going on|what's going on|what is going on)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHey']
     ),
 
@@ -1272,7 +1272,7 @@
       'darya_self',
       66,
       // eslint-disable-next-line max-len
-      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|why do you (?:even )?exist|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
       R['ruleDaryaSelf']
     ),
 
@@ -1470,6 +1470,156 @@
       // eslint-disable-next-line max-len
       /\b(?:recommend|suggest)\b.{0,25}\b(?:game|games|indie|cozy)\b|\b(?:burned? out|burnout)\b.{0,20}\b(?:game|games|gaming)\b|\b(?:tired|sick) of (?:open world )?games?\b|addicted to gaming|game addiction|games all night|playing all night\b/i,
       R['ruleGaming']
+    ),
+
+    // ------------------------------------------------------------------
+    // Wellbeing and identity topics (added for broader lived-experience
+    // coverage). Priorities sit above the generic feeling/reasoning rules
+    // (25-30) and below the safety-critical family (90-102).
+    // ------------------------------------------------------------------
+
+    rule(
+      'panic_attack',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(?:panic attack|having a panic|panicking|i feel like i am (?:dying|going crazy|losing control)|can'?t breathe|heart is racing|chest feels tight|feel like i am choking)\b/i,
+      R['rulePanicAttack']
+    ),
+
+    rule(
+      'self_injury',
+      58,
+      // eslint-disable-next-line max-len
+      /\b(?:i cut myself|i hurt myself (?:to|but i|just)|cutting myself|i want to cut|i burn myself|i hit myself|scratching myself|self harm|self-harm|i made cuts)\b/i,
+      R['ruleSelfInjury']
+    ),
+
+    rule(
+      'suicide_bereavement',
+      56,
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:friend|brother|sister|mother|father|mom|dad|partner|husband|wife|son|daughter|colleague|roommate) (?:died by suicide|committed suicide|killed (?:himself|herself|themself)|took (?:his|her|their) own life)|(?:died by suicide|committed suicide).{0,12}(?:friend|brother|sister|mother|father|partner)|after (?:the|a) suicide)\b/i,
+      R['ruleSuicideBereavement']
+    ),
+
+    rule(
+      'pregnancy_loss',
+      56,
+      // eslint-disable-next-line max-len
+      /\b(?:i (?:had|have) a miscarriage|miscarriage|miscarried|stillbirth|stillborn|lost (?:my|the) (?:baby|pregnancy)|my baby died|pregnancy loss|lost the baby)\b/i,
+      R['rulePregnancyLoss']
+    ),
+
+    rule(
+      'trauma_ptsd',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:ptsd|post[- ]traumatic|trauma|traumatized|flashbacks?|flash backs?|reliving|the memory keeps coming back|haunted by what happened|old wound)\b/i,
+      R['ruleTrauma']
+    ),
+
+    rule(
+      'addiction_recovery',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:i am an addict|i am addicted to (?:drugs|alcohol|pills|heroin)|substance abuse|relapse|relapsed|sober for|day one again|urge to use|cravings? for (?:drugs|alcohol)|i started using again|going through withdrawal|opioids?|meth|alcoholism|alcoholic)\b/i,
+      R['ruleAddictionRecovery']
+    ),
+
+    rule(
+      'ocd',
+      50,
+      // eslint-disable-next-line max-len
+      /\b(?:ocd|obsessive|compulsion|compulsive|intrusive thoughts?|unwanted thoughts?|checking (?:things? )?over and over|i have to check|rituals?|obsessions?)\b/i,
+      R['ruleOcd']
+    ),
+
+    rule(
+      'bipolar',
+      50,
+      // eslint-disable-next-line max-len
+      /\b(?:bipolar|manic|mania|hypomania|mood swings?|mood (?:swings?|cycles)|highs and lows|racing thoughts and (?:no sleep|little sleep))\b/i,
+      R['ruleBipolar']
+    ),
+
+    rule(
+      'adhd',
+      53,
+      // eslint-disable-next-line max-len
+      /\b(?:adhd|attention deficit|i can'?t focus|i cannot focus|my mind is all over|my mind is scattered|racing mind|can'?t concentrate|i get distracted (?:so )?easily|hyperfocus|executive dysfunction)\b/i,
+      R['ruleAdhd']
+    ),
+
+    rule(
+      'autism',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:autism|autistic|on the spectrum|asperger'?s|sensory overload|sensory sensitivity|masking (?:my )?autism|i mask|overstimulated)\b/i,
+      R['ruleAutism']
+    ),
+
+    rule(
+      'terminal_illness',
+      54,
+      // eslint-disable-next-line max-len
+      /\b(?:terminal (?:illness|cancer|diagnosis)|(?:cancer|illness|disease) is terminal|advanced cancer|stage 4|stage four|i (?:only have|have) (?:a few|some) months|i do not have much time|my illness is terminal|no cure|not much time left)\b/i,
+      R['ruleTerminalIllness']
+    ),
+
+    rule(
+      'infertility',
+      50,
+      // eslint-disable-next-line max-len
+      /\b(?:infertility|infertile|cannot get pregnant|can'?t get pregnant|trouble conceiving|i cannot have (?:a baby|children)|ivf|fertility treatment|trying to conceive)\b/i,
+      R['ruleInfertility']
+    ),
+
+    rule(
+      'coming_out',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(?:coming out|come out (?:as|to)|i am gay|i am a lesbian|i am bisexual|i am transgender|i am trans|i am queer|lgbtq?|telling my (?:family|parents) (?:i am|that i am) (?:gay|trans|bisexual)|my sexuality|my gender identity)\b/i,
+      R['ruleComingOut']
+    ),
+
+    rule(
+      'body_image',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:i hate my body|i hate how i look|i feel ugly|i am (?:too fat|too skinny)|body image|i dislike my body|i do not like my appearance|i feel fat|i feel ugly|self conscious about my body)\b/i,
+      R['ruleBodyImage']
+    ),
+
+    rule(
+      'friendship_breakup',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(?:my best friend (?:left me|stopped talking|abandoned me)|i lost my best friend|we are not friends anymore|my friendship ended|we fell out|my friend (?:cut me off|ghosted me)|friend breakup|friendship (?:ended|over))\b/i,
+      R['ruleFriendshipBreakup']
+    ),
+
+    rule(
+      'immigration',
+      48,
+      // eslint-disable-next-line max-len
+      /\b(?:i immigrated|immigration|i moved (?:to a new country|abroad)|i am an immigrant|homesick for (?:my country|home)|missing my (?:country|homeland)|far from home|living abroad|i feel like a stranger (?:here|in this country)|i do not belong here)\b/i,
+      R['ruleImmigration']
+    ),
+
+    rule(
+      'calibrated_honesty',
+      53,
+      // eslint-disable-next-line max-len
+      /\b(?:vaccines cause autism|vaccines are poison|antidepressants are poison|medication is poison|therapy is a scam|psychologists just want money|doctors only care about money|medicine makes (?:it|things) worse|no treatment (?:works|helps)|modern medicine is a lie)\b/i,
+      R['ruleCalibratedHonesty']
+    ),
+
+    rule(
+      'connection_nudge',
+      41,
+      // eslint-disable-next-line max-len
+      /\b(?:i have no one to talk to|no one to talk to|i have nobody|nobody understands me|no one understands me|i am completely alone|everyone left me|i have no friends at all|there is no one)\b/i,
+      R['ruleConnectionNudge']
     ),
 
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, R['ruleAffirmation']),

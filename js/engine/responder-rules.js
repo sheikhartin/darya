@@ -736,6 +736,13 @@
         normalizedUserText &&
         // Never quote a death-adjacent phrase back at the person.
         !containsDeathLexicon(normalizedUserText) &&
+        // Never quote an insult back either: mirroring "you are a lying
+        // piece of shit" as "that phrase still seems present" reads as
+        // mockery, not care.
+        !(
+          this.lang.insultPattern &&
+          this.lang.insultPattern.test(normalizedUserText)
+        ) &&
         Math.random() < QUOTED_CALLBACK_PROBABILITY
       ) {
         // Circle back to the MOST RECENT topic the person raised, never a
@@ -746,7 +753,14 @@
         // returns null when nothing qualifies, letting the turn fall
         // through to the honest unknown-topic pool.
         const excerpt = this.memory.mostRecentUtterance(normalizedUserText);
-        if (excerpt) {
+        // Never circle back to a hostile phrase: quoting "you are a
+        // lying piece of shit" back as "the phrase still has weight"
+        // reads as mockery, so an insult-laden excerpt is dropped and the
+        // turn falls through to the honest pool instead.
+        if (
+          excerpt &&
+          !(this.lang.insultPattern && this.lang.insultPattern.test(excerpt))
+        ) {
           const template = this._pickVaried(this.lang.quotedCallbackTemplates);
           return template.replace(
             '{excerpt}',
@@ -774,6 +788,13 @@
         // you?"). Even a phrasing the safety rules missed cannot be
         // echoed; the caring check-in below owns such turns.
         !containsDeathLexicon(normalizedUserText) &&
+        // A turn carrying an insult must never be mirrored either: "So
+        // you told me wrong before" echoes a hostile complaint back as
+        // reflection instead of setting a calm boundary.
+        !(
+          this.lang.insultPattern &&
+          this.lang.insultPattern.test(normalizedUserText)
+        ) &&
         Math.random() < PRONOUN_REFLECTION_PROBABILITY
       ) {
         const reflected = reflectPronouns(

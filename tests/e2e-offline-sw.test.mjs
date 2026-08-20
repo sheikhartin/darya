@@ -186,7 +186,7 @@ function extractQuotedStrings(source, arrayName) {
 
 test(
   'service worker precaches the full shell and static assets, and the app loads fully offline',
-  { timeout: 90000 },
+  { timeout: 90000, skip: !findChromeBinary() },
   async (t) => {
     const server = await startStaticServer();
     const chromePath = findChromeBinary();

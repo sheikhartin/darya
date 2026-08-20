@@ -26,6 +26,8 @@
     app: document.getElementById('app'),
     headerTitle: document.getElementById('header-title'),
     chat: document.getElementById('chat'),
+    chatJump: document.getElementById('chat-jump'),
+    chatJumpLabel: document.querySelector('.chat-jump__label'),
     typingRow: document.getElementById('typing-row'),
     hint: document.getElementById('input-hint'),
     composer: document.getElementById('composer'),
@@ -336,6 +338,9 @@
 
   /** Session storage key for persisting scroll position across page reloads. */
   var SESSION_KEY = 'darya_scroll_pos';
+  /** Distance (px) from the bottom edge still treated as "at the latest
+   * message" for auto-scroll and jump-button purposes. */
+  var SCROLL_BOTTOM_MARGIN = 80;
 
   /**
    * Saves the current scroll position of the chat container to sessionStorage.
@@ -378,6 +383,77 @@
         elements.chat.scrollTop = elements.chat.scrollHeight;
       }
     });
+  }
+
+  /**
+   * Reports whether the chat viewport is near the bottom edge, i.e. the
+   * reader is following the newest message. Used to gate auto-scroll so a
+   * reader who has scrolled up to re-read is never yanked back down.
+   * @returns {boolean}
+   */
+  function isNearBottom() {
+    if (!elements.chat) {
+      return true;
+    }
+    return (
+      elements.chat.scrollHeight -
+        elements.chat.scrollTop -
+        elements.chat.clientHeight <=
+      SCROLL_BOTTOM_MARGIN
+    );
+  }
+
+  /**
+   * Syncs the jump-to-latest button's visibility and focusability with the
+   * current scroll position: it appears only while the reader is scrolled
+   * away from the newest message, and is hidden (and unfocusable) when the
+   * view is already at the edge.
+   */
+  function updateJumpButton() {
+    if (!elements.chatJump) {
+      return;
+    }
+    var show = state.chatActive && !isNearBottom();
+    elements.chatJump.classList.toggle('chat-jump--show', show);
+    elements.chatJump.setAttribute('aria-hidden', show ? 'false' : 'true');
+    if (show) {
+      elements.chatJump.removeAttribute('tabindex');
+    } else {
+      elements.chatJump.setAttribute('tabindex', '-1');
+    }
+  }
+
+  /**
+   * Scrolls to the bottom only when the reader is already near it,
+   * mirroring how every mainstream chat app follows a live conversation.
+   * When the reader has scrolled away, the view is left alone and the
+   * jump-to-latest button is surfaced instead.
+   */
+  function scrollToBottomIfNear() {
+    if (isNearBottom()) {
+      scrollToBottom();
+    } else {
+      updateJumpButton();
+    }
+  }
+
+  /**
+   * Smoothly returns the chat to the latest message, then dismisses the
+   * jump-to-latest button. Honors prefers-reduced-motion by jumping
+   * instantly instead of animating the scroll.
+   */
+  function jumpToLatest() {
+    if (!elements.chat) {
+      return;
+    }
+    var reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    elements.chat.scrollTo({
+      top: elements.chat.scrollHeight,
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+    updateJumpButton();
   }
 
   // ========================================================================
@@ -428,8 +504,21 @@
     wrapper.appendChild(meta);
     saveScrollPosition();
     row.appendChild(wrapper);
-    elements.chat.appendChild(row);
-    scrollToBottom();
+    // Insert before the jump-to-latest button (the chat's last child) so
+    // that floating affordance stays pinned at the end of the transcript.
+    if (elements.chatJump) {
+      elements.chat.insertBefore(row, elements.chatJump);
+    } else {
+      elements.chat.appendChild(row);
+    }
+    // A user send always reveals the new bubble; a bot reply only follows
+    // the view if the reader was already near the bottom (otherwise the
+    // jump button surfaces and the reader keeps their place).
+    if (sender === 'user') {
+      scrollToBottom();
+    } else {
+      scrollToBottomIfNear();
+    }
   }
 
   /**
@@ -442,6 +531,28 @@
       if (old) {
         old.remove();
       }
+    }
+  }
+
+  /**
+   * Clears every message and quick-reply row from the chat, then restores
+   * the jump-to-latest button. The button is a static child of the chat
+   * element, so a bare `replaceChildren()` would detach it and leave the
+   * message renderer inserting before a node that is no longer a child of
+   * the chat (a DOM NotFoundError). Re-appending it after the wipe keeps
+   * the anchor valid, and its visibility state is reset so a leftover
+   * "show" state never leaks into a fresh conversation.
+   */
+  function clearChat() {
+    if (!elements.chat) {
+      return;
+    }
+    elements.chat.replaceChildren();
+    if (elements.chatJump) {
+      elements.chat.appendChild(elements.chatJump);
+      elements.chatJump.classList.remove('chat-jump--show');
+      elements.chatJump.setAttribute('aria-hidden', 'true');
+      elements.chatJump.setAttribute('tabindex', '-1');
     }
   }
 
@@ -478,8 +589,12 @@
       });
       row.appendChild(chip);
     });
-    elements.chat.appendChild(row);
-    scrollToBottom();
+    if (elements.chatJump) {
+      elements.chat.insertBefore(row, elements.chatJump);
+    } else {
+      elements.chat.appendChild(row);
+    }
+    scrollToBottomIfNear();
   }
 
   const DaryaUI = {
@@ -505,8 +620,12 @@
       saveScrollPosition: saveScrollPosition,
       restoreScrollPosition: restoreScrollPosition,
       scrollToBottom: scrollToBottom,
+      scrollToBottomIfNear: scrollToBottomIfNear,
+      updateJumpButton: updateJumpButton,
+      jumpToLatest: jumpToLatest,
       appendMessage: appendMessage,
       clearQuickReplies: clearQuickReplies,
+      clearChat: clearChat,
       renderQuickReplies: renderQuickReplies
     }
   };

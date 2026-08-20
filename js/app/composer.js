@@ -25,7 +25,10 @@
         el.typingRow.hidden = !visible;
       }
       if (visible) {
-        UI.utils.scrollToBottom();
+        // The typing indicator is Darya's in-progress reply: follow the
+        // view only if the reader was already near the bottom, so a
+        // reader re-reading older messages is never dragged back down.
+        UI.utils.scrollToBottomIfNear();
       }
     }
 

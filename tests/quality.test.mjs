@@ -2163,6 +2163,191 @@ test('chat menu exposes a complete keyboard navigation contract', () => {
   assert.match(app, /focusMenuTriggerSibling\(/u);
 });
 
+test('tab-order sibling scan ignores collapsed controls and tabindex -1', () => {
+  // The menu's Tab-close handler must land on a control that is genuinely
+  // in the tab order. offsetParent alone is not enough: the breathe
+  // trigger and the jump-to-latest pill collapse via visibility:hidden
+  // (so they can animate their reveal), which keeps offsetParent non-null
+  // while still removing them from the real tab order. The scan must
+  // exclude both display:none and visibility:hidden elements, and skip
+  // tabindex="-1" controls (programmatically focusable but not tabbable).
+  // Regression guard for the tab-walk overshoot that left focus stranded
+  // off the menu trigger.
+  const menu = read('js/app/menu.js');
+  assert.match(
+    menu,
+    /getComputedStyle\([^)]*\)\.visibility !== 'hidden'/u,
+    'sibling scan filters on computed visibility'
+  );
+  assert.match(
+    menu,
+    /button:not\(\[disabled\]\):not\(\[tabindex="-1"\]\)/u,
+    'sibling scan excludes tabindex -1 controls from the tab order'
+  );
+});
+
+test('cursor glint tracks the pointer but yields to reduced motion and touch', () => {
+  // The tracked specular glint is decorative: it must follow the pointer
+  // over interactive glass (via closest + --glint-x/--glint-y) while
+  // bailing out for reduced-motion and touch-primary devices, so it never
+  // animates for a user who asked for stillness or flashes on a tap.
+  const glint = read('js/ui/glint.js');
+  const css = read('css/style.css');
+
+  assert.match(glint, /mousemove/u, 'glint tracks pointer movement');
+  assert.match(
+    glint,
+    /closest\(GLINT_SELECTOR\)/u,
+    'glint targets hovered glass'
+  );
+  assert.match(
+    glint,
+    /--glint-x/u,
+    'glint writes the horizontal light position'
+  );
+  assert.match(glint, /--glint-y/u, 'glint writes the vertical light position');
+  assert.match(
+    glint,
+    /prefers-reduced-motion: reduce/,
+    'glint honors reduced motion'
+  );
+  assert.match(glint, /pointer: coarse/, 'glint skips touch-primary devices');
+
+  // The highlight itself ships with a reduced-motion fallback so the
+  // hover fade does not animate for reduced-motion users.
+  assert.match(
+    css,
+    /radial-gradient\([\s\S]*?var\(--glint-x[\s\S]*?var\(--glint-y/,
+    'glint highlight is positioned by the tracked coordinates'
+  );
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.menu__trigger::before[\s\S]*?transition: none;/u,
+    'glint highlight disables its transition under reduced motion'
+  );
+});
+
+test('circular icon buttons share a crisp rim and a soft lift', () => {
+  // A 34px frosted disc on the dark sea needs a clearly visible rim and
+  // an ambient lift to read as a clean circle: the faint panel edge and
+  // an inset-only shadow left the top and bottom undefined. All three
+  // round controls must share the same recipe so none regresses to a
+  // fuzzy disc.
+  const css = read('css/style.css');
+  assert.match(css, /--circle-rim:/u, 'a dedicated circular-rim token exists');
+  for (const selector of [
+    '\\.picker__sound-toggle',
+    '\\.menu__trigger',
+    '\\.breathe-trigger'
+  ]) {
+    assert.match(
+      css,
+      new RegExp(
+        selector +
+          '\\s*\\{[\\s\\S]*?border: 1px solid var\\(--circle-rim\\);[\\s\\S]*?box-shadow: var\\(--glass-specular-soft\\), var\\(--shadow-soft\\);'
+      ),
+      `${selector} uses the crisp rim and soft lift`
+    );
+  }
+});
+
+test('disabled send button reads as muted glass, never a dark smudge', () => {
+  // A coral disc at low opacity over the dark composer read as a muddy
+  // dark blob on the composer's edge. The idle send button must swap to
+  // the same frosted glass circle the other icon buttons use, with a
+  // dimmed arrow, and must not rely on an opacity hack.
+  const css = read('css/style.css');
+  assert.match(
+    css,
+    /\.composer__send:disabled\s*\{[\s\S]*?background: var\(--surface-control\)/u,
+    'disabled send button uses the shared glass surface'
+  );
+  assert.doesNotMatch(
+    css,
+    /\.composer__send:disabled\s*\{[^}]*opacity:/u,
+    'disabled send button must not dim via opacity'
+  );
+});
+
+test('chat bubbles carry a soft reflection sheen, not a flat fill', () => {
+  // Messages are the content layer, so they are near-opaque, but they
+  // still catch a diagonal light so they share the chrome's light
+  // direction instead of reading as flat blocks.
+  const css = read('css/style.css');
+  assert.match(css, /--user-bubble-sheen:/u, 'user bubble sheen token exists');
+  assert.match(css, /--bot-bubble-sheen:/u, 'bot bubble sheen token exists');
+  assert.match(
+    css,
+    /\.bubble--user\s*\{[\s\S]*?background: var\(--user-bubble-sheen\), var\(--color-seafoam\)/u,
+    'user bubble layers the sheen over its fill'
+  );
+  assert.match(
+    css,
+    /\.bubble--bot\s*\{[\s\S]*?background: var\(--bot-bubble-sheen\), var\(--bubble-frost\)/u,
+    'bot bubble layers the sheen over its frost'
+  );
+});
+
+test('breathing exercise closes only on the button or Escape, with a soft glow', () => {
+  // The exercise is a calm moment: a stray backdrop click must not end
+  // it, so dismissal is limited to the close button and Escape, and the
+  // overlay shows a default cursor (only the button is interactive).
+  const overlays = readOverlays();
+  const css = read('css/style.css');
+
+  assert.doesNotMatch(
+    overlays,
+    /e\.target === breatheOverlay/u,
+    'backdrop click must not dismiss the exercise'
+  );
+  assert.match(
+    overlays,
+    /closeBtn\.addEventListener\('click', dismissBreathe\)/u,
+    'the close button dismisses the exercise'
+  );
+  assert.match(css, /\.breathe-overlay\s*\{[\s\S]*?cursor: default/u);
+
+  // The glow breathes with the phase: it brightens on grow and settles
+  // on shrink, transitioning box-shadow alongside the scale.
+  assert.match(css, /\.breathe-circle--grow\s*\{[\s\S]*?box-shadow:/u);
+  assert.match(css, /\.breathe-circle--shrink\s*\{[\s\S]*?box-shadow:/u);
+  assert.match(
+    css,
+    /\.breathe-circle::before\s*\{[\s\S]*?radial-gradient/u,
+    'the circle carries a specular glint'
+  );
+});
+
+test('clearing the chat preserves the jump-to-latest anchor button', () => {
+  // The jump-to-latest pill is a static child of #chat. Wiping the chat
+  // for a new conversation or a return to the picker must keep it in the
+  // DOM: a bare replaceChildren() detaches it, and the message renderer
+  // then inserts before a node that is no longer a child of the chat,
+  // throwing a DOM NotFoundError that stalls the greeting and leaves the
+  // composer locked. Regression guard for that failure.
+  const html = read('index.html');
+  const core = read('js/ui/core.js');
+  const app = readApp();
+
+  // The button lives inside the chat container, before </main>.
+  assert.match(
+    html,
+    /<main[^>]*id="chat"[^>]*>[\s\S]*id="chat-jump"[\s\S]*<\/main>/u,
+    'chat-jump must be a child of the chat container'
+  );
+
+  // The clear helper re-appends the anchor after wiping the messages.
+  assert.match(core, /function clearChat\(\)/u);
+  assert.match(
+    core,
+    /replaceChildren\(\)[\s\S]*appendChild\(elements\.chatJump\)/u,
+    'clearChat must re-append the jump button after clearing'
+  );
+
+  // The app layer clears through the helper, never a bare wipe.
+  assert.doesNotMatch(app, /\.replaceChildren\(\)/u);
+});
+
 test('modal surfaces move focus in, contain it, and restore it', () => {
   const overlays = readOverlays();
   const app = readApp();
@@ -2952,26 +3137,27 @@ test('picker, menu, and composer share one panel, timing, and hover language', (
     css,
     /\.menu__popover[\s\S]*?animation: menu-in 0\.22s/u,
     'menu entrance must respect the 200ms motion floor'
-  ); // Hover fills use one consistent translucent seafoam tint across the
-  // menu trigger, the breathe trigger (its header sibling), and the
-  // picker sound toggle. The tint is a literal string, so its regex
-  // metacharacters (parens, dot) are escaped before interpolation.
+  ); // Hover brightens the glass body instead of swapping in a transparent
+  // tint (which used to drop the frost and let the dark backdrop flood
+  // in), shared across the menu trigger, the breathe trigger, and the
+  // picker sound toggle. The literal's regex metacharacters (parens) are
+  // escaped before interpolation.
   const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-  const seafoamFill = escapeRegExp('rgba(127, 190, 176, 0.08)');
+  const hoverFill = escapeRegExp('var(--surface-control-hover)');
   assert.match(
     css,
-    new RegExp(`\\.menu__trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    new RegExp(`\\.menu__trigger:hover[\\s\\S]*?background: ${hoverFill}`),
     'menu trigger hover fill'
   );
   assert.match(
     css,
-    new RegExp(`\\.breathe-trigger:hover[\\s\\S]*?background: ${seafoamFill}`),
+    new RegExp(`\\.breathe-trigger:hover[\\s\\S]*?background: ${hoverFill}`),
     'breathe trigger must share the menu trigger hover fill'
   );
   assert.match(
     css,
     new RegExp(
-      `\\.picker__sound-toggle:hover[\\s\\S]*?background: ${seafoamFill}`
+      `\\.picker__sound-toggle:hover[\\s\\S]*?background: ${hoverFill}`
     ),
     'picker sound toggle hover fill'
   );
@@ -3076,7 +3262,7 @@ test('beach translucent panel text clears WCAG AA on idle and hover', () => {
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.notification-container \{[^}]*background: var\(--color-tide\)/u
+    /html\[data-theme='beach'\] \.notification-container \{[^}]*background: var\(--surface-panel\)/u
   );
 });
 
@@ -3549,21 +3735,27 @@ test('ocean picker option titles and muted notes clear WCAG AA text contrast', (
   );
 });
 
-test('beach picker muted text sits on a light pill over the animated waves', () => {
+test('picker muted text keeps one chip across themes so switching never reflows', () => {
   const css = read('css/style.css');
-  // The beach lang-lock and theme-heading render over drifting
-  // semi-transparent wave layers; dark ink there measures 2.1-3.8:1 and
-  // shifts with the animation. A light backing pill (like the picker
-  // note) must keep the text readable.
+  // The lang-lock note and theme heading sit in a glass chip in BOTH
+  // themes with identical padding and radius; only the tint and ink
+  // swap on theme change, so the picker never jumps (a chip that
+  // appears on switch would visibly reflow the layout). The chip also
+  // keeps the muted text above 4.5:1 over the drifting backdrop/waves.
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?background: rgba\(240, 235, 218, 0\.85\);/u,
-    'the beach lang-lock must have a light backing pill'
+    /\.picker__lang-lock \{[\s\S]*?padding: var\(--space-1\) var\(--space-3\);/u,
+    'the lang-lock chip pads its text in the base theme'
   );
   assert.match(
     css,
-    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?padding: var\(--space-1\) var\(--space-3\);/u,
-    'the beach lang-lock pill must pad its text'
+    /html\[data-theme='beach'\] \.picker__lang-lock,[\s\S]*?background: var\(--glass-light\);/u,
+    'the beach lang-lock swaps to the light glass chip'
+  );
+  assert.match(
+    css,
+    /\.picker__theme-heading \{[\s\S]*?border-radius: var\(--radius-md\)/u,
+    'the theme heading shares the same chip radius as the lang-lock'
   );
 });
 

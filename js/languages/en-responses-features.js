@@ -290,6 +290,83 @@
     noneKnown: [
       'Anything you share in this conversation stays with me. You have not told me your name or age yet; whenever you like, tell me and I will remember.',
       'Honestly, you have not told me your name or age yet. If you do, I will keep them right here.'
+    ],
+    preferenceStored: [
+      'I will remember: {preference}. Now I know it matters to you.',
+      '{preference}, got it. It stays with me.',
+      'Noted: {preference}. I like getting to know your tastes.'
+    ],
+    preferenceKnown: [
+      'You said {preference} matters to you, and I remembered.',
+      'From what you told me, {preference} is important to you. I held on to that.'
+    ],
+    preferenceUnknown: [
+      'Honestly, you have not told me what you like or dislike yet; if you do, I will remember.',
+      'I do not know your preferences yet. Tell me something you love or cannot stand, and I will keep it.'
+    ]
+  };
+
+  // ------------------------------------------------------------------
+  // Life-facts memory pools (see responder-lifefacts.js). The {subject}
+  // and {value} placeholders are filled from the stored fact. Every
+  // pool has distinct lines so a repeated recall never reads canned.
+  // ------------------------------------------------------------------
+  R.lifeFactPools = {
+    professionStored: [
+      'I will remember that your {subject} is {value}.',
+      'Noted: your {subject} is {value}.',
+      'Got it, your {subject} is {value}. I will hold on to that.'
+    ],
+    professionKnown: [
+      'You told me your {subject} is {value}. I remember.',
+      'Your {subject} is {value}, as you shared earlier.',
+      'From what you said, your {subject} is {value}. It stayed with me.'
+    ],
+    professionUnknown: [
+      'You have not told me what your {subject} does yet; if you do, I will remember.',
+      'I do not know what your {subject} does. Would you tell me?'
+    ],
+    nameStored: [
+      'I will remember that your {subject} is called {value}.',
+      'Noted: {value} is your {subject}.',
+      'Got it, your {subject} is named {value}.'
+    ],
+    nameKnown: [
+      'Your {subject} is called {value}. I remember.',
+      '{value} is your {subject}, as you told me earlier.',
+      'From what you shared, your {subject} is named {value}.'
+    ],
+    nameUnknown: [
+      'You have not told me your {subject} name yet; if you do, I will remember.',
+      'I do not know your {subject} name. Would you tell me?'
+    ],
+    countStored: [
+      'I will remember that you have {value} {subject}.',
+      'Noted: {value} {subject}.',
+      'Got it, you have {value} {subject}. I will keep that in mind.'
+    ],
+    countKnown: [
+      'You told me you have {value} {subject}. I remember.',
+      '{value} {subject}, as you shared earlier.',
+      'From what you said, you have {value} {subject}. It stayed with me.'
+    ],
+    countUnknown: [
+      'You have not told me how many {subject} you have; if you do, I will remember.',
+      'I do not know how many {subject} you have. Would you tell me?'
+    ],
+    relationshipStored: [
+      'I will remember that you are {value}.',
+      'Noted: you are {value}.',
+      'Got it, you are {value}. I will hold on to that.'
+    ],
+    relationshipKnown: [
+      'You told me you are {value}. I remember.',
+      'You are {value}, as you shared earlier.',
+      'From what you said, you are {value}. It stayed with me.'
+    ],
+    relationshipUnknown: [
+      'You have not told me your relationship status yet; if you do, I will remember.',
+      'I do not know whether you are married or single. Would you tell me?'
     ]
   };
 })(typeof window !== 'undefined' ? window : globalThis);

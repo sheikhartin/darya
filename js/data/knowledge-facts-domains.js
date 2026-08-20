@@ -926,6 +926,99 @@
       ],
       fa: 'شروع ورزش هوازی ساده و تدریجی است: از پیاده‌روی تند یا دویدن آهسته شروع کن (مثلاً ۳ بار در هفته، ۲۰ تا ۳۰ دقیقه) و هر هفته کمی به زمان یا شدت اضافه کن. برای دویدن، کفش مناسب مهم است و گرم‌کردن و سردکردن را فراموش نکن. شنا برای مفاصل بسیار سبک است و برای همه‌ی سنین خوب است. یوگا هم به انعطاف، تعادل و آرامش ذهن کمک می‌کند و با چند حرکت ساده شروع می‌شود. قبل از شروع یک برنامه‌ی جدید، مخصوصاً اگر مشکل سلامتی داری، با پزشک مشورت کن.',
       en: 'Starting cardio is simple and gradual: begin with brisk walking or slow jogging (say three times a week for 20 to 30 minutes) and add a little time or intensity each week. For running, good shoes matter, and do not skip warming up and cooling down. Swimming is very gentle on the joints and works for all ages. Yoga also builds flexibility, balance, and calm, starting with a few simple poses. Before starting any new program, especially with a health condition, consult a doctor.'
+    },
+
+    {
+      id: 'ocd_literacy',
+      keywords: [
+        'وسواس چیه',
+        'وسواس چیست',
+        'اختلال وسواس',
+        'what is ocd',
+        'what is obsessive compulsive disorder',
+        'ocd explained'
+      ],
+      weak: ['ocd', 'obsessive', 'وسواس'],
+      weakSafe: true,
+      hints: ['mental', 'disorder', 'anxiety', 'اضطراب', 'روان'],
+      fa: 'اختلال وسواسی-جبری (OCD) یک اختلال اضطرابی است که افکار مزاحم و تکرارشونده (وسواس) و رفتارهایی برای کاهش آن (اجبار، مثل چک‌کردن یا شستن) را ترکیب می‌کند. این افکار شخصیت فرد را نشان نمی‌دهند و با روش‌هایی مثل مواجهه و پیشگیری از پاسخ و گاهی دارو درمان می‌شوند. اگر این الگو زندگی را مختل می‌کند، یک متخصص می‌تواند تشخیص دهد.',
+      en: 'Obsessive-compulsive disorder (OCD) is an anxiety disorder combining intrusive, repeating thoughts (obsessions) with behaviors meant to relieve them (compulsions, such as checking or washing). These thoughts do not reflect who a person is. It is treated with exposure and response prevention and sometimes medication. If the pattern disrupts life, a specialist can assess it.'
+    },
+    {
+      id: 'adhd_literacy',
+      keywords: [
+        'بیش فعالی چیه',
+        'اختلال کم توجهی چیست',
+        'adhd چیه',
+        'what is adhd',
+        'what is attention deficit hyperactivity disorder'
+      ],
+      weak: ['adhd', 'attention deficit', 'بیش فعالی', 'کم توجهی'],
+      weakSafe: true,
+      hints: ['mental', 'focus', 'تمرکز', 'روان'],
+      fa: 'اختلال کم‌توجهی-بیش‌فعالی (ADHD) یک اختلال عصبی-رشدی است که روی تمرکز، مهار تکانه و سطح فعالیت اثر می‌گذارد و معمولاً از کودکی همراه فرد است. این تنبلی نیست و با دارو، درمان رفتاری و تغییر محیط قابل مدیریت است. تشخیص باید توسط متخصص و بر اساس سابقه‌ی کامل انجام شود.',
+      en: 'Attention-deficit/hyperactivity disorder (ADHD) is a neurodevelopmental condition affecting focus, impulse control, and activity level, usually present from childhood. It is not laziness, and it can be managed with medication, behavioral therapy, and environment changes. Diagnosis should come from a specialist based on a full history.'
+    },
+    {
+      id: 'bipolar_literacy',
+      keywords: [
+        'دوقطبی چیه',
+        'اختلال دوقطبی چیست',
+        'bipolar چیه',
+        'what is bipolar disorder',
+        'what is bipolar'
+      ],
+      weak: ['bipolar', 'mania', 'دوقطبی', 'شیدایی'],
+      weakSafe: true,
+      hints: ['mental', 'mood', 'خلق', 'روان'],
+      fa: 'اختلال دوقطبی با دوره‌های خلق بالا (شیدایی یا هیپومانیا) و دوره‌های افسردگی مشخص می‌شود. این نوسان‌ها فراتر از بالا و پایین‌شدن عادی خلق‌اند و با تثبیت‌کننده‌های خلقی، روان‌درمانی و تنظیم خواب مدیریت می‌شوند. تشخیص و درمان باید توسط روانپزشک انجام شود.',
+      en: 'Bipolar disorder is marked by episodes of elevated mood (mania or hypomania) and episodes of depression. These swings go beyond ordinary mood ups and downs and are managed with mood stabilizers, therapy, and sleep regulation. Diagnosis and treatment should come from a psychiatrist.'
+    },
+    {
+      id: 'trauma_literacy',
+      keywords: [
+        'تروما چیه',
+        'تروما چیست',
+        'اختلال استرس پس از سانحه چیست',
+        'what is trauma',
+        'what is ptsd',
+        'what is post traumatic stress'
+      ],
+      weak: ['trauma', 'ptsd', 'تروما', 'سانحه'],
+      weakSafe: true,
+      hints: ['mental', 'flashback', 'اضطراب', 'روان'],
+      fa: 'تروما یعنی پاسخ ذهن و بدن به یک رویداد تهدیدکننده یا بسیار دردناک. وقتی واکنش‌ها ماه‌ها ادامه پیدا کنند و با فلش‌بک، اجتناب، هوشیاری بیش‌ازحد و تغییر خلق همراه باشند، ممکن است اختلال استرس پس از سانحه (PTSD) باشد. درمان‌های مؤثری مانند درمان متمرکز بر تروما وجود دارد و کمک گرفتن نشانه‌ی ضعف نیست.',
+      en: 'Trauma is the mind and body response to a threatening or deeply painful event. When reactions persist for months and include flashbacks, avoidance, hypervigilance, and mood changes, it may be post-traumatic stress disorder (PTSD). Effective treatments such as trauma-focused therapy exist, and seeking help is not weakness.'
+    },
+    {
+      id: 'panic_literacy',
+      keywords: [
+        'حمله پانیک چیه',
+        'حمله پانیک چیست',
+        'پانیک چیه',
+        'what is a panic attack',
+        'what is panic disorder'
+      ],
+      weak: ['panic', 'پانیک', 'panic attack'],
+      weakSafe: true,
+      hints: ['anxiety', 'heart', 'اضطراب', 'قلب'],
+      fa: 'حمله‌ی پانیک موج ناگهانی و شدید ترس است که با علائم بدنی مثل تپش قلب، تنگی نفس و سرگیجه همراه می‌شود. ترسناک است اما معمولاً خطرناک نیست و چند دقیقه‌ای فروکش می‌کند. وقتی حملات تکرار می‌شوند و ترس از حمله‌ی بعدی زندگی را محدود می‌کند، درمان شناختی-رفتاری و گاهی دارو کمک می‌کنند.',
+      en: 'A panic attack is a sudden, intense wave of fear with physical symptoms such as a racing heart, shortness of breath, and dizziness. It is frightening but usually not dangerous, and it peaks within minutes. When attacks recur and fear of the next one limits life, cognitive-behavioral therapy and sometimes medication help.'
+    },
+    {
+      id: 'autism_literacy',
+      keywords: [
+        'اوتیسم چیه',
+        'اوتیسم چیست',
+        'طیف اوتیسم چیست',
+        'what is autism',
+        'what is autism spectrum'
+      ],
+      weak: ['autism', 'autistic', 'اوتیسم', 'اتیسم'],
+      weakSafe: true,
+      hints: ['neurodivergent', 'spectrum', 'طیف', 'رشدی'],
+      fa: 'اوتیسم یک وضعیت عصبی-رشدی مادام‌العمر است که بر ارتباط اجتماعی، پردازش حسی و الگوهای رفتاری اثر می‌گذارد و طیفی گسترده دارد. افراد اوتیستیک تجربه‌های بسیار متنوعی دارند و نقاط قوت و چالش متفاوتی نشان می‌دهند. بسیاری از بزرگسالان دیر تشخیص می‌گیرند و ماسک‌زدن (پنهان‌کردن خود) می‌تواند خسته‌کننده باشد.',
+      en: 'Autism is a lifelong neurodevelopmental condition affecting social communication, sensory processing, and behavioral patterns, on a wide spectrum. Autistic people have very diverse experiences and different strengths and challenges. Many adults are diagnosed late, and masking, hiding oneself, can be exhausting.'
     }
   ]);
 })(typeof window !== 'undefined' ? window : globalThis);

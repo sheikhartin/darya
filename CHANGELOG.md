@@ -5,6 +5,200 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.6.0] - 2026-08-19
+
+### Changed (UI)
+
+- **A calm frosted-glass interface across both themes.** Every surface -
+  the language cards, theme picker, menu, chat bubbles, quick-reply
+  chips, the composer, and the confirm and exit dialogs - reads as a
+  softly frosted pane floating over the ambient backdrop: a translucent
+  deep-blue (Ocean) or deep-teal (Beach) body, an angled light-catch,
+  and a single top catch-light with a hairline top-lit rim. The frost is
+  deliberately more opaque and the blur gentler than a maximal
+  glassmorphism recipe, so text keeps its WCAG AA contrast and the
+  surfaces read as calm material rather than a stack of artificial
+  reflections. Chat bubbles sit on a near-opaque tint so the content
+  layer never floats on transparent glass.
+- **A cursor-tracked glint.** Interactive glass (the language cards, theme
+  segments, menu items, the menu popover, quick-reply chips, dialogs, and
+  the circular header buttons) catches a whisper-light highlight that
+  follows the pointer, so the material reads as lit from the user's hand.
+  It is skipped on touch devices and under `prefers-reduced-motion`, and
+  it never touches the conversation or assistive technology.
+- **Messages reflect the same light.** Chat bubbles carry a soft diagonal
+  sheen in both languages so they share the chrome's light direction
+  instead of reading as flat blocks, without becoming translucent glass.
+- **Circular controls read as clean circles.** The header icon buttons and
+  the picker sound toggle share one recipe: a clearly visible rim and a
+  soft ambient lift, so a 34px frosted disc never blurs into the dark
+  backdrop at its top and bottom edges.
+- **The idle send button is muted glass, not a dark smudge.** A coral disc
+  dimmed by opacity over the dark composer read as a muddy blob, so the
+  disabled state now uses the same frosted circle as the other icon
+  buttons with a dimmed arrow.
+- **The breathing exercise closes only when asked.** A stray backdrop
+  click no longer ends the exercise (only the close button or Escape
+  does), the overlay no longer shows a pointer cursor everywhere, and the
+  circle's glow now breathes with the phase, brightening on the inhale
+  and settling on the exhale.
+- **The glass degrades gracefully.** Browsers without `backdrop-filter`
+  support, and users who enable `prefers-reduced-transparency` or
+  `prefers-contrast: more`, get a near-opaque pane with a stronger rim
+  instead of a see-through one, so nothing depends on the blur to stay
+  readable.
+- **No flat elements remain.** The header icon buttons, the sound toggle,
+  and the secondary (Cancel/No/Close) buttons were ghost or flat pills
+  and now read as glass: dark frost in Ocean, and a frosted light pane
+  in Beach, mirroring Liquid Glass's light/dark adaptivity. The solid
+  coral accents keep a subtle top highlight so they read as tinted glass
+  rather than flat paint.
+- **Edges are hairlines, not hard outlines.** The pane rim was softened
+  and the chat-bubble tail corner rounded up, so nothing draws a sharp
+  one-pixel line. The rim is tuned to a whisper of the pane's own tint
+  (rather than a distinct color), so it reads as light catching the
+  glass instead of a drawn border.
+- **Hover brightens glass instead of dimming it.** The menu, breathe,
+  and sound-toggle buttons no longer swap in a transparent tint on
+  hover (which dropped the frost and let the dark backdrop flood in);
+  they brighten their glass body, and the send button no longer scales
+  up on hover, so nothing jumps or shakes.
+- **The sound toggle animates instead of snapping.** Turning sound on
+  blooms the speaker waves outward (with a one-beat stagger on the outer
+  arc) while the mute slash sweeps away, and turning it off settles both
+  back, so the switch reads as a calm continuous gesture. The picker
+  toggle, which previously hid its icon parts with `display: none` (an
+  instant swap), now uses the same animated path.
+- **The chat follows the reader, not the other way around.** New bot
+  replies and the typing indicator only auto-scroll when the reader is
+  already near the bottom; when they have scrolled up to re-read, a new
+  glass "jump to latest" pill appears and smooth-scrolls back on tap
+  (honoring `prefers-reduced-motion`).
+- **Elevation is layered and soft, never a heavy halo.** The two shadow
+  tokens are now three-stop, low-opacity ambient shadows (tight contact
+  + mid presence + wide diffuse lift) instead of a single dark blob, and
+  their color warms to sand in Beach so no element ever casts a cold,
+  smudgy shadow. The sun glow and notification bloom were dialed back to
+  match.
+- **No layout jump on theme switch.** The picker's language-lock note and
+  theme heading sit in one glass chip in both themes (identical padding
+  and radius), so switching Ocean to Beach only swaps the tint and ink.
+- **UI chrome is not selectable.** Picker text, menu items, dialogs, and
+  the footer ignore long-press text selection, so the packaged
+  Android/WebView build never pops the native copy callout on controls;
+  conversation bubbles stay selectable.
+- **The breathe trigger fades in instead of popping.** After an
+  emotionally heavy turn, the breathing-exercise button now scales and
+  fades into the header (only opacity and transform animate, and it
+  stays out of the tab order while hidden), so the header never jumps.
+- **The document title now speaks both languages on the picker.** While
+  the language picker is showing, the page title alternates between the
+  Persian and English app titles every six seconds; the moment a
+  conversation starts it locks to the chosen language. English-only
+  visitors are no longer left staring at a Persian tab title.
+
+### Improved (knowledge and tooling)
+
+- **A neutral worldview and ideology shelf.** Darya can now explain 39
+  worldviews, mindsets, and political-philosophical ideologies in both
+  languages: stoicism, existentialism and its neighbors, growth mindset,
+  minimalism, ikigai, wabi-sabi, hygge and lagom, Taoism and Zen,
+  skepticism through pragmatism, humanism and transhumanism, effective
+  altruism, longtermism, and a neutral tour of democracy, liberalism,
+  conservatism, socialism, communism, anarchism, libertarianism, fascism,
+  populism, nationalism, progressivism, secularism, feminism, and
+  environmentalism. Every entry is descriptive and non-endorsing, and
+  violent extremism is named plainly and never softened.
+- **93 mindsets-and-ideologies regression scenarios** cover the factual
+  shelf in both languages plus the emotional registers around it: a calm
+  learner gets the fact, a depressed disclosure that names nihilism stays
+  on the caring thread, and a hateful blanket statement about a group is
+  met with calm de-escalation, never agreement.
+- **`run-tests.sh` runs the whole suite.** The runner now discovers every
+  `tests/*.test.mjs` file automatically instead of a hand-maintained
+  subset, so new test files run without manual list edits. The browser
+  e2e suites skip cleanly (not fail) when no Chrome/Chromium binary is
+  present.
+
+### Fixed (engine)
+
+- **Common check-ins answer like a companion, not an echo.** The Persian
+  «چه خبر؟» and its tails («چه خبری؟», «چه خبره؟», «چه خبرها؟») now
+  route to the how-are-you pool instead of the ambiguous-input echo
+  («کمی بیشتر توضیح بده»), and the English "what is new", "what is up",
+  and "what is going on" route to the greeting pool instead of the
+  unknown fallback.
+
+### Improved (life-facts memory)
+
+- **Arbitrary life facts are remembered and recalled.** Beyond the basic
+  profile (name, age, location, preferences), Darya now stores four
+  kinds of facts people state about their lives and recalls them later,
+  in both languages: a profession ("my sister is a nurse" /
+  «خواهرم پرستاره» -> "what does my sister do?"), a name of a person or
+  pet ("my dog is named Rex" / «اسم سگم رکس هست»), a count ("I have two
+  kids" / «دو تا بچه دارم»), and a relationship status ("I am married" /
+  «من متاهلم»). A recall always answers from memory, or honestly unknown,
+  never inventing a fact, and a new statement replaces a contradictory
+  old one for the same subject.
+- **42 memory-and-consistency regression scenarios** exercise long
+  multi-turn threads: facts recalled after digressions, corrections
+  replacing earlier values, multiple subjects staying distinct, memory
+  surviving hostile turns and unrelated chatter, and session-only
+  guarantees (a fresh engine forgets).
+
+### Improved (wellbeing, identity, and memory)
+
+- **Sixteen uncovered lived-experience topics** now route to a caring,
+  non-diagnosing pool in both languages: ADHD and neurodivergence,
+  autism, trauma and PTSD, panic attacks, non-suicidal self-injury,
+  OCD, bipolar, addiction and recovery, pregnancy loss, infertility,
+  suicide bereavement, terminal illness, coming out, immigration, body
+  image, and friendship breakups. Each names the experience, keeps the
+  non-clinician boundary, and points to professional support when it is
+  severe or persistent.
+- **Session preference memory.** Stating something you love, hate, or
+  cannot stand is remembered, and "what do I like?" / «چی دوست دارم؟» is
+  answered from memory with a "you remembered" acknowledgment, or
+  honestly unknown. Ambiguous phrasings (polite requests like «دوست دارم
+  برام یک جک بگی», or "i would love to...") are never mis-captured.
+- **Calibrated honesty.** A false or harmful health claim ("vaccines
+  cause autism", "therapy is a scam") validates the feeling while gently
+  correcting the claim, never endorsing it.
+- **The connection nudge.** Explicit isolation ("I have no one to talk
+  to") gets a gentle nudge toward telling a real person, instead of just
+  echoing the loneliness.
+- **Broader knowledge shelf.** Mental-health literacy (OCD, ADHD,
+  bipolar, trauma, panic, autism), health literacy (sleep hygiene,
+  stress physiology), and personal finance (budgeting, emergency funds)
+  now answer framed questions in both languages.
+- **67 wellbeing regression scenarios** cover every new topic, the
+  preference memory, calibrated honesty, the connection nudge, and a
+  proof that crisis rules still fire many turns into a session.
+
+### Improved (hostility handling)
+
+- **Directed insults always get a calm boundary.** A Darya-directed
+  insult - "you are worthless", "you are a joke", «تو بی ارزشی»,
+  «تو یه جوکی», a dismissal like "shut up" / «خفه شو», a sarcastic
+  "thanks for nothing asshole" / «ممنون از هیچی احمق», or a bare
+  "worthless bot" / «ربات بی ارزش» - now routes to the boundary pool
+  regardless of which benign rule the words happen to match. Previously
+  "you are worthless" was misread as the user's own self-esteem,
+  "you are a joke" got frustration, and "thanks for nothing asshole"
+  got a genuine gratitude reply.
+- **Insults are never mirrored back.** The quoted callback and pronoun
+  reflection no longer echo a hostile phrase ("you are a lying piece of
+  shit" → "that phrase still has weight"), and a profane turn is never
+  quoted on a later turn.
+- **Third-party vents stay on their real thread.** "my boss is a moron"
+  and «رئیس من یه احمق تمام عیاره» stay work complaints, never the
+  boundary pool or app feedback (the «تم» app-feedback keyword no longer
+  falsely matches inside «تمام»), and profanity like «کیرم تو این
+  برنامه» de-escalates instead of falling to the unknown pool.
+- **"why do you exist?" / «چرا وجود داری؟»** now gets a self-aware reply
+  instead of a knowledge shrug.
+
 ## [1.5.0] - 2026-08-18
 
 ### Changed (branding)

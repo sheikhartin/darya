@@ -977,4 +977,118 @@
     'Teams have bad nights; the real fans stick around anyway. Are you watching the next match too, or taking a break?',
     'A loss like that stings for exactly one night, then the next fixture comes around. Which game are you looking forward to next?'
   ];
+
+  // ------------------------------------------------------------------
+  // Wellbeing and identity topics: validated, never diagnosed. Each pool
+  // names the experience, keeps the non-clinician boundary, and points to
+  // professional support when the experience is severe or persistent.
+  // ------------------------------------------------------------------
+
+  R['ruleAdhd'] = [
+    'Finding it hard to focus or start tasks is not a character flaw. Some brains run on interest and urgency and get restless with long tasks. It helps to build structure and environment rather than just trying harder. What felt hardest today?',
+    'A scattered mind and constant procrastination can be genuinely exhausting. If this pattern has been with you since childhood and disrupts your life, a psychiatrist or psychologist can give an accurate assessment. Which part weighs on you most right now?',
+    'Getting distracted or leaving things half finished is not laziness. Practical supports like breaking work into tiny steps, external reminders, and a fixed home for your things all help. Which one would you like to try first?'
+  ];
+
+  R['ruleAutism'] = [
+    'If the world feels full of too much input, or social situations drain you, that is real and it matters. Your ways of understanding the world are valid even when they differ from other people. What would you like to talk about?',
+    'Masking, pretending to be like everyone else, is exhausting and can pull you away from yourself. If you have questions about assessment or support, a clinician who knows autistic adults can help. Which part feels heaviest?',
+    'Needing routine, quiet, or time alone is not a defect; it is part of how you work. Finding spaces where you do not have to hide yourself makes a real difference. Where do you feel the most pressure right now?'
+  ];
+
+  R['ruleTrauma'] = [
+    'If your body or mind still reacts after a painful event, that is normal and it is not your fault. Fear, poor sleep, and sudden flashbacks are all part of the brain responding to danger. You do not have to carry this alone; a trauma-informed mental health professional can help. Where would you like to begin?',
+    'A difficult past can live in the body and return at unexpected moments. That means the wound has not closed, not that you are weak. Talking with a specialist or a safe person is a real step. Which feeling shows up most these days?',
+    'I hear that something from the past still weighs on you. Some experiences are large enough that they deserve professional support, and there is no shame in that. Do you have a safe place to talk about it?'
+  ];
+
+  R['rulePanicAttack'] = [
+    'A panic attack is frightening but not dangerous: a racing heart, tight chest, and fear of losing control come from a sudden surge of adrenaline, and they pass. Slow breathing (in four, hold four, out six) and noticing your feet on the ground both help. How do you feel right now?',
+    'If these episodes keep happening, a doctor can rule out anything physical, and if it is panic, there is effective treatment. You are not alone and this is manageable. When did you first feel this?',
+    'During an attack, try observing it instead of fighting it: this is a wave, and it passes. Grounding techniques (name five things you see, four you can touch) help too. Want to practice one together?'
+  ];
+
+  R['ruleSelfInjury'] = [
+    'Hurting yourself is often a way to soothe deep pain or feel a sense of control, not a sign of weakness. I understand and I am not judging you. Please share this with a professional or someone safe; there are gentler ways to find relief. Would you like to talk about what brings that feeling on?',
+    'I can see something very heavy is on your shoulders. Self-harm may help for a moment, but it is not lasting help and it can become dangerous. A mental health professional can offer real alternatives. If the urge is strong right now, please reach out to someone safe.',
+    'If you are hurting yourself, it means there is a pain you have not found another outlet for. I am here without judgment. And it matters to know that if a wound is deep or dangerous, urgent medical help is needed. Would you like to tell me about it here?'
+  ];
+
+  R['ruleOcd'] = [
+    'Intrusive, repeating thoughts can be deeply distressing, especially when you feel you must do something to calm them. Those thoughts do not reflect who you are; they are a brain pattern, and effective treatment exists. Which thought repeats most?',
+    'Obsessions are like an alarm that keeps ringing by mistake. The more you answer it, by checking or washing, the louder it gets. A clinician using exposure-based methods can help. Would you like to understand how that works?',
+    'Having an intrusive thought does not mean you want the thing to happen. Thoughts are not actions. If this pattern is making life hard, talking with a specialist is the right step. Which part has worn you down most?'
+  ];
+
+  R['ruleBipolar'] = [
+    'Swinging between very high and very low states can be confusing and exhausting. If these cycles disrupt your life, a psychiatrist can give an accurate diagnosis and mood stabilizers genuinely help. Which state are you in right now?',
+    'A sudden good mood is not always safe, especially with little sleep and risky decisions. It matters to take this pattern seriously and share it with a professional. Would you tell me about this period?',
+    'I hear that your mood rises and falls and that can be so hard. You did not choose this, and it is treatable. If the energy and sleeplessness ever feel out of control, getting help early is better. What worries you most these days?'
+  ];
+
+  R['ruleAddictionRecovery'] = [
+    'Addiction is an illness, not a moral failing. If you are struggling with a substance or behavior, telling a professional or a support group is a brave step. Stopping without support is usually harder and sometimes unsafe. What stage are you in right now?',
+    'Relapse is part of the path, not failure. Every new day is a fresh chance. Professional help, medication in some cases, and peer support all genuinely work. Would you like to talk about your triggers or cravings?',
+    'Feeling craving or shame is normal. What matters is not being alone: a safe person, a mental health professional, or a peer group can lighten the load. What tempts you most right now?'
+  ];
+
+  R['rulePregnancyLoss'] = [
+    'Losing a pregnancy or baby is a real and deep grief that often goes unseen. Sadness, anger, and even guilt are all natural, though it was not your fault. You have every right to feel this loss as heavy as it is. Would you like to talk about it?',
+    'I hear how painful this has been. This is not a loss you caused, and your body is not to blame. If the grief lingers, a mental health professional or a support group of people who have been through this can help. How are you coping?',
+    'Pregnancy loss sometimes goes unnamed because others never saw it, but the pain is real. Allow yourself to mourn the person you lost, even if no one else understands. What keeps their memory alive for you?'
+  ];
+
+  R['ruleInfertility'] = [
+    'Infertility or difficulty conceiving is a grief that renews every month, and seeing others get pregnant can reopen the wound. This pain is real and you are not alone in it. What feeling is strongest these days?',
+    'I hear how draining this path is: waiting, hope, and disappointment in turn. It matters not to blame yourself; many factors are involved and a doctor can clarify options. Which part would you like to talk about?',
+    'Social pressure and other people questions can make this road heavier. You do not owe anyone an answer. If this has gone on a long time, emotional support matters as much as medical care. Which part has worn you down most?'
+  ];
+
+  R['ruleSuicideBereavement'] = [
+    'Losing someone to suicide is a complicated grief: sadness mixed with anger, guilt, and unanswered questions. Asking why over and over, or blaming yourself, is natural, but it was not your fault. Would you tell me about them?',
+    'I hear how heavy this loss is. Grief after suicide can feel lonelier than other grief, because people do not know what to say. A mental health professional or a support group for this specific loss can offer a safe space. What comes up for you most these days?',
+    'If you keep thinking you could have prevented it, know that this is a burden no one should carry alone, and you could not control their thoughts. Do not walk this road by yourself. How are you coping with those thoughts?'
+  ];
+
+  R['ruleTerminalIllness'] = [
+    'Facing advanced illness brings fear, grief, and big questions about life and saying goodbye. These feelings are deeply human. Talking with your care team, a psychologist, and the people you love can make the path more bearable. What is on your mind most?',
+    'I hear how heavy this is. If you like, we can talk about meaning, fear, or even unfinished things. There is no rush, and every feeling belongs. Where would you like to start?',
+    'When the future becomes uncertain, focusing on moments and the people you love helps. Saying the unsaid things can bring peace too. Would you like to talk about someone dear to you?'
+  ];
+
+  R['ruleComingOut'] = [
+    'Sharing your identity takes courage, and when and whom you tell is your choice. There is no rush. If you are somewhere that makes it unsafe, weigh your safety first. Would you like to talk about this decision?',
+    'I hear you, and I understand how important this is. Other people may react well or badly, but your worth does not depend on their acceptance. Is there someone you trust who would respond well?',
+    'Accepting yourself, even before telling others, is a big step. If you feel alone or afraid of rejection, know that feeling is common and there are people who will accept you as you are. What worries you most?'
+  ];
+
+  R['ruleImmigration'] = [
+    'Moving countries is loss and gain at once: grief for what you left, hope for somewhere new. Feeling like a stranger, or wondering where home is, is completely natural. Building new roots takes time and it is not your fault. Which feeling is strongest these days?',
+    'Living between two cultures can be disorienting; it can feel like you never fully belong anywhere. This is the experience of millions of people, and you are not alone in it. Finding even one person who understands helps a lot. What do you miss most?',
+    'I hear how hard this move has been. Sometimes guilt about leaving shows up too, but leaving for your future is also valuable. Would you like to talk about the country you left, or the place you are now?'
+  ];
+
+  R['ruleBodyImage'] = [
+    'Being unhappy with your body is very common, and media and social feeds constantly amplify it. Your body is worth far more than its shape. If this thought is constant and affects your mood or eating, talking with a professional can help. What bothered you most today?',
+    'I do not want to minimize how painful body dissatisfaction is. But your worth is not set by a number on a scale or a mirror. It sometimes helps to think about what your body does for you, not just how it looks. Would you like to talk about this feeling?',
+    'The pressure to reach an ideal body is exhausting and usually unreachable. If dieting or body checking has become obsessive, it may point to something deeper, and professional help works. Which part of your body occupies your mind most?'
+  ];
+
+  R['ruleFriendshipBreakup'] = [
+    'Losing a close friend is real, heartbreak-like pain, even if society gives it less weight. You have every right to grieve it. Would you tell me about that friendship?',
+    'A friendship ending can feel like a broken heart, especially after years together. Unanswered questions about how it got here are natural. Give yourself room to mourn. Which memory stays with you most?',
+    'I hear how much it hurts. Friendships fade slowly or break in one moment; both hurt. It matters to take this loss seriously and not blame yourself. What would you like to talk about?'
+  ];
+
+  R['ruleCalibratedHonesty'] = [
+    'I understand this belief comes from a real fear or experience, and that feeling is valid. But the evidence says otherwise, and I want to be honest rather than just agree. Would you like to talk about where this belief comes from?',
+    'I see the feeling behind this, and I will not minimize it. At the same time, this claim does not match what research shows, and because I care about you, I will tell you the truth. Shall we look at it together?',
+    'I know beliefs sometimes come from pain and disappointment, and I fully understand that part. But I do not want to endorse something that is not factually true. If you are open to it, I can share reliable information.'
+  ];
+
+  R['ruleConnectionNudge'] = [
+    'Feeling like there is no one to hear you is very heavy. I am here, but a human companion can offer something I cannot. Is there anyone you could send even a short message to?',
+    'Real loneliness hurts, and I do not want to stand in for human connection. If there is even one person you trust, it may be time to share this feeling with them. Who could be first?',
+    'I hear how alone you have become. I am always here, but telling these same things to a friend or family can build a more real bond. Shall we think together about who might understand?'
+  ];
 })(typeof window !== 'undefined' ? window : globalThis);

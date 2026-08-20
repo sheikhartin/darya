@@ -468,6 +468,14 @@
         'روانشناس',
         'مشاور',
         'پزشک',
+        // Relationship status self-descriptions: «من متاهلم», «من مجردم»,
+        // «من طلاق گرفتم» state a life fact, never a name.
+        'متاهل',
+        'متأهل',
+        'مجرد',
+        'مطلقه',
+        'نامزد',
+        'بیوه',
         // Everyday self-descriptions that glue to the attached first-person
         // copula: «من خوبم», «من بدم», «من جوانم» state how the speaker
         // is, never who they are.
@@ -648,8 +656,48 @@
       locationStatement:
         /(?:من )?(?:تو |توی |در )?([\u0600-\u06FF\u200c]{2,20}(?:\s[\u0600-\u06FF\u200c]{2,20})?)\s*(?:زندگی (?:میکنم|می‌کنم|می کنم)|ساکنم|ساکن هستم)|اهل\s+([\u0600-\u06FF\u200c]{2,20})(?:م| هستم| ام)(?!\p{L})/u,
       locationQuestion:
-        /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u
+        /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u,
+      // Preference disclosure («دوست دارم قهوه», «از شلوغی بدم میاد»):
+      // the liked/disliked object is captured after the like/dislike verb
+      // (or after «بدم میاد از»/«متنفرم از»). The capture is bounded and
+      // trimmed, so it stores a noun phrase, never a full sentence.
+      preferenceStatement:
+        /(?<!\p{L})(?:من )?(?:عاشق|بدم میاد از|بدم می‌آد از|متنفرم از|علاقه دارم به)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s*(?:[.!؟]|$)|(?<!\p{L})(?:از)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s+(?:بدم میاد|بدم می‌آد|متنفرم)/iu,
+      // Preference recall («چی دوست دارم؟», «از چی بدم میاد؟»): answered
+      // from the most recently stored preference, never invented.
+      preferenceQuestion:
+        /(?<!\p{L})(?:چی (?:دوست دارم|دوس دارم|بدم میاد|بدم می‌آد|متنفرم)|از چی (?:خوشم میاد|خوشم می‌آد|بدم میاد|متنفرم)|یادته چی (?:دوست دارم|دوس دارم|بدم میاد)|یادت هست چی دوست دارم|سلیقه‌ام چیه|سلیقه ام چیه)/u
     },
+    // Life-facts memory (see responder-lifefacts.js): statements and
+    // recalls for the kinds of facts people state about their lives, so a
+    // later recall question answers from memory. Subject nouns stay in a
+    // fixed list (family, pets, possessions) so a stray sentence never
+    // stores noise. Capture layout matches the handler: profession/name
+    // statements put the subject in group 1 and the value in group 2;
+    // count puts the number (value) in group 1 and the noun (subject) in
+    // group 2; relationship puts the status (value) in group 1. Recalls
+    // capture only the subject in group 1 (relationship has none).
+    lifeFacts: {
+      statements: {
+        profession:
+          /(?<!\p{L})(خواهرم|برادرم|مادرم|پدرم|بابام|مامانم|همسرم|شوهرم|زنم|پسرم|دخترم|رفیقم|رئیسم|رییسم|دوست پسرم|دوست دخترم)\s+(?:(?:یک|یه)\s+)?([\u0600-\u06FF\u200c]{2,24}?)(?:ه\s*$|ه[.!؟]|(?:\s+(?:هست|هستم|است|کار میکنه|کار می‌کنه|کار می کند)))/u,
+        name: /(?<!\p{L})اسم\s+(سگم|سگ ام|گربه ام|گربهام|خواهرم|برادرم|مادرم|پدرم|همسرم|شوهرم|زنم|پسرم|دخترم|رفیقم)\s+([\u0600-\u06FF\u200c]{2,20}?)(?=\s+(?:هست|هستش|است)|$)/u,
+        count:
+          /(?<!\p{L})(?:من\s+)?(یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|[۰-۹0-9]+)\s+(?:تا\s+)?(بچه|فرزند|خواهر|برادر|گربه|سگ|نوه|بچه خواهر|بچه برادر)\s+دارم/u,
+        relationship:
+          /(?<!\p{L})(?:من\s+)?(متاهلم|متاهل ام|متأهلم|مجردم|طلاق گرفته‌ام|طلاق گرفته ام|ازدواج کرده‌ام|ازدواج کرده ام|در رابطه‌ام|در رابطه ام|نامزد دارم)(?!\p{L})/u
+      },
+      recalls: {
+        profession:
+          /(?<!\p{L})(خواهرم|برادرم|مادرم|پدرم|بابام|مامانم|همسرم|شوهرم|زنم|پسرم|دخترم|رفیقم|رئیسم|رییسم|دوست پسرم|دوست دخترم)\s+(?:چیکار میکنه|چیکار می‌کنه|چه کاره است|چه کاره‌ست|شغلش چیه|کارش چیه)/u,
+        name: /(?<!\p{L})اسم\s+(سگم|سگ ام|گربه ام|گربهام|خواهرم|برادرم|مادرم|پدرم|همسرم|شوهرم|زنم|پسرم|دخترم|رفیقم)\s+(?:چیه|چی بود|چیه؟)\s*(?:\?|؟|$)/u,
+        count:
+          /(?<!\p{L})چند(?:\s+تا)?\s+(بچه|فرزند|خواهر|برادر|گربه|سگ|نوه)\s+دارم/u,
+        relationship:
+          /(?<!\p{L})آیا\s+(?:من\s+)?(متاهلم|متاهل ام|متأهلم|مجردم|طلاق گرفته‌ام|ازدواج کرده‌ام|در رابطه‌ام|در رابطه ام)\s*\??/u
+      }
+    },
+    lifeFactPools: R.lifeFactPools,
     userProfilePools: R.userProfilePools,
     // Deferred-topic promise memory (see responder-promise.js): the
     // user says «بعداً می‌گم» (or releases a pending promise with
@@ -727,6 +775,7 @@
       newChatConfirmNo: 'انصراف',
       soundOnTitle: 'پخش صدای محیطی: روشن',
       soundOffTitle: 'پخش صدای محیطی: خاموش',
+      jumpToLatestLabel: 'پرش به آخرین پیام',
       soundFallbackMsg:
         'فایل‌های صدای محیطی بارگذاری نشدند. از صدای تولیدشده به‌جای آن استفاده می‌شود.',
       engineErrorHint: 'یک مشکل کوچک پیش آمد، اما گفتگو می‌تواند ادامه یابد.',

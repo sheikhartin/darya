@@ -304,7 +304,7 @@
           type="button"
           aria-label="تمرین تنفس"
           title="تمرین تنفس آرام‌بخش"
-          hidden
+          aria-hidden="true"
         >
           <svg
             viewBox="0 0 24 24"
@@ -455,7 +455,28 @@
       </header>
 
       <main class="chat" id="chat" aria-live="polite">
-        <!-- Messages are injected here by app.js -->
+        <!-- Messages are injected here by app.js, before the jump button. -->
+        <button
+          class="chat-jump"
+          id="chat-jump"
+          type="button"
+          aria-hidden="true"
+          tabindex="-1"
+          aria-label="پرش به آخرین پیام"
+          title="پرش به آخرین پیام"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path
+              d="M12 5v14m0 0l-6-6m6 6l6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="chat-jump__label">جدیدترین</span>
+        </button>
       </main>
 
       <div
@@ -539,6 +560,7 @@
     <script src="js/data/knowledge-facts-career.js"></script>
     <script src="js/data/knowledge-facts-skills.js"></script>
     <script src="js/data/knowledge-facts-beliefs-media.js"></script>
+    <script src="js/data/knowledge-facts-mindsets.js"></script>
     <script src="js/data/knowledge-facts-world.js"></script>
     <script src="js/data/knowledge-fun-facts.js"></script>
     <script src="js/data/knowledge-lists.js"></script>
@@ -585,6 +607,7 @@
     <script src="js/engine/responder-rules.js"></script>
     <script src="js/engine/responder-entity.js"></script>
     <script src="js/engine/responder-profile.js"></script>
+    <script src="js/engine/responder-lifefacts.js"></script>
     <script src="js/engine/responder-overrides.js"></script>
     <script src="js/engine/responder-recall.js"></script>
     <script src="js/engine/responder-promise.js"></script>
@@ -592,6 +615,7 @@
     <script src="js/engine/responder-mood.js"></script>
     <script src="js/engine/index.js"></script>
     <script src="js/ui/core.js"></script>
+    <script src="js/ui/glint.js"></script>
     <script src="js/ui/logger.js"></script>
     <script src="js/ui/ambient-visuals.js"></script>
     <script src="js/ui/ambient-sound-data.js"></script>

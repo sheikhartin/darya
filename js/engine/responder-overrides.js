@@ -400,6 +400,36 @@
         _overrideFired = true;
       }
 
+      // Darya-directed hostility (insult, bullying, crude language aimed
+      // at the companion) takes priority over any benign rule the words
+      // happen to match: a sarcastic "thanks", a joke-sounding phrase, or
+      // a bare "you are worthless" that the self-esteem rule would
+      // otherwise read as the user's own. It fires regardless of
+      // matchedRule so a directed insult is never answered with
+      // gratitude, a joke, or a mistaken emotional read. Safety-critical
+      // and minor-attraction turns are untouched, and a genuine testing
+      // message still gets the warm testInput pool above this boundary.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        this.currentTurnDialogueAct !== 'test_input'
+      ) {
+        const hostilityType = this._detectDaryaHarassment(
+          rawText,
+          matchingText
+        );
+        if (hostilityType === 'sexual' && this.lang.sexualHarassmentResponses) {
+          reply = this._pickVaried(this.lang.sexualHarassmentResponses);
+          _overrideFired = true;
+        } else if (
+          hostilityType === 'abuse' &&
+          this.lang.daryaHarassmentResponses
+        ) {
+          reply = this._pickVaried(this.lang.daryaHarassmentResponses);
+          _overrideFired = true;
+        }
+      }
+
       // Guided therapeutic exercises (see responder-exercises.js): the
       // user requests an exercise ("breathing exercise", "تمرین تنفس") or
       // answers the active exercise flow with yes/no/ok. An explicit
@@ -530,13 +560,19 @@
             reply = profileReply;
             _overrideFired = true;
           } else {
-            const promise = this._applyPromiseOverrides({
-              matchingText,
-              matchedRule
-            });
-            if (promise.fired) {
-              reply = promise.reply;
+            const lifeFactReply = this._handleLifeFactsTurn(matchingText);
+            if (lifeFactReply) {
+              reply = lifeFactReply;
               _overrideFired = true;
+            } else {
+              const promise = this._applyPromiseOverrides({
+                matchingText,
+                matchedRule
+              });
+              if (promise.fired) {
+                reply = promise.reply;
+                _overrideFired = true;
+              }
             }
           }
         }
@@ -816,13 +852,13 @@
           // answer, and personal disclosures («پول ندارم», «قرضم
           // زیاده») never name those markers, so they stay empathetic.
           (matchedRule?.topic === 'money' && // eslint-disable-next-line max-len
-            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate)\b/i.test(
+            (/\b(?:inflation|price|prices|stock|market|gold|oil|opec|imf|bitcoin|crypto|currency|dollar|economy|recession|interest rate|budget|budgeting|savings|emergency fund)\b/i.test(
               matchingText
             ) ||
               // Persian world-economics markers (normalized forms for
               // تورم/بورس/بیت‌کوین/کریپتو/صندوق بین‌المللی).
               // eslint-disable-next-line max-len
-              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول)(?!\p{L})/iu.test(
+              /(?:تورم|گرونی|قیمتا|قیمت‌ها|قیمتها|قیمت(?!\p{L})|بورس|سهام|ارز|طلا|نفت|اوپک|دلار|سکه|بیتکوین|بیت کوین|کریپتو|رمزارز|رمز ارز|صندوق بین‌المللی پول|صندوق بین المللی پول|بودجه|بودجه بندی|پس انداز|صندوق اضطراری)(?!\p{L})/iu.test(
                 matchingText
               )))) &&
         DaryaKnowledge &&
@@ -1104,6 +1140,9 @@
         // attached to a question must never replace the answer with a
         // de-escalation lecture (the transcript's «دستم درد میکنه الاغ»
         // failure). Pure insults that match no rule still de-escalate.
+        // The early Darya-directed guard above runs first, so this block
+        // must not overwrite an already-chosen boundary reply.
+        !_overrideFired &&
         !matchedRule &&
         matchedRule?.topic !== 'meta_feedback' &&
         matchedRule?.topic !== 'self_improvement' &&

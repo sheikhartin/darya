@@ -97,12 +97,10 @@
       container.appendChild(closeBtn);
       breatheOverlay.appendChild(container);
 
-      // Clicking on the backdrop (outside the container) also dismisses
-      breatheOverlay.addEventListener('click', function (e) {
-        if (e.target === breatheOverlay) {
-          dismissBreathe();
-        }
-      });
+      // The exercise is dismissed only through the close button or
+      // Escape. A backdrop click is deliberately NOT wired: a stray click
+      // during a calming exercise should not end it, and the dimmed
+      // backdrop must not advertise a click with a pointer cursor.
 
       // Keyboard contract for the modal dialog: Escape dismisses, and Tab
       // stays inside the overlay (Close is its only focusable element, so
@@ -204,7 +202,11 @@
         countdown.style.opacity = '1';
         countdown.style.transform = 'scale(1)';
         circle.style.transition =
-          'transform ' + phase.duration + 's cubic-bezier(0.37, 0, 0.24, 1)';
+          'transform ' +
+          phase.duration +
+          's cubic-bezier(0.37, 0, 0.24, 1), box-shadow ' +
+          phase.duration +
+          's cubic-bezier(0.37, 0, 0.24, 1)';
         circle.classList.remove(
           'breathe-circle--grow',
           'breathe-circle--shrink'
