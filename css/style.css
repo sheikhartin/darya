@@ -1649,11 +1649,25 @@ html[data-theme='beach'] .quick-reply {
   }
 }
 
-/* Typing indicator */
+/* Typing indicator. The row is a flex line aligned to Darya's own side
+   (the physical left in both languages, matching .bubble-row--bot) so the
+   dots never appear on the user's side. Without an explicit alignment the
+   inline bubble follows the page direction and, in Persian RTL, jumped to
+   the physical right, which read as a flicker on the wrong side of the
+   chat. */
 .typing-row {
+  display: flex;
   padding-inline: var(--space-3);
   padding-bottom: var(--space-1);
   flex-shrink: 0;
+}
+
+html[dir='rtl'] .typing-row {
+  justify-content: flex-end; /* physical left in RTL */
+}
+
+html[dir='ltr'] .typing-row {
+  justify-content: flex-start; /* physical left in LTR */
 }
 
 .bubble--typing {
@@ -1661,6 +1675,13 @@ html[data-theme='beach'] .quick-reply {
   align-items: center;
   gap: 5px;
   padding: 11px 16px;
+  animation: rise-in 0.18s var(--ease-tide) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble--typing {
+    animation: none;
+  }
 }
 
 .ripple-dot {

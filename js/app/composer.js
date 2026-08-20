@@ -129,7 +129,7 @@
     async function deliverReply(replyText, generation) {
       setTypingVisible(true);
       var baseDelay = randomReplyDelay();
-      var extraDelay = Math.min(replyText.length * 2, 600);
+      var extraDelay = Math.min(replyText.length * 1.5, 350);
       await new Promise(function (resolve) {
         return setTimeout(resolve, baseDelay + extraDelay);
       });

@@ -45,8 +45,12 @@
     DaryaAmbientSound,
     DaryaLang,
 
-    MIN_REPLY_DELAY_MS: 1500,
-    MAX_REPLY_DELAY_MS: 2300,
+    // Reply pacing: long enough that the typing indicator reads as a real
+    // reply being composed, short enough that sending never feels laggy.
+    // The old 1.5-2.3s window made a one-line answer take two seconds and
+    // read as a stuck, unoptimized app on fast devices.
+    MIN_REPLY_DELAY_MS: 550,
+    MAX_REPLY_DELAY_MS: 950,
 
     /** Proactive idle opener delay range (ms): Darya speaks first after
      * the greeting if the user stays silent. Randomized per conversation
