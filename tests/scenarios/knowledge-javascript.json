@@ -1,0 +1,23 @@
+{
+  "name": "English JavaScript explanation",
+  "description": "\"What is JavaScript\" gets a factual explanation, not the starter-path advice.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "what is javascript?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "what can javascript do?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns explain the language factually.",
+    "behavior": "The JavaScript fact wins over the programming-start fact."
+  }
+}

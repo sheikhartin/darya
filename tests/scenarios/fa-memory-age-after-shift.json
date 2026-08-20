@@ -1,0 +1,27 @@
+{
+  "name": "Persian age recall after a topic shift",
+  "description": "سن بعد از تغییر موضوع هم به خاطر آورده می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "من ۳۱ سالمه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "یه فیلم خوب معرفی کن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "من چند سالمه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The age is still recalled after the shift.",
+    "behavior": "Profile memory survives unrelated topic turns."
+  }
+}

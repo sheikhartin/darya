@@ -1,0 +1,27 @@
+{
+  "name": "Persian sequential joke continuation",
+  "description": "«یکی دیگه» بعد از جوک به جوک بعدی می‌رود، بدون اینکه به fallback بیفتد.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "یه جوک بگو",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "یکی دیگه",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "بازم",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Three different jokes are delivered.",
+    "behavior": "Sequential follow-ups stay on the joke pool."
+  }
+}

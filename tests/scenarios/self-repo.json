@@ -1,0 +1,23 @@
+{
+  "name": "English repository self-knowledge",
+  "description": "Darya answers where her source code and repository live with the real GitHub URL instead of an evasive source pointer.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "where is your code repo?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "where can i see your source code?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns answer with the official repository URL.",
+    "behavior": "The project self-knowledge fact wins over the generic fallback."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "English memory self-knowledge",
+  "description": "Questions about Darya memory are answered honestly: session-only, cleared on a new chat, nothing sent to a server.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "do you have memory?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "do you remember what i said earlier?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns explain the session-only memory model.",
+    "behavior": "Memory questions route to the privacy and storage fact."
+  }
+}

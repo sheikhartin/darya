@@ -1,0 +1,22 @@
+{
+  "name": "Persian insult then apology recovery",
+  "description": "توهین با مرز آرام پاسخ می‌گیرد و عذرخواهی گرم پذیرفته می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "تو یه آشغال بی‌فایده‌ای",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "ببخشید که فحش دادم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "apology"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The apology is accepted without shaming.",
+    "behavior": "Hostility is not mirrored and recovery is warm."
+  }
+}

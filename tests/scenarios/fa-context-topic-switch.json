@@ -1,0 +1,29 @@
+{
+  "name": "Persian topic switching",
+  "description": "درخواست فیلم، بعد کتاب، بعد بازی هر کدام پاسخ تازه و مرتبط می‌گیرند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چندتا فیلم معرفی کن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "حالا چندتا کتاب معرفی کن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "حالا چندتا بازی معرفی کن",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Each turn answers its own fresh request.",
+    "behavior": "Topic switches are honored, not stale-locked."
+  }
+}

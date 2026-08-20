@@ -1,0 +1,23 @@
+{
+  "name": "English app-store availability",
+  "description": "A question about Google Play, Bazaar, and Myket availability gets a real answer about the official routes.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "are you on google play or cafe bazaar or myket?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "can i get it from the github releases page too?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The reply names the actual distribution channels.",
+    "behavior": "Store availability routes to the project knowledge fact."
+  }
+}

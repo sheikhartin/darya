@@ -1,0 +1,23 @@
+{
+  "name": "English Python explanation",
+  "description": "\"What is Python\" gets a factual explanation.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "what is python?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "what is python used for?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns explain the language factually.",
+    "behavior": "The Python fact wins over the programming-start fact."
+  }
+}

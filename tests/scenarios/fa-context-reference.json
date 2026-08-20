@@ -1,0 +1,23 @@
+{
+  "name": "Persian reference resolution",
+  "description": "«دوباره همون اتفاق افتاد» بدون اسم موضوع، روی موضوع قبلی می‌ماند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "کارم خیلی استرس‌زا شده",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "امروز دوباره همون اتفاق افتاد",
+      "dialogueAct": "statement",
+      "intent": "open_statement",
+      "topic": "work"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The follow-up continues the work thread.",
+    "behavior": "Reference resolution keeps the recent subject."
+  }
+}

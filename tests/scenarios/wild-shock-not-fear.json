@@ -1,0 +1,22 @@
+{
+  "name": "English shock read as surprise, not fear",
+  "description": "\"I am shocked\" in a positive context is not read as a fear disclosure.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "i am shocked you knew that!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "seriously, that genuinely surprised me",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The reply stays light, with no fear prefix.",
+    "behavior": "The ambiguous shocked/shook words are not treated as terror."
+  },
+  "avoid": "(?:scared|terrified|afraid|fear|anxious)"
+}

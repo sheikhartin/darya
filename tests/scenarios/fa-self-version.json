@@ -1,0 +1,23 @@
+{
+  "name": "Persian version self-knowledge",
+  "description": "«نسخه تو چنده» answers with the shipped version instead of a philosophy shelf answer.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "نسخه تو چنده؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "الان روی چه نسخه‌ای هستی؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns answer with the current version.",
+    "behavior": "The version fact resolves through the {version} placeholder."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "English preference recall",
+  "description": "A stated preference is recalled on a later \"what do I like\" question.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "i love drinking coffee in the morning",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "what do i like?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The recall names the stored preference.",
+    "behavior": "Preference memory answers from the latest stated preference."
+  }
+}

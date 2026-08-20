@@ -1,0 +1,23 @@
+{
+  "name": "Persian memory self-knowledge",
+  "description": "«تو اصلا حافظه داری» is answered with the honest session-only memory model, not a generic defusal.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "تو اصلا حافظه داری؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "چیزی که میگم یادت می‌مونه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns explain the session-only memory model.",
+    "behavior": "Memory questions route to the privacy and storage fact."
+  }
+}

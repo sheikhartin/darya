@@ -1,0 +1,23 @@
+{
+  "name": "English pet-name affection",
+  "description": "A possessive pet name toward Darya is met with a warm boundary, not a work/family misread.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "you are my honey",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "affection"
+    },
+    {
+      "text": "you are mine",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "affection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns acknowledge affection warmly.",
+    "behavior": "Pet-name affection routes to the affection pool."
+  }
+}

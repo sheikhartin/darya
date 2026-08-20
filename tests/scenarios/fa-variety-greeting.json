@@ -1,0 +1,26 @@
+{
+  "name": "Persian greeting variety",
+  "description": "تکرار سلام نباید همان پاسخ قبلی را عینا تکرار کند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سلام",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    },
+    {
+      "text": "سلام دوباره",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    },
+    {
+      "text": "درود",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Three greetings get three non-identical replies.",
+    "behavior": "The repeated-greeting pool rotates its lines."
+  }
+}

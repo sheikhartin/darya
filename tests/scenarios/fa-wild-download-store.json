@@ -1,0 +1,23 @@
+{
+  "name": "Persian app-store availability",
+  "description": "سوال درباره‌ی گوگل پلی، بازار و مایکت پاسخ واقعی درباره‌ی مسیرهای رسمی می‌گیرد.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "از کافه بازار یا مایکت میتونم دانلودت کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "از صفحه ریلیز گیت هاب هم میشه گرفت؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The reply names the actual distribution channels.",
+    "behavior": "Store availability routes to the project knowledge fact."
+  }
+}

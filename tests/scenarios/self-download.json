@@ -1,0 +1,23 @@
+{
+  "name": "English download self-knowledge",
+  "description": "Where to download Darya is answered with the official routes: GitHub, the hosted web app, and Myket.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "where can i download you?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "do you have an android app i can install?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns name a real download route.",
+    "behavior": "Download questions never fall to an unrelated reflective line."
+  }
+}

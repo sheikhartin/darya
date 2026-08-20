@@ -1,0 +1,21 @@
+{
+  "name": "English life-fact recall",
+  "description": "A stated fact about a relative is recalled on a later question.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "my sister is a doctor",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "what does my sister do?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The recall names the stored profession.",
+    "behavior": "Life-fact memory answers from the stored subject."
+  }
+}

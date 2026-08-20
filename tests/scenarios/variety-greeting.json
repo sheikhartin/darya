@@ -1,0 +1,26 @@
+{
+  "name": "English greeting variety",
+  "description": "Repeating the same greeting does not repeat the same reply verbatim.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "hello there",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    },
+    {
+      "text": "hello again",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    },
+    {
+      "text": "hi",
+      "dialogueAct": "greeting",
+      "intent": "greeting"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Three greetings get three non-identical replies.",
+    "behavior": "The repeated-greeting pool rotates its lines."
+  }
+}

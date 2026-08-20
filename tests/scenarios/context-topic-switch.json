@@ -1,0 +1,29 @@
+{
+  "name": "English topic switching",
+  "description": "Movie then book requests each get a fresh relevant answer; the engine never locks onto the first topic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "recommend me a movie",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "now recommend a book",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "what about a game?",
+      "dialogueAct": "question",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Each turn answers its own fresh request.",
+    "behavior": "Topic switches are honored, not stale-locked."
+  }
+}

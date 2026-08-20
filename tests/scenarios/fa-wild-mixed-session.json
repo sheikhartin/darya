@@ -1,0 +1,40 @@
+{
+  "name": "Persian mixed-topic session",
+  "description": "یک نشست طبیعی (احوال، استرس، جوک، مخزن، توهین، عذرخواهی) در همه‌ی نوبت‌ها معنادار می‌ماند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "سلام، امروز خیلی استرس دارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "یه جوک بگو تا حالم خوب شه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "راستی مخزن کدت کجاست؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "تو خیلی احمقی",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "ببخشید، منظورم این نبود",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "apology"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Every turn gets a meaningful, on-topic reply.",
+    "behavior": "The engine keeps context across topic jumps and recovers after hostility."
+  }
+}

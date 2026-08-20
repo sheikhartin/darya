@@ -1,0 +1,23 @@
+{
+  "name": "Persian pet-name affection",
+  "description": "«تو عسل منی» با مرز گرم پاسخ می‌گیرد، نه تفسیر شغلی/خانوادگی.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "تو عسل منی",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "affection"
+    },
+    {
+      "text": "تو عشق منی",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "affection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns acknowledge affection warmly.",
+    "behavior": "Pet-name affection routes to the affection pool."
+  }
+}
