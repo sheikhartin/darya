@@ -2227,6 +2227,97 @@ test('cursor glint tracks the pointer but yields to reduced motion and touch', (
   );
 });
 
+test('circular icon buttons share a crisp rim and a soft lift', () => {
+  // A 34px frosted disc on the dark sea needs a clearly visible rim and
+  // an ambient lift to read as a clean circle: the faint panel edge and
+  // an inset-only shadow left the top and bottom undefined. All three
+  // round controls must share the same recipe so none regresses to a
+  // fuzzy disc.
+  const css = read('css/style.css');
+  assert.match(css, /--circle-rim:/u, 'a dedicated circular-rim token exists');
+  for (const selector of [
+    '\\.picker__sound-toggle',
+    '\\.menu__trigger',
+    '\\.breathe-trigger'
+  ]) {
+    assert.match(
+      css,
+      new RegExp(
+        selector +
+          '\\s*\\{[\\s\\S]*?border: 1px solid var\\(--circle-rim\\);[\\s\\S]*?box-shadow: var\\(--glass-specular-soft\\), var\\(--shadow-soft\\);'
+      ),
+      `${selector} uses the crisp rim and soft lift`
+    );
+  }
+});
+
+test('disabled send button reads as muted glass, never a dark smudge', () => {
+  // A coral disc at low opacity over the dark composer read as a muddy
+  // dark blob on the composer's edge. The idle send button must swap to
+  // the same frosted glass circle the other icon buttons use, with a
+  // dimmed arrow, and must not rely on an opacity hack.
+  const css = read('css/style.css');
+  assert.match(
+    css,
+    /\.composer__send:disabled\s*\{[\s\S]*?background: var\(--surface-control\)/u,
+    'disabled send button uses the shared glass surface'
+  );
+  assert.doesNotMatch(
+    css,
+    /\.composer__send:disabled\s*\{[^}]*opacity:/u,
+    'disabled send button must not dim via opacity'
+  );
+});
+
+test('chat bubbles carry a soft reflection sheen, not a flat fill', () => {
+  // Messages are the content layer, so they are near-opaque, but they
+  // still catch a diagonal light so they share the chrome's light
+  // direction instead of reading as flat blocks.
+  const css = read('css/style.css');
+  assert.match(css, /--user-bubble-sheen:/u, 'user bubble sheen token exists');
+  assert.match(css, /--bot-bubble-sheen:/u, 'bot bubble sheen token exists');
+  assert.match(
+    css,
+    /\.bubble--user\s*\{[\s\S]*?background: var\(--user-bubble-sheen\), var\(--color-seafoam\)/u,
+    'user bubble layers the sheen over its fill'
+  );
+  assert.match(
+    css,
+    /\.bubble--bot\s*\{[\s\S]*?background: var\(--bot-bubble-sheen\), var\(--bubble-frost\)/u,
+    'bot bubble layers the sheen over its frost'
+  );
+});
+
+test('breathing exercise closes only on the button or Escape, with a soft glow', () => {
+  // The exercise is a calm moment: a stray backdrop click must not end
+  // it, so dismissal is limited to the close button and Escape, and the
+  // overlay shows a default cursor (only the button is interactive).
+  const overlays = readOverlays();
+  const css = read('css/style.css');
+
+  assert.doesNotMatch(
+    overlays,
+    /e\.target === breatheOverlay/u,
+    'backdrop click must not dismiss the exercise'
+  );
+  assert.match(
+    overlays,
+    /closeBtn\.addEventListener\('click', dismissBreathe\)/u,
+    'the close button dismisses the exercise'
+  );
+  assert.match(css, /\.breathe-overlay\s*\{[\s\S]*?cursor: default/u);
+
+  // The glow breathes with the phase: it brightens on grow and settles
+  // on shrink, transitioning box-shadow alongside the scale.
+  assert.match(css, /\.breathe-circle--grow\s*\{[\s\S]*?box-shadow:/u);
+  assert.match(css, /\.breathe-circle--shrink\s*\{[\s\S]*?box-shadow:/u);
+  assert.match(
+    css,
+    /\.breathe-circle::before\s*\{[\s\S]*?radial-gradient/u,
+    'the circle carries a specular glint'
+  );
+});
+
 test('clearing the chat preserves the jump-to-latest anchor button', () => {
   // The jump-to-latest pill is a static child of #chat. Wiping the chat
   // for a new conversation or a return to the picker must keep it in the

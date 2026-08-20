@@ -9,18 +9,39 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ### Changed (UI)
 
-- **A layered, liquid-glass interface across both themes.** Every surface -
+- **A calm frosted-glass interface across both themes.** Every surface -
   the language cards, theme picker, menu, chat bubbles, quick-reply
-  chips, the composer, and the confirm and exit dialogs - now reads as
-  tinted glass floating over the ambient backdrop, taking its cues from
-  Apple's Liquid Glass language rather than a single flat blur: a
-  translucent deep-blue (Ocean) or deep-teal (Beach) body, an angled
-  light-catch, a specular edge highlight with a faint chromatic fringe,
-  and a soft drop shadow. Depth is tiered, mirroring how the material
-  "thickens" with size: large chrome uses a richer blur and full
-  specular, while chat content and small controls stay lighter so long
-  conversations never stack heavy blur. Text contrast holds above the
-  WCAG AA threshold in every state.
+  chips, the composer, and the confirm and exit dialogs - reads as a
+  softly frosted pane floating over the ambient backdrop: a translucent
+  deep-blue (Ocean) or deep-teal (Beach) body, an angled light-catch,
+  and a single top catch-light with a hairline top-lit rim. The frost is
+  deliberately more opaque and the blur gentler than a maximal
+  glassmorphism recipe, so text keeps its WCAG AA contrast and the
+  surfaces read as calm material rather than a stack of artificial
+  reflections. Chat bubbles sit on a near-opaque tint so the content
+  layer never floats on transparent glass.
+- **A cursor-tracked glint.** Interactive glass (the language cards, theme
+  segments, menu items, the menu popover, quick-reply chips, dialogs, and
+  the circular header buttons) catches a whisper-light highlight that
+  follows the pointer, so the material reads as lit from the user's hand.
+  It is skipped on touch devices and under `prefers-reduced-motion`, and
+  it never touches the conversation or assistive technology.
+- **Messages reflect the same light.** Chat bubbles carry a soft diagonal
+  sheen in both languages so they share the chrome's light direction
+  instead of reading as flat blocks, without becoming translucent glass.
+- **Circular controls read as clean circles.** The header icon buttons and
+  the picker sound toggle share one recipe: a clearly visible rim and a
+  soft ambient lift, so a 34px frosted disc never blurs into the dark
+  backdrop at its top and bottom edges.
+- **The idle send button is muted glass, not a dark smudge.** A coral disc
+  dimmed by opacity over the dark composer read as a muddy blob, so the
+  disabled state now uses the same frosted circle as the other icon
+  buttons with a dimmed arrow.
+- **The breathing exercise closes only when asked.** A stray backdrop
+  click no longer ends the exercise (only the close button or Escape
+  does), the overlay no longer shows a pointer cursor everywhere, and the
+  circle's glow now breathes with the phase, brightening on the inhale
+  and settling on the exhale.
 - **The glass degrades gracefully.** Browsers without `backdrop-filter`
   support, and users who enable `prefers-reduced-transparency` or
   `prefers-contrast: more`, get a near-opaque pane with a stronger rim

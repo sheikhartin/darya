@@ -200,6 +200,18 @@
   /* Chat bubbles are the content layer: near-opaque so text sits on a
      stable surface instead of floating on translucent glass. */
   --bubble-frost: rgba(20, 63, 72, 0.84);
+  /* A soft diagonal reflection on each bubble, echoing the panel sheen
+     so the messages share the same light direction as the chrome. */
+  --user-bubble-sheen: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0) 48%
+  );
+  --bot-bubble-sheen: linear-gradient(
+    158deg,
+    rgba(214, 244, 250, 0.14) 0%,
+    rgba(214, 244, 250, 0) 52%
+  );
   --glass-sheen: linear-gradient(
     158deg,
     rgba(214, 244, 250, 0.32) 0%,
@@ -212,6 +224,10 @@
   --glass-edge: rgba(196, 238, 246, 0.14);
   --glass-specular: inset 0 1px 0 rgba(244, 253, 255, 0.32);
   --glass-specular-soft: inset 0 1px 0 rgba(244, 253, 255, 0.24);
+  /* Circular icon buttons need a clearly visible rim on the dark sea:
+     the faint panel edge would leave a 34px disc with no readable
+     boundary. A brighter hairline keeps the circle crisp. */
+  --circle-rim: rgba(196, 238, 246, 0.34);
 
   /* --- Motion --- */
   --ease-tide: cubic-bezier(0.37, 0, 0.24, 1);
@@ -1061,14 +1077,15 @@ html[data-theme='beach'] .picker__theme-heading {
   padding: 0;
   background: var(--surface-control);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--circle-rim);
   border-radius: 50%;
   color: var(--color-foam-dim);
-  box-shadow: var(--glass-specular-soft);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   transition:
     color 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide),
+    border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
 }
 
@@ -1186,10 +1203,10 @@ html[data-theme='beach'] .picker__theme-heading {
   padding: 0;
   background: var(--surface-control);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
-  box-shadow: var(--glass-specular-soft);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   transition:
     border-color 0.2s var(--ease-tide),
@@ -1476,7 +1493,7 @@ html[dir='ltr'] .bubble-row--bot {
 }
 
 .bubble--user {
-  background: var(--color-seafoam);
+  background: var(--user-bubble-sheen), var(--color-seafoam);
   color: var(--color-abyss-deep);
   border-radius: var(--radius-md) var(--radius-md) 8px var(--radius-md);
   box-shadow:
@@ -1485,7 +1502,7 @@ html[dir='ltr'] .bubble-row--bot {
 }
 
 .bubble--bot {
-  background: var(--bubble-frost);
+  background: var(--bot-bubble-sheen), var(--bubble-frost);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 8px;
@@ -1689,7 +1706,7 @@ html[data-theme='beach'] .quick-reply {
   border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
   margin: var(--space-2) var(--space-3);
-  box-shadow: var(--glass-specular);
+  box-shadow: var(--glass-specular), var(--shadow-soft);
   transition:
     border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
@@ -1732,7 +1749,9 @@ html[data-theme='beach'] .quick-reply {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: none;
+  /* Transparent border reserves the ring so the disabled state can swap
+     in a hairline without a 2px layout shift. */
+  border: 1px solid transparent;
   background: var(--color-coral);
   color: var(--color-abyss-deep);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1743,7 +1762,7 @@ html[data-theme='beach'] .quick-reply {
   transition:
     transform 0.2s var(--ease-tide),
     background 0.2s var(--ease-tide),
-    opacity 0.2s,
+    border-color 0.2s var(--ease-tide),
     box-shadow 0.2s var(--ease-tide);
 }
 
@@ -1802,7 +1821,14 @@ html[dir='rtl'] .composer__send svg {
 }
 
 .composer__send:disabled {
-  opacity: 0.35;
+  /* Muted frosted glass instead of a dimmed coral blob: a coral disc at
+     low opacity over the dark composer read as a muddy dark smudge, so
+     the idle state reuses the same glass circle the other icon buttons
+     share, with a dimmed arrow to signal it is not yet available. */
+  background: var(--surface-control);
+  color: var(--color-foam-dim);
+  border-color: var(--circle-rim);
+  box-shadow: var(--glass-specular-soft);
   cursor: not-allowed;
 }
 
@@ -1836,7 +1862,9 @@ html[dir='rtl'] .composer__send svg {
   justify-content: center;
   background: rgba(4, 15, 20, 0.85);
   animation: reveal 0.35s var(--ease-tide) both;
-  cursor: pointer;
+  /* Only the close button is interactive; the backdrop and the exercise
+     itself must not advertise a click with a pointer cursor. */
+  cursor: default;
   backdrop-filter: blur(4px);
 }
 
@@ -1852,6 +1880,7 @@ html[data-theme='beach'] .breathe-overlay {
 }
 
 .breathe-circle {
+  position: relative;
   width: 140px;
   height: 140px;
   border-radius: 50%;
@@ -1863,15 +1892,41 @@ html[data-theme='beach'] .breathe-overlay {
   box-shadow:
     0 0 30px rgba(127, 190, 176, 0.15),
     inset 0 0 20px rgba(127, 190, 176, 0.06);
-  transition: transform 4s var(--ease-tide);
+  transition:
+    transform 4s var(--ease-tide),
+    box-shadow 4s var(--ease-tide);
 }
 
+/* A soft specular glint at the top-left reads as light reflecting off a
+   rounded glass surface, without adding motion of its own. */
+.breathe-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 28%,
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0) 46%
+  );
+  pointer-events: none;
+}
+
+/* The glow breathes with the phase: it brightens as the circle grows on
+   the inhale and settles back as it shrinks on the exhale, so the light
+   itself carries the rhythm rather than a separate animation. */
 .breathe-circle--grow {
   transform: scale(1.2);
+  box-shadow:
+    0 0 52px rgba(127, 190, 176, 0.32),
+    inset 0 0 28px rgba(127, 190, 176, 0.1);
 }
 
 .breathe-circle--shrink {
   transform: scale(1);
+  box-shadow:
+    0 0 30px rgba(127, 190, 176, 0.15),
+    inset 0 0 20px rgba(127, 190, 176, 0.06);
 }
 
 .breathe-label {
@@ -2108,7 +2163,10 @@ html[data-theme='beach'] .exit-confirm-bar__btn--no:hover {
   justify-content: center;
   background: rgba(4, 15, 20, 0.85);
   animation: reveal 0.3s var(--ease-tide) both;
-  cursor: pointer;
+  /* The backdrop may still cancel the dialog, but the two action buttons
+     are the interactive affordance; the dimmed backdrop must not show a
+     pointer cursor everywhere. */
+  cursor: default;
   backdrop-filter: blur(4px);
 }
 
@@ -2955,10 +3013,10 @@ html[data-theme='beach'] .backdrop__depth-breath {
   padding: 0;
   background: var(--surface-control);
   backdrop-filter: blur(var(--glass-blur-soft)) saturate(var(--glass-saturate));
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--circle-rim);
   color: var(--color-foam-dim);
   border-radius: var(--radius-full);
-  box-shadow: var(--glass-specular-soft);
+  box-shadow: var(--glass-specular-soft), var(--shadow-soft);
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
@@ -3194,7 +3252,7 @@ html[data-theme='beach'] .picker__option-desc {
 }
 
 html[data-theme='beach'] .bubble--user {
-  background: var(--color-on-sky);
+  background: var(--user-bubble-sheen), var(--color-on-sky);
   color: #f0f7f4;
 }
 
