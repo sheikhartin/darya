@@ -82,6 +82,7 @@ required_files=(
   "js/engine/responder-detect.js"
   "js/engine/responder-safety.js"
   "js/engine/responder-emotion.js"
+  "js/engine/responder-cultural.js"
   "js/engine/responder-phase.js"
   "js/engine/responder-rules.js"
   "js/engine/responder-entity.js"
@@ -115,8 +116,15 @@ required_files=(
   "js/data/knowledge-facts-domains.js"
   "js/data/knowledge-facts-daily.js"
   "js/data/knowledge-facts-career.js"
+  "js/data/knowledge-facts-work-life.js"
   "js/data/knowledge-facts-skills.js"
+  "js/data/knowledge-facts-software-security.js"
   "js/data/knowledge-facts-beliefs-media.js"
+  "js/data/knowledge-facts-mindsets.js"
+  "js/data/knowledge-facts-world.js"
+  "js/data/knowledge-facts-history-conflict.js"
+  "js/data/knowledge-facts-society.js"
+  "js/data/knowledge-facts-travel.js"
   "js/data/knowledge-fun-facts.js"
   "js/data/knowledge-lists.js"
   "js/data/knowledge-base.js"
@@ -130,6 +138,8 @@ required_files=(
   "js/languages/fa-rules.js"
   "js/languages/fa-vocabulary.js"
   "js/languages/fa-maps.js"
+  "js/languages/fa-culture.js"
+  "js/languages/fa-society.js"
   "js/languages/en.js"
   "js/languages/en-responses-base.js"
   "js/languages/en-responses-topics.js"
@@ -139,6 +149,8 @@ required_files=(
   "js/languages/en-rules.js"
   "js/languages/en-vocabulary.js"
   "js/languages/en-maps.js"
+  "js/languages/en-culture.js"
+  "js/languages/en-society.js"
   "js/text/halfspace-data.js"
   "js/text/halfspace.js"
   "js/text/entity-extractor-data.js"
@@ -170,7 +182,7 @@ section "JavaScript syntax"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  for f in js/app/index.js js/app/composer.js js/app/language.js js/app/conversation.js js/app/menu.js js/app/sound.js js/engine/index.js js/engine/utils-constants.js js/engine/utils-text.js js/engine/utils.js js/engine/factual-math.js js/engine/factual-datetime.js js/engine/factual-fun-facts.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/responder-public.js js/engine/responder-detect.js js/engine/responder-safety.js js/engine/responder-emotion.js js/engine/responder-phase.js js/engine/responder-rules.js js/engine/responder-entity.js js/engine/responder-profile.js js/engine/responder-overrides.js js/engine/responder-promise.js js/engine/responder-exercises.js js/engine/responder-mood.js js/engine/time-utils.js js/ui/core.js js/ui/glint.js js/ui/ambient-visuals.js js/ui/ambient-sound-data.js js/ui/ambient-sound-helpers.js js/ui/ambient-sound-playback.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays-breathe.js js/ui/overlays-confirm.js js/ui/overlays-notify.js js/ui/overlays.js js/data/knowledge-reflections.js js/data/knowledge-facts-science.js js/data/knowledge-facts-tech.js js/data/knowledge-facts-culture.js js/data/knowledge-facts-life.js js/data/knowledge-facts-education.js js/data/knowledge-facts-entertainment.js js/data/knowledge-facts-project.js js/data/knowledge-facts-domains.js js/data/knowledge-facts-daily.js js/data/knowledge-facts-career.js js/data/knowledge-facts-skills.js js/data/knowledge-facts-beliefs-media.js js/data/knowledge-fun-facts.js js/data/knowledge-lists.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/fa-responses-base.js js/languages/fa-responses-topics.js js/languages/fa-responses-rules.js js/languages/fa-responses-contexts.js js/languages/fa-responses-features.js js/languages/fa-rules.js js/languages/fa-vocabulary.js js/languages/fa-maps.js js/languages/en.js js/languages/en-responses-base.js js/languages/en-responses-topics.js js/languages/en-responses-rules.js js/languages/en-responses-contexts.js js/languages/en-responses-features.js js/languages/en-rules.js js/languages/en-vocabulary.js js/languages/en-maps.js js/text/halfspace-data.js js/text/halfspace.js js/text/entity-extractor-data.js js/text/entity-extractor.js; do
+  for f in js/app/index.js js/app/composer.js js/app/language.js js/app/conversation.js js/app/menu.js js/app/sound.js js/engine/index.js js/engine/utils-constants.js js/engine/utils-text.js js/engine/utils.js js/engine/factual-math.js js/engine/factual-datetime.js js/engine/factual-fun-facts.js js/engine/factual.js js/engine/recap.js js/engine/responder.js js/engine/responder-public.js js/engine/responder-detect.js js/engine/responder-safety.js js/engine/responder-emotion.js js/engine/responder-cultural.js js/engine/responder-phase.js js/engine/responder-rules.js js/engine/responder-entity.js js/engine/responder-profile.js js/engine/responder-overrides.js js/engine/responder-promise.js js/engine/responder-exercises.js js/engine/responder-mood.js js/engine/time-utils.js js/ui/core.js js/ui/glint.js js/ui/ambient-visuals.js js/ui/ambient-sound-data.js js/ui/ambient-sound-helpers.js js/ui/ambient-sound-playback.js js/ui/ambient-sound.js js/ui/export.js js/ui/logger.js js/ui/overlays-breathe.js js/ui/overlays-confirm.js js/ui/overlays-notify.js js/ui/overlays.js js/data/knowledge-reflections.js js/data/knowledge-facts-science.js js/data/knowledge-facts-tech.js js/data/knowledge-facts-culture.js js/data/knowledge-facts-life.js js/data/knowledge-facts-education.js js/data/knowledge-facts-entertainment.js js/data/knowledge-facts-project.js js/data/knowledge-facts-domains.js js/data/knowledge-facts-daily.js js/data/knowledge-facts-career.js js/data/knowledge-facts-work-life.js js/data/knowledge-facts-skills.js js/data/knowledge-facts-software-security.js js/data/knowledge-facts-beliefs-media.js js/data/knowledge-facts-mindsets.js js/data/knowledge-facts-world.js js/data/knowledge-facts-history-conflict.js js/data/knowledge-facts-society.js js/data/knowledge-facts-travel.js js/data/knowledge-fun-facts.js js/data/knowledge-lists.js js/data/knowledge-base.js js/languages/index.js js/languages/fa.js js/languages/fa-responses-base.js js/languages/fa-responses-topics.js js/languages/fa-responses-rules.js js/languages/fa-responses-contexts.js js/languages/fa-responses-features.js js/languages/fa-rules.js js/languages/fa-vocabulary.js js/languages/fa-maps.js js/languages/fa-culture.js js/languages/fa-society.js js/languages/en.js js/languages/en-responses-base.js js/languages/en-responses-topics.js js/languages/en-responses-rules.js js/languages/en-responses-contexts.js js/languages/en-responses-features.js js/languages/en-rules.js js/languages/en-vocabulary.js js/languages/en-maps.js js/languages/en-culture.js js/languages/en-society.js js/text/halfspace-data.js js/text/halfspace.js js/text/entity-extractor-data.js js/text/entity-extractor.js; do
     if node --check "$f" 2>/tmp/darya-syntax-err; then
       ok "valid syntax: $f"
     else
@@ -186,7 +198,7 @@ section "Node engine test suite"
 # ============================================================================
 
 if command -v node >/dev/null 2>&1; then
-  if node --test --test-reporter tap tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs > /tmp/darya-node-test.log 2>&1; then
+  if node --test --test-reporter tap tests/engine.test.mjs tests/foundation.test.mjs tests/knowledge-world.test.mjs tests/language.test.mjs tests/quality.test.mjs tests/time-utils.test.mjs tests/software-work-history-intelligence.test.mjs tests/wild-conversations.test.mjs tests/wild-daily-2026.test.mjs tests/wild-passions-2026.test.mjs > /tmp/darya-node-test.log 2>&1; then
     node_pass=$(grep -oP '(?<=# pass )\d+' /tmp/darya-node-test.log || echo "ER")
     ok "all tests passed ($node_pass tests)"
   else
@@ -713,6 +725,7 @@ else
     check_status "/js/engine/responder-detect.js" "200"
     check_status "/js/engine/responder-safety.js" "200"
     check_status "/js/engine/responder-emotion.js" "200"
+    check_status "/js/engine/responder-cultural.js" "200"
     check_status "/js/engine/responder-phase.js" "200"
     check_status "/js/engine/responder-rules.js" "200"
     check_status "/js/engine/responder-entity.js" "200"
@@ -735,6 +748,8 @@ else
     check_status "/js/ui/overlays-confirm.js" "200"
     check_status "/js/ui/overlays-notify.js" "200"
     check_status "/js/ui/overlays.js" "200"
+    check_status "/js/data/knowledge-facts-society.js" "200"
+    check_status "/js/data/knowledge-facts-travel.js" "200"
     check_status "/js/data/knowledge-base.js" "200"
     check_status "/js/languages/index.js" "200"
     check_status "/js/languages/fa.js" "200"
@@ -746,6 +761,8 @@ else
     check_status "/js/languages/fa-rules.js" "200"
     check_status "/js/languages/fa-vocabulary.js" "200"
     check_status "/js/languages/fa-maps.js" "200"
+    check_status "/js/languages/fa-culture.js" "200"
+    check_status "/js/languages/fa-society.js" "200"
     check_status "/js/languages/en.js" "200"
     check_status "/js/languages/en-responses-base.js" "200"
     check_status "/js/languages/en-responses-topics.js" "200"
@@ -755,6 +772,8 @@ else
     check_status "/js/languages/en-rules.js" "200"
     check_status "/js/languages/en-vocabulary.js" "200"
     check_status "/js/languages/en-maps.js" "200"
+    check_status "/js/languages/en-culture.js" "200"
+    check_status "/js/languages/en-society.js" "200"
     check_status "/assets/favicon.ico" "200"
     check_status "/manifest.json" "200"
     check_status "/sw.js" "200"

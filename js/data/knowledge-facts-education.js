@@ -355,6 +355,38 @@
       en: 'Firefighting is a service and emergency career that requires both courage and serious technical training. Hiring usually goes through the fire department recruitment process, including physical fitness tests, medical checks, and specialized firefighting and rescue training. A firefighters work is not only putting out fires; it includes rescue in accidents and natural disasters and teaching the public about safety. The job has heavy shifts and stress, but it is one of the most respected professions socially.'
     },
     {
+      id: 'responsible_ai_study',
+      keywords: [
+        'how should i use ai for school responsibly',
+        'responsible ai use for homework',
+        'use ai for studying without cheating',
+        'ai tools for school responsibly',
+        'چطور مسئولانه از هوش مصنوعی برای درس استفاده کنم',
+        'استفاده مسئولانه از هوش مصنوعی برای تکلیف',
+        'هوش مصنوعی برای درس بدون تقلب',
+        'ابزار هوش مصنوعی برای درس'
+      ],
+      weak: [
+        'ai for homework',
+        'ai for school',
+        'هوش مصنوعی برای درس',
+        'هوش مصنوعی برای تکلیف'
+      ],
+      weakSafe: true,
+      hints: [
+        'responsibly',
+        'without cheating',
+        'learn',
+        'study',
+        'مسئولانه',
+        'تقلب',
+        'یاد بگیرم',
+        'درس'
+      ],
+      fa: 'استفاده‌ی مسئولانه از هوش مصنوعی برای درس یعنی ابزار به‌جای تو فکر نکند. اول خودت مسئله را امتحان کن، بعد از ابزار برای توضیح یک مفهوم، ساختن سؤال تمرینی، بازخورد روی پیش‌نویس یا پیدا کردن نقطه‌ی ضعف استفاده کن. پاسخ را با کتاب، معلم یا منبع معتبر بررسی کن، اطلاعات شخصی و فایل محرمانه نده و چیزی را که نمی‌فهمی به نام کار خودت تحویل نده. یک آزمون ساده: بعد از بستن ابزار، باید بتوانی راه‌حل را با زبان خودت توضیح بدهی. قانون مدرسه یا معلم درباره‌ی استفاده از هوش مصنوعی هم مقدم است.',
+      en: 'Responsible AI use for school means the tool should not do the thinking in your place. Try the problem first, then use AI to explain a concept, create practice questions, critique a draft, or identify a weak spot. Verify claims against a textbook, teacher, or reliable source, never share private school or personal data, and do not submit work you cannot explain as your own. A simple test: after closing the tool, you should be able to describe the reasoning in your own words. Your school or teacher’s AI policy still comes first.'
+    },
+    {
       id: 'learning_english',
       keywords: [
         'انگلیسی یاد بگیرم',

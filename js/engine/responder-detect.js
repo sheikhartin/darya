@@ -425,8 +425,8 @@
       const enMaybe =
         // eslint-disable-next-line max-len
         /^(?:maybe|perhaps|not sure|i don'?t know|i'?m not sure|i am not sure|i guess|possibly|let me think|probably|we'?ll see)\b/iu;
-      // The Persian ی form only: the normalizer maps the Arabic ي to ی,
-      // so the Arabic spelling in a pattern would never match.
+      // The Persian Yeh U+06CC form only: normalization maps Arabic Yeh
+      // U+064A before matching, so the other code point is unnecessary.
       const faAffirm =
         /^(?:بله|آره|اره|باشه|اوکی|حتما|حتماً|چشم|موافقم|بله حتما|بله حتماً)(?!\p{L})/u;
       const faNegate =
@@ -462,7 +462,13 @@
     },
 
     _isMixedLanguage(text) {
-      const letters = [...String(text)].filter((ch) => /\p{L}/u.test(ch));
+      // Ignore the same established technical identifiers that script
+      // validation exempts. «SQL injection چیه» is a Persian software
+      // question with a technical noun, not a bilingual conversation turn.
+      const ratioText = this.lang.scriptExemptPattern
+        ? String(text).replace(this.lang.scriptExemptPattern, '')
+        : String(text);
+      const letters = [...ratioText].filter((ch) => /\p{L}/u.test(ch));
       if (letters.length < 4) {
         return false;
       }
@@ -487,7 +493,7 @@
         this.lang.scriptRange.test(ch)
       );
       if (nativeLetters.length > 0) {
-        const foreignWords = [...String(text).matchAll(/[\p{L}]+/gu)].map(
+        const foreignWords = [...ratioText.matchAll(/[\p{L}]+/gu)].map(
           (m) => m[0]
         );
         const allForeignWords = foreignWords.filter((word) =>

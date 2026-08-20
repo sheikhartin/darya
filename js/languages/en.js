@@ -11,8 +11,10 @@
   // regex patterns, and knowledge entries).
   /* eslint-disable max-len */
 
-  // Load response pools from the data file.
+  // Load response pools and the curated cultural-language layer.
   var R = global.DaryaEnResponses;
+  var culture = global.DaryaEnCulture;
+  var society = global.DaryaEnSociety;
 
   const BOT_NAME = 'Darya';
 
@@ -20,11 +22,6 @@
   // the vast majority of everyday English (and common loanwords/names).
   const SCRIPT_RANGE = /[A-Za-z\u00C0-\u017F]/;
 
-  /**
-   * Normalizes raw English input: lowercase-insensitive matching is
-   * handled by the rule patterns themselves (case-insensitive flag), so
-   * normalization here is limited to trimming and whitespace collapsing.
-   */
   /**
    * Normalizes raw English input: Unicode NFKC normalization folds
    * compatibility characters (full-width letters, certain ligatures) to
@@ -65,7 +62,11 @@
     selfAwareness,
     foreignLanguageRedirect
   } = global.DaryaEnData;
-  const rules = global.DaryaEnRules;
+  const rules = [
+    ...global.DaryaEnRules,
+    ...((culture && culture.rules) || []),
+    ...((society && society.rules) || [])
+  ];
 
   const en = {
     code: 'en',
@@ -79,6 +80,8 @@
     minScriptRatio: 0.6,
     normalize,
     rules,
+    culture,
+    society,
     trivialCaptures,
     genericFallbacks: R.genericFallbacks,
     strategyShiftFallbacks: R.strategyShiftFallbacks,

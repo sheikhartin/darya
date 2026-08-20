@@ -113,12 +113,12 @@
     ctrl.refreshComposerState();
   });
   el.input.addEventListener('focus', function () {
-    UI.utils.scrollToBottom();
+    UI.utils.scrollToBottomIfNear();
   });
 
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', function () {
-      UI.utils.scrollToBottom();
+      UI.utils.scrollToBottomIfNear();
     });
   }
 
@@ -237,8 +237,7 @@
     el.chat.addEventListener(
       'scroll',
       function () {
-        UI.utils.saveScrollPosition();
-        UI.utils.updateJumpButton();
+        UI.utils.handleChatScroll();
       },
       { passive: true }
     );

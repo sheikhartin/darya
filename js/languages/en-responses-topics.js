@@ -709,19 +709,21 @@
   // evasive.
   // ------------------------------------------------------------------
   R.unknownTopicResponses = [
-    'Honestly, this is beyond what I know well. Could you help me understand it better?',
-    'I have to be honest: I do not know this topic well. What makes it interesting to you?',
-    'This is new territory for me. I would like to understand it. Where would you like to begin?',
-    'I am not familiar with this subject. What is it about, and what makes it matter to you?'
+    'I caught the tone, but not yet the exact target. Give me one concrete detail and I will meet you there.',
+    'There is a story packed into that sentence. What happened immediately before this?',
+    'I do not want to fake understanding. Which part of what you said matters most right now?',
+    'That landed with some force. Are we talking about a person, a decision, or something that happened today?',
+    'I may have missed the reference, not the fact that it matters. Point me at the specific part you want to unpack.'
   ];
   // Caring variant for heavy unmatched turns: when a disclosure no
   // rule caught carries negative sentiment or death-adjacent words,
   // curiosity vocabulary ("interesting") would read as cruelty. These
   // acknowledge first and invite gently.
   R.unknownTopicCaringResponses = [
-    'What you just shared sounds heavy, and I want to understand it properly. Could you tell me a little more about what is happening?',
-    'I hear that this is weighing on you. I may not know this territory well, but I am here and listening. What would help me understand?',
-    'That sounds hard to carry. Help me understand what you are going through, at whatever pace feels right.'
+    'What you just shared sounds heavy. Start with the part that hurts most; we do not have to organize the whole story yet.',
+    'I hear the weight in that sentence. What happened most recently that brought it this close?',
+    'That sounds hard to carry. We can slow it down: is the sharpest part fear, loss, anger, or exhaustion?',
+    'I do not want to guess wrong when this matters. Give me the one detail I should understand first.'
   ];
 
   // ------------------------------------------------------------------

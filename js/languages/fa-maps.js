@@ -344,24 +344,10 @@
     'still'
   ]);
 
-  // Response to conversation staleness: when the conversation has been
-  // shallow and superficial for several turns (e.g. short
-  // acknowledgements with no emotional depth), Darya gently invites a
-  // more substantive direction.
-
-  // Response to being asked how Darya is: when the user checks in on
-  // Darya after a heavy emotional conversation (e.g. "خوبی؟",
-  // "حالت چطوره؟"), these responses acknowledge the care behind the
-  // question and return attention to the user.
-
   /**
-   * Fallback reply shown when the conversation engine hits an unexpected
-   * error (e.g. a reference or logic error). Unlike
-   * emptyInputReply: R.emptyInputReply, this message acknowledges that
-   * the user said something but Darya could not process it, and invites
-   * the user to repeat it.
+   * Returns the Persian-only redirect used after script validation fails.
+   * @returns {string}
    */
-
   function foreignLanguageRedirect() {
     // eslint-disable-next-line max-len
     return `من ${BOT_NAME} هستم و تنها به زبان فارسی گفت‌وگو می‌کنم، تا بتوانم بهترین همراهی را داشته باشم. لطفاً پیام‌تان را به فارسی بنویسید تا ادامه دهیم.`;
@@ -425,6 +411,10 @@
     loneliness_online: 0.7,
     therapy_help: 0.7,
     family_conflict: 0.7,
+    toxic_family: 0.8,
+    toxic_friendship: 0.65,
+    body_image: 0.65,
+    appearance_judgment: 0.3,
     professional_boundary: 0.9,
     grief: 0.9,
     chronic_illness: 0.85,

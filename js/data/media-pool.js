@@ -25,6 +25,7 @@
     puzzle: ['clever puzzle design', 'معماهای هوشمندانه'],
     adventure: ['memorable adventure', 'ماجراجویی به‌یادماندنی'],
     simulation: ['absorbing simulation', 'شبیه‌سازی درگیرکننده'],
+    cozy: ['gentle low-pressure play', 'بازی آرام و کم‌فشار'],
     platformer: ['precise platforming', 'سکوبازی دقیق'],
     action: ['dynamic action', 'اکشن پویا'],
     slice_of_life: ['gentle everyday storytelling', 'روایت لطیف روزمره'],
@@ -213,6 +214,15 @@
         ['Unpacking', 2021],
         ['Hardspace: Shipbreaker', 2022]
       ],
+      cozy: [
+        ['Stardew Valley', 2016],
+        ['Spiritfarer', 2020],
+        ['A Short Hike', 2019],
+        ['Unpacking', 2021],
+        ['Dorfromantik', 2021],
+        ['Coffee Talk', 2020],
+        ['Alba: A Wildlife Adventure', 2020]
+      ],
       horror: [
         ['SOMA', 2015],
         ['Signalis', 2022],
@@ -270,6 +280,14 @@
         ['Erased', 2016],
         ['Pluto', 2023],
         ['From the New World', 2012]
+      ],
+      horror: [
+        ['Mononoke', 2007],
+        ['Shiki', 2010],
+        ['Another', 2012],
+        ['Devilman Crybaby', 2018],
+        ['Higurashi When They Cry', 2006],
+        ['Theatre of Darkness: Yamishibai', 2013]
       ],
       sports: [
         ['Ping Pong the Animation', 2014],

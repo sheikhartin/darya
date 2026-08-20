@@ -35,7 +35,14 @@
    * @returns {boolean}
    */
   function isValidScript(text, lang) {
-    const ratio = scriptRatio(text, lang.scriptRange);
+    // A language pack may exempt well-known technical terms from the ratio.
+    // Persian developers naturally write «DNS و TCP را توضیح بده» or
+    // «race condition یعنی چی»; those Latin identifiers are vocabulary,
+    // not a request to switch the conversation to English.
+    const ratioText = lang.scriptExemptPattern
+      ? String(text).replace(lang.scriptExemptPattern, '')
+      : text;
+    const ratio = scriptRatio(ratioText, lang.scriptRange);
     if (ratio === null) {
       return true;
     }

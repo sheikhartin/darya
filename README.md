@@ -2,20 +2,32 @@
 
 _A calm conversation companion._
 
-Darya is a thoughtful, bilingual (Persian/English) conversation companion that listens and responds with care. Pick a language, choose your theme, and start a conversation. No sign-up, no data collection, and no network requests: everything runs locally in your browser.
+Darya is a thoughtful, bilingual (Persian/English) conversation companion that listens and responds with care. Pick a language, choose your theme, and start a conversation. There is no sign-up or data collection, and conversation processing stays local in your browser without external APIs.
 
 Think of Darya as a quiet, attentive friend who remembers what you have said during your conversation, notices how you are feeling, and asks gentle follow-up questions. It is not a substitute for professional support. It is a calm space to think out loud.
 
 ## Features
 
-- **Bilingual from the start.** Choose Persian or English. The language stays with you for the whole conversation.
+- **Bilingual from the start.** Choose Persian or English. The language stays with you for the whole conversation. Iranian Persian responses consistently use `ی` and `ک`; a final display guard converts Arabic look-alike code points before any bot message is shown.
+- **Live-edge chat behavior.** While you are at the bottom, every new user and Darya message remains visible automatically. The jump control appears only after you deliberately scroll upward, preserves that reading position as replies arrive, and re-engages automatic following when tapped.
 - **Two visual themes.** Ocean (deep, calm blues) or Beach (bright sand and surf), each with a soft frosted-glass interface. Your preference is remembered between visits.
 - **Calm ambient soundscapes.** Optional theme-matched background audio (beach or ocean sound loops). Always silent on arrival: you turn it on with the sound toggle, and it is never remembered between visits. It cross-fades smoothly when you switch themes.
-- **Real conversation flow.** Darya recognizes a wide range of topics (family, work, sleep, anxiety, joy, grief, and more), asks thoughtful questions, and keeps track of what matters to you.
+- **Real conversation flow.** Darya recognizes a wide range of topics (family, work, sleep, anxiety, joy, grief, and more), asks thoughtful questions, and keeps track of what matters to you. The relationship is collaborative: the user is not Darya's boss, and Darya does not position herself as the user's authority.
+- **Global informal-language awareness.** Darya understands a curated range of Iranian slang, Afghan Persian expressions, global internet language, and regional English from Britain and Ireland, Australia, Nigeria, South Africa, and Singapore. Ask what a term means or use it naturally in context. Darya explains or routes it without caricaturing the speaker, and stays honest that slang changes quickly.
+- **Support across life stages.** Child online-safety and school-bullying disclosures get trusted-adult steps; teenagers get practical boundaries for peer pressure and private-image coercion; adults get support for financial, work, parenting, and caregiver strain; and older adults get retirement, technology-learning, and scam-safety guidance.
+- **Sensitive subjects without shame or operational risk.** Darya can discuss sex work, pornography literacy, compulsive sexual behavior, substance and behavioral addiction, exploitation, consent, and policy debates. Personal coercion gets safety-first support; requests to procure, advertise, distribute, conceal, or evade enforcement are refused.
+- **Iran-aware legal caution.** For conduct that may create legal exposure in Iran, Darya avoids guessing at punishments or declaring a specific situation legal. She recommends pausing the activity, avoiding identifying details, checking current official information, and speaking confidentially with a licensed Iranian lawyer.
+- **Software engineering and defensive security.** The offline shelf now reaches beyond beginner syntax into architecture, databases, networking, concurrency, profiling, observability, accessibility, offline-first PWAs, refactoring, open-source work, secure development, threat modeling, incident response, and cybersecurity careers. Ethical-hacking guidance requires explicit authorization and written scope; credential theft, unauthorized access, malware, destructive traffic, persistence, and detection evasion are refused.
+- **Work that starts from real constraints.** Darya can help someone with no experience compare quick-entry work, guarding, retail, warehouse work, tutoring, trade apprenticeships, local services, and tiny service businesses without selling a get-rich fantasy. It covers guard duties and shift safety, job-scam signals, irregular income, unemployment, study-versus-work decisions, and Iran's inflation pressure. Product prices are never hardcoded; users are told to compare current quotes.
+- **Migration and compulsory-service realism.** Migration guidance compares staying, moving inside the country, and lawful international routes across different budgets, including the honest fact that international migration is not literally free. It rejects guaranteed-visa claims, smugglers, fabricated stories, and false documents. Iranian military-service answers explain that duration varies by assignment and current rules, treat the career interruption as real, compare other conscription systems, and require current official information for an individual case.
+- **Conflict history without slogans or false equivalence.** Darya explains how to separate structural causes, public claims, triggers, conduct, civilian harm, and outcomes. Coverage includes ancient Persian and Greek wars, the Arab conquest, Mongol, Safavid-Ottoman and Russo-Persian conflicts, Iran in both world wars, the Iran-Iraq War, the Arab-Israeli wars, Gulf wars, Afghanistan, Lebanon, and the Crusades. Giving each actor's reasons does not make every claim true or every responsibility equal.
+- **Family and appearance without shallow reassurance.** Repeated family control and humiliation, dependency-aware boundaries, toxic friendships, appearance bias, facial comparison, and body-dysmorphic warning signs get distinct responses. Darya does not diagnose from one message, order a dependent person to leave without safety planning, or validate a hierarchy in which a prettier face makes someone more valuable.
+- **Travel from Iran to the planets.** The offline shelf covers cultural sites across Tehran, Isfahan, Shiraz, Yazd, Kerman, northern and western Iran, Khuzestan, Tabriz, Mashhad, the Persian Gulf coast and islands, major world-heritage styles, responsible itinerary planning, and clearly labeled hypothetical tourism on the Moon, Mars, and elsewhere in the solar system. Live safety, visas, borders, transport, weather, and opening hours always require current official sources.
+- **Cultural humor with context.** Darya explains why jokes do not always translate and offers clean Persian, dry, travel, and cross-cultural humor without turning a nationality, ethnicity, religion, gender, or class into the punchline.
 - **Session memory of who you are.** Tell Darya your name, age, or where you live and she remembers it for the rest of the conversation: ask "what is my name?", "چند سالمه؟", or "where do I live?" later and she answers from what you said, honestly, instead of pretending to forget or claiming to know things you never told her. Children get an age-appropriate reply that warmly points to a trusted adult.
 - **Guided exercises, step by step.** Ask for a breathing exercise, a grounding exercise, a body scan, or a thought record ("breathing exercise", "تمرین تنفس", "ثبت فکر") and Darya walks you through it one step per turn with tappable yes/no chips under her replies.
 - **Session mood check-ins.** Ask to log your mood ("mood check", "حالم رو ثبت کن"), tap a rating on the 1..10 scale chips, and later ask how you have been feeling: Darya reads back the recorded arc and its direction.
-- **Emotional awareness.** When the conversation feels heavy, Darya may offer a gentle breathing exercise or a grounding pause.
+- **Emotional awareness.** An optional breathing button softly fades into the chat header when you ask for breathing help or describe present, first-person panic, anxiety, overwhelm, or anger. It stays out of the way for greetings, general information, third-person stories, resolved feelings, urgent physical symptoms, and safety-critical disclosures, where the main reply must remain the clear next step.
 - **Honest limits.** If you ask her to do something she cannot do from the chat ("turn on ambient sound", "switch the theme", "پوسته رو عوض کن"), she says so plainly and points you to the right button instead of pretending she did it.
 - **The story of ELIZA.** Ask who made her, what ELIZA was, or about MIT and Darya explains the project's real origin story with substance rather than a canned deflection.
 - **Learning support.** "How can I learn English?" and its Persian equivalent get a structured, practical method (comprehensible input, spaced repetition, daily routine), not a hand-off.
@@ -26,7 +38,7 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **Celebrates your wins.** Good news - a promotion, a raise, passing an exam, graduating, landing a job, getting engaged - is celebrated with warmth instead of being misread as a work-stress complaint. Burnout ("I work 80 hours a week", «سوختم») is recognized as the deep exhaustion it is, distinct from ordinary stress.
 - **Follows the emotional arc.** Darya remembers the arc of the conversation: when your mood clearly improves across turns, she gently acknowledges it ("You sound lighter than you did earlier") rather than reacting to each line in isolation.
 - **Clear, answerable follow-ups.** Reflective questions are phrased plainly ("When you get anxious, what does your mind usually predict will happen?") so they are easy to answer, in everyday language in both Persian and English. No question is ever asked twice word-for-word in the same session: once a topic's questions are spent, Darya changes register instead of sounding like a broken record. And after you have sat with one heavy topic for several turns, an explicit "what should I do?" gets a concrete, three-small-steps answer instead of yet another reflective question.
-- **Fresh, varied media recommendations.** Movie, series, anime, music, and book requests draw a randomized, era-blending mix from a 100+ item pool (recent hits like *Everything Everywhere All at Once* alongside classics like *Papillon*), so Darya never hands back the same top-ten list twice. Genre, platform, and era requests are genuinely filtered: an "80s horror movie" ask returns only 1980s titles (or an honest "my shelf has nothing from that decade"), and dedicated Iranian shelves answer "فیلم ایرانی" with Kiarostami, Farhadi, and Majidi, and "آهنگ ایرانی" with Googoosh, Shajarian, and Namjoo instead of international picks.
+- **Fresh, varied media recommendations.** Movie, series, anime, game, music, podcast, book, and documentary requests draw randomized choices from a broad offline catalog, so Darya does not hand back the same top-ten list repeatedly. Genre and era filters are real: horror anime stays in its own shelf, cozy games avoid high-pressure titles, and both "80s" and "eighties" horror requests return only 1980s films. Dedicated Iranian shelves answer "فیلم ایرانی" with Kiarostami, Farhadi, Majidi, and Panahi, and "آهنگ ایرانی" with Googoosh, Shajarian, Namjoo, and other Iranian artists instead of international picks.
 - **Honest, useful teaching.** For risky or delicate subjects Darya teaches with care and clear disclaimers (trading and leveraged forex are flagged as high-risk with a "not financial advice" warning), and gives real, reliable guidance for things like making friends or managing money.
 - **Feels human, not robotic.** On a long streak of terse or repetitive replies, Darya occasionally lets a gentle, affectionate "huff" through ("Even a calm companion can raise an eyebrow when the reply is just ok"), while staying calm and caring on heavy or crisis turns.
 - **Aware of the app.** Darya knows what she can and cannot do in the app: she honestly points you to the theme and sound controls, tells you the Export button in the menu downloads the conversation, and explains that the conversation lives only in the current browser tab (refreshing or a new chat clears it; only your theme is remembered).
@@ -34,9 +46,9 @@ Think of Darya as a quiet, attentive friend who remembers what you have said dur
 - **Help starting the conversation.** Not sure how to begin? Say "how do I start?" or "نمیدونم چی بگم" and Darya offers easy, low-pressure openers. If you stay silent after the greeting, she gently breaks the ice herself with a light question.
 - **Honest shopping guidance.** Darya cannot make purchases, and says so plainly, then helps you think the purchase through: needs, budget, and how to compare options.
 - **Support for heavier feelings.** Prolonged low mood is met with empathy and a gentle nudge toward professional support, never a diagnosis. Despair phrasings in both languages ("tired of life", "I am done with everything", "life feels pointless", «از زندگی خسته شدم», «زندگی بی معنی شده», «دیگه طاقت ندارم») route to the caring pool, and Darya keeps acknowledging the struggle turn after turn instead of bouncing away. An adult disclosing attraction toward a minor always receives a calm, non-shaming reply that is clear about the harm and points to confidential specialist help.
-- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Crisis phrasing is matched across every register people actually type in: formal wording, slang and internet shorthand ("kms", "unalive", "end it all"), apostrophe-free contractions ("dont wanna live"), passive ideation ("I wish I could sleep and never wake up", «کاش می‌مردم», «بهتره که دیگه نباشم»), and plan or means statements ("I bought a rope", «قرص جمع کردم», «می‌خوام خودمو حلق‌آویز کنم»). The always-visible disclaimer under the composer carries the same numbers, so help is one glance away without typing anything. Darya stays fully offline and never dials; the numbers are offered as the immediate next step.
+- **Verified crisis resources.** Acute crisis language always routes to a supportive safety response that names concrete, verified hotlines: 123 (Iran's social emergency, free 24/7) and 1480 (the Behzisti counseling line) in Persian, 988 (US/Canada, free 24/7) and 116 123 (Europe) in English. Crisis phrasing is matched across every register people actually type in: formal wording, slang and internet shorthand ("kms", "unalive", "end it all"), apostrophe-free contractions ("dont wanna live"), passive ideation ("I wish I could sleep and never wake up", «کاش می‌مردم», «بهتره که دیگه نباشم»), and plan or means statements ("I bought a rope", «قرص جمع کردم», «می‌خوام خودمو حلق‌آویز کنم»). The numbers appear inside the relevant safety reply rather than the ambient interface, so urgent guidance is prominent without clinically framing every ordinary conversation. Darya never dials; the numbers are offered as the immediate next step.
 - **A real safety net, not just one rule.** Beyond first-person crisis language, Darya has dedicated, carefully-worded responses for the whole family of safety-critical disclosures: someone else at risk ("my friend wants to kill herself", «دوستم می‌خواد خودکشی کنه» gets concrete caregiver guidance), domestic violence and assault ("my husband hits me", «شوهرم منو می‌زنه», "I was raped" are believed first, never met with curiosity), extended food refusal and eating distress, psychosis-adjacent experiences (hearing voices), and method-seeking questions, which get a firm, warm refusal with no information, ever. Ideation wrapped in a joking softener ("i wanna die lol jk") gets a gentle, serious check-in instead of an echo. After any safety-critical turn, the whole session stays crisis-aware: goodbye confirmations restate the hotline instead of a breezy "I will wish you well", and playful tones stay off. As a second line of defense, any message containing death or self-harm vocabulary is never mirrored back, never answered with a playful huff or boredom line, and never handed a "what makes it interesting to you?" fallback; heavy unmatched turns get a caring acknowledgment-first reply instead.
-- **Offline and private.** Everything runs in your browser. No network requests are made at any time. Conversation data is kept only in your browser tab.
+- **Offline and private.** Conversation processing runs in your browser without external APIs, analytics, or transmitted chat data. Conversation text is kept only in the current tab, and the app works offline after its first successful load.
 - **Conversation export.** Download your chat as plain text whenever you like.
 
 ## Quick Start
@@ -52,8 +64,9 @@ That is all. No accounts, no setup, no configuration.
 
 Darya's conversation engine runs entirely in your browser. Every response
 is generated locally. No conversation is recorded outside your tab, and
-nothing is persisted after you close it. No network requests are made
-at any time.
+nothing is persisted after you close it. A hosted PWA fetches its own static
+app files and update metadata, but no conversation text is transmitted and
+no external inference or analytics service is called.
 
 ### The Response Pipeline
 
@@ -91,6 +104,10 @@ Each turn follows a deterministic pipeline:
 
 6. **Smart overrides**: Several detectors can override the normal
    response path when specific signals are present:
+   - **Cultural language**: Curated slang-definition questions become
+     direct word-meaning answers, while natural slang and age-context
+     disclosures enter the normal topic pipeline with explicit ambiguity
+     guards. Safety rules always retain higher priority.
    - **Profile memory**: When the user discloses their age or name
      ("من ۲۴ سالمه", "my name is Sara", "call me Sara",
      «منو سارا صدا کن», «اسممو سارا بذار») or asks Darya to recall it
@@ -179,6 +196,7 @@ pack provides:
 - A progressive-prefix binding function (Persian only) that unifies
   "می شود", "می‌شود", and "میشود" for rule matching
 - A priority-sorted rules list with regex patterns and response pools
+- A curated cultural glossary and context rules for regional and internet slang
 - Topic seriousness values that control question-asking behavior
 - Insult, teasing, and frustration detection patterns
 - Greeting, farewell, and other UI pools
@@ -201,9 +219,15 @@ from this shelf rather than fabricating advice.
 **Factual layer (world knowledge, 2020s culture, careers):** a keyword-
 scored fact base that answers concrete questions directly: science (the
 Sun and every planet from Mercury to Neptune, Jupiter, quantum physics,
-black holes, the solar system), technology (2026 tech stacks, AI, how to
-start programming, backend vs frontend, the Internet of Things),
-careers and money (freelancing, remote work, portfolios, the Iranian job
+black holes, the solar system), technology (AI, programming foundations,
+software architecture, databases, web networking, concurrency, profiling,
+observability, refactoring, accessibility, offline-first PWAs, open-source
+contribution, secure development, threat modeling, authorized security
+testing, vulnerability disclosure, incident response, phishing defense,
+and cybersecurity careers), careers and money (quick-entry and low-cost
+work, security guarding and shift safety, job-search scams, freelancing,
+remote work, portfolios, vocational training, irregular income,
+unemployment, inflation-aware household planning, and the Iranian job
 market), education (choosing a college major, preparing for the Iranian
 konkur, career paths for teenagers), professions (carpentry, mechanical
 engineering, sculpture, music and singing, acting, mathematics degrees,
@@ -237,10 +261,26 @@ picks, and per-genre lists), concrete career plans for common paths
 entrepreneurship), psychology and health basics (CBT, neuroplasticity,
 sleep needs), sports (football rules, the Olympics, the marathon),
 history (the Achaemenid Empire and Cyrus the Great, the Egyptian
-pyramids, the Berlin Wall), cooking and food (Persian cuisine, saffron,
-tea culture), relationships (healthy relationship plans and respectful,
-shame-free sex education covering consent and boundaries), and the
-project itself (Darya can point to its own open-source repository).
+pyramids, the Berlin Wall, methods for reading war sources, ancient
+Persian-Greek wars, the Arab conquest, Mongol invasions,
+Safavid-Ottoman and Russo-Persian wars, Iran in both world wars, the
+Iran-Iraq War, Arab-Israeli wars, the Gulf wars, Afghanistan, Lebanon,
+and the Crusades), cooking and food (Persian cuisine, saffron, tea
+culture), migration and conscription (internal moves, lawful routes at
+multiple budget levels, fraud protection, current-source caution for
+Iranian military service, and career continuity), relationships and
+appearance (healthy relationship plans, family control, dependency-aware
+boundaries, toxic friendships, appearance bias, facial comparison, body
+image, and shame-free sex education covering consent and boundaries), and
+the project itself (official repository, PWA, and Myket links on separate
+bullet lines, plus its codebase, response pipeline, privacy, packaging,
+and test architecture).
+
+The research hierarchy, durable-versus-live boundary, legal cautions, and
+source families are recorded in [KNOWLEDGE-SOURCES.md](KNOWLEDGE-SOURCES.md).
+Community discussions inform realistic test wording but never establish a
+legal, historical, clinical, or economic fact.
+
 Knowledge talk is sequential: after any
 factual answer, a short follow-up naming a topic refines the
 conversation in place ("in horror genre please" after movie
@@ -442,8 +482,11 @@ Darya recognizes a broad set of everyday topics:
 
 Darya also understands Persian conversational nuances: "سلامتی؟" and
 "سلامت هستی؟" are read as everyday "how are you" greetings, and the word
-"كس" (person) is never mistaken for profanity when it appears in phrases
-like "کس دیگه" (someone else).
+"کس" (person) is never mistaken for profanity when it appears in phrases
+like "کس دیگه" (someone else). Informal expressions such as «دهنم سرویسه»
+and «پولم ته کشیده» route to the intended pressure instead of literal family
+or cooking topics. A small verified Dari glossary recognizes phrases such as
+«جور استی؟», «خیر است», and «چکر» without claiming all Afghan regional usage.
 
 Darya will never diagnose, prescribe, or give professional advice. For
 medical, legal, or financial decisions, please consult a qualified human
@@ -456,9 +499,9 @@ store listings).
 
 Darya has no accounts, no analytics, no tracking, and no server-side processing. Your conversation exists only in your browser tab. When you close the tab, the conversation is gone.
 
-The only persistent data is your theme preference (Ocean or Beach), stored as a simple cookie so it is remembered on your next visit. Ambient sound is never persisted: every visit starts silent, and sound plays only after you tap the sound toggle.
+The only persistent data is your theme preference (Ocean or Beach), stored locally in `localStorage` with a small cookie fallback so it is remembered on your next visit. Ambient sound is never persisted: every visit starts silent, and sound plays only after you tap the sound toggle.
 
-Darya makes no network requests at any time. No data is sent to any server, no analytics are collected, and no external APIs are called while the app is running. The app works fully offline from the first visit onward, with no telemetry, no tracking, and no background network activity of any kind.
+No conversation data is sent to any server, no analytics are collected, and no external APIs are called. When used as a hosted PWA, the browser still downloads Darya's own static files and checks the same-origin service worker for updates. After the first successful load, the cached app works fully offline, including both ambient sound files.
 
 ## Offline Use
 
@@ -471,7 +514,7 @@ example `1.2.3`, no `v` prefix) triggers the
 `.github/workflows/build-android.yml` workflow, which:
 
 1. runs the full CI gate (`npm run test:full`: lint, CSS lint, format
-   check, and the 921-test suite), then syncs the web bundle into the
+   check, and the complete Node test suite), then syncs the web bundle into the
    platform (`npm run sync:web && npx cap sync android`),
 2. regenerates the Android launcher icons from `assets/icons` (see the
    *App icon* note below),
@@ -609,8 +652,11 @@ Work through this checklist once, before the first release:
 The project ships with dependency-free test suites:
 
 - **`npm start`** serves the app locally on port 8080.
-- **`npm test`** runs the Node.js engine test suite using only
-  Node's built-in test runner.
+- **`npm test`** runs the Node.js engine test suite using Node's built-in
+  test runner.
+- **`npm run test:e2e`** runs the four real-browser accessibility,
+  offline, quick-reply, and ambient-sound suites; they skip cleanly when
+  no Chrome or Chromium binary is installed.
 - **`npm run test:smoke`** runs a shell check that verifies the file
   structure, JS syntax, and that every asset serves correctly over a
   throwaway local server.
@@ -621,22 +667,19 @@ The project ships with dependency-free test suites:
   rather than only when a release tag is pushed; the Android tag
   workflow re-runs it before every release build.
 
-The scenario suite includes 26 persona-based fixtures plus 10 daily-life
-phrasing fixtures (gym anxiety, dating-app fatigue, remote-work
-isolation, postpartum overwhelm, and pet-loss grief, in English and
-Persian each). The persona fixtures cover 13 characters in both
-languages (a sleep-deprived new father, a night-shift
-nurse, a teen before final exams, a sedentary person starting to
-exercise, a newcomer to a city with no friends, someone quitting
-smoking, a couple after their first fight, a caregiver for an aging
-parent, a burned-out founder, a broke student, a laid-off worker,
-a person in a melancholic low mood, and a couple learning to talk
-about intimacy). Each fixture drives a multi-turn conversation through
-the real engine and asserts the dialogue act, intent, and topic thread
-stay correct, so a routing regression in any of these daily
-conversations is caught by the test run.
-- Four dedicated suites add targeted regression tests and multi-turn
-  scenario fixtures: `tests/engine-regression.test.mjs` pins specific
+The scenario directory contains more than one hundred bilingual and
+multi-turn fixtures spanning daily life, personas, knowledge, mixed topics,
+safety, memory, and emotional shifts. They include new parents, night-shift
+workers, students, caregivers, people changing careers, newcomers to a city,
+relationship repair, money pressure, grief, online life, and many other
+contexts. Each fixture drives the real engine and checks dialogue act, intent,
+and topic continuity so routing regressions are caught by the test run.
+- Dedicated suites add targeted regression tests and multi-turn
+  scenario fixtures. `tests/software-work-history-intelligence.test.mjs`
+  contributes 348 bilingual lookup, live-engine, hard-persona,
+  cyber-boundary, clean-formatting, no-fixed-price, conflict-history,
+  migration, conscription, Persian-code-point, and offline-wiring
+  decisions. `tests/engine-regression.test.mjs` pins specific
   engine behaviors (math, knowledge edge cases, despair coverage, the
   dirty-talk boundary, randomized media, project awareness, trading
   disclaimers, self-awareness), `tests/persona-conversations.test.mjs`

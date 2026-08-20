@@ -11,8 +11,8 @@
       id: 'crush_confession',
       keywords: [
         'کراش چیه',
-        // Persian ی here (not Arabic ي): user input is normalized to the
-        // Persian letter, so the Arabic form would never match.
+        // Persian Yeh U+06CC here: input normalization converts Arabic Yeh
+        // U+064A before matching, so only the Persian form is needed.
         'کراش چیست',
         'کراش یعنی',
         'کراش',

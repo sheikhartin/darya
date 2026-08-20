@@ -43,6 +43,9 @@
     /(?:چطور|چگونه|چطوری|چه جوری).{0,12}(?:شروع کنم|یاد بگیرم|یاد بگیر|بفهمم|برم سراغ)|سرمایه.{0,8}(?:برای مبتدی|از صفر)/u;
   const EDUCATIONAL_HOWTO = (text) =>
     EDUCATIONAL_HOWTO_EN.test(text) || EDUCATIONAL_HOWTO_FA.test(text);
+  const PANIC_EDUCATION_REQUEST =
+    // eslint-disable-next-line max-len
+    /\b(?:what is|what are|explain|symptoms? of|how does).{0,24}panic(?: attack)?\b|(?:حمله )?(?:پانیک|پنیک|وحشت).{0,16}(?:چیست|چیه|یعنی چی|توضیح|علایم|علائم|نشانه)/iu;
 
   // Topics that mean the user asked a genuine question of their own,
   // which the rule pipeline answers directly. The question-echo override
@@ -289,7 +292,10 @@
       // turn: no later override may replace the protective reply.
       const _safetyTurn =
         matchedRule && SAFETY_CRITICAL_TOPICS.has(matchedRule.topic);
-      let _overrideFired = false;
+      // Curated cultural and age-context rules already carry the precise
+      // response for their interpretation. Mark them claimed so broad
+      // knowledge, profile, and conversational overrides cannot replace them.
+      let _overrideFired = matchedRule?.locksOverrides === true;
       // Ideation wrapped in a joking softener ("i wanna die lol jk",
       // «میخوام بمیرم ولی شوخی کردم») is a classic test-balloon
       // disclosure: it deserves a gentle, serious check-in rather than
@@ -334,6 +340,7 @@
         };
         const answerText = this._buildMediaRecommendation(request);
         reply = answerText + this._knowledgeFollowup(answerText);
+        this._adoptKnowledgeAnswer(`media_${request.category}`);
         this._mediaContinuationReply = reply;
         _overrideFired = true;
       }
@@ -753,6 +760,7 @@
         };
         const answerText = this._buildMediaRecommendation(request);
         reply = answerText + this._knowledgeFollowup(answerText);
+        this._adoptKnowledgeAnswer(`media_${request.category}`);
         _overrideFired = true;
       }
 
@@ -780,6 +788,26 @@
         _overrideFired = true;
       }
 
+      // An explicit media request is a deliberate content pivot even when
+      // words such as "low-energy" or «ترسناک» also resemble an emotional
+      // topic. Resolve it before the personal-topic knowledge guards so the
+      // requested game, film, anime, or documentary list is not replaced by
+      // a stale reflective reply.
+      const directMediaRequest =
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !_overrideFired &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        DaryaKnowledge?.detectMediaRequest?.(matchingText, this.lang.code);
+      if (directMediaRequest) {
+        const answerText = this._buildMediaRecommendation(directMediaRequest);
+        reply = answerText + this._knowledgeFollowup(answerText);
+        this._adoptKnowledgeAnswer(`media_${directMediaRequest.category}`);
+        _overrideFired = true;
+      }
+
       // Factual-knowledge override: concrete questions about the world
       // ("tell me about Jupiter", "فیزیک کوانتوم چیه", "چطور پول دربیارم")
       // deserve a direct answer from the factual shelf even when they also
@@ -801,8 +829,11 @@
           EDUCATIONAL_HOWTO(matchingText)) &&
         // Personal disclosures stay conversational even when they contain a
         // knowledge keyword: "من ایمپاستر دارم" is a feeling, not a request
-        // for a definition.
+        // for a definition. A direct "what is a panic attack?" question is
+        // educational and may use the factual shelf; a lived panic report may not.
         matchedRule?.topic !== 'anxiety' &&
+        (matchedRule?.topic !== 'panic_attack' ||
+          PANIC_EDUCATION_REQUEST.test(matchingText)) &&
         matchedRule?.topic !== 'stress' &&
         matchedRule?.topic !== 'grief' &&
         matchedRule?.topic !== 'self_compassion' &&
@@ -863,7 +894,10 @@
               )))) &&
         DaryaKnowledge &&
         DaryaKnowledge.lookup &&
-        this._isKnowledgeRequest(matchingText);
+        (this._isKnowledgeRequest(matchingText) ||
+          Boolean(
+            DaryaKnowledge.detectMediaRequest?.(matchingText, this.lang.code)
+          ));
       if (_knowledgeOverrideEligible) {
         const mediaRequest = DaryaKnowledge.detectMediaRequest?.(
           matchingText,
@@ -886,6 +920,7 @@
         if (activeMediaRequest) {
           const answerText = this._buildMediaRecommendation(activeMediaRequest);
           reply = answerText + this._knowledgeFollowup(answerText);
+          this._adoptKnowledgeAnswer(`media_${activeMediaRequest.category}`);
           _overrideFired = true;
         } else {
           const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
@@ -907,6 +942,7 @@
             this._lastKnowledgeTopic = factual.topic;
             this._lastKnowledgeTurn = this.memory.turnCount;
             this._lastKnowledgeText = answerText;
+            this._adoptKnowledgeAnswer(factual.topic, true);
             _overrideFired = true;
           }
         }
@@ -932,6 +968,7 @@
         // above, plus the knowledge and boundary rules, which already
         // handle their own fragments.
         matchedRule?.topic !== 'anxiety' &&
+        matchedRule?.topic !== 'panic_attack' &&
         matchedRule?.topic !== 'stress' &&
         matchedRule?.topic !== 'grief' &&
         matchedRule?.topic !== 'sadness' &&

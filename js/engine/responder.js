@@ -69,6 +69,10 @@ const LIVED_TOPICS = new Set([
   // acknowledges the speaker ("That is a strong claim..."), so the
   // generic empathy prefix must never stack on top.
   'generalization',
+  'toxic_family',
+  'toxic_friendship',
+  'body_image',
+  'appearance_judgment',
   // Learning/career-path advice pools carry their own warm reflective
   // framing, and a lived disclosure that also mentions learning must
   // beat the broad knowledge shelf ("i feel anxious, how do i learn to
@@ -85,7 +89,17 @@ const LIVED_TOPICS = new Set([
   // already name the feeling, so the generic empathy prefix must never
   // stack on top of them either.
   'loneliness_new_city',
-  'loneliness_online'
+  'loneliness_online',
+  // Modern-life disclosure pools are already contextual and should never be
+  // replaced by a random light-humor line on an otherwise low-scored turn.
+  'climate_anxiety',
+  'dating_apps',
+  'deepfake_safety',
+  'digital_wellbeing',
+  'gig_economy',
+  'housing_pressure',
+  'online_scam',
+  'political_division'
 ]);
 
   // Shared across the responder part files (see responder-*.js).
@@ -192,6 +206,10 @@ class DaryaResponseEngine {
     this.currentTurnTopics = [];
     this.currentTurnSeriousness = 0;
     this.lastTurnNeedsCare = false;
+    // UI-only decision for the contextual breathing control. It is kept
+    // separate from lastTurnNeedsCare because many serious subjects deserve
+    // care without making a breathing exercise the right next action.
+    this.lastTurnShouldOfferBreathing = false;
     this.currentTurnDialogueAct = 'statement';
     this.currentTurnIntent = 'unknown';
     this.currentTurnQuestionNeed = 0;
@@ -243,6 +261,9 @@ class DaryaResponseEngine {
   }
 
   respond(rawText) {
+    // Never leak a contextual offer across turns that return early (empty,
+    // foreign-script, or farewell input).
+    this.lastTurnShouldOfferBreathing = false;
     if (!String(rawText).trim()) {
       return this.lang.emptyInputReply;
     }
@@ -358,8 +379,15 @@ class DaryaResponseEngine {
     // person needs to be heard, not handed a philosophy essay. Explicit
     // knowledge requests ("درباره X توضیح بده", "Tell me about X") still
     // route to knowledge.
+    const ruleMatches = this._matchRules(matchingText);
+    const culturalMeaningMatch =
+      this._matchCulturalLanguageRule(matchingText);
+    if (culturalMeaningMatch) {
+      ruleMatches.push(culturalMeaningMatch);
+      ruleMatches.sort((a, b) => b.rule.priority - a.rule.priority);
+    }
     const matches = this._preferLivedRuleOverKnowledge(
-      this._matchRules(matchingText),
+      ruleMatches,
       matchingText
     );
     const matchedRule = matches[0]?.rule || null;
@@ -374,7 +402,13 @@ class DaryaResponseEngine {
     ) {
       this.memory.clearPromise();
     }
-    const matchedTopics = matches.map((match) => match.rule.topic);
+    // A cultural rule disambiguates an idiom that may contain ordinary
+    // keywords ("cooked" is not cooking, «پدرم دراومد» is not family).
+    // Once that higher-priority interpretation wins, lower lexical matches
+    // would pollute topic memory, so retain only the resolved topic.
+    const matchedTopics = matchedRule?.useOwnResponses
+      ? [matchedRule.topic]
+      : matches.map((match) => match.rule.topic);
     this.currentTurnTopics = [...new Set(matchedTopics)];
     this.currentReferenceContext = this.resolveReferenceContext(matchingText);
     if (this.currentTurnTopics.length === 0 && this.currentReferenceContext) {
@@ -433,6 +467,8 @@ class DaryaResponseEngine {
       /(?<!\p{L})(?:کمک|مشورت|مشکل|سخت|نگران|بحران|عصبانی|خشمگین|کفری|عصبی|ناراحت|ناراحتم)(?!\p{L})/u.test(
         normalized
       );
+    this.lastTurnShouldOfferBreathing =
+      this._shouldOfferBreathing(matchingText);
     this.memory.rememberSeriousness(this.currentTurnSeriousness);
     this.memory.rememberTopics(this.currentTurnTopics);
     this.memory.updateSubject(this.currentTurnTopics, entities);

@@ -9,7 +9,7 @@
 
   /**
    * Creates the composer/reply functions.
-   * @param {object} ctrl - Shared controller state (see app.js)
+   * @param {object} ctrl - Shared controller state (see js/app/index.js)
    * @returns {object} Functions for the composer and reply flow
    */
   function createComposer(ctrl) {
@@ -50,6 +50,20 @@
     }
 
     /**
+     * Clears all unsent composer state. Conversation boundaries must never
+     * carry a draft, validation hint, textarea height, or hidden scroll
+     * position into the next context.
+     */
+    function clearComposer() {
+      el.input.value = '';
+      el.input.scrollTop = 0;
+      el.input.style.height = 'auto';
+      el.input.style.overflowY = 'hidden';
+      setHint('');
+      refreshComposerState();
+    }
+
+    /**
      * Refreshes the composer send button state based on the current input
      * value: enables the button when there is valid text, disables when
      * empty or when a conversation is ended or a reply is pending.
@@ -57,7 +71,10 @@
      */
     function refreshComposerState() {
       el.input.style.height = 'auto';
-      el.input.style.height = el.input.scrollHeight + 'px';
+      var contentHeight = el.input.scrollHeight;
+      el.input.style.height = contentHeight + 'px';
+      el.input.style.overflowY =
+        contentHeight > el.input.clientHeight ? 'auto' : 'hidden';
 
       var text = el.input.value.trim();
 
@@ -137,6 +154,7 @@
     return {
       setTypingVisible,
       setHint,
+      clearComposer,
       refreshComposerState,
       setComposerBusy,
       randomReplyDelay,

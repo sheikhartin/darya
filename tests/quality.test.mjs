@@ -1398,9 +1398,11 @@ test('all entity callback templates are context-specific and nonempty', () => {
   }
 });
 
-test('knowledge module is precached for offline use', () => {
+test('knowledge module and app controller are loaded for offline use', () => {
+  const html = read('index.html');
   assert.match(read('sw.js'), /knowledge-base\.js/u);
-  assert.match(read('index.html'), /app\.js/u);
+  assert.match(html, /js\/data\/knowledge-base\.js/u);
+  assert.match(html, /js\/app\/index\.js/u);
 });
 
 test('knowledge replies do not claim personal experience or authority', () => {
@@ -1747,6 +1749,7 @@ test('no double-hyphen dashes or en/em dashes in prose, docs, or comments', () =
   const proseFiles = [
     'README.md',
     'AGENTS.md',
+    'KNOWLEDGE-SOURCES.md',
     'OFFLINE.md',
     'tests/README.md',
     'index.html',
@@ -3839,4 +3842,154 @@ test('proactive idle opener is armed, guarded by userSpoke, and cancellable', ()
   assert.match(core, /idleOpenerPending/u);
   assert.match(core, /idleOpenerTimer/u);
   assert.match(core, /userSpoke/u);
+});
+
+test('release metadata is aligned at version 1.6.0', () => {
+  const expected = '1.6.0';
+  const packageJson = JSON.parse(read('package.json'));
+  const lock = JSON.parse(read('package-lock.json'));
+  const manifest = JSON.parse(read('manifest.json'));
+  const gradle = read('android/app/build.gradle');
+
+  assert.equal(packageJson.version, expected);
+  assert.equal(lock.version, expected);
+  assert.equal(lock.packages[''].version, expected);
+  assert.equal(manifest.version, expected);
+  assert.match(gradle, /versionCode 160/u);
+  assert.match(gradle, /versionName "1\.6\.0"/u);
+});
+
+test('documentation and comments describe the current architecture', () => {
+  const readme = read('README.md');
+  const privacy = read('PRIVACY.md');
+  const baseComments =
+    read('js/languages/en-responses-base.js') +
+    read('js/languages/fa-responses-base.js');
+  const appComments = [
+    'index.html',
+    'css/style.css',
+    'js/app/composer.js',
+    'js/app/conversation.js',
+    'js/app/language.js',
+    'js/app/menu.js',
+    'js/app/sound.js',
+    'js/ui/ambient-visuals.js',
+    'js/ui/overlays-confirm.js'
+  ]
+    .map(read)
+    .join('\n');
+
+  assert.doesNotMatch(readme, /always-visible disclaimer.*same numbers/iu);
+  assert.doesNotMatch(readme, /no network requests are made at any time/iu);
+  assert.doesNotMatch(privacy, /no network requests at any time/iu);
+  assert.match(baseComments, /five (?:response )?part files/iu);
+  assert.doesNotMatch(baseComments, /three part files/iu);
+  assert.doesNotMatch(appComments, /app\.js/iu);
+  assert.match(read('sw.js'), /en-culture\.js/u);
+  assert.match(read('sw.js'), /fa-culture\.js/u);
+  assert.match(read('sw.js'), /responder-cultural\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-work-life\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-software-security\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-history-conflict\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-society\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-travel\.js/u);
+  assert.match(readme, /KNOWLEDGE-SOURCES\.md/u);
+  assert.match(read('sw.js'), /en-society\.js/u);
+  assert.match(read('sw.js'), /fa-society\.js/u);
+});
+
+test('chat live-edge state distinguishes new content from reader scrolling', () => {
+  const core = read('js/ui/core.js');
+  const app = read('js/app/index.js');
+  const appendStart = core.indexOf('function appendMessage(sender, text)');
+  const followSnapshot = core.indexOf('var shouldFollowLatest', appendStart);
+  const rowInsertion = core.indexOf('elements.chat.insertBefore', appendStart);
+
+  assert.match(core, /followingLatest: true/u);
+  assert.match(core, /function handleChatScroll\(\)/u);
+  assert.match(core, /if \(!scrollToLatestPending\)/u);
+  assert.match(core, /state\.followingLatest = isNearBottom\(\)/u);
+  assert.ok(
+    followSnapshot > appendStart,
+    'follow snapshot exists in appendMessage'
+  );
+  assert.ok(
+    followSnapshot < rowInsertion,
+    'follow state must be captured before new content changes scrollHeight'
+  );
+  assert.match(
+    core,
+    /sender === 'user' \|\| state\.followingLatest \|\| isNearBottom\(\)/u
+  );
+  assert.match(
+    core,
+    /setJumpButtonVisible\(state\.chatActive && !state\.followingLatest\)/u
+  );
+  assert.match(app, /UI\.utils\.handleChatScroll\(\)/u);
+  assert.doesNotMatch(
+    app,
+    /el\.input\.addEventListener\('focus'[\s\S]{0,100}UI\.utils\.scrollToBottom\(\)/u
+  );
+});
+
+test('Iranian Persian output uses Persian Yeh and Kaf code points only', () => {
+  const forbiddenArabicLetters = /[\u064a\u0643]/u;
+  assert.equal(
+    FA.normalizeOutput('\u0639\u0631\u0628\u064a \u0643 \u0649'),
+    '\u0639\u0631\u0628\u06cc \u06a9 \u06cc'
+  );
+  const seen = new Set();
+  const failures = [];
+
+  function inspect(value, location) {
+    if (typeof value === 'string') {
+      if (forbiddenArabicLetters.test(value)) {
+        failures.push(`${location}: ${value}`);
+      }
+      return;
+    }
+    if (
+      !value ||
+      typeof value !== 'object' ||
+      value instanceof RegExp ||
+      seen.has(value)
+    ) {
+      return;
+    }
+    seen.add(value);
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => inspect(item, `${location}[${index}]`));
+      return;
+    }
+    Object.entries(value).forEach(([key, item]) =>
+      inspect(item, `${location}.${key}`)
+    );
+  }
+
+  inspect(FA, 'FA');
+  assert.match(read('js/ui/core.js'), /state\.lang\?\.normalizeOutput/u);
+  const outputFiles = [
+    ...fs
+      .readdirSync(path.join(ROOT, 'js', 'languages'))
+      .filter((name) => /^fa-responses-.*\.js$/u.test(name))
+      .map((name) => path.join(ROOT, 'js', 'languages', name)),
+    path.join(ROOT, 'js', 'languages', 'fa-culture.js'),
+    path.join(ROOT, 'js', 'languages', 'fa-society.js'),
+    ...fs
+      .readdirSync(path.join(ROOT, 'js', 'data'))
+      .filter((name) => name.endsWith('.js'))
+      .map((name) => path.join(ROOT, 'js', 'data', name))
+  ];
+  for (const file of outputFiles) {
+    const content = fs.readFileSync(file, 'utf8');
+    if (forbiddenArabicLetters.test(content)) {
+      failures.push(path.relative(ROOT, file));
+    }
+  }
+
+  assert.deepEqual(
+    failures,
+    [],
+    'Persian output must use U+06CC and U+06A9, never Arabic Yeh or Kaf'
+  );
 });

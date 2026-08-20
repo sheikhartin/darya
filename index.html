@@ -82,7 +82,7 @@
   <body>
     <!-- Ambient backdrop. Ocean theme: soft light glows, a faint horizon
        silhouette, and randomly-placed rising bubbles (populated by
-       app.js, so each one gets a genuinely random size/position/timing
+       js/ui/ambient-visuals.js, so each one gets a genuinely random size/position/timing
        rather than a repeating formula). Beach theme: a proper shoreline
        scene (sea strip, scalloped foam edge, tall sand band, patchy wet
        spots that fade in and out unevenly) plus drifting wind gusts
@@ -455,7 +455,7 @@
       </header>
 
       <main class="chat" id="chat" aria-live="polite">
-        <!-- Messages are injected here by app.js, before the jump button. -->
+        <!-- Messages are injected here by js/ui/core.js, before the jump button. -->
         <button
           class="chat-jump"
           id="chat-jump"
@@ -558,10 +558,15 @@
     <script src="js/data/knowledge-facts-domains.js"></script>
     <script src="js/data/knowledge-facts-daily.js"></script>
     <script src="js/data/knowledge-facts-career.js"></script>
+    <script src="js/data/knowledge-facts-work-life.js"></script>
     <script src="js/data/knowledge-facts-skills.js"></script>
+    <script src="js/data/knowledge-facts-software-security.js"></script>
     <script src="js/data/knowledge-facts-beliefs-media.js"></script>
     <script src="js/data/knowledge-facts-mindsets.js"></script>
     <script src="js/data/knowledge-facts-world.js"></script>
+    <script src="js/data/knowledge-facts-history-conflict.js"></script>
+    <script src="js/data/knowledge-facts-society.js"></script>
+    <script src="js/data/knowledge-facts-travel.js"></script>
     <script src="js/data/knowledge-fun-facts.js"></script>
     <script src="js/data/knowledge-lists.js"></script>
     <script src="js/data/media-pool.js"></script>
@@ -587,6 +592,8 @@
     <script src="js/languages/en-rules.js"></script>
     <script src="js/languages/en-vocabulary.js"></script>
     <script src="js/languages/en-maps.js"></script>
+    <script src="js/languages/en-culture.js"></script>
+    <script src="js/languages/en-society.js"></script>
     <script src="js/languages/en.js"></script>
     <script src="js/languages/fa-responses-base.js"></script>
     <script src="js/languages/fa-responses-topics.js"></script>
@@ -596,6 +603,8 @@
     <script src="js/languages/fa-rules.js"></script>
     <script src="js/languages/fa-vocabulary.js"></script>
     <script src="js/languages/fa-maps.js"></script>
+    <script src="js/languages/fa-culture.js"></script>
+    <script src="js/languages/fa-society.js"></script>
     <script src="js/languages/fa.js"></script>
     <script src="js/languages/index.js"></script>
     <script src="js/engine/responder.js"></script>
@@ -603,6 +612,7 @@
     <script src="js/engine/responder-detect.js"></script>
     <script src="js/engine/responder-safety.js"></script>
     <script src="js/engine/responder-emotion.js"></script>
+    <script src="js/engine/responder-cultural.js"></script>
     <script src="js/engine/responder-phase.js"></script>
     <script src="js/engine/responder-rules.js"></script>
     <script src="js/engine/responder-entity.js"></script>

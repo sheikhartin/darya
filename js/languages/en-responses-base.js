@@ -7,10 +7,9 @@
  * suggestions, session check-ins, smalltalk, humor, gratitude, emoji
  * replies, greetings (phase 1/2, open, inviting, returning), idle
  * openers, professional-boundary lines, and the empty-input and
- * engine-error replies. The topic pools live in
- * en-responses-topics.js and the feature pools in
- * en-responses-features.js; the three part files fill the same object
- * in load order, so it is complete before en-rules.js and the en.js
+ * engine-error replies. Topic, rule, context, and feature pools live in
+ * the other four en-responses-*.js files. All five response part files
+ * fill the same object in load order before en-rules.js and the en.js
  * pack assembler read from it.
  */
 
@@ -25,13 +24,10 @@
 
   const R = (global.DaryaEnResponses = global.DaryaEnResponses || {});
   // Response pools are registered onto the shared DaryaEnResponses
-  // object across three part files.
+  // object across five focused part files.
 
   // Long lines in this file are intentional (embedded response strings).
 
-  R.emptyInputReply =
-    "I notice you've gone quiet. Whenever you're ready, I'm here.";
-  R.engineErrorReply = 'I need a moment to process that. Could you repeat it?';
   R.emptyInputReply =
     "I notice you've gone quiet. Whenever you're ready, I'm here.";
   R.engineErrorReply = 'I need a moment to process that. Could you repeat it?';

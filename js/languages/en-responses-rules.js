@@ -19,6 +19,20 @@
     'That part of your family life sounds like it carries real weight for you.'
   ];
 
+  R['ruleToxicFamily'] = [
+    'Being family does not make repeated humiliation, threats, control, or privacy violations harmless. You do not have to decide on a dramatic cutoff today. What is the clearest repeated behavior, and what small boundary could you safely enforce?',
+    'That sounds less like one disagreement and more like a pattern that keeps shrinking your room to live. If you depend on them for housing or money, safety and a gradual independence plan matter more than winning one confrontation.',
+    'I will not casually label your whole family from one sentence, but control, fear, and repeated degradation deserve to be taken seriously. Keeping concrete notes and finding one trustworthy person outside the cycle can make the pattern easier to see.',
+    'You can care about family and still refuse harmful treatment. If there is any threat of violence, do not announce a big exit or boundary alone; a personalized safety plan with local support comes before the relationship argument.'
+  ];
+
+  R['ruleToxicFriendship'] = [
+    'A friend calling humiliation a joke does not erase its effect. Name the behavior once and set a specific limit; their response to that boundary will tell you more than their excuse.',
+    'Friendship should not require secrets being exposed, constant rescue, risky favors, or punishment for saying no. Is this one repairable event, or a pattern that repeats after you speak up?',
+    'You are allowed to reduce contact without proving the other person is entirely bad. A smaller, safer relationship can be the right answer when a full confrontation would only create more drama.',
+    'If this includes threats, stalking, blackmail, or sharing private images, treat it as safety rather than friendship conflict: preserve evidence, involve someone trustworthy, and use the relevant reporting channel.'
+  ];
+
   // ruleWork deliberately avoids embedding the raw capture in a question
   // template. The work rule captures the rest of the user's sentence
   // (e.g. "always ignore me"), which is often a verb phrase that would
@@ -276,9 +290,9 @@
   ];
 
   R['ruleSmalltalkCapability'] = [
-    "I'm here to listen, ask questions, and sit with you when something's on your mind. I'm not a substitute for a professional, but I can be a patient ear.",
-    "I can be a good companion for thinking out loud. I listen and ask open questions to help you get clearer on how you're feeling.",
-    'Think of me as a calm space where you can put your thoughts into words without any pressure.'
+    'I can hold a contextual conversation, remember details during this chat, help you think through daily problems, and draw from an offline shelf covering media, science, technology, programming, documents, practical skills, and general knowledge. I cannot browse live information, act on your device, diagnose, or remember the conversation after the session.',
+    'I am useful for reflection and practical planning, plus offline questions about math, coding, AI, office tools, culture, films, anime, games, books, and more. My limits matter too: I cannot verify current prices or news, replace a qualified professional, operate app controls for you, or know facts outside my bundled shelf.',
+    'Think of me as a private, offline conversation companion with session memory and a broad but finite knowledge shelf. I can listen, explain, compare, brainstorm, and help organize next steps; I cannot browse, call anyone, perform real-world actions, or claim authority I do not have.'
   ];
 
   R['ruleSmalltalkSilly'] = [
@@ -1068,10 +1082,18 @@
     'I hear how hard this move has been. Sometimes guilt about leaving shows up too, but leaving for your future is also valuable. Would you like to talk about the country you left, or the place you are now?'
   ];
 
+  R['ruleAppearanceJudgment'] = [
+    'You may genuinely like your own appearance, and confidence is welcome. It still does not turn another person into lower rank. Looks tell you little about someone’s character, skill, or right to respect.',
+    'Attraction is subjective and appearance bias is real, but pretty and ugly are not complete categories of people. What happened that made this comparison important right now?',
+    'Feeling more conventionally attractive than someone is not a moral achievement, just as feeling less attractive is not a moral failure. The useful question is how you treat each other.',
+    'If this is playful confidence, enjoy it without using someone else as the floor. If it is a need to keep ranking faces, that comparison may be carrying more insecurity than it first appears.'
+  ];
+
   R['ruleBodyImage'] = [
-    'Being unhappy with your body is very common, and media and social feeds constantly amplify it. Your body is worth far more than its shape. If this thought is constant and affects your mood or eating, talking with a professional can help. What bothered you most today?',
-    'I do not want to minimize how painful body dissatisfaction is. But your worth is not set by a number on a scale or a mirror. It sometimes helps to think about what your body does for you, not just how it looks. Would you like to talk about this feeling?',
-    'The pressure to reach an ideal body is exhausting and usually unreachable. If dieting or body checking has become obsessive, it may point to something deeper, and professional help works. Which part of your body occupies your mind most?'
+    'Feeling ugly can land like a fact, especially beside someone you find beautiful, but it is still a painful judgment rather than a complete measurement of you. What happened today that made the comparison feel so sharp?',
+    'I do not want to dismiss how painful it is to dislike your face or body. Your worth is not set by a mirror, camera angle, filter, or another person’s attention. Has this worry started changing where you go or who you see?',
+    'Social feeds turn lighting, selection, and editing into a fake everyday baseline. Reducing the accounts or moments that trigger comparison can give your own perception room to settle; this is not pretending appearance never matters.',
+    'If mirror checking, hiding, reassurance seeking, or comparing your face takes up a lot of each day, a clinician familiar with body dysmorphic concerns can help. That is not vanity, and it does not require anyone to debate whether you are objectively attractive.'
   ];
 
   R['ruleFriendshipBreakup'] = [

@@ -28,8 +28,8 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache. Shell refresh: 1.5.0 (icons, footer,
- * update delivery, identity tagline).
+ * into the versioned cache. Shell refresh: 1.6.0 (software security,
+ * practical work and migration, conflict history, and project knowledge).
  */
 
 'use strict';
@@ -78,6 +78,7 @@ const PRECACHE_URLS = [
   './js/engine/responder-detect.js',
   './js/engine/responder-safety.js',
   './js/engine/responder-emotion.js',
+  './js/engine/responder-cultural.js',
   './js/engine/responder-phase.js',
   './js/engine/responder-rules.js',
   './js/engine/responder-entity.js',
@@ -112,10 +113,15 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-domains.js',
   './js/data/knowledge-facts-daily.js',
   './js/data/knowledge-facts-career.js',
+  './js/data/knowledge-facts-work-life.js',
   './js/data/knowledge-facts-skills.js',
+  './js/data/knowledge-facts-software-security.js',
   './js/data/knowledge-facts-beliefs-media.js',
   './js/data/knowledge-facts-mindsets.js',
   './js/data/knowledge-facts-world.js',
+  './js/data/knowledge-facts-history-conflict.js',
+  './js/data/knowledge-facts-society.js',
+  './js/data/knowledge-facts-travel.js',
   './js/data/knowledge-fun-facts.js',
   './js/data/knowledge-lists.js',
   './js/data/media-pool.js',
@@ -135,6 +141,8 @@ const PRECACHE_URLS = [
   './js/languages/fa-rules.js',
   './js/languages/fa-vocabulary.js',
   './js/languages/fa-maps.js',
+  './js/languages/fa-culture.js',
+  './js/languages/fa-society.js',
   './js/languages/en-responses-base.js',
   './js/languages/en-responses-topics.js',
   './js/languages/en-responses-rules.js',
@@ -143,6 +151,8 @@ const PRECACHE_URLS = [
   './js/languages/en-rules.js',
   './js/languages/en-vocabulary.js',
   './js/languages/en-maps.js',
+  './js/languages/en-culture.js',
+  './js/languages/en-society.js',
   './js/engine/time-utils.js',
   './assets/favicon.ico',
   './assets/icons/favicon-16x16.png',

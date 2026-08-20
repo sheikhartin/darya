@@ -219,7 +219,7 @@
     }
   }
 
-  // Export for use by app.js and the test suite
+  // Export for use by js/app/index.js and the test suite
   global.DaryaAmbient = {
     randomBetween,
     initBeachWaveVariation,

@@ -33,6 +33,13 @@
   // Only captures up to this many words are safe to quote back; longer
   // ones fall through to the capture-free templates of the same pool.
   const CAPTURED_MAX_WORDS = 3;
+  const KNOWLEDGE_SERIOUSNESS_FALLBACK = 0.25;
+  const KNOWLEDGE_CONTEXT_TOPICS = new Map([
+    ['cooking_basics', new Set(['cooking', 'learning_advice'])],
+    ['friendship_lonely', new Set(['friendship', 'loneliness'])],
+    ['relationship_plan', new Set(['relationship'])],
+    ['sex_intimacy', new Set(['relationship'])]
+  ]);
 
   // Topics where a repeated disclosure is never a broken record and must
   // always be answered from the caring pool, never degraded to a fallback.
@@ -215,6 +222,14 @@
           ];
           return continuation;
         }
+      }
+      // Cultural and age-context rules carry wording tailored to the exact
+      // idiom or situation. Generic topic and special-topic pools would erase
+      // that interpretation, so these rules explicitly keep their own pool.
+      if (matchedRule.useOwnResponses) {
+        return this._pickVaried(matchedRule.responses, {
+          ignoreQuestionBudget: true
+        });
       }
       if (matchedRule.topic === 'gratitude' && this.lang.gratitudeResponses) {
         return this._pickVaried(this.lang.gratitudeResponses);
@@ -597,6 +612,43 @@
       return this._pickVaried(this.lang.genericFallbacks);
     },
 
+    /**
+     * Promotes a successful factual or media answer to the active knowledge
+     * topic, including answers discovered from fallback and override paths.
+     * This prevents the prior emotional subject from leaking into metadata,
+     * breathing offers, or the next continuation.
+     * @param {string} detailTopic - Specific shelf or media category
+     * @param {boolean} [preserveCurrent=false] - Keep a meaningful matched
+     * topic such as learning_advice alongside knowledge
+     */
+    _adoptKnowledgeAnswer(detailTopic, preserveCurrent = false) {
+      const topics = preserveCurrent
+        ? [...new Set(['knowledge', ...this.currentTurnTopics])]
+        : ['knowledge'];
+      this.currentTurnTopics = topics;
+      this.currentTurnSeriousness =
+        this.lang.topicSeriousness?.knowledge ?? KNOWLEDGE_SERIOUSNESS_FALLBACK;
+      this.lastTurnNeedsCare = false;
+      this.lastTurnShouldOfferBreathing = false;
+      if (this.conversationState) {
+        this.conversationState.topics = topics;
+        this.conversationState.seriousness = this.currentTurnSeriousness;
+      }
+      const latestFrame = this.memory.turnFrames.at(-1);
+      if (latestFrame && latestFrame.turn === this.memory.turnCount) {
+        latestFrame.topics = topics;
+        latestFrame.seriousness = this.currentTurnSeriousness;
+      }
+      const contextualSubject = preserveCurrent
+        ? topics.find((topic) => topic !== 'knowledge')
+        : null;
+      this.memory.currentSubject = {
+        topic: contextualSubject || 'knowledge',
+        entityRefs: detailTopic ? [detailTopic] : [],
+        since: this.memory.turnCount
+      };
+    },
+
     _fallbackResponse(preferTopic, normalizedUserText) {
       // Questions take priority over entity and quoted callbacks: a stale
       // entity reference or a random "you said X earlier" line must never
@@ -630,15 +682,12 @@
           const followup = this._knowledgeFollowup(answerText);
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
-          // Mirror the rule-path subject update (see the knowledge branch
-          // of _respondWithRule) so a following short statement on the
-          // same fact keeps the thread instead of bouncing to the
-          // honest-unknown pool.
-          this.memory.currentSubject = {
-            topic: 'knowledge',
-            entityRefs: [factual.topic],
-            since: this.memory.turnCount
-          };
+          const contextualTopics = KNOWLEDGE_CONTEXT_TOPICS.get(factual.topic);
+          const preserveCurrent = Boolean(
+            contextualTopics &&
+            this.currentTurnTopics.some((topic) => contextualTopics.has(topic))
+          );
+          this._adoptKnowledgeAnswer(factual.topic, preserveCurrent);
           return answerText + followup;
         }
         if (this.currentTurnDialogueAct === 'question') {
