@@ -262,6 +262,59 @@
       en: 'Darya has several test layers: Node tests for the engine, languages, knowledge, safety, and multi-turn conversations; quality checks for classic-script order and service-worker coverage; a smoke suite for syntax, files, and HTTP; and browser suites for keyboard use, focus, offline PWA behavior, sound, and scrolling. ESLint, Stylelint, and Prettier are also gates. To contribute, choose a bounded issue, create a failing regression, work on a focused branch, run the full gate, and open a pull request explaining why. Generated www and synchronized Android web assets are not the source of truth; the web root is.'
     },
     {
+      id: 'darya_script_boundary',
+      keywords: [
+        'چرا نمیتونم انگلیسی بنویسم',
+        'چرا نمی‌تونم انگلیسی بنویسم',
+        'چرا انگلیسی قبول نمیکنه',
+        'چرا انگلیسی قبول نمی‌کنه',
+        'پیام انگلیسی ارسال نمیشه',
+        'پیام انگلیسی ارسال نمی‌شه',
+        'فقط فارسی بنویسم',
+        'چرا فقط فارسی',
+        'چرا فارسی قبول نمیکنه',
+        'زبان رو عوض کنم',
+        'زبان را عوض کنم',
+        'چطور زبان عوض کنم',
+        'چطور زبان را عوض کنم',
+        'انگلیسی بنویسم یا فارسی',
+        'why cant i write english',
+        "why can't i write english",
+        'why do you reject english',
+        'english not accepted',
+        'why only persian',
+        'how do i switch the language',
+        'how do i change the language',
+        'switch to english',
+        'change language to english',
+        'language is locked'
+      ],
+      weak: [
+        'انگلیسی بنویسم',
+        'زبان عوض',
+        'زبان را عوض',
+        'زبان رو عوض',
+        'write english',
+        'switch language',
+        'change language',
+        'english not'
+      ],
+      weakSafe: true,
+      hints: [
+        'فارسی',
+        'انگلیسی',
+        'زبان',
+        'پیام',
+        'persian',
+        'english',
+        'language',
+        'message',
+        'script'
+      ],
+      fa: 'این محدودیت عمدی است، نه یک خطای تصادفی: در هر گفتگو فقط یک خط (فارسی یا انگلیسی) فعال است تا تشخیص پیام دقیق بماند و جواب‌ها قاطی نشوند. اگر می‌خواهی انگلیسی بنویسی، گفتگوی تازه‌ای از صفحه‌ی انتخاب زبان شروع کن و انگلیسی را انتخاب کن؛ بعد از شروع گفتگو، زبان قفل می‌شود. نوشتن چند کلمه‌ی انگلیسی مثل اسم برنامه‌ها داخل جمله‌ی فارسی مشکلی ندارد، اما پیامِ تمام‌انگلیسی در گفتگوی فارسی پذیرفته نمی‌شود.',
+      en: 'This is a deliberate limit, not a bug: each conversation runs in one script (Persian or English) so message detection stays accurate and replies never mix. To write in English, start a new conversation from the language picker and choose English; once a conversation starts, the language is locked. A few English words like app names inside a Persian sentence are fine, but a fully English message is not accepted in a Persian conversation.'
+    },
+    {
       id: 'career_plan_tech',
       keywords: [
         'برنامه شغلی',
