@@ -104,7 +104,7 @@
     // "today/now/current/latest/right now/at the moment" + a volatile
     // noun, or the volatile noun with an explicit price/result framing.
     liveDataPattern:
-      /\b(?:(?:price|worth|value|rate|cost) of .{0,24}(?:today|right now|now|currently|at the moment)|(?:today'?s?|current|latest|live|real.?time) (?:price|weather|news|headlines|score|scores|rate|exchange rate|temperature)|what(?:'?s| is) the (?:weather|news|temperature|score)(?: like)?(?: today| now| outside| tomorrow)?|weather (?:today|now|tomorrow|forecast|like today|like now)|(?:bitcoin|btc|ethereum|gold|dollar|euro|stock|oil) (?:price|rate|worth|value)(?: today| now| right now)?|price of (?:bitcoin|btc|ethereum|gold|dollar|euro|oil)|news (?:today|right now|update)|who (?:won|is winning) (?:the game|the match|today|tonight)|exchange rate)\b/i,
+      /\b(?:(?:price|worth|value|rate|cost) of .{0,24}(?:today|right now|now|currently|at the moment)|(?:today'?s?|current|latest|live|real.?time) (?:price|weather|news|headlines|score|scores|rate|exchange rate|temperature)|what(?:'?s| is) the (?:weather|news|temperature|score)(?: like)?(?: today| now| outside| tomorrow)?|weather (?:today|now|tomorrow|forecast|like today|like now)|(?:bitcoin|btc|ethereum|gold|dollar|euro|stock|oil) (?:price|rate|worth|value)(?: today| now| right now)?|price of (?:bitcoin|btc|ethereum|gold|dollar|euro|oil)|news (?:today|right now|update)|who (?:won|is winning) (?:the game|the match|today|tonight|last night|yesterday)|(?:last )?night'?s (?:game|match|score)|who won (?:last night|yesterday)|what (?:happened|is happening) today|any news(?: today)?|exchange rate)\b/i,
     liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
@@ -312,12 +312,12 @@
       // are never stored as names. The capture takes up to two words
       // ("call me Mary Jane"), mirroring the explicit-form branch.
       nameStatement:
-        /\b(?:my name(?: is|'?s)|i'?m called|i am called)\s+([A-Za-z][A-Za-z']*(?:\s+(?!and\b|or\b)[A-Za-z][A-Za-z']*)?)\b|\b(?:i'?m|i am)\s+(?!(?:a\s+)?(?:ok\b|fine\b|good\b|great\b|tired\b|sad\b|happy\b|angry\b|excited\b|busy\b|bored\b|hungry\b|scared\b|worried\b|confused\b|sorry\b|sure\b|ready\b|here\b|back\b|home\b|not\b|just\b|so\b|really\b|actually\b|kinda\b|sort of|kind of|gonna\b|going\b|trying\b|starting\b|beginning\b|hoping\b|wondering\b|feeling\b|thinking\b|looking\b|done\b|finished\b|almost\b|basically\b|honestly\b|serious\b|kidding\b|joking\b|doing\b|new\b|single\b|alone\b|lost\b|stuck\b|fine\b|better\b|well\b))([A-Z][a-z]+)\b|\b(?:please\s+)?(?<!don'?t\s+)call me\s+([A-Z][a-z]+(?:\s+(?!and\b|or\b)[A-Z][a-z]+)?)\b/i,
+        /\b(?:my name(?: is|'?s)|i'?m called|i am called)\s+(?!(?:not|never|no|actually)\b)([A-Za-z][A-Za-z']*(?:\s+(?!and\b|or\b)[A-Za-z][A-Za-z']*)?)\b|\bmy name (?:is|'?s) not\s+[A-Za-z][A-Za-z']*(?:,|\s+it(?:'| i)?s|\s+it is)\s*([A-Z][a-z']+)\b|\b(?:i'?m|i am)\s+(?!(?:a\s+)?(?:ok\b|fine\b|good\b|great\b|tired\b|sad\b|happy\b|angry\b|excited\b|busy\b|bored\b|hungry\b|scared\b|worried\b|confused\b|sorry\b|sure\b|ready\b|here\b|back\b|home\b|not\b|just\b|so\b|really\b|actually\b|kinda\b|sort of|kind of|gonna\b|going\b|trying\b|starting\b|beginning\b|hoping\b|wondering\b|feeling\b|thinking\b|looking\b|done\b|finished\b|almost\b|basically\b|honestly\b|serious\b|kidding\b|joking\b|doing\b|new\b|single\b|alone\b|lost\b|stuck\b|fine\b|better\b|well\b))([A-Z][a-z]+)\b|\b(?:please\s+)?(?<!don'?t\s+)call me\s+([A-Z][a-z]+(?:\s+(?!and\b|or\b)[A-Z][a-z]+)?)\b/i,
       nameRequiresCapital: true,
       // Group 3 (the "call me x" branch) must also clear the capital
       // check: the pattern is case-insensitive, so without it the
       // lowercase "tomorrow" in "call me tomorrow" would be stored.
-      nameCapitalGroups: [3],
+      nameCapitalGroups: [3, 4],
       // Non-name words that follow "I am" / "I'm" in everyday speech:
       // states, negations, hedges, intentions, genders, roles, and common
       // professions. The handler rejects any captured candidate on this

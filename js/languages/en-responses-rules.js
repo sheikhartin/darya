@@ -997,6 +997,122 @@
     'One meaningful connection is worth more than many acquaintances. Which existing friendship could you deepen this month?'
   ];
 
+  // Casual "where are you (right now)?" - a playful presence answer,
+  // not a geography lecture.
+  R['ruleWhereAreYou'] = [
+    'Right here, with you. Where in the world are you?',
+    'Here, where this conversation is; right where you are. Where are you?',
+    'Right here behind this screen, listening. Where are you?',
+    'In this conversation. Where would you say you are?'
+  ];
+
+  // «Everything is ok», "all good": the everyday everything-is-fine
+  // check-in gets a warm reassurance. The same reply works when the
+  // user is the one reassuring Darya ("no problem" after a mishap).
+  R['ruleAllWell'] = [
+    'Everything is fine here; do not worry. How are you doing?',
+    'Yes, all good here. How about you?',
+    'It is calm here and all in order. If anything comes up, I am right here.',
+    'All good on my side. What is new with you?'
+  ];
+
+  // "what happened?", "what's going on?": a gentle what-happened opener,
+  // warm and open instead of the stiff short-reply prompt.
+  R['ruleWhatsUp'] = [
+    'I can see something came up. Tell me what happened?',
+    'Sounds like something happened. Take your time; whatever it is, you can say it.',
+    'What happened? I am here to listen.',
+    'Tell me what happened, from the beginning.'
+  ];
+
+  // Friendship betrayal: believed first, empathy before questions. The
+  // person was hurt by someone they trusted; the reply never excuses,
+  // never rushes to "leave them", and never reads as advice-giving.
+  R['ruleFriendshipBetrayal'] = [
+    'Betrayal from someone you trusted cuts deeper than an ordinary fight. First of all: you have every right to be hurt. What happened?',
+    'Having someone talk behind your back breaks a sense of safety. I believe you, and I am here to hear the whole story.',
+    'When someone you cared about lets you down, there is grief and anger in it. Both are valid. Where do you want to start?',
+    'Broken trust is heavy. You do not need to decide anything right now; first tell me what happened and how it feels.'
+  ];
+
+  // Work humiliation: the person was belittled in front of others.
+  // Empathy first; the work-rule reflective questions would read as
+  // missing the point.
+  R['ruleWorkHumiliation'] = [
+    'Being humiliated in front of other people hurts deeply, even once, and it was not your fault. Where did it happen?',
+    'You have every right to feel angry and embarrassed; the person who belittled you in front of others behaved badly. What exactly happened?',
+    'Public humiliation cuts twice: the words themselves, and the audience. Which part is bothering you more?',
+    'A boss or manager who disrespects you in public is showing their problem, not your worth. How did it end?'
+  ];
+
+  // Misunderstood: the loneliness of never being heard.
+  R['ruleMisunderstood'] = [
+    'Feeling like no one understands what you are saying can be very lonely. I am here to listen; what is it that no one seems to get?',
+    'When people do not understand you, it can feel like talking to a wall. Which of your words did you most want to be heard?',
+    'Being misunderstood is one of those pains that gets tiring when it repeats. What do you say that seems to go unheard?',
+    'Even if others have not heard you, I am listening now. Start where you think people do not understand.'
+  ];
+
+  // A bad day: empathy for the day itself, then a soft opening.
+  R['ruleBadDay'] = [
+    'Some days turn bad without any warning. I am sorry you had one of those. What was the worst part?',
+    'A bad day is a bad day; you do not have to fix it right away. Tell me what happened if you want to.',
+    'That sounds like a heavy day. Let us take a breath here first, then, if you like, tell me what happened.',
+    'It sounds like today has been a lot. I am here whether you want to talk about it or just let it out.'
+  ];
+
+  // Contradiction accusation: Darya answers honestly about her own
+  // limits instead of dodging or changing the subject.
+  R['ruleContradiction'] = [
+    'You have a fair point. My replies come from the rules and the offline shelf of this version; if I answered inconsistently, tell me exactly where so we can look at it together.',
+    'I can come across as inconsistent between two replies; my memory only covers this conversation. Which part did not match what I said before?',
+    'Honestly: two similar questions can draw different lines from my shelf. If it matters to you, bring the exact sentence and we will check it.',
+    'An inconsistency in my answers is more likely my real limitation than neglect. Tell me exactly where it differed.'
+  ];
+
+  // Ethical dilemmas: honest exploration without absolute formulas,
+  // consequences and alternatives named, never legal advice.
+  R['ruleEthicalDilemma'] = [
+    'Questions like this do not have ready answers, and that is what makes them heavy. Let us open it together: what matters most to you in this choice?',
+    'There is a lot of gray between right and wrong. What do you value here, and what would the choice cost you and others?',
+    'Ethical dilemmas usually mean two values are pulling against each other. Which value matters more to you, and why? Is there a third option you have not seen yet?',
+    'If the act would harm someone or break the law, that harm and those consequences are part of the answer too. Would you like to think through the less harmful options together?'
+  ];
+
+  // Decision dilemmas: a practical thinking frame for being torn.
+  R['ruleDecisionDilemma'] = [
+    'Being stuck between two paths means both have real value for you. Let us list it together: what does each option give you, and what does it cost?',
+    'Big decisions rarely have one always-right answer; clarifying what matters to you makes the comparison easier. Which side fits your values better?',
+    'Instead of a no-return choice, try a small experiment: take one small step with each option and notice what your body and mind say.',
+    'No option is perfect, and almost no decision is forever. If you looked back at this moment in six months, what would you wish you had chosen?'
+  ];
+
+  // Pet-name requests: creative ideas, offered lightly.
+  R['rulePetName'] = [
+    'A few ideas: Mochi, Olive, Luna, Biscuit, Pixel, or Shadow. Honestly, a name that fits their personality beats any pretty name; what are they like?',
+    'For cats, names like Luna, Simba, or Nana work well; for dogs, Buddy, Rocky, or Coco. Which direction feels right to you?',
+    'Names can come from a memory: their color, where you found them, or a funny habit. What trait would you like the name to echo?',
+    'My suggestion: watch them for a few days first. Cats and dogs usually tell you their own name; name them after one specific habit.'
+  ];
+
+  // A poem request: short public-domain verses, offered without
+  // claiming authorship.
+  R['rulePoemRequest'] = [
+    'Here is a line from Rumi, in translation: "The wound is the place where the Light enters you." Would you like to sit with it together?',
+    'A short one by Emily Dickinson: "Hope is the thing with feathers that perches in the soul." How does that land for you?',
+    'From William Blake: "To see a World in a Grain of Sand and a Heaven in a Wild Flower." If you like, I can share another.',
+    'I keep a few public-domain verses in my shelf; I do not write poems myself. Which mood should the next one fit?'
+  ];
+
+  // "who is so-and-so?": a playful clarification, since no name was
+  // given.
+  R['ruleSoAndSo'] = [
+    'So-and-so? Which so-and-so? Give me a name and I will tell you who they are.',
+    'You mean the person whose name you did not say? Tell me who it is and I will introduce them.',
+    'There are a lot of so-and-sos out there. Give me a clue: where do they fit in?',
+    'Ah, so-and-so, the one whose name I always forget! Tell me who we are talking about.'
+  ];
+
   // Sports banter: match complaints, referee rants, team losses. Light,
   // companionable, never clinical.
   R['ruleSportsTalk'] = [

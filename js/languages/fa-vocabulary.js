@@ -124,6 +124,14 @@
 
   const exitKeywords = [
     'بدرود',
+    // Latin-script farewells are everyday Persian chat vocabulary too;
+    // adding them here lets the app's exit flow handle "bye" natively
+    // (and the engine's latinInterjections map covers the standalone
+    // engine path). Kept lowercase; isExitCommand lowercases the input.
+    'bye',
+    'goodbye',
+    'good bye',
+    'bb',
     'خداحافظ',
     'خدا حافظ',
     'خدانگهدار',

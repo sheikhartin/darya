@@ -127,6 +127,36 @@
     // do not count as a foreign-language switch for script validation.
     scriptExemptPattern:
       /\b(?:API|BDD|CD|CI|CSS|CTF|DNS|Git|GitHub|HTML|HTTP|HTTPS|JSON|Linux|MFA|MongoDB|Node\.js|NoSQL|OWASP|PostgreSQL|PWA|Python|REST|SIEM|SOC|SQL injection|SQL|TCP|TLS|TypeScript|UNHCR|WCAG|Wi-Fi|WiFi|WPA2|WPA3|race condition|service worker|threat model|pull request)\b/giu,
+    // Pure-Latin interjections that are everyday vocabulary in Persian
+    // chat ("ok", "tnx", "lol", "bye") despite the Persian script. The
+    // engine checks this map BEFORE script validation: the key is the
+    // lowercased trimmed input, and the value is the response kind
+    // (ack/greeting/thanks/laugh/exit). A full sentence in Latin script
+    // still gets the polite redirect; only these fixed words are
+    // recognized, so "okey" is understood but "okey dokey" is not.
+    latinInterjections: {
+      ok: 'ack',
+      okay: 'ack',
+      okey: 'ack',
+      okk: 'ack',
+      kk: 'ack',
+      tnx: 'thanks',
+      thx: 'thanks',
+      ty: 'thanks',
+      thanks: 'thanks',
+      hi: 'greeting',
+      hey: 'greeting',
+      hello: 'greeting',
+      lol: 'laugh',
+      haha: 'laugh',
+      hehe: 'laugh',
+      lmao: 'laugh',
+      bye: 'exit',
+      goodbye: 'exit',
+      'good bye': 'exit',
+      bb: 'exit',
+      bey: 'exit'
+    },
     normalize,
     normalizeOutput,
     bindPrefixesForMatching,
@@ -153,7 +183,7 @@
     distressNudges: R.distressNudges,
     // Live-data questions (current price/weather/news/score/rate).
     liveDataPattern:
-      /(?:قیمت (?:امروز|الان|لحظه‌ای|لحظه ای|روز)|قیمت (?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|ارز|بنزین|خودرو)(?:\s|$|چنده|چقدره|چیه)|(?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین) (?:چنده|چقدره|چند شده|چنده امروز)|هوا (?:چطوره|چطور است|چه جوریه|چجوریه|خوبه)|آب و هوا|آب‌وهوا|وضع هوا|دمای (?:هوا|امروز|الان)|اخبار (?:امروز|روز|جدید|تازه)|خبر (?:جدید|تازه|روز)|نتیجه (?:بازی|مسابقه|فوتبال)|کی برد|نرخ (?:ارز|دلار|بهره|تورم امروز))/u,
+      /(?:قیمت (?:امروز|الان|لحظه‌ای|لحظه ای|روز)|قیمت (?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|ارز|بنزین|خودرو)(?:\s|$|چنده|چقدره|چیه)|(?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین) (?:چنده|چقدره|چند شده|چنده امروز)|هوا (?:چطوره|چطور است|چه جوریه|چجوریه|خوبه)|آب و هوا|آب‌وهوا|وضع هوا|دمای (?:هوا|امروز|الان)|اخبار (?:امروز|روز|جدید|تازه)|خبر (?:جدید|تازه|روز)|نتیجه (?:بازی|مسابقه|فوتبال)|کی برد|نرخ (?:ارز|دلار|بهره|تورم امروز)|(?:امروز|الان|جدیدا|اخیرا) (?:چه خبره|چی خبره|چه خبرای|چه خبرهایی)|(?:چه خبره|چی خبره|چه خبرای) امروز|خبر چیه|بازی دیشب|مسابقه دیشب|نتیجه دیشب|دیشب کی برد|کی برد دیشب|امروز کی برد)/u,
     liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
@@ -239,6 +269,8 @@
     exitConfirmMessages: R.exitConfirmMessages,
     exitConfirmCaringMessages: R.exitConfirmCaringMessages,
     greetings: R.greetings,
+    greetingPool: R.greetings,
+    lightLaughResponses: R.lightLaughResponses,
     greetingsPhase1: R.greetingsPhase1,
     greetingsPhase2: R.greetingsPhase2,
     greetingsOpen: R.greetingsOpen,
@@ -386,11 +418,11 @@
         // recall like «من کی هستم» can never store «کی» as a name (the
         // transcript's worst failure); the nameStopwords list below is
         // the belt-and-suspenders second guard.
-        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
+        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?(?!\s*(?:نیست|نبود|نی))(?!\p{L})|(?<!\p{L})(?:اسمم|اسم من)\s+[\p{L}]{2,20}\s+(?:نیست|نبود|نی)(?:\s*(?:،|,))?\s*([\p{L}]{2,20})(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
       // Group 3 of nameStatement is the glued first-person copula
       // («من بارانم»); the handler reads this flag instead of hardcoding
       // the group index (see responder-profile.js).
-      nameAttachedGroup: 3,
+      nameAttachedGroup: 4,
       nameStopwords: [
         // States and emotions: "من خسته هستم" is a feeling, not a name.
         // The ئ to ی normalizer turns «مطمئن» into «مطمین», so the

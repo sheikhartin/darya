@@ -12,7 +12,7 @@
   // The shipped version, kept in sync by scripts/bump-version.mjs. The
   // offline knowledge shelf answers "what version are you" with this
   // exact value through a {version} placeholder, so the two never drift.
-  const DARYA_VERSION = '1.7.0';
+  const DARYA_VERSION = '1.8.0';
   const MEMORY_SIZE = 8;
   // Safety-critical rule topics: turns matching any of these must reach
   // their protective pool untouched. No override may replace the reply,

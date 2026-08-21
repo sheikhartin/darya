@@ -218,7 +218,7 @@
       const spanFa = span.replace(/\s+/g, ' ');
       return `${spanFa} مساوی است با ${toPersian(rounded)}.`;
     }
-    return `${span.replace(/\s+/g, ' ')} = ${rounded}.`;
+    return `${span.replace(/\\s+/g, ' ')} = ${rounded}.`;
   }
 
   // Common Persian number words for word-form arithmetic ("پنج به علاوه
@@ -303,7 +303,232 @@
     return FA_PLUS_OP_RE.test(opRaw);
   }
 
+  // ======================================================================
+  // Everyday word problems
+  //
+  // "If I have 5 apples and give away 2, how many are left?" and «اگه ۵
+  // تا سیب داشته باشم و ۲ تا بدم، چند تا می‌مونه؟» are the math people
+  // actually type in conversation. The expression evaluator cannot parse
+  // them, and the old fallback answered with a source pointer, which is
+  // absurd for 5-2. A small set of common templates covers subtraction
+  // (giving away, losing, eating), addition (buying, receiving, adding),
+  // division (sharing), and rate problems (a train at X km/h for Y
+  // hours). Numbers may be ASCII or Persian digits, or common English
+  // number words (one..twelve, tens). Only exact templates match; a
+  // word problem outside the templates stays unanswered so the honest
+  // fallback still applies.
+  // ======================================================================
+
+  /** English number words understood in word problems. */
+  const EN_NUMBER_WORDS = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10,
+    eleven: 11,
+    twelve: 12,
+    twenty: 20,
+    thirty: 30,
+    forty: 40,
+    fifty: 50,
+    sixty: 60,
+    seventy: 70,
+    eighty: 80,
+    ninety: 90,
+    hundred: 100
+  };
+
+  /**
+   * Parses a number from ASCII/Persian digits or a single English number
+   * word (used only when the input is otherwise English).
+   * @param {string} raw
+   * @returns {number|null}
+   */
+  function parseWordProblemNumber(raw) {
+    const ascii = String(raw)
+      .trim()
+      .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+      .toLowerCase();
+    if (/^\d+(?:\.\d+)?$/.test(ascii)) {
+      const value = parseFloat(ascii);
+      return Number.isFinite(value) ? value : null;
+    }
+    const word = EN_NUMBER_WORDS[ascii];
+    return typeof word === 'number' ? word : null;
+  }
+
+  /**
+   * Attempts to answer an everyday word problem (apples given away,
+   * train distance, sharing between people). Returns a reply string or
+   * null when no template matches.
+   * @param {object} engine - The engine (for the language pack)
+   * @param {string} text - Normalized matching text
+   * @returns {string|null}
+   */
+  function handleWordProblem(engine, text) {
+    const isFa = engine.lang.code === 'fa';
+    const num = '[۰-۹0-9]+|\\d+';
+    const word = '[A-Za-z]+';
+    const n = isFa ? num : `${num}|${word}`;
+    let m;
+
+    if (isFa) {
+      // Subtraction: give away / lose / eat / take away.
+      m = text.match(
+        new RegExp(
+          // eslint-disable-next-line max-len
+          `اگه (${num}) تا (.{1,12}) داشته باشم و (${num}) تا(?:ش)? (?:بدم|ببخشم|از دست بدم|از دستم بره|بخورم|کم کنم|بردارم|بدهم|بدمش)(?:[.!؟،]|[,،]?\\s*(?:چند|چقدر|چه تعداد).{0,20}|$)`,
+          'u'
+        )
+      );
+      if (m) {
+        const a = parseWordProblemNumber(m[1]);
+        const b = parseWordProblemNumber(m[3]);
+        if (a !== null && b !== null) {
+          const result = a - b;
+          return `${a} منهای ${b} می‌شود ${result}؛ یعنی ${result} تا ${m[2]} برایت می‌ماند.`;
+        }
+      }
+      // Subtraction (past tense): had X, lost/gave Y.
+      m = text.match(
+        new RegExp(
+          // eslint-disable-next-line max-len
+          `(${num}) تا (.{1,12}) (?:داشتم|داشتمش|داشتیم) و (${num}) تا(?:ش)?(?:و|شو|شون)? (?:دادم|باختم|از دست دادم|خوردم|از دستم رفت)(?:[.!؟،]|[,،]?\\s*(?:چند|چقدر|چه تعداد).{0,20}|$)`,
+          'u'
+        )
+      );
+      if (m) {
+        const a = parseWordProblemNumber(m[1]);
+        const b = parseWordProblemNumber(m[3]);
+        if (a !== null && b !== null) {
+          const result = a - b;
+          return `${a} منهای ${b} می‌شود ${result}؛ پس ${result} تا برایت می‌ماند.`;
+        }
+      }
+      // Addition: buy / receive / add / get more.
+      m = text.match(
+        new RegExp(
+          // eslint-disable-next-line max-len
+          `اگه (${num}) تا (.{1,12}) داشته باشم و (${num}) تا (?:بخرم|بگیرم|اضافه کنم|به دست بیارم|به دست بیاورم|دیگه بگیرم)(?:[.!؟،]|[,،]?\\s*(?:چند|چقدر|چه تعداد).{0,20}|$)`,
+          'u'
+        )
+      );
+      if (m) {
+        const a = parseWordProblemNumber(m[1]);
+        const b = parseWordProblemNumber(m[3]);
+        if (a !== null && b !== null) {
+          const result = a + b;
+          return `${a} به‌علاوه‌ی ${b} می‌شود ${result}؛ یعنی ${result} تا ${m[2]} خواهی داشت.`;
+        }
+      }
+      // Division: share X between Y people.
+      m = text.match(
+        new RegExp(
+          // eslint-disable-next-line max-len
+          `(${num}) تا (.{1,12}) (?:رو|را) بین (${num}) (?:نفر|نفر نفر|تا نفر) تقسیم (?:کنم|کنیم|بکنم|بکنیم)(?:[.!؟]|$)`,
+          'u'
+        )
+      );
+      if (m) {
+        const a = parseWordProblemNumber(m[1]);
+        const b = parseWordProblemNumber(m[3]);
+        if (a !== null && b !== null && b !== 0) {
+          const result = a / b;
+          const formatted = Number.isInteger(result)
+            ? String(result)
+            : result.toFixed(2).replace(/\.?0+$/, '');
+          return `${a} تقسیم بر ${b} می‌شود ${formatted}؛ یعنی هر نفر ${formatted} تا ${m[2]}.`;
+        }
+      }
+      return null;
+    }
+
+    // English word problems.
+    // Subtraction: "if i have 5 apples and give away 2".
+    m = text.match(
+      new RegExp(
+        // eslint-disable-next-line max-len
+        `\\bif i (?:have|had) (${n}) (?:apples|oranges|bananas|cookies|candies|books|pens|things|items|stamps|marbles|eggs|chocolates?|dollars|pounds) (?:and|,) (?:i )?(?:give away|give|gives? away|lose|lost|eat|ate|sell|sold|take away) (${n})\\b`,
+        'i'
+      )
+    );
+    if (m) {
+      const a = parseWordProblemNumber(m[1]);
+      const b = parseWordProblemNumber(m[2]);
+      if (a !== null && b !== null) {
+        const result = a - b;
+        return `${a} minus ${b} is ${result}, so you would have ${result} left.`;
+      }
+    }
+    // Addition: "if i have 5 apples and buy 3 more".
+    m = text.match(
+      new RegExp(
+        // eslint-disable-next-line max-len
+        `\\bif i (?:have|had) (${n}) (?:apples|oranges|bananas|cookies|candies|books|pens|things|items|stamps|marbles|eggs|chocolates?|dollars|pounds) (?:and|,) (?:i )?(?:buy|bought|get|got|receive|received|add) (${n}) (?:more|extra|additional)?\\b`,
+        'i'
+      )
+    );
+    if (m) {
+      const a = parseWordProblemNumber(m[1]);
+      const b = parseWordProblemNumber(m[2]);
+      if (a !== null && b !== null) {
+        const result = a + b;
+        return `${a} plus ${b} is ${result}, so you would have ${result} in total.`;
+      }
+    }
+    // Rate: "if a train travels 60 km/h for 3 hours, how far?".
+    m = text.match(
+      new RegExp(
+        // eslint-disable-next-line max-len
+        `\\b(?:if )?a train travels? (${n}) (?:km|kilometers?|kilometres?|miles?) (?:per|an|a) hour.{0,30}? (?:for|in) (${n}) hours?\\b`,
+        'i'
+      )
+    );
+    if (m) {
+      const speed = parseWordProblemNumber(m[1]);
+      const hours = parseWordProblemNumber(m[2]);
+      if (speed !== null && hours !== null) {
+        const result = speed * hours;
+        return `${speed} times ${hours} is ${result}; the train would cover ${result} units in that time.`;
+      }
+    }
+    // Division: "if 10 cookies are shared between 5 people".
+    m = text.match(
+      new RegExp(
+        // eslint-disable-next-line max-len
+        `\\b(?:if )?(${n}) (?:cookies|candies|apples|books|things|items|dollars|pounds) (?:are|is|get|gets) shared between (${n}) (?:people|kids|friends|children)\\b`,
+        'i'
+      )
+    );
+    if (m) {
+      const a = parseWordProblemNumber(m[1]);
+      const b = parseWordProblemNumber(m[2]);
+      if (a !== null && b !== null && b !== 0) {
+        const result = a / b;
+        const formatted = Number.isInteger(result)
+          ? String(result)
+          : result.toFixed(2).replace(/\.?0+$/, '');
+        return `${a} divided by ${b} is ${formatted}, so each person gets ${formatted}.`;
+      }
+    }
+    return null;
+  }
+
   function handleFactualQuestion(engine, text) {
+    // Everyday word problems first ("if I have 5 apples and give away
+    // 2", «اگه ۵ تا سیب داشته باشم و ۲ تا بدم»): the expression
+    // evaluator cannot parse them and the old fallback pointed to
+    // Wikipedia for 5-2.
+    const wordProblem = handleWordProblem(engine, text);
+    if (wordProblem) {
+      return wordProblem;
+    }
     // Compound expressions first: "2+2*3", "(2+3)*4", "what is 10-4/2".
     // The legacy two-operand paths below would otherwise answer a
     // FRAGMENT of the expression (the "2*3" inside "2+2*3") and present

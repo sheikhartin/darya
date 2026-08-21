@@ -3844,8 +3844,8 @@ test('proactive idle opener is armed, guarded by userSpoke, and cancellable', ()
   assert.match(core, /userSpoke/u);
 });
 
-test('release metadata is aligned at version 1.7.0', () => {
-  const expected = '1.7.0';
+test('release metadata is aligned at version 1.8.0', () => {
+  const expected = '1.8.0';
   const packageJson = JSON.parse(read('package.json'));
   const lock = JSON.parse(read('package-lock.json'));
   const manifest = JSON.parse(read('manifest.json'));
@@ -3855,11 +3855,11 @@ test('release metadata is aligned at version 1.7.0', () => {
   assert.equal(lock.version, expected);
   assert.equal(lock.packages[''].version, expected);
   assert.equal(manifest.version, expected);
-  assert.match(gradle, /versionCode 170/u);
-  assert.match(gradle, /versionName "1\.7\.0"/u);
+  assert.match(gradle, /versionCode 180/u);
+  assert.match(gradle, /versionName "1\.8\.0"/u);
   assert.match(
     read('js/engine/utils-constants.js'),
-    /DARYA_VERSION = '1\.7\.0'/u
+    /DARYA_VERSION = '1\.8\.0'/u
   );
 });
 

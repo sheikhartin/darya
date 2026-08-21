@@ -267,6 +267,49 @@ class DaryaResponseEngine {
     if (!String(rawText).trim()) {
       return this.lang.emptyInputReply;
     }
+    // Pure-Latin interjections that are everyday Persian chat vocabulary
+    // ("ok", "tnx", "lol", "bye") are understood before script validation,
+    // so a Persian conversation never bounces "ok" back with a
+    // write-in-Persian redirect. Full Latin sentences still redirect.
+    const latinKind =
+      this.lang.latinInterjections &&
+      this.lang.latinInterjections[
+        String(rawText).trim().toLowerCase()
+      ];
+    if (latinKind && !isValidScript(rawText, this.lang)) {
+      if (latinKind === 'exit') {
+        if (this.memory.farewellPending) {
+          this.memory.farewellPending = false;
+          return this.farewell();
+        }
+        this.memory.farewellPending = true;
+        return this.exitConfirmation();
+      }
+      if (latinKind === 'greeting' && this.lang.greetingPool) {
+        return this._pickVaried(this.lang.greetingPool, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
+      if (latinKind === 'thanks' && this.lang.gratitudeResponses) {
+        return this._pickVaried(this.lang.gratitudeResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
+      if (latinKind === 'laugh' && this.lang.lightLaughResponses) {
+        return this._pickVaried(this.lang.lightLaughResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
+      if (this.lang.acknowledgementResponses) {
+        return this._pickVaried(this.lang.acknowledgementResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
+    }
     if (!isValidScript(rawText, this.lang)) {
       return this.lang.foreignLanguageRedirect();
     }
@@ -379,7 +422,33 @@ class DaryaResponseEngine {
     // person needs to be heard, not handed a philosophy essay. Explicit
     // knowledge requests ("درباره X توضیح بده", "Tell me about X") still
     // route to knowledge.
-    const ruleMatches = this._matchRules(matchingText);
+    let ruleMatches = this._matchRules(matchingText);
+    // A clarification restatement («منظورم این هست که چه قابلیت‌هایی
+    // داری؟», "I mean, what capabilities do you have?") is the real turn.
+    // When the raw text matched nothing, strip the opener and re-match the
+    // restatement. The clarified text is also offered to the knowledge and
+    // live-data overrides so «منظورم اینه که قیمت طلا چنده» still gets
+    // the honest offline answer. Never fires when a rule already matched:
+    // a genuine clarification must not override a matched turn.
+    this._clarifiedTextForTurn = null;
+    {
+      const clarifiedText = this._stripClarificationPrefix(matchingText);
+      if (clarifiedText !== matchingText) {
+        const clarifiedMatches = this._matchRules(clarifiedText);
+        const clarifiedBest = clarifiedMatches[0]?.rule?.priority || 0;
+        const originalBest = ruleMatches[0]?.rule?.priority || 0;
+        // The restatement wins when it matches something and that match
+        // outranks whatever the raw text matched («میخوام بدونم
+        // قابلیت‌هات چیه» matches the low-priority need rule on the raw
+        // text but capability on the restatement). A safety rule (100)
+        // or any stronger lived rule on the raw text always wins, so a
+        // clarification can never downgrade a critical turn.
+        if (clarifiedMatches.length > 0 && clarifiedBest > originalBest) {
+          ruleMatches = clarifiedMatches;
+          this._clarifiedTextForTurn = clarifiedText;
+        }
+      }
+    }
     const culturalMeaningMatch =
       this._matchCulturalLanguageRule(matchingText);
     if (culturalMeaningMatch) {
@@ -560,7 +629,10 @@ class DaryaResponseEngine {
           reply = this._pickVaried(this.lang.acknowledgementResponses);
           this.memory.consecutiveAcknowledgements = 0;
         } else {
-          reply = this._fallbackResponse(null, normalized);
+          reply = this._fallbackResponse(
+            null,
+            this._clarifiedTextForTurn || normalized
+          );
         }
       } else {
         // No open question to answer: acknowledge the brief reply warmly
@@ -591,7 +663,10 @@ class DaryaResponseEngine {
     } else if (isAmbiguous && this.lang.ambiguousInputResponses) {
       reply = this._pickVaried(this.lang.ambiguousInputResponses);
     } else {
-      reply = this._fallbackResponse(null, normalized);
+      reply = this._fallbackResponse(
+            null,
+            this._clarifiedTextForTurn || normalized
+          );
     }
     const overridden = this._applySmartOverrides({
       reply,

@@ -7,6 +7,111 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-21
+
+### Added
+
+- Clarification restatements are now understood: «منظورم این هست که چه
+  قابلیت‌هایی داری؟», «می‌خوام بدونم قابلیت‌هات چیه», "I mean, what
+  capabilities do you have?", and "what I mean is" are answered from the
+  restated intent instead of the honest-unknown pool. The restated text
+  also feeds the knowledge and live-data layers («منظورم اینه که مسی
+  کیه؟» answers the Messi fact), and a clarification never downgrades a
+  safety or stronger lived rule.
+- The capability question is now recognized in its everyday forms in
+  both languages: «قابلیت‌هات چیه», «چه کارهایی می‌تونی انجام بدی؟»,
+  «چه چیزهایی بلدی؟», "what are your capabilities?", "what are you
+  able to do?", "what features do you have?" all get the capability
+  answer, while identity questions ("what are you?", «تو کی هستی؟»)
+  stay separate.
+- Everyday 2026 Persian registers: «چخبر؟» joins the how-are-you
+  family; «کجایی؟» gets a light presence answer; «مشکلی نیست؟» gets a
+  warm reassurance; «چته؟» and «چی شده؟» get a gentle what-happened
+  opener. These no longer fall into the stiff short-reply prompt.
+- Pure-Latin interjections are understood inside Persian chat: "ok",
+  "tnx", "lol", "hi", and "bye" answer naturally (the exit flow for
+  bye) instead of the write-in-Persian redirect; full Latin sentences
+  still redirect.
+- The knowledge shelf now covers 24 sports (tennis, chess, wrestling,
+  cricket, American football, boxing, swimming, athletics, gymnastics,
+  judo, taekwondo, cycling, skiing, esports, table tennis, badminton,
+  handball, rugby, golf, Formula One, offside, VAR, futsal, and
+  weightlifting) with dedicated Iranian entries (wrestling heroes from
+  Takhti to Yazdani, Iran futsal, Iran weightlifting) in both
+  languages.
+- The people shelf now covers 60+ notable figures across eras and
+  cultures in both languages: Persian poets (Ferdowsi, Hafez, Saadi,
+  Rumi, Khayyam, Nima, Forough, Sepehri, Shamlou, Parvin), Iranian
+  filmmakers (Kiarostami, Farhadi, Panahi, Majidi) and musicians
+  (Shajarian, Googoosh), scientists and mathematicians (Avicenna,
+  Khwarizmi, Razi, Biruni, Mirzakhani, Einstein, Newton, Darwin,
+  Curie, Tesla, Edison, Galileo, Turing, Hawking, Pasteur, Lovelace,
+  Armstrong), philosophers (Socrates, Plato, Aristotle, Confucius,
+  Nietzsche, Kant, Descartes, Suhrawardi), historical leaders
+  (Alexander, Caesar, Cleopatra, Napoleon, Genghis Khan, Gandhi,
+  Mandela, MLK, Lincoln, Atatürk), world writers and artists
+  (Shakespeare, Tolstoy, Dostoevsky, Kafka, Hemingway, Orwell, Austen,
+  Woolf, Van Gogh, Picasso, Da Vinci, Kahlo), musicians (Beethoven,
+  Mozart, Bach, Michael Jackson, The Beatles), activists (Rosa Parks,
+  Malala, Jane Goodall), and sports legends (Pelé, Maradona, Ali Daei,
+  Muhammad Ali, Serena Williams, Federer, Bolt, Phelps, Michael
+  Jordan, LeBron James). «مسی کیه؟» and "who is messi?" now answer
+  directly.
+- Everyday word problems are solved: «اگه ۵ تا سیب داشته باشم و ۲ تا
+  بدم، چند تا می‌مونه؟» and "if I have 5 apples and give away 2" are
+  answered with real arithmetic (subtraction, addition, sharing,
+  train-rate problems) instead of a source pointer.
+- Companion-quality rules in both languages: friendship betrayal and
+  work humiliation are believed first; being misunderstood, a bad day,
+  contradictions («جوابت با قبل فرق داره» gets an honest
+  self-awareness reply instead of a topic hop), ethical dilemmas, and
+  decision dilemmas («بین دو تا شغل موندم») get dedicated pools;
+  pet-name requests get creative names (never pet-care advice), and
+  poem requests get short public-domain verses (Hafez, Rumi, Sepehri;
+  Rumi, Dickinson, Blake).
+- Self-awareness honesty: «تو هوشیاری؟», «تو احساس داری؟», «میتونی
+  عاشق بشی؟», "do you have feelings?", and "can you fall in love?"
+  get honest answers from the identity pool instead of an evasive line
+  or a stored "preference" (the verb-shaped «بشی» trap is blocked).
+- Name corrections are remembered correctly in both languages:
+  «اسمم علی نیست، کوروشه» and "Actually my name is not Ali, it is
+  Koroush" store the corrected name and answer recall with it, never
+  echoing the old name.
+- Live-data phrasing coverage widened: «امروز چه خبره؟», «دیشب کی
+  برد؟», «نتیجه بازی دیشب», "who won last night", and "last night's
+  game" lead with the honest offline limit.
+- A new 59-case robustness-challenge suite stresses clarification
+  restatements, colloquial registers, Latin interjections, capability
+  variants, 24 sports and 60+ people in both scripts, corrections,
+  preference traps, live-data honesty, the new companion rules, word
+  problems, fatigue, and follow-up continuity. It runs 20 consecutive
+  rounds clean during development and is registered in the npm test
+  script.
+
+### Fixed
+
+- «قابلیت‌هات چیه» no longer falls to the Wikipedia pointer or the
+  honest-unknown pool.
+- «منظورم این هست که چه قابلیت‌هایی داری؟» no longer gets "I do not
+  have a clear answer".
+- "I mean, what capabilities do you have?" no longer answers the
+  MEAN/MERN stack fact (the word "mean" inside the clarification).
+- «میتونی عاشق بشی؟» no longer stores «بشی» as a user preference and
+  answers «باشه، بشی را یادداشت کردم».
+- «اسمم علی نیست، کوروشه» no longer stores «عل» or the negated old
+  name; recall answers the corrected name.
+- «خستم» reaches the fatigue pool instead of the physical-pain lines.
+- «چخبر؟», «کجایی؟», «چته؟», «چی شده؟», and «مشکلی نیست؟» no longer
+  get the short-reply or ambiguous-input prompts.
+- "ok"/"tnx"/"lol"/"bye" in a Persian conversation no longer trigger
+  the foreign-language redirect.
+- «چه خبره امروز» no longer reads as a warm check-in when it asks
+  about today's news.
+- «امروز روز بدی بود» no longer falls to the stiff "I do not want to
+  guess wrong" pool.
+- The FA «دو و میدانی» fact no longer contains the "نیزه؟ نه" draft
+  artifact.
+
 ## [1.7.0] - 2026-08-21
 
 ### Added

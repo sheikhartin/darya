@@ -7411,7 +7411,10 @@ test('common FA disclosures route to their topic rules, never the unknown pool',
     ['پولم تموم شده', 'money'],
     ['شب‌ها اصلا نمی‌تونم بخوابم', 'sleep'],
     ['سه ماه پیش از دنیا رفت', 'grief'],
-    ['راستش امروز روز بدی داشتم', 'sadness'],
+    // «روز بدی داشتم» has its own bad-day specialization since the
+    // 1.8 challenge round; it is still a topic rule, never the unknown
+    // pool.
+    ['راستش امروز روز بدی داشتم', 'bad_day'],
     ['مامانم فوت کرده', 'grief']
   ];
   for (const [input, topic] of cases) {
