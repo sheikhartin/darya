@@ -1,0 +1,21 @@
+{
+  "name": "Persian preference recall",
+  "description": "«قهوه رو خیلی دوست دارم» بعدا با «چی دوست دارم» یادآوری می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "قهوه رو خیلی دوست دارم",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "چی دوست دارم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The recall names the stored preference.",
+    "behavior": "Preference memory answers from the latest stated preference."
+  }
+}

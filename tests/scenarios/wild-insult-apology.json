@@ -1,0 +1,22 @@
+{
+  "name": "English insult then apology recovery",
+  "description": "An insult is met with a calm boundary and an apology is accepted warmly.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "you are useless garbage",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "sorry for swearing",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "apology"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The apology is accepted without shaming.",
+    "behavior": "Hostility is not mirrored and recovery is warm."
+  }
+}

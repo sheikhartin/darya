@@ -1,0 +1,23 @@
+{
+  "name": "Persian purpose self-knowledge",
+  "description": "«برای چی ساخته شدی» is answered with identity and limits.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "برای چی ساخته شدی؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "darya_self"
+    },
+    {
+      "text": "تو دقیقا چه کاری ازت برمیاد؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "smalltalk_capability"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns describe her purpose and limits.",
+    "behavior": "Identity and purpose questions reach the self-description pools."
+  }
+}

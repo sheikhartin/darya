@@ -1,0 +1,23 @@
+{
+  "name": "English reference resolution",
+  "description": "A pronoun-only follow-up (\"it happened again\") stays on the previous subject instead of going generic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "my job has been really stressful",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "work"
+    },
+    {
+      "text": "it happened again today",
+      "dialogueAct": "statement",
+      "intent": "open_statement",
+      "topic": "work"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The follow-up continues the work thread.",
+    "behavior": "Reference resolution keeps the recent subject."
+  }
+}

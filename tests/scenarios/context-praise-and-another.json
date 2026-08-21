@@ -1,0 +1,22 @@
+{
+  "name": "English praise plus another joke",
+  "description": "A compliment followed by \"tell me another\" must still deliver a joke, not a feedback line.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "tell me a joke",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "nice one! tell me another",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The second turn delivers another joke.",
+    "behavior": "The explicit continuation overrides the social compliment rule."
+  }
+}

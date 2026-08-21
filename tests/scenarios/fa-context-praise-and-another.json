@@ -1,0 +1,22 @@
+{
+  "name": "Persian praise plus another joke",
+  "description": "«آفرین به هوشت! یکی دیگه بگو» بعد از جوک باید جوک بعدی بدهد، نه پاسخ بازخورد.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "یه جوک بگو",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "آفرین به هوشت! شوکه شدم! یکی دیگه بگو",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The second turn delivers another joke.",
+    "behavior": "The explicit continuation overrides the compliment and the false shock-as-fear read."
+  }
+}

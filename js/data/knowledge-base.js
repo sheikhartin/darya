@@ -274,14 +274,23 @@
       }
     }
     const requested = parseListCount(lower, langCode);
+    const rawText = trimListToCount(
+      isFa ? best.fact.fa : best.fact.en,
+      requested,
+      langCode
+    );
+    // Facts that mention the shipped version use a {version} placeholder
+    // so the offline shelf and scripts/bump-version.mjs never drift. The
+    // constant is read at call time because utils-constants.js loads
+    // after this file in the classic-script dependency order.
+    const version =
+      (global.DaryaUtilsConstants &&
+        global.DaryaUtilsConstants.DARYA_VERSION) ||
+      '';
     return {
       topic: best.fact.id,
       confidence: Math.min(1, best.score / 40),
-      text: trimListToCount(
-        isFa ? best.fact.fa : best.fact.en,
-        requested,
-        langCode
-      )
+      text: version ? rawText.replace(/\{version\}/gu, version) : rawText
     };
   }
 

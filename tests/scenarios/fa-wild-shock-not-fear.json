@@ -1,0 +1,22 @@
+{
+  "name": "Persian shock read as surprise, not fear",
+  "description": "«شوکه شدم» در بافت مثبت به عنوان ترس خوانده نمی‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "وای شوکه شدم که اینو بلدی!",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "واقعا تعجب کردم که اینقدر دقیق جواب دادی",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The reply stays light, with no fear prefix.",
+    "behavior": "The ambiguous شوکه word is not treated as terror."
+  },
+  "avoid": "(?:ترس|وحشت|می‌ترس|نگران|اضطراب)"
+}

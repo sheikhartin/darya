@@ -1,0 +1,26 @@
+{
+  "name": "Persian name and age recall",
+  "description": "اسم و سن گفته‌شده ذخیره و در همان نشست درست به خاطر آورده می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "اسمم بارانه و ۲۴ سالمه",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "اسم من چیه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "من چند سالمه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both recalls return the stored values.",
+    "behavior": "Profile memory answers from the disclosed values."
+  }
+}

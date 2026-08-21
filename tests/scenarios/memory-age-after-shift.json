@@ -1,0 +1,27 @@
+{
+  "name": "English age recall after a topic shift",
+  "description": "Age stays recalled even after the conversation moves to another subject.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "i am 31 years old",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "recommend me a good movie",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "knowledge"
+    },
+    {
+      "text": "how old am i again?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The age is still recalled after the shift.",
+    "behavior": "Profile memory survives unrelated topic turns."
+  }
+}

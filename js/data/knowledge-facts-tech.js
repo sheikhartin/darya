@@ -102,6 +102,106 @@
       en: 'A popular path is to start with Python or JavaScript: both are approachable and have huge libraries and communities. The key principle is building: instead of watching endless courses, pair every lesson with a small project. Coding is like driving: you learn it by practice, not by reading the manual.'
     },
     {
+      id: 'javascript_language',
+      keywords: [
+        'جاوااسکریپت چیه',
+        'جاوااسکریپت چیست',
+        'جاوا اسکریپت چیه',
+        'جاوااسکریپت چی کار میکنه',
+        'جاوااسکریپت چه کاری میکنه',
+        'جاوااسکریپت به چه دردی میخوره',
+        'جاوااسکریپت یعنی چی',
+        'what is javascript',
+        'what does javascript do',
+        'what can javascript do',
+        'what is javascript used for',
+        'javascript چیه'
+      ],
+      weak: ['جاوااسکریپت', 'جاوا اسکریپت', 'javascript', 'زبان جاوااسکریپت'],
+      weakSafe: true,
+      hints: [
+        'چیه',
+        'چیست',
+        'چه کاری',
+        'چه کارهایی',
+        'یعنی',
+        'what',
+        'do',
+        'used for',
+        'وب',
+        'web'
+      ],
+      fa: 'جاوااسکریپت زبان برنامه‌نویسی وب است که مستقیماً در مرورگر اجرا می‌شود و صفحه‌ها را زنده می‌کند: منوهای بازشونده، اعتبارسنجی فرم، انیمیشن و ارتباط با سرور. با Node.js همان زبان سمت سرور هم کار می‌کند، و با فریم‌ورک‌هایی مثل React یا Vue می‌توانی اپ‌های کامل و موبایل بسازی. به زبان ساده: اگر می‌خواهی چیزی روی صفحه‌ی وب تعاملی باشد، معمولاً پای جاوااسکریپت در میان است.',
+      en: 'JavaScript is the language of the web that runs directly in the browser and brings pages to life: dropdown menus, form validation, animation, and talking to a server. With Node.js the same language runs on the server, and with frameworks like React or Vue you can build whole web and mobile apps. Simply put: when something on a page is interactive, JavaScript is usually involved.'
+    },
+    {
+      id: 'python_language',
+      keywords: [
+        'پایتون چیه',
+        'پایتون چیست',
+        'زبان پایتون چیه',
+        'پایتون چی کار میکنه',
+        'پایتون چی کار می‌کنه',
+        'پایتون به چه دردی میخوره',
+        'پایتون به چه دردی می‌خوره',
+        'پایتون به چه دردی می خوره',
+        'پایتون یعنی چی',
+        'what is python',
+        'what does python do',
+        'what is python used for',
+        'python چیه'
+      ],
+      weak: ['پایتون', 'زبان پایتون', 'python'],
+      weakSafe: true,
+      hints: [
+        'چیه',
+        'چیست',
+        'چه کاری',
+        'یعنی',
+        'what',
+        'do',
+        'used for',
+        'زبان'
+      ],
+      fa: 'پایتون یک زبان برنامه‌نویسی عمومی و خواناست که در هوش مصنوعی و علم داده، خودکارسازی، ساخت وب و ابزارهای روزمره خیلی محبوب است. نحو ساده‌اش شروع را آسان می‌کند، ولی قدرت واقعی‌اش کتابخانه‌هایش است: Pandas و NumPy برای داده، TensorFlow و PyTorch برای یادگیری ماشین، و Django یا FastAPI برای وب. اگر به داده یا هوش مصنوعی علاقه داری، پایتون انتخاب امنی است.',
+      en: 'Python is a general-purpose, readable programming language that is very popular for AI and data science, automation, web backends, and everyday tools. Its simple syntax makes starting easy, but its real power is its libraries: Pandas and NumPy for data, TensorFlow and PyTorch for machine learning, and Django or FastAPI for the web. If you care about data or AI, Python is a safe pick.'
+    },
+    {
+      id: 'best_programming_language',
+      keywords: [
+        'بهترین زبان برنامه نویسی',
+        'بهترین زبان برنامه‌نویسی',
+        'بهترین زبان کدنویسی',
+        'بهترین زبان برنامه نویسی دنیا',
+        'بهترین زبان برنامه‌نویسی دنیا',
+        'بهترین زبان برنامه نویسی 2026',
+        'what is the best programming language',
+        'best programming language',
+        'which programming language is best',
+        'best programming language 2026',
+        'what language should i learn first'
+      ],
+      weak: [
+        'زبان برنامه نویسی',
+        'زبان برنامه‌نویسی',
+        'programming language',
+        'بهترین زبان'
+      ],
+      weakSafe: true,
+      hints: [
+        'بهترین',
+        'best',
+        'چیه',
+        'چیست',
+        'دنیا',
+        '2026',
+        'language',
+        'یاد'
+      ],
+      fa: 'بهترین زبان برنامه‌نویسی به هدف تو بستگی دارد، نه به یک رتبه‌بندی ثابت. برای وب تعاملی جاوااسکریپت، برای هوش مصنوعی و داده پایتون، برای سیستم‌های پرسرعت یا زیرساخت Go یا Rust، برای اپ موبایل کاتلین یا سوییفت، و برای شروع سریع بازار کار، پایتون یا جاوااسکریپت. به‌جای پرسیدن «کدام بهتر است»، بپرس «می‌خواهم چه چیزی بسازم»؛ بعد زبان همان ابزاری می‌شود که به هدف می‌رسد.',
+      en: 'The best programming language depends on your goal, not on one fixed ranking. For interactive web work, JavaScript; for AI and data, Python; for high-performance systems or infrastructure, Go or Rust; for mobile apps, Kotlin or Swift; and for the fastest entry into the job market, Python or JavaScript. Instead of asking which is best, ask what you want to build, and the language becomes the tool that gets you there.'
+    },
+    {
       id: 'backend_frontend',
       keywords: [
         'فرق بک اند و فرانت اند',

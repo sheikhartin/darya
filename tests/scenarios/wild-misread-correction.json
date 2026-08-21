@@ -1,0 +1,23 @@
+{
+  "name": "English misread correction",
+  "description": "A correction that Darya misread the ask is acknowledged without re-triggering the wrong topic.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "what do you think about python?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "you misunderstood me",
+      "dialogueAct": "correction",
+      "intent": "open_statement",
+      "topic": "misread_correction"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The correction is acknowledged.",
+    "behavior": "Correction turns route to the misread-correction pool."
+  }
+}

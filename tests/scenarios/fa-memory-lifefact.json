@@ -1,0 +1,21 @@
+{
+  "name": "Persian life-fact recall",
+  "description": "«خواهرم دکتره» بعدا با «خواهرم چیکار می‌کنه» یادآوری می‌شود.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "خواهرم دکتره",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "خواهرم چیکار می‌کنه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The recall names the stored profession.",
+    "behavior": "Life-fact memory answers from the stored subject."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "English purpose self-knowledge",
+  "description": "Why Darya was made is answered with her identity and limits, never an evasive line.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "why were you made?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "darya_self"
+    },
+    {
+      "text": "what are you for?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "smalltalk_identity"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns describe her purpose and limits.",
+    "behavior": "Identity and purpose questions reach the self-description pools."
+  }
+}

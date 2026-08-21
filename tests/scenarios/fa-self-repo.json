@@ -1,0 +1,23 @@
+{
+  "name": "Persian repository self-knowledge",
+  "description": "«مخزن کدت کجاست» and «کدت رو کجا ببینم» get the real repository links instead of a Wikipedia pointer.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "مخزن کدت کجاست؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "کدت رو کجا ببینم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns answer with the official repository URL.",
+    "behavior": "The project self-knowledge fact wins over the generic fallback."
+  }
+}

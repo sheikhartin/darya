@@ -1,0 +1,23 @@
+{
+  "name": "Persian download self-knowledge",
+  "description": "«از کجا دانلودت کنم» and «فایل نصبی اندروید» get the official download routes.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "از کجا میتونم دانلودت کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "فایل نصبی اندرویدت رو از کجا بگیرم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns name a real download route.",
+    "behavior": "Download questions never fall to an unrelated reflective line."
+  }
+}

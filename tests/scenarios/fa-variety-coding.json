@@ -1,0 +1,23 @@
+{
+  "name": "Persian coding-advice variety",
+  "description": "«چطور برنامه‌نویسی شروع کنم» و «بهترین زبان چیه» دو پاسخ متفاوت و هدفمند می‌گیرند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "چطور برنامه‌نویسی رو شروع کنم؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "بهترین زبان برنامه‌نویسی چیه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Two distinct, on-topic answers.",
+    "behavior": "The starter path and the best-language question do not share one boilerplate."
+  }
+}

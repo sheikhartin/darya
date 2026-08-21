@@ -1,0 +1,26 @@
+{
+  "name": "English name and age recall",
+  "description": "A disclosed name and age are stored and recalled correctly within the session.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "my name is Sara and i am 24",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "what is my name?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    },
+    {
+      "text": "how old am i?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both recalls return the stored values.",
+    "behavior": "Profile memory answers from the disclosed values."
+  }
+}

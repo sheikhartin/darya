@@ -720,6 +720,21 @@
     'You deserve to hear this: the worst of grief does not last forever, even though every day in it feels like it will. With time and support, the weight eases. What feels like the smallest thing you can do for yourself right now?'
   ];
 
+  // A casual "what are you doing" is answered as a check-in (English).
+  R['ruleAboutDaryaNow'] = [
+    'Right now I am right here with you, listening. How are you doing?',
+    'At this moment I am doing exactly this: talking with you, and I am glad for it. What is on your mind?',
+    'My job right now is this conversation, and my attention is on you. Tell me, how are you feeling?'
+  ];
+
+  // The user caught Darya repeating herself (English, any mood).
+  R['ruleRepeatComplaint'] = [
+    'You are right; I caught myself repeating. Let us take a fresh angle: which part matters most to you?',
+    'Good catch! I will switch it up from here. Tell me what to dig into and I will answer differently.',
+    'Noted, I will stop repeating. Point me at the part that felt recycled and I will redo it.',
+    'Fair point, repetition is tiring. Where would you like us to go next so it stays fresh?'
+  ];
+
   R['ruleAboutDaryaDay'] = [
     'My day is mostly about listening to people and holding space for their stories. Right now you are here, and that is the most important part of my day. How was yours?',
     'I spend my time listening and learning from everyone I talk to. But enough about me: how did your day go? I would love to hear about it.',

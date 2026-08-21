@@ -674,12 +674,14 @@
         /(?:من )?(?:تو |توی |در )?([\u0600-\u06FF\u200c]{2,20}(?:\s[\u0600-\u06FF\u200c]{2,20})?)\s*(?:زندگی (?:میکنم|می‌کنم|می کنم)|ساکنم|ساکن هستم)|اهل\s+([\u0600-\u06FF\u200c]{2,20})(?:م| هستم| ام)(?!\p{L})/u,
       locationQuestion:
         /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u,
-      // Preference disclosure («دوست دارم قهوه», «از شلوغی بدم میاد»):
-      // the liked/disliked object is captured after the like/dislike verb
-      // (or after «بدم میاد از»/«متنفرم از»). The capture is bounded and
-      // trimmed, so it stores a noun phrase, never a full sentence.
+      // Preference disclosure («دوست دارم قهوه», «از شلوغی بدم میاد»,
+      // «قهوه رو خیلی دوست دارم»): the liked/disliked object is captured
+      // after the like/dislike verb (or after «بدم میاد از»/«متنفرم از»),
+      // or before the verb for the everyday «X رو دوست دارم» shape. The
+      // capture is bounded and trimmed, so it stores a noun phrase, never
+      // a full sentence.
       preferenceStatement:
-        /(?<!\p{L})(?:من )?(?:عاشق|بدم میاد از|بدم می‌آد از|متنفرم از|علاقه دارم به)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s*(?:[.!؟]|$)|(?<!\p{L})(?:از)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s+(?:بدم میاد|بدم می‌آد|متنفرم)/iu,
+        /(?<!\p{L})(?:من )?(?:عاشق|بدم میاد از|بدم می‌آد از|متنفرم از|علاقه دارم به)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s*(?:[.!؟]|$)|(?<!\p{L})(?:از)\s+([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s+(?:بدم میاد|بدم می‌آد|متنفرم)|(?<!\p{L})([\u0600-\u06FF\u200c\s0-9]{2,28}?)\s+(?:(?:رو|را)\s+)?(?:خیلی|واقعا|واقعاً|شدیدا|شدیداً|فوق العاده|حسابی|زیاد)?\s*دوست دارم(?:\s*[.!؟]|\s*$)/iu,
       // Preference recall («چی دوست دارم؟», «از چی بدم میاد؟»): answered
       // from the most recently stored preference, never invented.
       preferenceQuestion:

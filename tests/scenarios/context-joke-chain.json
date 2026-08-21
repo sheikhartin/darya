@@ -1,0 +1,27 @@
+{
+  "name": "English sequential joke continuation",
+  "description": "A bare \"another\" after a joke keeps telling jokes, each different, without falling to a fallback.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "tell me a joke",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "another one",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    },
+    {
+      "text": "one more",
+      "dialogueAct": "statement",
+      "intent": "open_statement"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Three different jokes are delivered.",
+    "behavior": "Sequential follow-ups stay on the joke pool."
+  }
+}

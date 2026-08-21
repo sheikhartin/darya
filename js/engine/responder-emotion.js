@@ -202,8 +202,12 @@
         {
           name: 'fear',
           patterns:
+            // «شوکه» (shocked) and «shook» are deliberately absent: both
+            // usually mean surprise or being impressed in everyday speech
+            // («شوکه شدم، آفرین!»), not terror. Counting them here made a
+            // compliment plus a joke request read as a fear disclosure.
             // eslint-disable-next-line max-len
-            /\b(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|shook)\b|(?:لرزیدن|هراس|فوبیا|ترس\s+مرگ|شوکه|دلهره)/iu
+            /\b(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|petrified|dread)\b|(?:لرزیدن|هراس|فوبیا|ترس\s+مرگ|دلهره|وحشت\s+زده)/iu
         },
         {
           name: 'anxious',

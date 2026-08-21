@@ -1,0 +1,23 @@
+{
+  "name": "English coding-advice variety",
+  "description": "\"How to start programming\" and \"what is the best language\" must give different, purposeful answers.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "how do i start programming?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "what is the best programming language?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Two distinct, on-topic answers.",
+    "behavior": "The starter path and the best-language question do not share one boilerplate."
+  }
+}

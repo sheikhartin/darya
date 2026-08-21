@@ -102,7 +102,7 @@
       // sits above the broad identity and creator rules so "behind the
       // scenes" receives the codebase answer rather than an origin story.
       // eslint-disable-next-line max-len
-      /\b(?:where (?:is|can i find) (?:your|darya'?s) (?:repo|repository|source|source code)|where can i download darya|download darya|darya (?:repo|repository|source code|website|myket|codebase|architecture|behind the scenes|response pipeline|privacy architecture|test architecture)|how does darya (?:work offline|codebase work|understand messages|generate responses|store my chat)|how (?:is darya tested|are darya responses generated)|does darya (?:use machine learning|save conversations|send conversations|apk need internet)|contribute to darya)\b/i,
+      /\b(?:where (?:is|can i find|do i find|can i see|do i see) (?:your|darya'?s) (?:repo|repository|source|source code|code|codebase)|where is your code|where (?:can|do|should) i (?:download|get|install) (?:you|darya)|how (?:do|can) i download (?:you|darya)|download you|your apk|your installer|your android (?:app|version)|install you|where can i download darya|download darya|what version (?:are you|is darya|are you on)|your version|which version|which (?:release|build)|what (?:release|build)|darya (?:repo|repository|source code|website|myket|codebase|architecture|behind the scenes|response pipeline|privacy architecture|test architecture)|do you (?:have|keep) (?:a )?memory|do you remember|how (?:does|long) (?:do )?you (?:keep|store|remember)|how does darya (?:work offline|codebase work|understand messages|generate responses|store my chat)|how (?:is darya tested|are darya responses generated)|does darya (?:use machine learning|save conversations|send conversations|apk need internet)|contribute to darya)\b/i,
       R['ruleKnowledge']
     ),
 
@@ -1215,6 +1215,16 @@
     // deserve a humble acknowledgement even when worded harshly, so this
     // topic is also excluded from the frustration/harassment override in
     // the engine.
+    // The user notices Darya repeating herself, in any mood from annoyed
+    // to playful; acknowledge plainly and vary instead of dodging.
+    rule(
+      'repeat_complaint',
+      64,
+      // eslint-disable-next-line max-len
+      /\b(?:you(?:'re| are) (?:so |really |very )?(?:repeating (?:yourself|the same thing)|repetitive)|you keep repeating|you said that (?:already|before)|you already said that|same answer again|same response again|you keep saying the same|your answers? (?:are|is) repetitive|you are being repetitive|you repeated yourself|again with the same|not this again|you just said that)\b/i,
+      R['ruleRepeatComplaint']
+    ),
+
     rule(
       'meta_feedback',
       62,
@@ -1411,12 +1421,14 @@
       R['rulePetCare']
     ),
 
-    // Affection: direct expressions of love toward Darya.
+    // Affection: direct expressions of love toward Darya. Pet-name forms
+    // ("you are my honey", "you are mine") land here so a warm boundary
+    // is kept without misreading them as a work or family disclosure.
     rule(
       'affection',
       50,
       // eslint-disable-next-line max-len
-      /\b(?:i (?:love|really like) you|i'?m in love with you|i miss you|i (?:really |so )?like you,? (?:darya|darling|dear)|love you|you(?:'re| are) (?:so |really )?(?:important|special|dear|sweet) to me|you mean (?:a lot|so much) to me)\b/i,
+      /\b(?:i (?:love|really like) you|i'?m in love with you|i miss you|i (?:really |so )?like you,? (?:darya|darling|dear)|love you|you(?:'re| are) (?:so |really )?(?:important|special|dear|sweet) to me|you mean (?:a lot|so much) to me|you(?:'re| are) my (?:honey|sweetheart|darling|dear|everything|soulmate)|you(?:'re| are) mine|you belong to me|my (?:honey|sweetheart|darling))\b/i,
       R['ruleAffection']
     ),
 
@@ -1470,6 +1482,16 @@
       // eslint-disable-next-line max-len
       /\b(?:what did you (?:do|get up to) (?:today|this morning|this afternoon|this evening)|how was your day|how'?s your day|what have you been (?:doing|up to)|how did (?:your )?day (?:go|goes|went)|what was your day like)\b/i,
       R['ruleAboutDaryaDay']
+    ),
+
+    // A casual "what are you doing" is a check-in, not a request for a
+    // capability list; answer "right here with you" (English).
+    rule(
+      'about_darya_now',
+      62,
+      // eslint-disable-next-line max-len
+      /\b(?:what are you (?:doing|up to)|what'?re you (?:doing|up to)|whatcha doing|what r u doing|what are u doing)\b[?!.]*$/i,
+      R['ruleAboutDaryaNow']
     ),
 
     // Apology advice: "how do I apologize without making it about

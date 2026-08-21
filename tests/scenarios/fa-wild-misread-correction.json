@@ -1,0 +1,23 @@
+{
+  "name": "Persian misread correction",
+  "description": "وقتی کاربر می‌گوید اشتباه فهمیدی، دریا تصدیق می‌کند و همان موضوع را دوباره تکرار نمی‌کند.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "نظرت راجع به پایتون چیه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "من نگفتم مقایسه کن، اشتباه فهمیدی",
+      "dialogueAct": "correction",
+      "intent": "open_statement",
+      "topic": "misread_correction"
+    }
+  ],
+  "expected": {
+    "finalTurn": "The correction is acknowledged.",
+    "behavior": "Correction turns route to the misread-correction pool."
+  }
+}

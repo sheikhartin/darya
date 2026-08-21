@@ -1,0 +1,23 @@
+{
+  "name": "Persian JavaScript explanation",
+  "description": "«جاوااسکریپت چیه» پاسخ دانشی می‌گیرد، نه نصیحت شروع برنامه‌نویسی.",
+  "language": "fa",
+  "turns": [
+    {
+      "text": "جاوااسکریپت چیه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "جاوااسکریپت چه کارهایی می‌کنه؟",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Both turns explain the language factually.",
+    "behavior": "The JavaScript fact wins over the programming-start fact."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "English mixed-topic session",
+  "description": "A natural mixed session (greeting, stress, joke, repo, insult, apology) stays meaningful across every turn.",
+  "language": "en",
+  "turns": [
+    {
+      "text": "hey, i feel really stressed today",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "anxiety"
+    },
+    {
+      "text": "tell me a joke to lighten up",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "smalltalk_joke"
+    },
+    {
+      "text": "by the way, where is your code repo?",
+      "dialogueAct": "question",
+      "intent": "information_or_reflection",
+      "topic": "knowledge"
+    },
+    {
+      "text": "you are so dumb",
+      "dialogueAct": "statement",
+      "intent": "topic_statement"
+    },
+    {
+      "text": "sorry, i did not mean that",
+      "dialogueAct": "statement",
+      "intent": "topic_statement",
+      "topic": "apology"
+    }
+  ],
+  "expected": {
+    "finalTurn": "Every turn gets a meaningful, on-topic reply.",
+    "behavior": "The engine keeps context across topic jumps and recovers after hostility."
+  }
+}
