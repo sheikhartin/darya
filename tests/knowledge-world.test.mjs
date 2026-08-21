@@ -240,7 +240,7 @@ test('world facts: answers carry domain-specific substance', () => {
 
 test('world facts: engine answers finance and food questions, not evasively', () => {
   const EVASIVE =
-    /(?:I do not (?:know|have)|don'?t (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
+    /(?:I do(?: not|n'?t) (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
   const cases = [
     [FA, 'بیت‌کوین چیه', /بیت‌کوین/u],
     [FA, 'اوپک چیه', /اوپک|نفت/u],

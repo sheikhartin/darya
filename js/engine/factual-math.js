@@ -537,6 +537,18 @@
     if (compoundAnswer) {
       return compoundAnswer;
     }
+    // Extended shapes (factorial, gcd/lcm, average, remainder, parity,
+    // divisibility, percent relations, cube roots, absolute value,
+    // rounding) live in the factual-math-extras.js part file. They run
+    // after the full-expression path so a compound expression is never
+    // re-answered as a fragment.
+    const extras = global.DaryaFactualMathExtras;
+    const extendedAnswer = extras
+      ? extras.handleExtendedMath(engine, text)
+      : null;
+    if (extendedAnswer) {
+      return extendedAnswer;
+    }
     // Operands support integers and decimals. Persian text may use the
     // Persian decimal separator "٫" (U+066B) or the ASCII dot. The
     // negative lookbehind prevents matching a *substring* of a longer
@@ -663,9 +675,13 @@
           String(n)
             .replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)])
             .replace(/\./g, '٫');
-        const answer = isPersian
-          ? `${toPersian(a)} ${answerOp} ${toPersian(b)} مساوی است با ${toPersian(result)}.`
-          : `${a} ${answerOp} ${b} = ${result}.`;
+        // answerOp carries its own leading space for symbol operators,
+        // so the template collapses any double space it produces.
+        const answer = (
+          isPersian
+            ? `${toPersian(a)} ${answerOp} ${toPersian(b)} مساوی است با ${toPersian(result)}.`
+            : `${a} ${answerOp} ${b} = ${result}.`
+        ).replace(/ {2,}/gu, ' ');
         if (isBareMatch) {
           return answer;
         }
@@ -689,10 +705,14 @@
     // English equivalent ("square root of 144"); both are consumed so a
     // bare number, a Persian "از", or an English "of" all resolve.
     const sqrtMatch = text.match(
-      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:(?:از|of)\s*)?\(?\s*(-?\s*[۰-۹0-9.٫]+)\s*\)?/iu
+      /(?:جذر|ریشه دوم|square root|sqrt)\s*(?:(?:از|of)\s*)?\(?\s*((?:-|−|منفی|negative|minus)?\s*[۰-۹0-9.٫]+)\s*\)?/iu
     );
     if (sqrtMatch && !/[+*xX/^÷]/.test(text.slice(0, sqrtMatch.index))) {
-      const n = parseFaNumber(String(sqrtMatch[1]).replace(/\s+/g, ''));
+      const n = parseFaNumber(
+        String(sqrtMatch[1])
+          .replace(/منفی|negative|minus|−/giu, '-')
+          .replace(/\s+/g, '')
+      );
       // A negative radicand has no real square root; say so honestly
       // instead of falling to the unknown pool with NaN.
       if (n < 0) {

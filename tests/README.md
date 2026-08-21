@@ -44,6 +44,17 @@ in both languages asserting no bookish marker («می‌باشد», bare « اس
 fighters reachable by name in both languages, record answers that
 always carry the settled/stale honesty note, and tell-me-more depth
 that serves the deep dive once and then admits the shelf's end.
+`math-intelligence.test.mjs` guards the extended calculator and the
+math-concept shelf: factorials, GCD/LCM, averages, remainders, parity,
+divisibility, percent relations, cube roots, and rounding compute
+exactly in both digit systems, undefined cases refuse honestly, and
+concept questions (pi, Fibonacci, Pythagoras, infinity) answer from
+the shelf.
+`unusual-writing.test.mjs` pins the messy-register invariants: dashes
+as punctuation, tatweel stretching, stacked punctuation, decorations,
+ALL CAPS, glued separators, and spelling variants all route correctly,
+while subtraction, negative numbers, and hyphenated safety-critical
+English keep their dashes.
 `persona-challenge.test.mjs` is the mixed-persona pressure corpus (57
 tests): identity jokers («من مسی‌ام»), dreamers ("I'm the next
 Messi"), pun-lovers («مسی بهتره یا سیم مسی؟»), rapid-fire fans,

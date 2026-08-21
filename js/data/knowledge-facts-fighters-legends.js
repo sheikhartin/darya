@@ -485,6 +485,36 @@
       }
     },
     {
+      id: 'kickboxing_vs_muaythai',
+      keywords: [
+        'فرق کیک بوکسینگ و موی تای',
+        'فرق کیک‌بوکسینگ و موی‌تای',
+        'کیک بوکسینگ با موی تای چه فرقی داره',
+        'کیک‌بوکسینگ با موی‌تای چه فرقی داره',
+        'موی تای چیه',
+        'موی‌تای چیه',
+        'کیک بوکسینگ چیه',
+        'کیک‌بوکسینگ چیه',
+        'kickboxing vs muay thai',
+        'muay thai vs kickboxing',
+        'difference between kickboxing and muay thai',
+        'what is muay thai',
+        'what is kickboxing'
+      ],
+      weak: [
+        'کیک بوکسینگ',
+        'کیک‌بوکسینگ',
+        'موی تای',
+        'موی‌تای',
+        'kickboxing',
+        'muay thai'
+      ],
+      weakSafe: true,
+      hints: ['رزمی', 'مبارزه', 'فرق', 'martial', 'fight', 'difference'],
+      fa: 'موی‌تای رو «هنر هشت عضو» صدا می‌زنن، چون علاوه بر مشت و لگد، آرنج و زانو هم آزاده و کلینچ (درگیری ایستاده) بخش بزرگی از بازیه. کیک‌بوکسینگ (مثل قوانین K-1) معمولاً آرنج و کلینچ طولانی رو حذف می‌کنه و روی ترکیب‌های سریع مشت و لگد سواره؛ برای همین ریتمش تندتره و موی‌تای سنگین‌تر و فرسایشی‌تر. امتیازدهی هم فرق داره: موی‌تای ضربه‌های محکم و کنترل کلینچ رو بیشتر می‌پسنده، کیک‌بوکسینگ حجم و تنوع ترکیب‌ها رو. هر دو از پایه‌های اصلی ضربه‌زنی در ام‌ام‌ای هستن.',
+      en: 'Muay Thai is called the art of eight limbs: besides punches and kicks, elbows and knees are legal and the clinch is a huge part of the game. Kickboxing (K-1-style rules) usually removes elbows and extended clinching and runs on fast punch-kick combinations, so its rhythm is quicker while Muay Thai is heavier and more grinding. Scoring differs too: Muay Thai rewards hard single strikes and clinch control, kickboxing rewards volume and variety. Both are core striking bases for MMA.'
+    },
+    {
       id: 'boxing_goat',
       keywords: [
         'بهترین بوکسور تاریخ',

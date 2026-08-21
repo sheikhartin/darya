@@ -19,7 +19,7 @@ import { freshEngine, FA, EN } from './helpers.mjs';
 
 /** Evasive lines that must never answer a topic the engine knows. */
 const EVASIVE =
-  /(?:I do not (?:know|have)|don'?t (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
+  /(?:I do(?: not|n'?t) (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
 
 /**
  * Each entry: name, language code, and turns. A turn is a small object

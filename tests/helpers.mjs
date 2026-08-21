@@ -35,6 +35,7 @@ const SCRIPT_ORDER = [
   // globals; the assembly file (knowledge-base.js) must load last.
   'js/data/knowledge-reflections.js',
   'js/data/knowledge-facts-science.js',
+  'js/data/knowledge-facts-math.js',
   'js/data/knowledge-facts-tech.js',
   'js/data/knowledge-facts-culture.js',
   'js/data/knowledge-facts-life.js',
@@ -89,6 +90,7 @@ const SCRIPT_ORDER = [
   'js/engine/response-scorer.js',
   'js/engine/time-utils.js',
   'js/engine/recap.js',
+  'js/engine/factual-math-extras.js',
   'js/engine/factual-math.js',
   'js/engine/factual-datetime.js',
   'js/engine/factual-fun-facts.js',

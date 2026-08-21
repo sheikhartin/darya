@@ -51,6 +51,30 @@ pipeline details live in the [README](README.md) and the upgrade spec
   («مسی یا سقراط») get a cheerful apples-and-oranges reply.
 - Football records for Messi and Ronaldo with the same honesty notes,
   and a deep-dive paragraph for Messi's career story.
+- Extended math layer (`factual-math-extras.js`): factorials, GCD/LCM
+  («ب.م.م», «ک.م.م», dotted and long forms), averages, remainders
+  ("17 mod 5"), parity and divisibility checks, percent relations and
+  percent change, cube roots, absolute values, and rounding, in both
+  languages and digit systems, with honest refusals for undefined
+  cases (remainder by zero, negative factorials) and a precision-limit
+  admission for oversized factorials. Word-form negatives («جذر منفی
+  ۹») now work in the square-root path too.
+- Math-concept shelf (`knowledge-facts-math.js`): pi, primes as
+  building blocks, factorial, GCD/LCM, mean/median/mode, percentages,
+  Fibonacci and the golden ratio, the Pythagorean theorem, infinity,
+  and equations/algebra, each a short conversational explanation that
+  invites the calculator for real numbers.
+- Unusual-writing normalization: dashes used as punctuation («سلام -
+  چهطوری؟», «سلام-خوبی», "hi - how are you") become separators for
+  matching while dashes between Latin alphanumerics ("self-harm",
+  "5-3") are preserved; tatweel stretching («سلامــــ») is flattened;
+  and the how-are-you rule learned the «چهطوری», «چه طوری», and
+  «چجوری» spelling variants.
+- Two more permanent suites: `math-intelligence.test.mjs` (73 tests:
+  computation, honesty, precedence safety, and concepts) and
+  `unusual-writing.test.mjs` (45 tests: dashes, tatweel, stacked
+  punctuation, decorations, case chaos, spacing debris, spelling
+  variants, and dash-preservation guards).
 - Three permanent suites: `conversational-voice.test.mjs` (64 tests:
   register-transform units plus 50 persona scenario sweeps asserting
   no bookish marker ever reaches the user), `fighters-knowledge.test.mjs`
