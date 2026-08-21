@@ -12,6 +12,35 @@
     PERSIAN_DIGITS
   } = global.DaryaUtils;
 
+  // Persian preference captures that are verb conjugations, never liked
+  // things: «عاشق بشی», «عاشق شدم», «عاشقتم». See the guard in
+  // _handleUserProfileTurn. Languages may add their own regex guard via
+  // userProfilePatterns.preferenceVerbGuard.
+  const PREFERENCE_VERB_GUARD = new Set([
+    'بشی',
+    'بشم',
+    'بشه',
+    'بشن',
+    'بشید',
+    'بشیم',
+    'شدم',
+    'شدی',
+    'شده',
+    'شدن',
+    'میشم',
+    'میشی',
+    'میشه',
+    'میشن',
+    'میشیم',
+    'میشید',
+    'نشم',
+    'نشی',
+    'نشه',
+    'نشن',
+    'تم',
+    'عاشقتم'
+  ]);
+
   Object.assign(global.DaryaResponseEngine.prototype, {
     // ======================================================================
     // Session user profile (name and age)
@@ -91,6 +120,10 @@
             nameStmt[3] ||
             nameStmt[4] ||
             nameStmt[5] ||
+            // Group 6 is the FA correction branch («اسمم علی نیست،
+            // کوروشه»): the captured word is the CORRECTED name, so the
+            // old (negated) name is never stored.
+            nameStmt[6] ||
             ''
         ).trim();
         // The copular capture ("I'm X" / "من X هستم" / "من Xم") is the
@@ -108,7 +141,11 @@
         const attachedCopula =
           patterns.nameAttachedGroup != null &&
           Boolean(nameStmt[patterns.nameAttachedGroup]);
-        const copularCapture = Boolean(nameStmt[2]) || attachedCopula;
+        // Group 3 is the copular branch in BOTH packs (FA «من X
+        // هستم», EN "I'm X"): the FA correction branch («اسمم X نیست
+        // Y») sits in group 2 and must never be treated as the copular
+        // form.
+        const copularCapture = Boolean(nameStmt[3]) || attachedCopula;
         // The matched branch's group index (first non-empty capture).
         // English's call-me form is an explicit form that still requires
         // a capital initial (nameCapitalGroups), because the whole
@@ -122,7 +159,11 @@
               ? 2
               : nameStmt[3] !== undefined
                 ? 3
-                : 4;
+                : nameStmt[4] !== undefined
+                  ? 4
+                  : nameStmt[5] !== undefined
+                    ? 5
+                    : 6;
         const capitalRequired =
           copularCapture ||
           Boolean(
@@ -341,6 +382,20 @@
           pref = pref
             .replace(/(?:\s+)?(?:هستم|هست|است|ام|ای|یم|ید|ند)$/u, '')
             .trim();
+          // Verb-shape guard: «میتونی عاشق بشی؟» used to store «بشی»
+          // as a preference (the عاشق branch captures whatever follows,
+          // including the subjunctive verb). «عاشقتم» (I love you)
+          // likewise captured «تم». These are the conjugation of شدن/عاشق
+          // بودن, never a liked thing, so they are rejected and the turn
+          // falls through to the normal pipeline (the identity rule then
+          // answers «میتونی عاشق بشی؟» honestly).
+          if (
+            PREFERENCE_VERB_GUARD.has(pref) ||
+            (patterns.preferenceVerbGuard &&
+              patterns.preferenceVerbGuard.test(pref))
+          ) {
+            pref = '';
+          }
           if (pref.length >= MIN_PROFILE_NAME_LENGTH) {
             this._userProfile.preferences.push(pref);
             if (hasLivedTopic) {

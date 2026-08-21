@@ -111,6 +111,19 @@
     // into an encyclopedia answer.
     'relationship',
     'work',
+    // Capability and identity questions are about Darya herself: "what
+    // can you do?" and «چه چیزهایی بلدی؟» must keep the capability pool,
+    // never an encyclopedia fact. Without the block, a clarification
+    // like "I mean, what are you able to do?" contains "mean", and the
+    // MEAN/MERN stack fact hijacked the answer.
+    'smalltalk_capability',
+    'darya_self',
+    'ask_name',
+    // Pet-name requests ("suggest a name for my cat", «یه اسم برای
+    // گربه‌م پیشنهاد بده») must keep the creative names pool; without
+    // the block the pet-care knowledge fact hijacked them into advice
+    // about hiding and vet visits.
+    'pet_name',
     // Dating-app fatigue and profile questions are lived experiences with
     // their own empathetic pool ("online dating makes me feel worse about
     // myself" is a disclosure, not a request for the dating-culture
@@ -800,7 +813,9 @@
         !isRepeatedGreeting &&
         !isSpamNoise &&
         this.lang.liveDataPattern &&
-        this.lang.liveDataPattern.test(matchingText) &&
+        this.lang.liveDataPattern.test(
+          this._clarifiedTextForTurn || matchingText
+        ) &&
         this.lang.liveDataResponses
       ) {
         reply = this._pickVaried(this.lang.liveDataResponses, {
@@ -916,9 +931,12 @@
               )))) &&
         DaryaKnowledge &&
         DaryaKnowledge.lookup &&
-        (this._isKnowledgeRequest(matchingText) ||
+        (this._isKnowledgeRequest(this._clarifiedTextForTurn || matchingText) ||
           Boolean(
-            DaryaKnowledge.detectMediaRequest?.(matchingText, this.lang.code)
+            DaryaKnowledge.detectMediaRequest?.(
+              this._clarifiedTextForTurn || matchingText,
+              this.lang.code
+            )
           ));
       if (_knowledgeOverrideEligible) {
         const mediaRequest = DaryaKnowledge.detectMediaRequest?.(
@@ -945,7 +963,10 @@
           this._adoptKnowledgeAnswer(`media_${activeMediaRequest.category}`);
           _overrideFired = true;
         } else {
-          const factual = DaryaKnowledge.lookup(matchingText, this.lang.code);
+          const factual = DaryaKnowledge.lookup(
+            this._clarifiedTextForTurn || matchingText,
+            this.lang.code
+          );
           if (factual && factual.confidence >= KNOWLEDGE_OVERRIDE_CONFIDENCE) {
             const randomized = DaryaKnowledge.randomizeRecommendation
               ? DaryaKnowledge.randomizeRecommendation(

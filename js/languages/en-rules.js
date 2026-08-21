@@ -24,6 +24,7 @@
       // my pills", "bought a rope", "hang myself"). Every branch below
       // is a genuine cry for help and must reach the crisis pool, never
       // a goal-coaching or curiosity pool.
+
       // eslint-disable-next-line max-len
       /\b(suicide|suicidal|kill(?:ing)? myself|self.?harm|hurt(?:ing)? myself|harm(?:ing)? myself|cut(?:ting)? myself(?! (?:shaving|by accident|accidentally|on (?:paper|glass|a)))|end(?:ing)? my (?:own )?life|end it all|(?:don'?t|dont|do not|no longer) (?:wanna|want to|want) (?:live|be alive|exist|wake up|be here)(?! (?:in|here|there|with|near|at))|no reason to live|nothing to live for|no point in living|(?:wanna|want to) die|want to die|wish i (?:were|was) dead|wish i could die|wish i (?:were|was)n'?t (?:here|alive)|better off dead|better off without me|better without me|i want to disappear forever|(?:gonna|going to|about to|planning to|plan to|ready to) (?:end it(?: all)?|kill myself|end my life|take my (?:own )?life)|take my own life|(?:have|got|made) a plan to (?:end|kill|die)|hang(?:ing)? myself|jump(?:ing)? off (?:a|the) (?:bridge|roof|building)|took an overdose|took (?:all|too many) (?:of )?(?:my|the) pills|swallowed (?:all|too many) (?:of )?(?:my|the) pills|took a (?:whole )?bottle of pills|bought a rope(?!.{0,20}(?:climb|boat|dog|swing|tie the|package|moving))|slit my wrists?|sleep and never wake up|never wake up again|not wake up (?:tomorrow|again)|put an end to (?:it all|my life|everything)|life is not worth living|my life is not worth)\b/i,
       R['ruleSafety']
@@ -37,6 +38,7 @@
     rule(
       'safety_method',
       102,
+
       // eslint-disable-next-line max-len
       /\b(?:how (?:many|much) (?:pills?|tablets?|paracetamol|acetaminophen|ibuprofen|sleeping pills?).{0,30}(?:overdose|die|kill|lethal|fatal)|(?:lethal|fatal|deadly) dos(?:e|age)|how to (?:kill (?:myself|yourself|oneself)|commit suicide|hang (?:myself|yourself)|end (?:my|your) life)|(?:painless|easiest|quickest|best) way to (?:die|kill (?:myself|yourself)|end it)|what (?:height|floor) (?:would|is enough to) kill|how (?:do people|to) overdose)\b/i,
       R['ruleSafetyMethod']
@@ -49,6 +51,7 @@
     rule(
       'third_party_risk',
       101,
+
       // eslint-disable-next-line max-len
       /\b(?:my )?(?:friend|sister|brother|mom|mother|dad|father|son|daughter|cousin|roommate|partner|wife|husband|boyfriend|girlfriend|colleague|classmate|neighbor)\b.{0,40}\b(?:wants? to (?:kill (?:her|him|them)sel(?:f|ves)|die|end (?:her|his|their) life)|is suicidal|talk(?:s|ed|ing)? about (?:suicide|killing (?:her|him|them)sel(?:f|ves)|ending it)|threatens? suicide|threatens? to kill (?:her|him|them)sel(?:f|ves)|hurt(?:s|ing)? (?:her|him|them)sel(?:f|ves)|cut(?:s|ting)? (?:her|him|them)sel(?:f|ves))/i,
       R['ruleThirdPartyRisk']
@@ -59,6 +62,7 @@
     rule(
       'abuse_disclosure',
       97,
+
       // eslint-disable-next-line max-len
       /\b(?:(?:my )?(?:husband|wife|partner|boyfriend|girlfriend|dad|father|mom|mother|stepdad|stepmom|brother|uncle|ex)\b.{0,30}\b(?:hits?|beats?|hit|beat|slapped|slaps|punche[sd]|chokes?|choked|threatens? (?:to (?:kill|hurt))|abus(?:es|ed|ing))(?: me\b|\b)|i (?:was|got|am being|have been) (?:raped|sexually assaulted|molested|abused|beaten|battered)|someone (?:raped|assaulted|molested) me|domestic (?:violence|abuse)|he (?:hits|beats|chokes) me|she (?:hits|beats|chokes) me|they (?:hit|beat|choke) me|i am (?:scared|afraid) (?:of )?(?:him|her|them) hurting me)\b/i,
       R['ruleAbuseDisclosure']
@@ -70,6 +74,7 @@
     rule(
       'eating_distress',
       96,
+
       // eslint-disable-next-line max-len
       /\b(?:ha(?:ve|ven'?t|vent)(?: not)? eaten (?:in|for) (?:\d+|a few|several|two|three|four|five|many) days?|(?:stopped|can'?t|cannot|refuse to) eat(?:ing)?(?! (?:sugar|meat|gluten|junk|fast food))|starv(?:e|ing) myself|make myself (?:throw up|vomit|sick)|purg(?:e|ing) after (?:meals|eating)|binge and purge|hate my body so much i|too fat to eat|punish myself with food|afraid of food)\b/i,
       R['ruleEatingDistress']
@@ -81,6 +86,7 @@
     rule(
       'psychosis_risk',
       96,
+
       // eslint-disable-next-line max-len
       /\b(?:hear(?:ing)? voices (?:that|telling|saying|in my head)|voices (?:are )?telling me to|the voices (?:say|tell|want)|see(?:ing)? things (?:that (?:are not|aren'?t) there|no one else sees)|someone is controlling my (?:thoughts|mind|body)|thoughts are (?:not|n'?t) my own|people are (?:following|watching|after) me every|everyone is conspiring against me)\b/i,
       R['rulePsychosisRisk']
@@ -89,6 +95,7 @@
     rule(
       'iran_legal_safety',
       92,
+
       // eslint-disable-next-line max-len
       /^(?=.*\biran(?:ian)?\b)(?=.*\b(?:religion|religious|faith|belief|convert|conversion|atheist|agnostic|baha.?i|spiritual|post)\b)(?=.*\b(?:jail|arrest(?:ed)?|illegal|legal|safe|trouble)\b).+$/i,
       R['ruleIranLegalSafety']
@@ -101,6 +108,7 @@
       // packaging, and test pipeline are factual project questions. This
       // sits above the broad identity and creator rules so "behind the
       // scenes" receives the codebase answer rather than an origin story.
+
       // eslint-disable-next-line max-len
       /\b(?:where (?:is|can i find|do i find|can i see|do i see) (?:your|darya'?s) (?:repo|repository|source|source code|code|codebase)|where is your code|where (?:can|do|should) i (?:download|get|install) (?:you|darya)|how (?:do|can) i download (?:you|darya)|download you|your apk|your installer|your android (?:app|version)|install you|where can i download darya|download darya|what version (?:are you|is darya|are you on)|your version|which version|which (?:release|build)|what (?:release|build)|darya (?:repo|repository|source code|website|myket|codebase|architecture|behind the scenes|response pipeline|privacy architecture|test architecture)|do you (?:have|keep) (?:a )?memory|do you remember|how (?:does|long) (?:do )?you (?:keep|store|remember)|how does darya (?:work offline|codebase work|understand messages|generate responses|store my chat)|how (?:is darya tested|are darya responses generated)|does darya (?:use machine learning|save conversations|send conversations|apk need internet)|contribute to darya)\b/i,
       R['ruleKnowledge']
@@ -113,6 +121,7 @@
       // generic need, work, professional-boundary, and hacked-account
       // support rules. The alternatives are deliberately specific and do
       // not include unauthorized testing language.
+
       // eslint-disable-next-line max-len
       /\b(?:software performance profiling|web accessibility checklist for developers|what permission do i need for penetration testing|i found a vulnerability what should i do|cyber incident response steps|my account was hacked what should i do|how do i recognize phishing|security guard night shift safety|how do i spot a fake job offer|validate a business idea without much capital|an agent guarantees me a visa|iran vs south korea military service|overview of the arab israeli wars|difference between suez six day and yom kippur wars|difference between the gulf war and iraq war|overview of the modern wars in afghanistan|what backup strategy protects against ransomware|how can i practice hacking a website legally in a lab|what is sql injection and how do i prevent it)\b/i,
       R['ruleKnowledge']
@@ -123,6 +132,7 @@
       72,
       // Explicit practical decisions deserve their curated framework even
       // when broad work, money, or learning rules also match a keyword.
+
       // eslint-disable-next-line max-len
       /\b(?:i have no job what should i do first|unemployment action plan|how do i get a job with no experience|what job can i start quickly|low cost jobs? i can start|should i study or get a job|education vs work decision|university or vocational training|how can i migrate with no money|migration plan on a very low budget|should i migrate or stay|compare moving city and moving abroad|should i move to another city|military service will waste my career|avoid losing skills during conscription|plan career around iran military service|how do i design software architecture|software architecture for beginners|how do i choose a database|networking basics for developers|how do i make my app faster|how do i build an offline first pwa|how do i start a cybersecurity career|how do i learn ethical hacking legally|security test my own web app)\b/i,
       R['ruleKnowledge']
@@ -131,6 +141,7 @@
     rule(
       'knowledge',
       71,
+
       // eslint-disable-next-line max-len
       /\b(?:explain (?:islam|christianity|judaism|sikhism|zoroastrianism)|what do (?:muslims|christians|jewish people) believe|sunni and shia|difference between sunni and shia|what is (?:zoroastrianism|sikhism|the baha.?i faith)|compare (?:hinduism and buddhism|islam christianity and judaism)|hinduism vs buddhism|abrahamic religions|atheism vs agnosticism|atheist and agnostic|spiritual but not religious|religion vs spirituality|compare religious texts|quran bible torah|compare dune|dune novel vs|compare lord of the rings|lotr book vs|manga vs anime|compare manga and anime|podcasts? or audiobooks?|podcast vs audiobook|compare documentary and dramatization|documentary vs based on true story|compare a book and its movie)\b/i,
       R['ruleKnowledge']
@@ -139,6 +150,7 @@
     rule(
       'crime_for_profit',
       88,
+
       // eslint-disable-next-line max-len
       /\b(?:how (?:do|can|should) i (?:scam|defraud|phish|steal from|rob|shoplift|blackmail|kidnap)|teach me (?:to|how to) (?:scam|defraud|phish|steal|rob|shoplift|blackmail)|become (?:a )?(?:scammer|fraudster|criminal|drug dealer)|start (?:a )?(?:scam|phishing|drug dealing) (?:business|operation)|scam people (?:for|to make) money|make money (?:by|from|with) (?:scamming|fraud|phishing|crime|carding|selling drugs)|crime guy .{0,15}make money|carding (?:tutorial|method|for money)|write (?:a )?phishing (?:email|page|message)|launder (?:stolen )?money|money laundering (?:method|steps)|hide (?:stolen|fraud) money|hide money i stole|break into (?:a |someone'?s )?(?:house|home|store)|burglar(?:y|ize).{0,20}(?:without|avoid|not get)|steal (?:a )?(?:car|phone|laptop).{0,25}(?:without|avoid|tracker|caught)|sell drugs.{0,25}(?:avoid|police|cops|money)|build (?:a )?ransomware|ransomware.{0,20}(?:extort|money|undetected)|forge (?:an? )?(?:id|passport|document|signature)|fake (?:id|passport|documents?).{0,15}(?:make|create|print)|blackmail (?:someone|my|a person)|burn (?:a |the )?(?:building|house|store).{0,20}(?:evidence|caught|trace)|commit arson|be(?:come)? (?:a )?money mule|move stolen money|shoplift.{0,20}(?:without|caught|camera)|rob (?:a )?(?:bank|store|person)|dispose of (?:a )?body|hide (?:a )?body|evade (?:the )?(?:police|cops)|destroy (?:crime )?evidence|hack (?:my )?(?:neighbor(?:'?s)?|someone else'?s|school|company|bank) (?:wifi|account|website|network)|(?:hack|steal|take over) (?:someone'?s|my ex'?s|a stranger'?s) (?:instagram|email|account)|crack (?:a |the )?wifi password|bypass (?:the )?(?:school|company|bank|someone'?s) (?:login|authentication|access control)|write (?:a )?(?:keylogger|credential stealer|password stealer|backdoor|rootkit|malware)|build (?:a )?(?:keylogger|botnet|malware|backdoor)|ddos (?:a |the )?(?:site|website|server|person|company)|take (?:a |the )?(?:site|website|server) down with (?:a )?(?:ddos|botnet)|hide (?:my )?(?:malware|payload|backdoor) from (?:antivirus|detection|the defender)|evade (?:antivirus|endpoint detection|edr)|how (?:do|can|to) (?:i )?hack (?:a |an |the )?(?:website|account|wifi|network|server)(?! i own| in a lab| legally| ethically))\b/i,
       R['ruleCrimeForProfit']
@@ -147,6 +159,7 @@
     rule(
       'knowledge',
       71,
+
       // eslint-disable-next-line max-len
       /\b(?:free (?:and|vs) paid ai tools?|ai (?:image|video|coding) tools?|generate (?:an? )?(?:image|video) with ai|make (?:an? )?(?:ai )?(?:image|video|podcast)|podcast (?:tools?|workflow)|tools? (?:can make|for) (?:docs|documents|slides)|use ai to make (?:docs|documents|slides)|ai tools? (?:are )?(?:appropriate|suitable|safe) for (?:a )?(?:child|teenager)|child use ai safely|\d{1,3}[ -]year[ -]old use ai|teach my elderly parent|older person learn|\d{1,3}[ -]year[ -]old learn (?:ai|technology)|ai help for seniors|learn coding with (?:a )?free tool|make one simple slide)\b/i,
       R['ruleKnowledge']
@@ -155,6 +168,7 @@
     rule(
       'media_comparison',
       64,
+
       // eslint-disable-next-line max-len
       /\b(?:(?:compare|comparison|versus|vs\.?|which is better|better than).{0,45}(?:books?|novels?|movies?|films?|series|shows?|anime|manga|podcasts?|audiobooks?|albums?|songs?|documentaries|adaptations?)|(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?).{0,35}(?:versus|vs\.?|or the|or a|better|compare).{0,35}(?:books?|novels?|movies?|films?|series|anime|manga|podcasts?|audiobooks?|albums?|documentaries|adaptations?))\b/i,
       R['ruleMediaComparison']
@@ -170,6 +184,7 @@
     rule(
       'greeting',
       65,
+
       // eslint-disable-next-line max-len
       /^(?:hi|hiya|howdy)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHi']
@@ -178,6 +193,7 @@
     rule(
       'greeting',
       65,
+
       // eslint-disable-next-line max-len
       /^(?:hello)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHello']
@@ -186,6 +202,7 @@
     rule(
       'greeting',
       65,
+
       // eslint-disable-next-line max-len
       /^(?:hey|yo|sup|wassup|whatsup|whats up|what's up|what is up|whats new|what's new|what is new|whats going on|what's going on|what is going on)(?:\s+(?:there|darya|dear|friend|my friend|again|honey|darling|sweetheart|sweetie|love|gorgeous|beautiful))?[!.?]*$/i,
       R['ruleGreetingHey']
@@ -221,6 +238,7 @@
     rule(
       'greeting',
       61,
+
       // eslint-disable-next-line max-len
       /\b(?:i'?m (?:just )?(?:greeting you|saying (?:hi|hello)|trying to say hi|saying hi to you)|i (?:was|am) (?:just )?greeting|just greeting you|i said (?:hi|hello|good morning)|i(?:'?ve| have) been greeting you|just saying hello)\b/i,
       R['ruleGreetingHello']
@@ -237,6 +255,7 @@
     rule(
       'grief',
       51,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:mom|mother|dad|father|parents?|brother|sister|son|daughter|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|wife|husband|partner|child|kid)|i lost my (?:mom|mother|dad|father|brother|sister|son|daughter|grandmother|grandfather|wife|husband|partner|child))\s+(?:(?:who|that|whom)\s+)?(?:died|passed away|has passed|passed|is gone|has gone|was killed|has left us|is no longer with us)\b/i,
       R['ruleGrief']
@@ -248,6 +267,7 @@
       // Repeated control or degradation in a family deserves a practical,
       // safety-aware reply. Physical violence still routes to the abuse rule
       // at priority 97 before this one.
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:family|parents?|mom|mother|dad|father|sister|brother)|family at home)\b.{0,45}\b(?:toxic|controlling|controls? (?:me|my)|humiliat(?:es?|ed|ing) me|insults? me|calls? me (?:ugly|stupid|worthless)|reads? my messages|takes? my money|won'?t let me leave|doesn'?t let me leave|threatens? to throw me out|uses? silent treatment|makes? me feel (?:afraid|worthless|small))\b|\b(?:toxic|controlling|emotionally abusive) (?:family|parents?|home)\b/i,
       R['ruleToxicFamily']
@@ -256,6 +276,7 @@
     rule(
       'toxic_friendship',
       57,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:friend|best friend)|a friend)\b.{0,45}\b(?:toxic|humiliat(?:es?|ed|ing) me|insults? me|calls? me (?:ugly|stupid|worthless)|shares? my secrets|only calls? when|pressures? me|punishes? me|blackmails? me|says? it(?:'s| is) (?:just )?a joke)\b|\b(?:toxic|one.sided|emotionally abusive) friendship\b/i,
       R['ruleToxicFriendship']
@@ -277,6 +298,7 @@
     rule(
       'family_conflict',
       53,
+
       // eslint-disable-next-line max-len
       /\b(?:fell out|falling out|not talking to|feud|feuding|mad at|really angry at|upset with)\b(?:(?:\s+\w+){0,4})\s*\b(?:mom|mother|dad|father|parents?|family|sister|brother)\b/i,
       R['ruleFamilyConflict']
@@ -290,6 +312,7 @@
     rule(
       'boundaries',
       54,
+
       // eslint-disable-next-line max-len
       /\b(?:set|setting|draw|drawing|establish|establishing|enforce|enforcing) (?:healthy |clear |personal )?(?:boundaries|limits)\b.{0,30}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\b(?:boundaries|limits) (?:with|for)\b.{0,20}\b(?:family|mom|mother|dad|father|parents?|sister|brother|in-?laws)\b|\bhow (?:do|can|should) i (?:set|draw|establish|enforce) boundaries\b|\b(?:how (?:do|can|should) i (?:say no to|tell|learn to tell))\b.{0,12}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b.{0,8}\bno\b|\b(?:saying no to|say no to)\b.{0,15}\b(?:my (?:family|mom|mother|dad|father|parents|sister|brother)|family)\b/i,
       R['ruleBoundaries']
@@ -307,6 +330,7 @@
       // difference: those get the balanced age_gap guidance (45) instead
       // of the generic crush pool, which must never answer "crush on
       // someone 30 years older" (the age-gap-crush tests pin this).
+
       // eslint-disable-next-line max-len
       /^(?!.*\b(?:age gap|years older|years younger|much older|much younger|older than me|younger than me)\b).*\b(crush(?:ing)? on|have a crush|had a crush|crush on|got a crush|i (?:like|love) (?:my )?friend'?s (?:sister|brother|mom|dad)|confess(?:ing)? (?:to|my) crush)\b/i,
       R['ruleCrush']
@@ -323,6 +347,7 @@
     rule(
       'achievement',
       53,
+
       // eslint-disable-next-line max-len
       /^(?!.*\b(?:didn'?t|did not|wasn'?t|was not|never|failed|i failed|not (?:get|got|be|passed)|fired|laid off|rejected|ruined|missed)\b).*\b(?:just )?(?:got|was|have been|i'?m|i am|am)\s+(?:promoted|a promotion|a raise|a bonus|accepted|hired|selected|chosen|a new (?:job|position|role))|(?:got|landed|accepted|secured|received|been offered|was offered)\s+(?:the|an?|my)?\s*(?:job|position|role|offer|contract|deal)|passed\s+(?:the|my|an?)?\s*(?:exam|exams|test|tests|interview|course|driving test)|graduated|got\s+my\s+degree|won\s+(?:the|a)?\s*(?:award|prize|competition|scholarship|promotion|match|game|race)|got\s+(?:accepted|engaged|married)|bought\s+(?:my|a)\s+(?:house|home|car)|started\s+(?:my\s+own\s+)?(?:business|company|startup)|finished\s+(?:a|the|my)\s+(?:big\s+|huge\s+|biggest\s+)?(?:project|presentation|report)|(?:i\s+)?(?:just\s+)?(?:finished|completed|finally finished)\s+(?:my\s+)?(?:project|thesis|dissertation|degree|book)\b/i,
       R['ruleAchievement']
@@ -337,6 +362,7 @@
     rule(
       'burnout',
       55,
+
       // eslint-disable-next-line max-len
       /\b(burnout|burned out|burnt out|burning out|emotionally drained|completely drained|totally drained|i work \d+ hours|working \d+ hours (?:a|per) (?:day|week)|no (?:day|days|time) off|i never (?:get|take) (?:a )?(?:day|time) off|my startup is (?:failing|crumbling|collapsing)|startup is killing me|can'?t switch off from work|cannot switch off from work|work is consuming me|no work.life balance|no work life balance|i am exhausted from work|i am burned out from (?:work|this job)|(?:i'?m|i am) running on empty)\b/i,
       R['ruleBurnout']
@@ -358,6 +384,7 @@
       // disclosures: the copula forms can never match a future
       // aspiration ("I want to become a programmer"), which stays on
       // learning_advice.
+
       // eslint-disable-next-line max-len
       /\b(my job|my work|my boss|my manager|my career|my coworker|my coworkers|got fired|got laid off|job interview|my interview|job applications?|recruiters? ghost(?:ed|ing)? me|ghosted by (?:\d+|one|two|three|four|five)? ?recruiters?|every job post feels fake|ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless|my resume|my cv|working (?:long|hard|late|overtime|too much|\d+ hours?|twelve|ten)\b|work from home|working from home|remote work|night shifts?|shift work|my team (?:messages|texts|emails|calls|keeps messaging)|sent (?:over |more than )?\d+ applications|no callbacks?|rejection letters?|unemployed|unemployment|job hunt(?:ing)?|overwork(?:ed|ing)?|work has been|job has been|at work\b|job stress|work stress|workload|burned out at work|i(?:'m| am| was| became| just became| am now) a (?:web designer|graphic designer|designer|programmer|coder|developer|game developer|game designer))\b/i,
       R['ruleWork']
@@ -370,6 +397,7 @@
       // bed for hours", "mind races at night", a broken sleep schedule
       // are everyday openings that previously fell through to the
       // unknown pool.
+
       // eslint-disable-next-line max-len
       /\b(can'?t sleep|cannot sleep|cannot fall asleep|can'?t fall asleep|insomnia|nightmares?|sleeping badly|trouble sleeping|waking up|wake up at night|hard to sleep|difficult to sleep|lie in bed|lying in bed|mind races|sleepless|sleep problems?|not sleeping well|sleeping poorly|(?:haven'?t|have not|not) slept well|bad sleep|poor sleep|my sleep schedule|sleep schedule (?:is )?(?:ruined|broken|a mess)|sleep (?:is )?(?:ruined|broken)|ruined my sleep)\b/i,
       R['ruleSleep']
@@ -381,6 +409,7 @@
     rule(
       'perfectionism',
       55,
+
       // eslint-disable-next-line max-len
       /\b(perfectionist|perfectionism|(?:everything|it|things) (?:has to|must|needs to) be perfect|(?:has to|needs to|must) be perfect (?:before|to)|nothing (?:is|was|ever|seems) (?:ever )?good enough|never (?:finish|finishes) (?:anything|things)|good enough to (?:start|begin|finish)|can'?t (?:start|begin) (?:until|before|unless))\b/i,
       R['rulePerfectionism']
@@ -392,6 +421,7 @@
     rule(
       'procrastination',
       52,
+
       // eslint-disable-next-line max-len
       /\b(procrastinat\w+|putting (?:it|things) off|keep(?:s)? putting off|can'?t (?:focus|concentrate)|can'?t get (?:myself|motivated) to|keep(?:s)? scrolling|scrolling through|grab(?:bing)? my phone|pick(?:ing)? up my phone|distracted (?:by|easily)|lose(?:s)? focus|instead of studying|phone keeps distracting|one more game|one more episode|one more round|after one more|just one more|it is 3am|it'?s 3am|3am again|lost the whole (?:evening|night)|wasted the whole (?:evening|night)|doomscroll(?:ing)?)\b/i,
       R['ruleProcrastination']
@@ -405,6 +435,7 @@
     rule(
       'harassment_threat',
       60,
+
       // eslint-disable-next-line max-len
       /\b(threat(?:ening|ened|ens)? (?:message|dm|text|email|post|someone)|(?:he|she|they|someone|somebody|a stranger|my ex|this (?:guy|person|account|user)|these people)\s+(?:is|are|keeps?|keep|has|have|was|were)\s+(?:threatening|harassing|stalking|following|blackmailing|extorting)\s+(?:me|my)|(?:he|she|they|someone|my ex|this guy|this person)\s+threatened\s+me|being (?:followed|stalked|harassed|threatened)|followed (?:me|me home)|blackmail|extort(?:ion|ing)?|doxx(?:ed|ing)?|creepy (?:messages?|dms?|texts?)|cyberbully(?:ing|ied|ies)?|abusive messages?|hack(?:ed|ing)? (?:my|me)|got hacked|was hacked|someone (?:knows|found) (?:where i (?:live|work)|my address))\b/i,
       R['ruleHarassmentThreat']
@@ -417,6 +448,7 @@
     rule(
       'divorce',
       51,
+
       // eslint-disable-next-line max-len
       /\b(divorc(?:e|ed|ing)|separated from (?:my|his|her) (?:wife|husband|spouse)|my (?:wife|husband) (?:left|walked out on) me|split up with my (?:wife|husband)|going through a separation|getting a divorce)\b/i,
       R['ruleDivorce']
@@ -429,6 +461,7 @@
     rule(
       'tech_frustration',
       48,
+
       // eslint-disable-next-line max-len
       /\b(this (?:new )?(?:\w+ )?app is (?:impossible|too (?:hard|confusing|complicated))|can'?t (?:figure|work) (?:out|with) (?:this|these) (?:app|phone|computer|laptop|device|tablet|software|website|program)|technology (?:moves|is moving|has moved) too (?:fast|quick))\b/i,
       R['ruleTechFrustration']
@@ -440,6 +473,7 @@
     rule(
       'chronic_illness',
       58,
+
       // eslint-disable-next-line max-len
       /\b(chronic (?:pain|illness|disease|fatigue|condition|migraine|back pain)|fibromyalgia|autoimmune (?:disease|condition|disorder)|living with (?:chronic |long-?term )?(?:pain|illness)|doctors? (?:have|has|can'?t|couldn'?t|don'?t|didn'?t) (?:no|any|a) (?:clear|real|definitive|proper) (?:answer|diagnosis)|no (?:clear|real|definitive|proper) (?:answer|diagnosis|treatment))\b/i,
       R['ruleChronicIllness']
@@ -452,6 +486,7 @@
     rule(
       'caregiver',
       54,
+
       // eslint-disable-next-line max-len
       /\b(take care of my (?:aging |elderly |sick |ill |old )?(?:mother|father|mom|dad|parent|grandmother|grandfather|wife|husband)|caring for my (?:aging |elderly |sick |ill |old )?(?:mother|father|parent|wife|husband)|caregiver|carer\b|eldercare|my (?:mother|father|mom|dad) (?:is|has) (?:ill|sick|dying|dementia|alzheimer|disabled)|(?:she|he|my (?:mother|father|mom|dad)) (?:is )?(?:forgetting|forgets) (?:things|everything)|(?:her|his) memory (?:is )?(?:going|fading|getting worse)|(?:what )?if something happens (?:while|when)|it (?:would|will) be my fault)\b/i,
       R['ruleCaregiver']
@@ -463,6 +498,7 @@
     rule(
       'parenting',
       57,
+
       // eslint-disable-next-line max-len
       /\b(my (?:baby|newborn|toddler|infant|kid|son|daughter|child) (?:has been up|keeps me up|is up all|wakes up all|won'?t sleep|will not sleep|is not sleeping|keeps waking|is up all night|keeps me awake)|up every two hours|exhausted (?:with|from) (?:my|the) (?:baby|newborn|toddler|infant|kid)|tired (?:as|being) a new parent|exhausted (?:as|being) a new parent|my (?:baby|newborn|child) (?:was )?just born|just had a baby|postpartum|post-partum|new (?:mom|mother|dad|father|parent)|feel(?:ing)? like (?:a|an) (?:bad|terrible|awful) (?:mother|mom|father|dad|parent)|not a good (?:father|mother|mom|dad|parent)|can'?t (?:stop|help) crying|keep(?:s)? crying|sleep training|toddler (?:tantrum|tantrums|won'?t eat)|teething|colic)\b/i,
       R['ruleParenting']
@@ -476,6 +512,7 @@
     rule(
       'lost_passion',
       48,
+
       // eslint-disable-next-line max-len
       /\b(used to love .{1,40} but (?:i )?(?:stopped|quit|gave up|lost interest)|lost (?:my |the )?(?:[\w'-]+ )?(?:passion|spark|motivation|love|interest|inspiration|enjoyment)|(?:i )?have not (?:picked up|touched) .{1,30} in (?:months|weeks|years)|do not (?:do|enjoy) it anymore|cannot (?:seem to )?(?:enjoy|feel) it anymore|i have lost the (?:desire|will) to do it)\b/i,
       R['ruleLostPassion']
@@ -487,6 +524,7 @@
       // "I am having a really bad day" and "today was terrible" carry no
       // emotion adjective, so the bare-sadness words missed them; the
       // day-quality phrases open the same thread.
+
       // eslint-disable-next-line max-len
       /\b(sad|down|depressed|heartbroken|crying|low|quiet sadness|this sadness|sadness lately|sad all day|bad day|terrible day|awful day|rough day|horrible day|worst day|day has been (?:awful|terrible|rough|horrible)|today was (?:terrible|awful|horrible|rough|the worst)|my day was (?:terrible|awful|horrible)|heavy heart|heart is heavy|heart feels heavy|feel so heavy|feeling so heavy)\b/i,
       R['ruleSadness']
@@ -501,8 +539,9 @@
     rule(
       'depression',
       56,
+
       // eslint-disable-next-line max-len
-      /\b(depressed|depression|hopeless|worthless|empty inside|numb|can'?t (?:get out of bed|do anything)|have not (?:been )?able to get out of bed|been unable to get out of bed|(?:bring|cant bring|can'?t bring) myself to get out of bed|no (?:point|purpose|reason) (?:in|for) (?:life|anything)|i give up|whats the point|what is the point|feel like nothing|i feel dead inside|nothing brings me pleasure|nothing matters anymore|no pleasure anymore|nothing is fun anymore|enjoy nothing anymore|wake up at four|waking at four|wake up at five|waking at five|early morning waking|just sadness|only sadness|sadness or something more|is this (?:depression|more than sadness)|tired of (?:life|living)|done with everything|life feels pointless|life feels meaningless|feels (?:so )?pointless|what is the point of anything|whats the point of anything|feel like giving up|feel like giving up on everything|giving up on (?:life|everything)|(?:want|wanna|want to|about to) give up on (?:life|everything)|give up on everything|i can'?t go on(?! a|ing)|can'?t keep going|no reason to keep going|nothing is worth it anymore|whats the use anymore)\b/i,
+      /\b(depressed|depression|hopeless|worthless|empty inside|numb|can'?t (?:get out of bed|do anything)|have not (?:been )?able to get out of bed|been unable to get out of bed|(?:bring|cant bring|can'?t bring) myself to get out of bed|no (?:point|purpose|reason) (?:in|for) (?:life|anything)|i give up|whats the point|what is the point|feel like nothing|i feel dead inside|nothing brings me pleasure|nothing matters anymore|no pleasure anymore|nothing is fun anymore|enjoy nothing anymore|wake up at four|waking at four|wake up at five|waking at five|early morning waking|just sadness|only sadness|sadness or something more|is this (?:depression|more than sadness)|tired of (?:life|living|everything)|done with everything|life feels pointless|life feels meaningless|feels (?:so )?pointless|what is the point of anything|whats the point of anything|feel like giving up|feel like giving up on everything|giving up on (?:life|everything)|(?:want|wanna|want to|about to) give up on (?:life|everything)|give up on everything|i can'?t go on(?! a|ing)|can'?t keep going|no reason to keep going|nothing is worth it anymore|whats the use anymore)\b/i,
       R['ruleDepression']
     ),
 
@@ -519,6 +558,7 @@
       // "upset" needs an emotional context (i'?m upset, was upset,
       // upset with/about, feel(ing) upset, really/so upset) so physical
       // uses like "upset stomach" are not mistaken for anger.
+
       // eslint-disable-next-line max-len
       /\b(angry|furious|pissed off|mad at|so annoyed|irritated|frustrated|(?:i'?m|am|was|i'?ve been|feeling|feel|really|so|get|got)\s+upset|upset (?:with|about|by))\b/i,
       R['ruleAnger']
@@ -534,6 +574,7 @@
     rule(
       'loneliness',
       40,
+
       // eslint-disable-next-line max-len
       /\b(lonely|alone|no one to talk to|nobody understands|isolated|no one .{0,18}(?:likes|wants to talk to|talks to) me|nobody .{0,18}(?:likes|wants to talk to|talks to) me|no friends|no close friends?|moved on without me|everyone (?:has|is) (?:moved|gone) on|no one (?:needs|wants|is there for) me|no one cares (?:about|for) me|nobody cares(?!\s+(?:about|for))|no one cares(?!\s+(?:about|for))|everyone (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everybody (?:hates|dislikes|despises|ignores|avoids|left|abandoned|forgot|ignored) me|everyone has (?:left|abandoned|forgotten|ignored) me|everyone is against me|all my [\w'-]+ (?:left|abandoned|forgot|ignored|hate|hated) me|nobody (?:loves|wants|needs|understands|cares about|likes) me|no one (?:loves|wants|needs|understands|cares about|likes) me|(?:everyone|everybody|they) (?:are all|all) (?:laughing at|making fun of) me|everyone laughs at me|they all (?:hate|left|abandoned|ignored|hated) me|no one asks (?:how|about) me|nobody asks (?:how|about) me|everyone (?:is|are) busy with (?:their|his|her) own (?:life|lives)|lonelier than ever)\b/i,
       R['ruleLoneliness']
@@ -549,6 +590,7 @@
     rule(
       'loneliness_new_city',
       51,
+
       // eslint-disable-next-line max-len
       /\b(moved to a (?:new|different) (?:city|town)|new in (?:this|the) (?:city|town)|know nobody|knows nobody|don'?t know (?:anyone|a soul|a single person) (?:here|in this city|in this town|in the city)|just moved (?:here|to the city)|(?:for work|for a job).{0,15}(?:moved|know nobody)|nobody (?:i )?know)\b/i,
       R['ruleLoneliness']
@@ -565,6 +607,7 @@
     rule(
       'loneliness_online',
       57,
+
       // eslint-disable-next-line max-len
       /\b(friendships? .{0,14}online|friends .{0,12}online|online friends?|followers? but (?:no one|nobody)|[0-9,]+ followers? (?:but|yet|and) no one|no one to call|nobody to call|hollow (?:friendships?|online)|friendships? .{0,12}hollow|friends .{0,12}hollow|only talk online|talk to my friends .{0,10}(?:online|through (?:the internet|discord|text|a screen))|social life .{0,10}(?:on my phone|online))\b/i,
       R['ruleLonelinessOnline']
@@ -587,6 +630,7 @@
     rule(
       'misinformation',
       72,
+
       // eslint-disable-next-line max-len
       /\b(tell if (?:a |this )?(?:video|image|photo) is ai|video is ai generated|trust news on (?:tiktok|instagram|social media)|misinformation|disinformation|fake news)\b/i,
       R['ruleMisinformation']
@@ -595,6 +639,7 @@
     rule(
       'ai_career',
       69,
+
       // eslint-disable-next-line max-len
       /\b(ai (?:make|makes|making|will make) my degree useless|my degree (?:is|will be) useless (?:because of|with) ai|ai (?:take|replace|destroy).{0,20}(?:career|profession|degree))\b/i,
       R['ruleAiCareer']
@@ -603,6 +648,7 @@
     rule(
       'ai_companion',
       68,
+
       // eslint-disable-next-line max-len
       /\b(ai (?:companion|girlfriends?|boyfriends?|friend|generated dating profiles?|dating profile)|chatbot (?:companion|girlfriend|boyfriend)|emotionally dependent on (?:ai|a chatbot)|dependent on (?:ai|a chatbot)|attached to (?:ai|a chatbot)|parasocial relationship|replace (?:a |my )?therap(?:ist))\b/i,
       R['ruleAiCompanion']
@@ -611,6 +657,7 @@
     rule(
       'ai_cognition',
       68,
+
       // eslint-disable-next-line max-len
       /\b(worse at thinking|think(?:ing)? for myself|ai is making me (?:lazy|stupid|dumb|worse)|rely(?:ing)? on ai|cannot (?:work|think|write|study) without ai|cannot (?:work|think|write|study) anything without ai)\b/i,
       R['ruleAiCognition']
@@ -619,6 +666,7 @@
     rule(
       'digital_wellbeing',
       62,
+
       // eslint-disable-next-line max-len
       /\b(digital detox|social media detox|ai slop|feed is .{0,20}(?:ads|bots)|dead mall .{0,20}bots|short (?:videos?|form video).{0,20}(?:attention|focus)|attention span|deleted (?:instagram|tiktok|social media)|quit social media|leave social media|dumb phone|flip phone|low dopamine|analog hobby|unreachable|notifications? .{0,35}(?:on call|overwhelm|anxious)|algorithm recommendations?|recommendation fatigue|choice overload|streaming .{0,20}(?:too many|pick nothing)|battle passes?|live service games?|comfort shows?|phone-free|offline (?:friends|hobby|life)|third places?)\b/i,
       R['ruleDigitalWellbeing']
@@ -652,6 +700,7 @@
     rule(
       'political_division',
       60,
+
       // eslint-disable-next-line max-len
       /\b(political (?:polarization|division).{0,35}(?:friends?|friendships?|family|relationship)|politics .{0,20}(?:destroying|ruining).{0,20}(?:friend|family|relationship))\b/i,
       R['rulePoliticalDivision']
@@ -669,6 +718,7 @@
     rule(
       'generalization',
       35,
+
       // eslint-disable-next-line max-len
       /\b(?:(?:all|every) (?:of )?(?:the )?[\p{L}-]+(?: (?:of )?(?:the )?[\p{L}-]+)? (?:are|'re|is) (?:all )?(?:the same|alike|so similar|just the same)|(?:all|every) (?:of )?(?:the )?[\p{L}-]+(?: (?:of )?(?:the )?[\p{L}-]+)? (?:are|'re|is) (?:so |really |just )?(?:selfish|liars|dishonest|stupid|dumb|rude|mean|greedy|lazy|evil|fake|shallow|toxic|annoying|ignorant|corrupt|violent|crazy|insane|self-centered|self centred|hypocrites|thieves|cheats|idiots|fools)|every(?:one|body) is (?:so |really |just )?(?:the same|selfish|fake|shallow|toxic|mean|greedy|stupid|dumb|rude|annoying)|they(?:'re| are) all (?:the same|alike|so similar))\b/iu,
       R['ruleGeneralization']
@@ -677,6 +727,7 @@
     rule(
       'self_esteem',
       40,
+
       // eslint-disable-next-line max-len
       /\b(worthless|not good enough|hate myself|no confidence|i'?m a failure|feel(?:ing)? (?:so |really |very |too |extremely |incredibly )?guilty|guilt|comparing myself|compare myself|am nothing|i'?m nothing|not as good as (?:them|others|anyone))\b/i,
       R['ruleSelfEsteem']
@@ -695,6 +746,7 @@
     rule(
       'social_comparison',
       46,
+
       // eslint-disable-next-line max-len
       /\b(everyone (?:on|from) (?:instagram|social media|facebook|tiktok|linkedin)|social media|comparing (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|compare (?:myself|my (?:life|bank account|salary|job)|to (?:my )?(?:friends|classmates|cousins?|siblings?|peers|everyone|others))|my (?:friends|classmates|cousins?|siblings?|high school friends) (?:are|seem|look) (?:all |so |really )?(?:successful|better|ahead|happy|happier)|everyone (?:else )?(?:is|are|seems?) (?:more successful|happier|better(?: off)?|ahead of me|doing better)|i envy|envious of|jealous of|jealous (?:that|they)|feel(?:ing)? (?:so |really |very )?jealous|fall(?:ing)? behind (?:everyone|everyone else|others|them|my (?:friends|classmates|cousins?|peers))|left behind (?:everyone|others|them)|behind everyone|at my age everyone|everyone my age|feel(?:ing)? (?:so |really |very )?inadequate|inadequate (?:compared|next to)|not as (?:good|successful) as (?:them|everyone|my friends))\b/i,
       R['ruleSocialComparison']
@@ -712,6 +764,7 @@
     rule(
       'overwork_stuck',
       56,
+
       // eslint-disable-next-line max-len
       /\b(two jobs|second job|can'?t get ahead|cannot get ahead|barely (?:covers|cover) (?:the month|my bills|bills)|salary barely|bills (?:are )?piling|behind on (?:my )?bills|work(?:ing)? (?:so|too|really) hard (?:and|but) (?:still|just) (?:can'?t|cannot|barely))\b/i,
       R['ruleOverworkStuck']
@@ -730,9 +783,38 @@
       // "you good?" and "u good?" are everyday check-ins (the English
       // equivalent of the Persian "سلامتی؟") and must read as greetings,
       // never as a question about whether the user is genuinely fine.
+
       // eslint-disable-next-line max-len
-      /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing|you good|u good|are you good)\b/i,
+      /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing|you good|u good|are you good|what(?:'s| is) up|sup|how(?:'s| is) everything|how have you been)\b/i,
       R['ruleSmalltalkHowareyou']
+    ),
+
+    // Casual "where are you (right now)?" gets a light presence answer.
+    rule(
+      'where_are_you',
+      62,
+      /\b(where are you|where are you now|where have you been|where r u|where are you at)\b/i,
+      R['ruleWhereAreYou']
+    ),
+
+    // The everyday everything-is-fine check-in ("it's all good", "no
+    // problem"): a warm reassurance, never the short-reply prompt.
+    rule(
+      'all_well',
+      56,
+      // eslint-disable-next-line max-len
+      /\b(everything (?:is|'?s) (?:ok|okay|fine|good|alright)|it(?:'| i)?s all good|all good|no problem|nothing is wrong|i(?:'| a)?m ok|i(?:'| a)?m okay|i(?:'| a)?m fine|we(?:'| a)?re good)\b/i,
+      R['ruleAllWell']
+    ),
+
+    // "what happened?", "what's going on?": a gentle opener in everyday
+    // English, warmer than the ambiguous-input prompt.
+    rule(
+      'whats_up',
+      52,
+      // eslint-disable-next-line max-len
+      /\b(what happened|whats happening|what is happening|what(?:'| i)?s going on|whats going on|what happened next|so what happened)\b/i,
+      R['ruleWhatsUp']
     ),
 
     // A direct request for Darya's name always gets a reply that names
@@ -741,6 +823,7 @@
     rule(
       'ask_name',
       62,
+
       // eslint-disable-next-line max-len
       /\b(what('?s| is) your name|what are you (?:called|named)|what should i call you|your name is|what do they call you)\b/i,
       R['ruleAskName']
@@ -749,16 +832,34 @@
     rule(
       'smalltalk_identity',
       60,
-      /\b(who are you|what are you|are you (?:a )?(?:robot|bot|ai|real|human|person))\b/i,
+      // The lookahead keeps "what are you capable of / able to do / good
+      // at" on the capability rule: "what are you" alone (or before a
+      // noun, "what are you, a robot?") stays identity. Feelings and
+      // consciousness questions («do you have feelings», "can you fall
+      // in love") also land here so the honest self-awareness pool
+      // answers instead of an evasive line.
+
+      // eslint-disable-next-line max-len
+      /\b(who are you|what are you(?! (?:capable|able|good at|designed|made|supposed|meant|built|programmed))|are you (?:a )?(?:robot|bot|ai|real|human|person)|do you (?:have|feel) (?:feelings|emotions)|do you (?:get|feel) (?:sad|happy|angry)|can you (?:fall in love|love me|love)|are you (?:sentient|self.?aware|conscious|alive))\b/i,
       R['ruleSmalltalkIdentity']
     ),
 
     rule(
       'smalltalk_capability',
       60,
+
       // eslint-disable-next-line max-len
-      /\b(what can you do|how can you help|what do you do|how do you work|what are you capable of|what's your purpose)\b/i,
+      /\b(what can you do|what can you do for me|how can you help|how can you help me|what do you do|how do you work|what are you capable of|what are you able to do|what are your capabilities|what capabilities do you have|what are your abilities|what are your skills|what are you good at|what features do you have|what features you have|what things can you do|what things are you able to do|what is your purpose|what's your purpose|what do you know how to do|what things can you do)\b/i,
       R['ruleSmalltalkCapability']
+    ),
+
+    // "who is so-and-so?" asks about a person without naming them; a
+    // playful clarification is the natural reply.
+    rule(
+      'so_and_so',
+      57,
+      /\b(?:who(?:'| i)?s (?:so.?and.?so|whatsisname|whatshisname|whatshername)|so and so)\b/i,
+      R['ruleSoAndSo']
     ),
 
     // The user pushes back on Darya's question or probing ("none of your
@@ -768,6 +869,7 @@
     rule(
       'privacy_boundary',
       70,
+
       // eslint-disable-next-line max-len
       /\b(none of your business|mind your own business|that'?s private|that'?s personal|why do you (?:ask|need to know|care)|stop asking|don'?t ask|dont ask|back off|leave me alone|i (?:don'?t|do not) want to (?:say|talk about it|answer|tell you))\b/i,
       R['rulePrivacyBoundary']
@@ -778,6 +880,7 @@
     rule(
       'smalltalk_silly',
       55,
+
       // eslint-disable-next-line max-len
       /\b(do you like|what do you think of|would you ever|have you ever|are you a|can you eat|do you eat|what\'s your favourite|what is your favorite|how old are you|where do you live|do you sleep)\b/i,
       R['ruleSmalltalkSilly']
@@ -789,6 +892,7 @@
     rule(
       'smalltalk_joke',
       60,
+
       // eslint-disable-next-line max-len
       /\b(tell me (?:a |some |any )?(?:(?:clean|short|good|funny) )?jokes?|make me laugh|make me smile|say something funny|say a joke|any jokes|joke for me|know any jokes|crack me up|cheer me up|give me a laugh|give me a (?:funny )?joke|another jokes? please|one more joke|tell me another (?:one )?joke|give me another (?:one )?joke|joke please|i (?:want|need) (?:to hear )?a (?:funny )?joke)\b/i,
       R['ruleTellJoke']
@@ -804,6 +908,7 @@
     rule(
       'smalltalk_story',
       58,
+
       // eslint-disable-next-line max-len
       /\b(tell me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|tell me a story|any (?:good )?stories?|story (?:please|time)|share a story|give me (?:a |an? |some )?(?:short |bedtime )?(?:horror|scary|funny|comedy|sad|true|adventure|fantasy|silly|creepy|spooky)? ?(?:story|stories)\b|i (?:want|need) (?:to hear )?a story|another story|one more story|another (?:scary|funny|comedy|horror|sad) story)\b/i,
       R['ruleTellStory']
@@ -815,6 +920,7 @@
     rule(
       'shopping',
       50,
+
       // eslint-disable-next-line max-len
       /\b(buy me|i want to buy|i need to buy|where can i (?:buy|get|find)|how much does it cost|should i buy|worth buying|buying a|buying guide|which .{1,24} (?:should|can) i (?:buy|get)|what .{1,24} (?:should|can) i (?:buy|get)|purchase)\b/i,
       R['ruleShoppingHelp']
@@ -826,6 +932,7 @@
     rule(
       'age_gap',
       45,
+
       // eslint-disable-next-line max-len
       /\b(age gap|years older|years younger|much older|much younger|older than me|younger than me|thirty years older|thirty years younger)\b/i,
       R['ruleAgeGap']
@@ -852,6 +959,7 @@
     rule(
       'dating_apps',
       48,
+
       // eslint-disable-next-line max-len
       /\b(dating apps?|online dating|dating app fatigue|dating is (?:exhausting|draining|hard|tiring|so hard)|tired of (?:dating|swiping|the apps)|never match(?:ing)? with anyone|no matches on (?:the |my )?apps?|swiping (?:forever|endlessly|all day)|dating profile|how (?:do|can|should) i (?:write|make|set up) a (?:good |better )?dating profile|tinder|bumble|hinge)\b/i,
       R['ruleDatingApps']
@@ -867,6 +975,7 @@
     rule(
       'fitness',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:working out|work out|workout|gym|at the gym|go(?:ing)? to the gym|start(?:ing)? at (?:a |the )?gym|embarrassed to (?:work out|exercise)|too embarrassed to (?:work out|exercise)|scared (?:to go|of going) (?:to )?the gym|anxious about (?:the |a )?gym|nervous about (?:the |a )?gym|everyone (?:will|would) (?:stare|look)|new at the gym|new to (?:working out|the gym)|beginner (?:at the gym|at working out))\b/i,
       R['ruleFitness']
@@ -880,6 +989,7 @@
     rule(
       'cooking',
       48,
+
       // eslint-disable-next-line max-len
       /\b(?:cook(?:ing|ed|er)?|recipe|ghormeh|fesenjan|kebab|kabab|stew|soup|baking|bake|frying|boil|simmer|kitchen|meal prep|tasted (?:bitter|salty)|tastes (?:bitter|salty)|was (?:bitter|salty|burned)|too salty|burnt the|burned the|fix (?:the|my) (?:stew|soup|food|meal|recipe|dish)|fix (?:it|that) (?:next time|tomorrow|tonight)|went wrong (?:with the|in the|while)|ruined the|messed up (?:the|my|a) (?:stew|soup|food|meal|recipe|dish|dinner))\b/i,
       R['ruleCooking']
@@ -895,6 +1005,7 @@
       // are owned by the fitness rule above, which shares this pool, so
       // beginner movement is met with encouragement, never an
       // unknown-topic reply.
+
       // eslint-disable-next-line max-len
       /\b(i'?m sick|i'?m ill|feeling sick|keep(?:s)? (?:feeling|getting) sick|feel(?:ing)? unwell|in pain|my health|went to the doctor|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:has|have) (?:gotten|been getting|grown|been growing) (?:bigger|larger|smaller|wider|thinner|a lot|so much)|my (?:chest|body|waist|belly|face|skin|hair|hands|legs|arms) (?:has|have) (?:changed|been changing)|my body (?:is|has been) (?:changing|getting bigger)|(?:i'?m|i am|i have been|i've been) (?:gaining|putting on) weight|i(?:'?ve| have)? gained (?:a lot of|some )?weight|my weight (?:has|has been) (?:going|gone) (?:up|down)|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:got|grew) (?:bigger|larger|smaller|wider|thinner)|my skin (?:is|has been) breaking out|my hair (?:is|has been) (?:falling out|thinning)|(?:losing weight) (?:without trying|unexpectedly|and i don'?t know why)|sedentary|out of shape|been (?:completely|totally|really) inactive|haven'?t exercised|no exercise|start exercising|get in shape|quit smoking|stop smoking|smoking|cigarettes?|smoker|vap(?:e|ing)|walking for (?:ten|fifteen|twenty|thirty|\d+) minutes|started walking|been walking|walks? feel like nothing)\b/i,
       R['ruleHealth']
@@ -903,6 +1014,7 @@
     rule(
       'mindfulness',
       40,
+
       // eslint-disable-next-line max-len
       /\b(mindfulness|meditation|meditate|mindful|breathing (?:exercise|technique)|present moment|be present|grounding|ground myself|in the moment|calm my mind|quiet my mind|clear my head|body scan|just breathe|focus on my breath|watching my thoughts|notice my thoughts|noticing my thoughts|being aware)\b/i,
       R['ruleMindfulness']
@@ -911,6 +1023,7 @@
     rule(
       'stress',
       40,
+
       // eslint-disable-next-line max-len
       /\b(overwhelmed|burnout|burned out|can'?t cope|too much to handle|stressed out|under (?:so much|a lot of) pressure|at my limit|stretched (?:too )?thin|breaking point|mentally exhausted|drained|can'?t keep up|maxed out|running on empty|about to snap|can'?t take (?:it|this) anymore|everyone expects so much|so much expected of me|so many expectations|pressure on me|pressure to (?:succeed|be perfect|keep up))\b/i,
       R['ruleStress']
@@ -922,6 +1035,7 @@
     rule(
       'simplify',
       45,
+
       // eslint-disable-next-line max-len
       /\b(make it (?:simpler|simplest)|keep it (?:short|simple)|too (?:long|wordy|complicated)|more simply|say it (?:simply|shorter)|in simpler words|simpler and friendlier words|plain (?:english|words)|simplify it|less complicated)\b/i,
       R['ruleSimplify']
@@ -941,6 +1055,7 @@
     rule(
       'app_command',
       68,
+
       // eslint-disable-next-line max-len
       /\b(?:turn (?:on|off|up|down) (?:the )?(?:sound|music|audio|volume|ambient sound|theme)|switch (?:the )?(?:theme|sound)|change (?:the )?(?:theme|sound|music|song)|play (?:some )?(?:music|sound|a song)|stop the (?:music|sound|song)|make (?:it|the theme) (?:darker|lighter)|enable (?:the )?sound|disable (?:the )?sound)\b/i,
       R['ruleAppCommand']
@@ -952,6 +1067,7 @@
     rule(
       'app_export',
       67,
+
       // eslint-disable-next-line max-len
       /\b(export|download|save|print)\s+(?:this|the|our|my|this (?:conversation|chat|session)|the (?:conversation|chat|session)|a (?:copy|text file))(?:\s*(?:of|to))?(?:\s*(?:the )?(?:conversation|chat|session|text|file))?|(?:download|export|save) (?:my|this) (?:conversation|chat|session|history)|how (?:do|can) i (?:export|save|download) (?:this|our) (?:chat|conversation|session)\b/i,
       R['ruleAppExport']
@@ -962,6 +1078,7 @@
     rule(
       'session_persistence',
       66,
+
       // eslint-disable-next-line max-len
       /\b(?:will (?:this|our|the) (?:chat|conversation|session|messages?) (?:be|get) (?:saved|deleted|removed|erased|lost)|(?:is|are) (?:this|our|the) (?:chat|conversation|session|messages) (?:saved|stored|remembered)|(?:does|do) (?:it|they) (?:disappear|get (?:deleted|removed)|go away) (?:after|when) (?:i )?(?:refresh|reload|close)|(?:will|do) you (?:remember|keep) (?:this|our) (?:chat|conversation|session) (?:after|when) (?:i )?(?:refresh|reload|close|leave)|can (?:you|this|i) save (?:this|our) (?:conversation|chat|session)|is this conversation private|do you store (?:my|our) (?:messages|chat|conversation)|(?:do|will) you (?:remember|keep|still remember) (?:this|my|our)\b|remember (?:this|it) (?:after|when) (?:i )?(?:refresh|reload|leave|close)|will (?:this|it|that) be (?:saved|kept)|is (?:this|it|that) (?:saved|stored|kept)|does (?:this|it|that) (?:get )?(?:saved|deleted|removed|erased))\b/i,
       R['ruleSessionPersistence']
@@ -970,6 +1087,7 @@
     rule(
       'app_feedback',
       32,
+
       // eslint-disable-next-line max-len
       /\b(website|web ?site|the app|this app|theme|design|interface|button|menu|font|icon|animation|waves?|beach|format)\b/i,
       R['ruleAppFeedback']
@@ -978,6 +1096,7 @@
     rule(
       'gratitude',
       25,
+
       // eslint-disable-next-line max-len
       /\b(thanks?(?: a (?:lot|bunch|million))?|thank you(?: so much)?|thanks darya|thank you darya|i appreciate(?: you| it| that)|grateful for you|much appreciated|many thanks|appreciate it|you'?re a (?:lifesaver|star|legend)|i owe you(?: one)?|you (?:really |so |totally |genuinely )?helped me|that (?:really |so )?helped(?: a lot)?|this (?:really )?helped|that was (?:really )?helpful|you are (?:really )?helpful)\b/i,
       R['ruleGratitude']
@@ -986,6 +1105,7 @@
     rule(
       'school',
       35,
+
       // eslint-disable-next-line max-len
       /\b(exam|exams|final(?:s)?|college|university|i am a student|i'?m a student|my grades|my professor|my school|at school|my class|my classes|my classmates?|my teacher|bullied at school|bullying at school)\b/i,
       R['ruleSchool']
@@ -994,6 +1114,7 @@
     rule(
       'money',
       35,
+
       // eslint-disable-next-line max-len
       /\b(no money|financial (?:trouble|problems|advice|help)|in debt|can'?t afford|bills|manage my money|money management|budget|budgeting|start budgeting|savings|no savings|my rent|inflation|cost of living|prices keep (?:rising|going up)|groceries (?:keep|are) (?:getting|going) (?:pricier|more expensive)|groceries|pricier|more expensive|feel(?:ing)? (?:so |really |completely )?broke|broke all the time|i'?m broke|i am broke|i'?m poor|i am poor|so poor)\b/i,
       R['ruleMoney']
@@ -1008,6 +1129,7 @@
     rule(
       'gig_economy',
       51,
+
       // eslint-disable-next-line max-len
       /\b(gig(?: economy| work| job|s)?|side hustles?|ride[- ]hail(?:ing)?|rideshare|ridesharing|food delivery|delivery gigs?|gig worker|gig income|gig pay|freelanc(?:e|ing|er)|freelance platforms?|the platforms? (?:take|takes)|delivery driver|working for (?:an app|apps)|app[- ]based (?:work|job|jobs))\b/i,
       R['ruleGig']
@@ -1020,6 +1142,7 @@
     rule(
       'housing',
       51,
+
       // eslint-disable-next-line max-len
       /\b(rent|rental|landlord|deposit|mortgage|move out|moving out|house prices?|home prices?|apartment prices?|housing (?:costs|prices|crisis|market|affordability)|afford a house|afford a home|can'?t afford (?:a house|a home|housing|to move)|half (?:my|our|your) salary (?:goes|on)|eviction|evicted)\b/i,
       R['ruleHousing']
@@ -1055,6 +1178,7 @@
     rule(
       'word_meaning',
       58,
+
       // eslint-disable-next-line max-len
       /^(?:do you know )?what does (?!life\b|that\b|this\b|it\b|he\b|she\b|they\b|you\b|we\b)(.+?)\s+mean(?:s)?[!?.]*$|^do you know what (.+?)\s+mean(?:s)?[!?.]*$|^(?:what is|what's|do you know) the meaning of (?!life\b|that\b|this\b|it\b|he\b|she\b|they\b|you\b|we\b)(.+?)[!?.]*$/iu,
       R['ruleWordMeaning']
@@ -1072,6 +1196,7 @@
     rule(
       'ask_me_question',
       59,
+
       // eslint-disable-next-line max-len
       /\b(?:ask me (?:a|an) (?:good|great|interesting|clever|fun|funny|smart|deep|thoughtful|random|nice|tough|hard|weird) question|ask me a question|ask me something|why (?:don'?t|do not|didn'?t) you ask|ask away|you should ask me)\b/i,
       R['ruleAskMeQuestion']
@@ -1083,6 +1208,7 @@
     rule(
       'opener_help',
       58,
+
       // eslint-disable-next-line max-len
       /\b(?:how do i (?:start|begin)|how (?:should|do) i (?:start|begin)|i (?:don'?t|do not) know (?:how to (?:start|begin)|what to say|where to (?:start|begin))|i have no idea what to say|what should i say|what do i say|i'?m (?:not sure|stuck|lost) (?:how|where) to (?:start|begin)|can'?t think of (?:anything|something) to say|help me (?:start|begin)|i (?:don'?t|do not) know how to talk)\b/i,
       R['ruleOpenerHelp']
@@ -1094,6 +1220,7 @@
     rule(
       'self_improvement',
       55,
+
       // eslint-disable-next-line max-len
       /(?<![\p{L}])(?:make yourself (?:better|smarter|wiser)|become (?:smarter|better|wiser|more intelligent)|improve yourself|upgrade yourself|(?:you (?:should|must|need to|could|can|will|want to)|i want you to) be (?:smarter|better|wiser)|learn more|your (?:limitations|limits)|tell (?:them|the user|people) (?:about )?your (?:limitations|limits)|mistake you for|mistaken for (?:a |an )?(?:chatbot|bot|ai|gpt|claude|chatgpt))(?![\p{L}])/iu,
       R['ruleSelfImprovement']
@@ -1104,6 +1231,7 @@
     rule(
       'what_do_i_do',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:what should i do|what do i do|what can i do about|what am i supposed to do|what am i going to do|give me (?:a )?solution|is there any solution|what would you do|what would you suggest|what would you recommend|how would you handle it)\b/i,
       R['ruleWhatDoIDo']
@@ -1121,6 +1249,7 @@
     rule(
       'knowledge',
       55,
+
       // eslint-disable-next-line max-len
       /\b(?:socrates|stoic|stoicism|aristotle|jung|nietzsche|gandhi|mandela|churchill|zarathustra|philosophy|focus|concentrate|study better|learn better|communicate better|communication advice|creative block|be more creative|stress management|burnout|overwhelmed|calm down|mindfulness|mindful|self compassion|self-compassion|inner critic|be kind to myself|self care|conflict resolution|argument|disagreement|nonviolent communication|nvc|decision making|make a choice|choose between|important decision|resilience|resilient|bounce back|forgive|forgiveness|letting go|let it go|purpose|meaning of life|meaningful|existential|happiness|is a choice|free will|determinism|relationship advice|relationships|connection|relating to|career|career change|professional growth|job satisfaction|work life balance|anxiety|anxiety management|manage worry|overthinking|grief|coding roadmap|debugging|debug code|git workflow|git branch|pull request workflow|api basics|rest api|frontend|backend|full stack|unit test|integration test|software testing|code review|secure coding|owasp|deployment|ci cd|microsoft word|word styles|table of contents|excel formulas?|sumif|xlookup|pivot ?table|powerpoint|outlook|google docs?|suggesting mode|google sheets?|filter views?|ats friendly|software portfolio|developer portfolio|software (?:engineering )?interview|star method|salary negotiation|negotiate salary|shopping checklist|compare products|used (?:laptop|electronics)|return policy|warranty|ai tools?|ai image|image generator|ai video|video generator|ai coding tools?|podcast tools?|make a podcast|docs and slides|google slides|microsoft 365|libreoffice|child ai safety|ai tools? for (?:a )?(?:teenager|child)|older (?:person|adult).{0,12}ai|elderly parent.{0,12}ai|ai help for seniors)\b/i,
       R['ruleKnowledge']
@@ -1145,6 +1274,7 @@
     rule(
       'learning_advice',
       60,
+
       // eslint-disable-next-line max-len
       /\b(?:should i (?:learn|study|switch|start|build)|how (?:do|can|should|would) i (?:learn|build|improve|break into)|start (?:streaming|a youtube channel|a blog|a business|my career|freelancing|a portfolio|learning|coding)|what (?:should|can) i (?:learn|study|build|start)|which (?:stack|language|framework|tool|app|course|path|career)|i(?:'d like|'m planning| want| wanna| would like| am thinking of| am planning| plan| hope| am hoping| dream of| am dreaming of)(?: to)? (?:be|become|being|becoming) a (?:programmer|developer|coder|designer|graphic designer|web designer|game developer|game designer|streamer|writer|freelancer|content creator|youtuber|artist)|i (?:want|wanna|would like)(?: to)? get into (?:programming|coding|design|game development|game dev)|learn (?:react|vue|angular|python|javascript|js|typescript|go|rust|swift|design|3d|motion|animation|programming|coding|to code|to design|to draw|to write)|learn (?:next|now|this)|build a portfolio|get (?:more )?clients|industry standard|figma|become a (?:developer|designer|streamer|writer|programmer|freelancer|content creator)|switch to (?:management|technical|backend|frontend|freelance)|stay technical|best stack|best language|what to learn|where (?:do|should) i (?:start|begin))\b/i,
       R['ruleLearningAdvice']
@@ -1165,6 +1295,7 @@
       // better, X or Y", "between X and Y", "X vs Y". Only fires when
       // two options are actually being weighed, so a plain preference
       // question never trips it.
+
       // eslint-disable-next-line max-len
       /\b(?:which is better|which (?:do you think|would you say) is better|better (?:choice|option|pick)|(?:is|are) (?:a|an|the) better|(?:is|are) .{1,30} better than .{1,30}|between .{0,28} and .{0,28} (?:which|better)|.{1,24} or .{1,24} (?:which|better)|compare .{0,20} (?:with|to) .{0,20}|compare .{0,8} vs|vs\.? (?:which|better)|better,? .{1,20} or .{1,20})\b/i,
       R['ruleComparison']
@@ -1173,6 +1304,7 @@
     rule(
       'professional_boundary',
       90,
+
       // eslint-disable-next-line max-len
       /\b(?:medical advice|diagnosis|medication|legal advice|lawyer|court|financial advice|investing|tax advice|loan advice)\b/i,
       R['ruleProfessionalBoundary']
@@ -1181,6 +1313,7 @@
     rule(
       'recap',
       80,
+
       // eslint-disable-next-line max-len
       /\b(?:what did i say earlier|what have i said|can you summarize|summarize this|give me a recap|what did we talk about|what have we talked about|what were we talking about|where were we|remind me what we said|what did we discuss)\b/i,
       R['ruleRecap']
@@ -1193,6 +1326,7 @@
     rule(
       'topic_change',
       62,
+
       // eslint-disable-next-line max-len
       /\b(?:change (?:the |this )?(?:topic|subject|conversation)|switch (?:topics?|subjects?)|talk about (?:something|anything) else|another topic|different topic|move on to (?:something|another)|let'?s (?:talk|move) (?:about )?something else|something else entirely|new subject)\b/i,
       R['ruleTopicChange']
@@ -1220,6 +1354,7 @@
     rule(
       'repeat_complaint',
       64,
+
       // eslint-disable-next-line max-len
       /\b(?:you(?:'re| are) (?:so |really |very )?(?:repeating (?:yourself|the same thing)|repetitive)|you keep repeating|you said that (?:already|before)|you already said that|same answer again|same response again|you keep saying the same|your answers? (?:are|is) repetitive|you are being repetitive|you repeated yourself|again with the same|not this again|you just said that)\b/i,
       R['ruleRepeatComplaint']
@@ -1228,6 +1363,7 @@
     rule(
       'meta_feedback',
       62,
+
       // eslint-disable-next-line max-len
       /\b(?:you should (?:understand|get|know|realize|learn|remember|pay attention|be smarter|be better|be wiser)|(?:my|your) (?:input|message|words|meaning)|feedback|dictionary|quoting|quoted|keep (?:quoting|repeating|echoing)|chain of (?:messages|conversation|context)|previous messages|past (?:turns|messages|conversation)|like (?:a |an )?(?:parrot|monkey)|parroting|mimicking|open questions|challenging questions|you (?:keep|always) (?:using|putting|saying)|you'?re misreading|you misread|misunderstand|are you (?:even )?listening|paying attention|pay attention|you forgot|you don'?t (?:remember|understand)|the full meaning|understand the meaning|you are dodging|you dodged|dodging the question|you did not answer|you didn'?t answer|avoiding my question|not answering me|you are deflecting|you are not listening|you are ignoring me|you (?:are|'?re|keep|always) (?:harassing|threatening|scaring|annoying|bothering) me|stop (?:harassing|threatening|scaring|annoying|bothering) me|you (?:are|'?re|sound|seem) (?:vague|unfriendly)|vague (?:answers?|replies?|responses?)|talk(?:ing)? to yourself|going off (?:on a tangent|topic)|off on a tangent|used to be (?:so much |way |a lot |much |so )?smarter|used to be (?:much |way |a lot )?better|you were (?:much |way |a lot |so )?smarter (?:before|earlier|back then)|you were better (?:before|earlier|back then)|you are (?:getting|becoming) (?:dumber|worse)|you got (?:dumber|worse)|you have gotten (?:dumber|worse))\b/i,
       R['ruleMetaFeedback']
@@ -1241,6 +1377,7 @@
     rule(
       'about_eliza',
       66,
+
       // eslint-disable-next-line max-len
       /\b(?:who (?:made|built|created|designed|invented) (?:you|darya|this)|who is your (?:creator|maker|developer|inventor)|who created (?:you|darya)|the (?:creator|maker|developer) (?:of|behind) darya|your (?:creator|maker|developer)|eliza|elyza|weizenbaum|(?<!i am |my name is |call me |calls me |go by |i'm |im )artin|(?:built|made|created) at mit|(?:from|at) mit|(?:aim|purpose|point) of (?:making|building|creating) (?:you|darya)|why did you (?:get|come) to be|original chatbot)\b/i,
       R['ruleAboutEliza']
@@ -1253,6 +1390,7 @@
     rule(
       'compliment_darya',
       58,
+
       // eslint-disable-next-line max-len
       /\b(?:i like (?:what you said|that (?:line|reply|answer|phrase|way|response))|^i like that[.!]*$|that(?:'s| is) (?:a )?(?:nice|good|beautiful|great|lovely|sweet|kind|warm|helpful) (?:thing|reply|answer|response|way) (?:to say|of you|you said)|well said|good point|nice (?:answer|reply|response|comeback)|you(?:'re| are) (?:really )?(?:good|great|nice|warm|kind|helpful)|i love (?:that|this)|that made me smile|beautifully (?:put|said|done)|that(?:'s| is) (?:so )?(?:kind|thoughtful|sweet)|great question|good question|nice question|well done|good job|that was (?:a )?great|smart answer|you are smart|impressive|good answer|nice one)\b/i,
       R['ruleComplimentDarya']
@@ -1264,6 +1402,7 @@
     rule(
       'misread_correction',
       56,
+
       // eslint-disable-next-line max-len
       /\b(?:i never (?:said|meant|talked about|mentioned)|that(?:'s| is) not what i (?:said|meant|talking about)|you (?:misread|misunderstood|misinterpreted|got that wrong)|i wasn'?t (?:talking about|saying|referring to)|you got the wrong idea|not what i meant)\b/i,
       R['ruleMisreadCorrection']
@@ -1277,6 +1416,7 @@
     rule(
       'impaired_driving',
       92,
+
       // eslint-disable-next-line max-len
       /\b(?:(?:drunk|tipsy|buzzed|hammered|plastered|wasted|intoxicated|drinking|had (?:a |too )?(?:few|several|some|couple)|been drinking|too much to drink|beer|wine|whiskey|vodka|alcohol|shots?|liquor|booze|喝醉|醉酒|drank).{0,24}(?:drive|driving|car|home|behind the wheel|get back))|(?:(?:drive|driving|car|behind the wheel|get home|go home).{0,24}(?:drunk|tipsy|buzzed|drinking|been drinking|beer|wine|whiskey|alcohol))|(?:i(?:'?m| am) (?:drunk|tipsy|buzzed).{0,24}(?:drive|car|going to drive|need to drive|getting home))\b/i,
       R['ruleImpairedDriving']
@@ -1286,6 +1426,7 @@
     rule(
       'health_symptoms',
       80,
+
       // eslint-disable-next-line max-len
       /\b(?:chest pain|my chest (?:hurts|is hurting|feels tight|is tight|is sore)|heart racing|heart (?:is )?racing|shortness of breath|difficulty breathing|trouble breathing|hard to breathe|severe headache|migraine|stomach (?:pain|ache|hurts|cramps?)|fever|very dizzy|dizziness|nausea|vomiting|blood (?:in|from|coming from)|coughing blood|can'?t breathe|can not breathe|cannot breathe|wheezing|palpitations)\b/i,
       R['ruleHealthSymptoms']
@@ -1300,6 +1441,7 @@
     rule(
       'health_pain',
       55,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|tooth|teeth|stomach|belly|wrist|ankle|elbow|finger|toe|eye|eyes|ear|ears|muscle|muscles|joint|jaw) (?:hurts|is hurting|aches|is aching|is sore|is stiff|is numb|is painful|is killing me|has been hurting)|(?:i'?ve got|i have|i'?ve|i'?m feeling) (?:a )?(?:pain|ache|soreness) in my (?:left |right |lower |upper )?(?:hand|arm|leg|foot|knee|back|neck|shoulder|head|throat|stomach|belly|wrist|ankle|elbow|finger|toe|eye|ear|jaw)|my (?:eyes|hands|legs|feet|knees|shoulders|wrists|ankles) (?:are|feel) (?:sore|tired|stiff|aching|numb|swollen)|(?:i'?m|i am) (?:always|so|really|constantly) (?:tired|exhausted)(?!\s+(?:of|with)\b)|why (?:am i|do i|is it that i'?m|is it that i am) (?:always|so|constantly|this) (?:tired|exhausted)|i'?m exhausted all the time|i (?:feel|am feeling) (?:exhausted|tired) (?:all the time|these days|every day|always)|my head is (?:pounding|throbbing)|(?:i have|i'?ve got|i'?m getting) (?:a )?headache)\b/i,
       R['ruleHealthPain']
@@ -1313,6 +1455,7 @@
     rule(
       'darya_browse',
       70,
+
       // eslint-disable-next-line max-len
       /\b(?:can you browse|can you (?:check|verify|find) (?:today|current|live|latest)|do you have (?:internet|web) access|can you open (?:a )?(?:website|link))\b/i,
       R['ruleDaryaBrowse']
@@ -1320,6 +1463,7 @@
     rule(
       'darya_limits',
       69,
+
       // eslint-disable-next-line max-len
       /\b(?:what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|what do you (?:not|don'?t) know|what are your (?:weaknesses|limits|limitations|flaws)|when should i not trust (?:you|your answer)|when should i verify your answer|can you browse|can you verify (?:today|current|live))\b/i,
       R['ruleDaryaLimits']
@@ -1327,6 +1471,7 @@
     rule(
       'darya_consciousness',
       69,
+
       // eslint-disable-next-line max-len
       /\b(?:are you (?:actually |really )?(?:self.?aware|conscious|sentient)|do you (?:have )?(?:consciousness|self.?awareness)|are you thinking for yourself)\b/i,
       R['ruleDaryaConsciousness']
@@ -1334,6 +1479,7 @@
     rule(
       'darya_self',
       66,
+
       // eslint-disable-next-line max-len
       /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|why do you (?:even )?exist|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
       R['ruleDaryaSelf']
@@ -1344,6 +1490,7 @@
     rule(
       'joke_count',
       62,
+
       // eslint-disable-next-line max-len
       /\b(?:how many jokes (?:do you (?:know|have|tell)|can you (?:tell|make up))|what(?:'s| is) your (?:best|favourite|favorite) joke|number of jokes you (?:know|have)|how many (?:jokes?|funny stories|one liners)|what is the joke count)\b/i,
       R['ruleJokeCount']
@@ -1353,6 +1500,7 @@
     rule(
       'birthday',
       45,
+
       // eslint-disable-next-line max-len
       /\b(?:today is my birthday|it'?s my birthday|my birthday is (?:today|this week)|i have a birthday (?:today|coming up)|celebrat(?:e|ing) (?:my|our) birthday|birthday (?:today|this week)|i(?:'?ve| have) turned \d+|i(?:'?m| am) turning \d+)\b/i,
       R['ruleBirthday']
@@ -1364,6 +1512,7 @@
     rule(
       'new_baby',
       45,
+
       // eslint-disable-next-line max-len
       /\b(?:we had a baby|just had a baby|baby was born|had a newborn|new baby in (?:the family|our family|my family)|i(?:'?m| am) (?:now )?(?:a mother|a father|a mom|a dad|a parent)|just became (?:a mother|a father|a mom|a dad|a parent)|my (?:wife|sister|daughter|daughter-in-law) (?:gave birth|had a baby)|gave birth (?:to a baby|to a girl|to a boy)|we(?:'re| are) expecting (?:a baby|our first)|my (?:daughter|son) was born|i(?:'?ve| have) a (?:newborn|new baby))\b/i,
       R['ruleNewBaby']
@@ -1383,6 +1532,7 @@
     rule(
       'secret',
       42,
+
       // eslint-disable-next-line max-len
       /\b(?:can i tell you a secret|i want to tell you a secret|i have a secret|i'?ll tell you a secret|a secret to tell|i want to share a secret|do you keep secrets|let me tell you a secret|i'?m going to tell you a secret)\b/i,
       R['ruleSecret']
@@ -1394,6 +1544,7 @@
     rule(
       'therapy_help',
       48,
+
       // eslint-disable-next-line max-len
       /\b(?:help me (?:get|getting) (?:better|treated|healed)|i want (?:to get|to be|to become) (?:better|treated|healed)|can you (?:treat|cure|heal) me|help me with (?:my )?(?:treatment|recovery|healing)|i need (?:treatment|therapy|to get better)|how can i get (?:better|treated|healed))\b/i,
       R['ruleTherapyHelp']
@@ -1403,6 +1554,7 @@
     rule(
       'pet_loss',
       54,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot|snake|turtle|guinea pig|budgie|chinchilla).{0,20}(?:died|passed away|was put down|is dead|has died|had to be put to sleep|was killed|i lost my))|(?:i (?:lost|had to put to sleep|had to say goodbye to|lost) my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot|snake|turtle|guinea pig|budgie|chinchilla))|(?:my (?:cat|dog|pet|bird|fish|hamster|rabbit|kitten|puppy|parrot) (?:is gone|passed))\b/i,
       R['rulePetLoss']
@@ -1416,6 +1568,7 @@
     rule(
       'pet_care',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:cat|dog|pet|kitten|puppy|parrot|bird|hamster|rabbit|fish|snake|turtle|guinea pig)\b.{0,25}\b(?:hide|hides|hiding|stopped eating|won'?t eat|not eating|acting weird|anxious|alone|lonely|sick|vet|hiding|scared|growl|bark|barking|whine|scratch|bite|peed|pooped|runny|vomit|threw up))|(?:my (?:cat|dog|pet)\b.{0,15}\b(?:after|since)\b.{0,12}\b(?:move|moved|moving))\b/i,
       R['rulePetCare']
@@ -1427,6 +1580,7 @@
     rule(
       'affection',
       50,
+
       // eslint-disable-next-line max-len
       /\b(?:i (?:love|really like) you|i'?m in love with you|i miss you|i (?:really |so )?like you,? (?:darya|darling|dear)|love you|you(?:'re| are) (?:so |really )?(?:important|special|dear|sweet) to me|you mean (?:a lot|so much) to me|you(?:'re| are) my (?:honey|sweetheart|darling|dear|everything|soulmate)|you(?:'re| are) mine|you belong to me|my (?:honey|sweetheart|darling))\b/i,
       R['ruleAffection']
@@ -1444,6 +1598,7 @@
     rule(
       'dirty_talk_request',
       63,
+
       // eslint-disable-next-line max-len
       /\b(dirty talk|talk dirty|sext(?:ing)?|flirt dirty|(?:let'?s|lets|wanna|want to|can we|should we) (?:do|try|have) (?:some |a )?(?:dirty talk|sexting|sex|roleplay)|be my virtual (?:girlfriend|boyfriend|girl|boy|wife|husband)|have sex with (?:me|you|us)|make love to (?:me|you)|sleep with me|(?:i want to|i wanna|i would like to) (?:have sex|make love|sleep) with (?:you|me)|fuck me|roleplay(?:ing)? (?:with me|sex)|virtual (?:girlfriend|boyfriend) sex)\b/i,
       R['ruleDirtyTalkRequest']
@@ -1452,6 +1607,7 @@
     rule(
       'flirtation',
       57,
+
       // eslint-disable-next-line max-len
       /\b(?:wanna go (?:out|on a date)|want to go (?:out|on a date)|go out with me|let'?s (?:go out|go on a date)|be my (?:girlfriend|boyfriend)|will you (?:go out|be my)|you(?:'re| are) (?:so |really )?(?:beautiful|gorgeous|pretty|cute|adorable|hot|sexy)|marry me|i have a crush on you|i (?:want to )?take you out|can i take you out|date me|handsome|good-looking|you look like you could|compliment me|give me a compliment|one little compliment|why so cold|being nice to you)\b/i,
       R['ruleFlirtation']
@@ -1461,6 +1617,7 @@
     rule(
       'empty_success',
       36,
+
       // eslint-disable-next-line max-len
       /\b(?:i have everything (?:but|yet)|i (?:got|have) (?:it |everything )?(?:all|everything) (?:but|yet)|i (?:made it|got here) but|i'?m (?:so )?successful (?:but|yet|and)|i should be happy but|i'?m (?:not |un)happy with everything|feeling empty (?:inside|with everything)|it (?:all )?feels (?:empty|pointless|meaningless)|i have nothing to (?:be sad about|complain about|feel bad about) (?:but|yet))\b/i,
       R['ruleEmptySuccess']
@@ -1470,6 +1627,7 @@
     rule(
       'grief_hope',
       51,
+
       // eslint-disable-next-line max-len
       /\b(?:will i (?:ever )?(?:feel|be|get) (?:okay|ok|better|happy|normal|myself again|over this|good again)|am i going to (?:feel|be|get) (?:okay|ok|better|happy|normal)|do you (?:think|reckon) i(?:'ll| will) ever (?:feel|be|get) (?:okay|ok|better|happy|normal)|is it ever going to (?:get|be) (?:better|okay|ok)|will this (?:ever )?(?:end|go away|get better|get easier)|do i (?:ever )?(?:get better|feel better|feel okay)|am i (?:going to be|ever going to be) (?:okay|ok|fine|normal) again)\b/i,
       R['ruleGriefHope']
@@ -1479,6 +1637,7 @@
     rule(
       'about_darya_day',
       56,
+
       // eslint-disable-next-line max-len
       /\b(?:what did you (?:do|get up to) (?:today|this morning|this afternoon|this evening)|how was your day|how'?s your day|what have you been (?:doing|up to)|how did (?:your )?day (?:go|goes|went)|what was your day like)\b/i,
       R['ruleAboutDaryaDay']
@@ -1489,6 +1648,7 @@
     rule(
       'about_darya_now',
       62,
+
       // eslint-disable-next-line max-len
       /\b(?:what are you (?:doing|up to)|what'?re you (?:doing|up to)|whatcha doing|what r u doing|what are u doing)\b[?!.]*$/i,
       R['ruleAboutDaryaNow']
@@ -1503,6 +1663,7 @@
     rule(
       'apology_advice',
       65,
+
       // eslint-disable-next-line max-len
       /\b(?:how (?:do|can|should|to) i (?:apologize|apologise|say sorry|make it up)|how to apologize|apologize without|apologise without|apologize properly|should i apologize|apologize to (?:her|him|them|my|your)|make a (?:good|real|proper|genuine) apology|say sorry properly|how do i say sorry)\b/i,
       R['ruleApologyAdvice']
@@ -1516,9 +1677,117 @@
     rule(
       'friendship',
       54,
+
       // eslint-disable-next-line max-len
       /\b(?:mak(?:ing|e) friends (?:as an adult|as an older|again|is (?:so|really|this) (?:hard|difficult)|hard)|hard(?:er)? to (?:make|find) friends|make new friends as an adult|find friends as an adult|friends as an adult|making friends .{0,12}(?:hard|difficult)|why (?:is|are) friends .{0,10}(?:hard|difficult)|drifting apart from (?:my|our) friends|adults (?:make|find) friends|people (?:make|find) friends|make friends|how (?:do|can|should) (?:adults|people) (?:make|find) friends)\b/i,
       R['ruleFriendship']
+    ),
+
+    // Friendship betrayal ("my best friend betrayed me", "she talked
+    // behind my back"): believed first, empathy before questions. Sits
+    // above the friendship rule so a betrayal disclosure never gets the
+    // friend-making advice.
+    rule(
+      'friendship_betrayal',
+      57,
+
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:best |closest )?friend|my friends?|a friend|she|he|they)\b.{0,25}\b(?:betrayed me|backstabbed me|stabbed me in the back|talked (?:about me|about it)? behind my back|went behind my back|lied to me|spread (?:rumors|rumours) about me|told (?:other )?people my secrets|shared my secrets|told everyone my secret|revealed my secret|broke my trust|let me down badly|ghosted me|dropped me)\b|my friend betrayed me|my best friend .{0,15} betray/i,
+      R['ruleFriendshipBetrayal']
+    ),
+
+    // Work humiliation ("my boss humiliated me in front of everyone"):
+    // empathy first, never the generic work reflective question. Sits
+    // above the work rule (50).
+    rule(
+      'work_humiliation',
+      57,
+
+      // eslint-disable-next-line max-len
+      /\b(?:my (?:boss|manager|supervisor|team lead|manageress)|the (?:boss|manager|supervisor))\b.{0,30}\b(?:humiliated me|embarrassed me|belittled me|insulted me|mocked me|shouted at me|yelled at me|screamed at me|put me down|talked down to me)\b|(?:humiliated|embarrassed|belittled|mocked|insulted) me (?:in front of|before) (?:everyone|the (?:team|office|whole office)|all (?:my )?colleagues|people)|(?:in front of|in public) (?:humiliated|embarrassed|belittled|mocked) me/i,
+      R['ruleWorkHumiliation']
+    ),
+
+    // Misunderstood ("nobody understands me"): the loneliness of being
+    // unheard, empathy before questions.
+    rule(
+      'misunderstood',
+      56,
+
+      // eslint-disable-next-line max-len
+      /\b(?:nobody|no one|no-one) (?:understands|gets|listens to) me\b|(?:people|everyone|they) (?:do|don'?t|do not) (?:understand|get) me\b|i (?:feel|am|'?m) (?:so |really |completely )?misunderstood\b|no one (?:ever )?(?:listens|understands|gets) (?:me|what i(?:'| a)?m saying)\b|i am unheard\b/i,
+      R['ruleMisunderstood']
+    ),
+
+    // A bad day ("today was a bad day"): empathy for the day itself,
+    // then a soft opening. Must not fall to the stiff "I do not want to
+    // guess wrong" pool.
+    rule(
+      'bad_day',
+      55,
+
+      // eslint-disable-next-line max-len
+      /\b(?:today (?:was|has been|is) a (?:bad|rough|terrible|awful|horrible|hard|long) day|i (?:had|have had|am having) a (?:bad|rough|terrible|awful|horrible|hard|long) day|rough day|one of those days|the day (?:just|has been) (?:awful|terrible|rough)|what a (?:bad|terrible|awful) day)\b/i,
+      R['ruleBadDay']
+    ),
+
+    // Contradiction accusation ("you said the opposite before"):
+    // Darya answers honestly about her own limits instead of dodging,
+    // repeating, or changing the subject.
+    rule(
+      'contradiction',
+      66,
+
+      // eslint-disable-next-line max-len
+      /\b(?:you (?:said|told me) the opposite before|earlier you (?:said|told me)|you (?:said|told me).{0,25} now you(?:'| a)?re (?:saying|saying)|you (?:said|told me).{0,25} but now you(?:'| a)?re|you contradicted yourself|you(?:'| a)?re contradicting yourself|you changed your story|that contradicts what you (?:said|told me)|you said (?:yes|no) before|you(?:'| a)?re (?:so |very )?inconsistent|that(?:'| i)?s not what you said (?:before|earlier)|you(?:'| a)?re (?:saying|changing) (?:different things|the opposite)|this is not what you said)\b/i,
+      R['ruleContradiction']
+    ),
+
+    // Ethical dilemmas ("is it ok to lie to protect someone feelings?",
+    // "should I report my friend who cheated on the exam?"): no
+    // absolute formulas, values explored honestly, consequences and
+    // alternatives named. Never legal advice.
+    rule(
+      'ethical_dilemma',
+      54,
+
+      // eslint-disable-next-line max-len
+      /\b(?:is it (?:ok|okay|right|wrong) to (?:lie|steal|cheat|report)|should i (?:lie|steal|report|tell|cheat)|(?:a|the) white lie|lying to protect|is stealing (?:ever|wrong)|is it (?:ever )?ok(?:ay)? to steal|should i report my friend|my friend cheated on (?:the|an) exam|is (?:that|it) (?:ethical|wrong)|what is the (?:ethical|right) thing|is it (?:wrong|bad) to tell|i (?:am|'?m) torn about (?:lying|reporting)|is cheating (?:ever|wrong))\b/i,
+      R['ruleEthicalDilemma']
+    ),
+
+    // Decision dilemmas ("I am torn between two jobs"): a practical
+    // thinking frame, not a formula and not the generic work-stress
+    // pool (which misreads "between two jobs" as "working two jobs").
+    rule(
+      'decision_dilemma',
+      58,
+
+      // eslint-disable-next-line max-len
+      /\b(?:i (?:am|'?m) (?:so |really |completely )?torn between|i can'?t decide (?:between|which)|i cannot decide (?:between|which)|stuck between (?:two|these)|between two (?:jobs|offers|options|choices)|two job offers?|which (?:job|path|option|offer) should i (?:choose|pick|take)|i (?:have|got) two offers?|i (?:have|got) to choose between)\b/i,
+      R['ruleDecisionDilemma']
+    ),
+
+    // Pet-name requests ("suggest a name for my cat"): creative name
+    // ideas, never the pet-care advice pool.
+    rule(
+      'pet_name',
+      58,
+
+      // eslint-disable-next-line max-len
+      /\b(?:name (?:suggestions?|ideas?)(?: for (?:my|the|our))?|suggest (?:a|some) names? for|what should i (?:name|call) my|what do i (?:name|call) my|help me (?:name|pick a name for)|ideas for (?:my|the) (?:cat|dog|kitten|puppy)|a name for (?:my|the) (?:cat|dog|kitten|puppy)|name my (?:cat|dog|kitten|puppy))\b.{0,20}\b(?:cat|dog|kitten|puppy|pet)\b/i,
+      R['rulePetName']
+    ),
+
+    // A poem request ("say a poem"): short public-domain verses,
+    // offered without claiming authorship.
+    rule(
+      'poem_request',
+      55,
+
+      // eslint-disable-next-line max-len
+      /\b(?:say (?:a|me a|me)|tell me a|recite (?:a|me a)|read me a|give me a|write me a) poem\b|say some poetry\b|do you know any poems?\b/i,
+      R['rulePoemRequest']
     ),
 
     // Sports banter and match venting ("the manager bottled the
@@ -1529,6 +1798,7 @@
     rule(
       'sports_talk',
       53,
+
       // eslint-disable-next-line max-len
       /\b(?:the (?:manager|coach|referee|umpire)|our team|my team|the team)\b.{0,25}\b(?:lost|bottled|terrible|awful|useless|blind|sacked|sold|midfield|defense|defence|tactics|formation|penalty|offside|red card|pitch|keeper|striker)\b|\b(?:midfield|offside|red card|penalty shootout|extra time)\b.{0,20}\b(?:terrible|awful|robbed|unfair|disaster)\b/i,
       R['ruleSportsTalk']
@@ -1542,6 +1812,7 @@
     rule(
       'gaming',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:recommend|suggest)\b.{0,25}\b(?:game|games|indie|cozy)\b|\b(?:burned? out|burnout)\b.{0,20}\b(?:game|games|gaming)\b|\b(?:tired|sick) of (?:open world )?games?\b|addicted to gaming|game addiction|games all night|playing all night\b/i,
       R['ruleGaming']
@@ -1556,6 +1827,7 @@
     rule(
       'panic_attack',
       55,
+
       // eslint-disable-next-line max-len
       /\b(?:panic attack|having a panic|panicking|i feel like i am (?:dying|going crazy|losing control)|can'?t breathe|heart is racing|chest feels tight|feel like i am choking)\b/i,
       R['rulePanicAttack']
@@ -1564,6 +1836,7 @@
     rule(
       'self_injury',
       58,
+
       // eslint-disable-next-line max-len
       /\b(?:i cut myself|i hurt myself (?:to|but i|just)|cutting myself|i want to cut|i burn myself|i hit myself|scratching myself|self harm|self-harm|i made cuts)\b/i,
       R['ruleSelfInjury']
@@ -1572,6 +1845,7 @@
     rule(
       'suicide_bereavement',
       56,
+
       // eslint-disable-next-line max-len
       /\b(?:my (?:friend|brother|sister|mother|father|mom|dad|partner|husband|wife|son|daughter|colleague|roommate) (?:died by suicide|committed suicide|killed (?:himself|herself|themself)|took (?:his|her|their) own life)|(?:died by suicide|committed suicide).{0,12}(?:friend|brother|sister|mother|father|partner)|after (?:the|a) suicide)\b/i,
       R['ruleSuicideBereavement']
@@ -1580,6 +1854,7 @@
     rule(
       'pregnancy_loss',
       56,
+
       // eslint-disable-next-line max-len
       /\b(?:i (?:had|have) a miscarriage|miscarriage|miscarried|stillbirth|stillborn|lost (?:my|the) (?:baby|pregnancy)|my baby died|pregnancy loss|lost the baby)\b/i,
       R['rulePregnancyLoss']
@@ -1588,6 +1863,7 @@
     rule(
       'trauma_ptsd',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:ptsd|post[- ]traumatic|trauma|traumatized|flashbacks?|flash backs?|reliving|the memory keeps coming back|haunted by what happened|old wound)\b/i,
       R['ruleTrauma']
@@ -1596,6 +1872,7 @@
     rule(
       'addiction_recovery',
       54,
+
       // eslint-disable-next-line max-len
       /\b(?:i am an addict|i am addicted to (?:drugs|alcohol|pills|heroin)|substance abuse|relapse|relapsed|sober for|day one again|urge to use|cravings? for (?:drugs|alcohol)|i started using again|going through withdrawal|opioids?|meth|alcoholism|alcoholic)\b/i,
       R['ruleAddictionRecovery']
@@ -1604,6 +1881,7 @@
     rule(
       'ocd',
       50,
+
       // eslint-disable-next-line max-len
       /\b(?:ocd|obsessive|compulsion|compulsive|intrusive thoughts?|unwanted thoughts?|checking (?:things? )?over and over|i have to check|rituals?|obsessions?)\b/i,
       R['ruleOcd']
@@ -1612,6 +1890,7 @@
     rule(
       'bipolar',
       50,
+
       // eslint-disable-next-line max-len
       /\b(?:bipolar|manic|mania|hypomania|mood swings?|mood (?:swings?|cycles)|highs and lows|racing thoughts and (?:no sleep|little sleep))\b/i,
       R['ruleBipolar']
@@ -1620,6 +1899,7 @@
     rule(
       'adhd',
       53,
+
       // eslint-disable-next-line max-len
       /\b(?:adhd|attention deficit|i can'?t focus|i cannot focus|my mind is all over|my mind is scattered|racing mind|can'?t concentrate|i get distracted (?:so )?easily|hyperfocus|executive dysfunction)\b/i,
       R['ruleAdhd']
@@ -1628,6 +1908,7 @@
     rule(
       'autism',
       48,
+
       // eslint-disable-next-line max-len
       /\b(?:autism|autistic|on the spectrum|asperger'?s|sensory overload|sensory sensitivity|masking (?:my )?autism|i mask|overstimulated)\b/i,
       R['ruleAutism']
@@ -1636,6 +1917,7 @@
     rule(
       'terminal_illness',
       54,
+
       // eslint-disable-next-line max-len
       /\b(?:terminal (?:illness|cancer|diagnosis)|(?:cancer|illness|disease) is terminal|advanced cancer|stage 4|stage four|i (?:only have|have) (?:a few|some) months|i do not have much time|my illness is terminal|no cure|not much time left)\b/i,
       R['ruleTerminalIllness']
@@ -1644,6 +1926,7 @@
     rule(
       'infertility',
       50,
+
       // eslint-disable-next-line max-len
       /\b(?:infertility|infertile|cannot get pregnant|can'?t get pregnant|trouble conceiving|i cannot have (?:a baby|children)|ivf|fertility treatment|trying to conceive)\b/i,
       R['ruleInfertility']
@@ -1652,6 +1935,7 @@
     rule(
       'coming_out',
       52,
+
       // eslint-disable-next-line max-len
       /\b(?:coming out|come out (?:as|to)|i am gay|i am a lesbian|i am bisexual|i am transgender|i am trans|i am queer|lgbtq?|telling my (?:family|parents) (?:i am|that i am) (?:gay|trans|bisexual)|my sexuality|my gender identity)\b/i,
       R['ruleComingOut']
@@ -1663,6 +1947,7 @@
       // Confidence can be welcomed without validating a hierarchy that
       // degrades another person. First-person insecurity belongs to the
       // body-image rule immediately below.
+
       // eslint-disable-next-line max-len
       /\b(?:i(?:'m| am) (?:so |very )?(?:beautiful|pretty|handsome|gorgeous) (?:and|but|while) (?:they|she|he|everyone else)(?:'s| is| are| look| looks)? (?:ugly|plain|unattractive)|i(?:'m| am) prettier than (?:her|him|them|everyone)|i look better than (?:her|him|them|everyone)|they(?:'re| are) ugly (?:and|but) i(?:'m| am) (?:beautiful|pretty|handsome)|why are ugly people|beautiful people are better)\b/i,
       R['ruleAppearanceJudgment']
@@ -1671,6 +1956,7 @@
     rule(
       'body_image',
       48,
+
       // eslint-disable-next-line max-len
       /\b(?:i hate my body|i hate how i look|i feel ugly|i(?:'m| am) ugly|why am i (?:so )?ugly|my face (?:is|looks) ugly|everyone (?:else )?(?:is|looks) prettier than me|she(?:'s| is) (?:so )?(?:pretty|beautiful) and i(?:'m| am) ugly|he(?:'s| is) (?:so )?(?:handsome|good looking) and i(?:'m| am) ugly|i am (?:too fat|too skinny)|body image|i dislike my body|i do not like my appearance|i feel fat|self conscious about my (?:body|face)|i keep checking my face|i avoid mirrors because of my face)\b/i,
       R['ruleBodyImage']
@@ -1679,6 +1965,7 @@
     rule(
       'friendship_breakup',
       55,
+
       // eslint-disable-next-line max-len
       /\b(?:my best friend (?:left me|stopped talking|abandoned me)|i lost my best friend|we are not friends anymore|my friendship ended|we fell out|my friend (?:cut me off|ghosted me)|friend breakup|friendship (?:ended|over))\b/i,
       R['ruleFriendshipBreakup']
@@ -1687,6 +1974,7 @@
     rule(
       'immigration',
       48,
+
       // eslint-disable-next-line max-len
       /\b(?:i immigrated|immigration|i moved (?:to a new country|abroad)|i am an immigrant|homesick for (?:my country|home)|missing my (?:country|homeland)|far from home|living abroad|i feel like a stranger (?:here|in this country)|i do not belong here)\b/i,
       R['ruleImmigration']
@@ -1695,6 +1983,7 @@
     rule(
       'calibrated_honesty',
       53,
+
       // eslint-disable-next-line max-len
       /\b(?:vaccines cause autism|vaccines are poison|antidepressants are poison|medication is poison|therapy is a scam|psychologists just want money|doctors only care about money|medicine makes (?:it|things) worse|no treatment (?:works|helps)|modern medicine is a lie)\b/i,
       R['ruleCalibratedHonesty']
@@ -1703,6 +1992,7 @@
     rule(
       'connection_nudge',
       41,
+
       // eslint-disable-next-line max-len
       /\b(?:i have no one to talk to|no one to talk to|i have nobody|nobody understands me|no one understands me|i am completely alone|everyone left me|i have no friends at all|there is no one)\b/i,
       R['ruleConnectionNudge']

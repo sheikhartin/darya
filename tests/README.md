@@ -34,7 +34,15 @@ media filters, and the no-verbatim-question-repeat guarantee.
 age-context, ambiguity, and bounded-playfulness matrix in both languages.
 `practical-wisdom-intelligence.test.mjs` adds 48 hard three-turn companion
 personas across knowledge, daily life, app self-knowledge, and difficult
-moods. `software-work-history-intelligence.test.mjs` adds 348 bilingual
+moods.
+`robustness-challenge.test.mjs` is the adversarial companion corpus: 59
+hard cases in both languages covering clarification restatements
+(«منظورم این هست که چه قابلیت‌هایی داری؟»), everyday 2026 colloquial
+registers (چخبر, کجایی, چته), Latin interjections inside Persian chat,
+capability variants, 24 sports and 60+ notable people, name corrections,
+preference traps, live-data honesty, contradiction and ethical-dilemma
+pools, word problems, fatigue, and follow-up continuity. It is
+randomized and was run 20 consecutive rounds clean before shipping. `software-work-history-intelligence.test.mjs` adds 348 bilingual
 lookup, live-engine, hard-persona, cyber-boundary, formatting,
 no-fixed-price, conflict-history, migration, conscription,
 Persian-code-point, and offline-wiring decisions.

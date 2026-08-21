@@ -137,6 +137,15 @@
     ':) چه حال خوبی!',
     'لبخندت را حس می‌کنم. دوست داری از چه چیزی بگویی؟'
   ];
+  // Pure-Latin chat laughter ("lol", "haha") in a Persian conversation:
+  // joined the laughter instead of treating it as a foreign language or
+  // over-explaining it. Stays light and short.
+  R.lightLaughResponses = [
+    ':) خندیدن به حرفت؛ دلم می‌خواهد بدانم چه چیز خنده‌دار شده؟',
+    'خنده‌ات را شنیدم. :) بگو ببینم چه خبر شده؟',
+    ':) این خنده خوب بود. از چی می‌خندی؟',
+    'خندیدم با تو. :) قصه‌اش را بگو.'
+  ];
   R.gratitudeResponses = [
     'خواهش می‌کنم.',
     'هر وقت خواستی، من اینجا هستم.',

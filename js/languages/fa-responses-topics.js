@@ -667,6 +667,37 @@
     'حالم خوب است، ممنون که پرسیدی.'
   ];
 
+  // Casual "where are you (right now)?" («کجایی؟», «کجایی الان؟»): a
+  // playful presence answer, not a geography lecture. The darya_self
+  // rule still owns «اهل کجایی» and «کجا زندگی می‌کنی» (66 > 62).
+  R['ruleWhereAreYou'] = [
+    'همین‌جا، کنار تو. کجای دنیایی تو؟',
+    'اینجا که گفتگو ادامه دارد؛ همان‌جا که تو هستی. کجایی؟',
+    'همین‌جا پشت این صفحه، حواسم به توست. تو کجایی؟',
+    'در همین گفتگو. می‌گویند کجایی؟'
+  ];
+
+  // «مشکلی نیست؟», «اوکیه؟», «همه چی روبه‌راهه»: the everyday
+  // everything-is-fine check-in gets a warm reassurance instead of an
+  // ambiguous-input prompt. The same reply works when the user is the
+  // one reassuring Darya («مشکلی نیست» after a mishap).
+  R['ruleAllWell'] = [
+    'همه چیز روبه‌راه است؛ نگران نباش. حال خودت چطور است؟',
+    'آره، همه چیز خوب است. تو چطوری؟',
+    'این‌جا آرام است و همه چیز مرتب. اگر چیزی بود، همین‌جا هستم.',
+    'همه چیز اوکی است. تو چه خبر؟'
+  ];
+
+  // «چته؟», «چی شده؟»: a gentle what-happened opener in everyday
+  // Persian. Stays warm and open instead of the stiff short-reply
+  // prompt, so the person feels invited to tell the story.
+  R['ruleWhatsUp'] = [
+    'می‌بینم چیزی پیش آمده. بگو چه شده؟',
+    'انگار اتفاقی افتاده. خیال‌ت راحت، هر چه هست بگو.',
+    'چه شده؟ این‌جا هستم تا بشنوم.',
+    'بگو ببینم چی شده؛ از اولش بگو.'
+  ];
+
   R['ruleSmalltalkIdentity'] = [
     'من دریا هستم، همراهی که اینجاست تا به حرف‌هایتان گوش بدهد. یک انسان واقعی نیستم، فقط یک فضای آرام برای فکر کردن با صدای بلند.',
     'من یک همراه گفتگوی ساده‌ام، نه یک انسان واقعی؛ اما همین‌جا هستم تا با تمام وجود گوش بدهم.',

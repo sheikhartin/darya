@@ -66,6 +66,10 @@
       'توضیح',
       'چیست',
       'چیه',
+      'کیه',
+      'کیست',
+      'کی هست',
+      'کی بود',
       'چطور',
       'چگونه',
       'یعنی',
@@ -104,6 +108,12 @@
       'what is',
       'what are',
       'what does',
+      // "who is/was X" is the people-question framing; without it the
+      // weak person name never cleared the framing gate ("who is
+      // messi?" fell to the unknown pool).
+      'who is',
+      'who was',
+      'who are',
       'about',
       'learn',
       'teach',

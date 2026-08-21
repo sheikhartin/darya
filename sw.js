@@ -141,6 +141,8 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-history-conflict.js',
   './js/data/knowledge-facts-society.js',
   './js/data/knowledge-facts-travel.js',
+  './js/data/knowledge-facts-sports.js',
+  './js/data/knowledge-facts-people.js',
   './js/data/knowledge-fun-facts.js',
   './js/data/knowledge-lists.js',
   './js/data/media-pool.js',

@@ -100,6 +100,42 @@
     'iu'
   );
 
+  // Clarification openers: people often restate a question that was not
+  // answered the way they wanted («منظورم این هست که چه قابلیت‌هایی
+  // داری؟», "I mean, what capabilities do you have?"). The restatement
+  // is the real turn, so when nothing matched the raw text the opener is
+  // stripped and the remainder is matched again. «میخوام بدونم» (I want
+  // to know) and "what i mean is" are the same class of framing: the
+  // sentence after them carries the actual intent. Only used when the
+  // remainder is substantial (3+ letters) and only when the raw text
+  // matched no rule, so a bare «منظورم اینه» never turns into an empty
+  // re-match and a genuine clarification never hijacks a matched turn.
+  const CLARIFICATION_PREFIXES = {
+    // eslint-disable-next-line max-len
+    fa: /^(?:منظورم این (?:هست|است|بود) که|منظورم اینه که|منظورم اینه|منظورم این است که|منظورم این بود که|منظورم این بود|منظور من این (?:هست|است|بود) که|میخوام بگم که|میخوام بگم|میخواستم بگم که|میخواستم بگم|میخوام بدونم که|میخوام بدونم|میخواستم بدونم که|میخواستم بدونم|میخوام بپرسم که|میخوام بپرسم|میخواستم بپرسم|بذار دقیق‌تر بگم|بذار دقیقتر بگم|بگذار دقیق‌تر بگویم|بگذار دقیقتر بگویم|بذار واضح‌تر بگم|بذار واضحتر بگم|راستش منظورم اینه که|راستش منظورم اینه|حرفم اینه که|حرفم این است که|منظورم از این حرف اینه که|یعنی میخوام بگم|در واقع میخوام بگم|واقعا میخوام بگم|بذار یه جور دیگه بگم|بگذار جور دیگری بگویم)\s*(?:که\s*)?/u,
+    // eslint-disable-next-line max-len
+    en: /^(?:i mean(?:,)?\s+|what i mean is(?: that)?\s+|what i meant (?:is|was)(?: that)?\s+|i meant to say\s+|i mean to say\s+|in other words(?:,)?\s+|let me rephrase(?: that)?\s+|let me put it (?:another|this|a different) way(?:,)?\s+|to be clear(?:,)?\s+|what i(?:'| a)?m saying is(?: that)?\s+|my point is(?: that)?\s+|what i was trying to say (?:is|was)(?: that)?\s+|i want to know\s+|i wanted to know\s+|i want to ask\s+)/i
+  };
+
+  /**
+   * Strips a clarification opener from the front of a normalized input
+   * and returns the restated remainder, or the original text when there
+   * is no opener or the remainder is too small to carry intent.
+   * @param {string} normalizedText - Normalized matching text
+   * @returns {string}
+   */
+  function stripClarificationPrefix(normalizedText, langCode) {
+    const pattern = CLARIFICATION_PREFIXES[langCode];
+    if (!pattern) {
+      return normalizedText;
+    }
+    const stripped = normalizedText.replace(pattern, '').trim();
+    if (stripped.length < 3) {
+      return normalizedText;
+    }
+    return stripped;
+  }
+
   /**
    * Removes leading and trailing copula words from a captured subject
    * phrase so an echoed fragment reads as a noun phrase, not as a verb
@@ -116,6 +152,18 @@
   }
 
   Object.assign(global.DaryaResponseEngine.prototype, {
+    /**
+     * Strips a clarification opener («منظورم این هست که», "I mean,")
+     * from a normalized input and returns the restated remainder. See
+     * stripClarificationPrefix above; the engine-level wrapper passes
+     * the active language so FA and EN keep their own opener lists.
+     * @param {string} normalizedText - Normalized matching text
+     * @returns {string}
+     */
+    _stripClarificationPrefix(normalizedText) {
+      return stripClarificationPrefix(normalizedText, this.lang.code);
+    },
+
     _matchRules(normalizedText) {
       const matches = [];
       for (const currentRule of this.rules) {
@@ -243,9 +291,14 @@
       const fatigueText = this._currentNormalizedInput || '';
       const isFatigueTurn =
         this.lang.code === 'fa'
-          ? /(?:چرا|همیشه|همش).{0,12}(?:خسته|خست)/u.test(fatigueText)
+          ? // The bare «خستم» / «خسته‌ام» (normalized «خسته ام») forms are
+            // the everyday "I am tired" and must reach the fatigue pool,
+            // never the pain-only lines.
+            /(?:چرا|همیشه|همش).{0,12}(?:خسته|خست)|^خستم$|^خسته‌ام$|^خسته ام$/u.test(
+              fatigueText
+            )
           : // eslint-disable-next-line max-len
-            /\b(?:always|so|really|constantly|this) (?:tired|exhausted)\b|(?:tired|exhausted) (?:all the time|these days|every day|always)\b/iu.test(
+            /\b(?:always|so|really|constantly|this) (?:tired|exhausted)\b|(?:tired|exhausted) (?:all the time|these days|every day|always)\b|^i(?:'| a)?m (?:so |really |very )?(?:tired|exhausted)$/iu.test(
               fatigueText
             );
       if (
