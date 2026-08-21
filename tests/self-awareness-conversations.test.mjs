@@ -253,7 +253,11 @@ test('a compliment plus one more after a joke still delivers a joke', () => {
   const faEngine = freshEngine(FA);
   faEngine.respond('یه جوک بگو');
   const faReply = faEngine.respond('آفرین به هوشت! شوکه شدم! یکی دیگه بگو');
-  assert.doesNotMatch(faReply, /(?:ترس|می‌شنوم که|نگران)/iu);
+  // A real fear acknowledgment opens with «می‌شنوم که ترسیده‌ای» or a
+  // worry word like «نگران». The scarecrow joke («مترسک») contains the
+  // letters «ترس» inside another word, so a bare substring check would
+  // false-positive; the leading letter boundary keeps it a joke.
+  assert.doesNotMatch(faReply, /(?<!\p{L})ترس|(?<!\p{L})نگران|می‌شنوم که/iu);
   assert.doesNotMatch(faReply, /بازخورد/u);
 
   const enEngine = freshEngine(EN);
@@ -266,7 +270,7 @@ test('shocked is read as surprise, not a fear disclosure', () => {
   const faEngine = freshEngine(FA);
   const faReply = faEngine.respond('وای شوکه شدم که اینو بلدی!');
   assert.notEqual(faEngine.lastDetectedEmotion, 'fear');
-  assert.doesNotMatch(faReply, /(?:ترس|وحشت|می‌ترس|نگران|اضطراب)/iu);
+  assert.doesNotMatch(faReply, /(?<!\p{L})(?:ترس|نگران|اضطراب)|می‌ترس|وحشت/iu);
 
   const enEngine = freshEngine(EN);
   const enReply = enEngine.respond('i am shook that you knew that!');
