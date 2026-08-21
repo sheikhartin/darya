@@ -3844,8 +3844,8 @@ test('proactive idle opener is armed, guarded by userSpoke, and cancellable', ()
   assert.match(core, /userSpoke/u);
 });
 
-test('release metadata is aligned at version 1.7.0', () => {
-  const expected = '1.7.0';
+test('release metadata is aligned at version 1.7.1', () => {
+  const expected = '1.7.1';
   const packageJson = JSON.parse(read('package.json'));
   const lock = JSON.parse(read('package-lock.json'));
   const manifest = JSON.parse(read('manifest.json'));
@@ -3855,11 +3855,11 @@ test('release metadata is aligned at version 1.7.0', () => {
   assert.equal(lock.version, expected);
   assert.equal(lock.packages[''].version, expected);
   assert.equal(manifest.version, expected);
-  assert.match(gradle, /versionCode 170/u);
-  assert.match(gradle, /versionName "1\.7\.0"/u);
+  assert.match(gradle, /versionCode 171/u);
+  assert.match(gradle, /versionName "1\.7\.1"/u);
   assert.match(
     read('js/engine/utils-constants.js'),
-    /DARYA_VERSION = '1\.7\.0'/u
+    /DARYA_VERSION = '1\.7\.1'/u
   );
 });
 
@@ -3897,6 +3897,7 @@ test('documentation and comments describe the current architecture', () => {
   assert.match(read('sw.js'), /knowledge-facts-history-conflict\.js/u);
   assert.match(read('sw.js'), /knowledge-facts-society\.js/u);
   assert.match(read('sw.js'), /knowledge-facts-travel\.js/u);
+  assert.match(read('sw.js'), /knowledge-facts-people\.js/u);
   assert.match(readme, /KNOWLEDGE-SOURCES\.md/u);
   assert.match(read('sw.js'), /en-society\.js/u);
   assert.match(read('sw.js'), /fa-society\.js/u);

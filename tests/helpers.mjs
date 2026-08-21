@@ -59,6 +59,7 @@ const SCRIPT_ORDER = [
   'js/data/knowledge-facts-ides.js',
   'js/data/knowledge-facts-fonts.js',
   'js/data/knowledge-facts-influencers.js',
+  'js/data/knowledge-facts-people.js',
   'js/data/knowledge-facts-sport-events.js',
   'js/data/knowledge-facts-investing.js',
   'js/data/knowledge-facts-sexuality.js',

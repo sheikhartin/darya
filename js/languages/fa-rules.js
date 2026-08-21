@@ -284,6 +284,21 @@
       R['ruleSmalltalkCapability']
     ),
 
+    // Informal 2020s Persian never says «چه قابلیت‌هایی داری» in a book
+    // register. Everyday chat uses «قابلیت هات چیه», «چی بلدی», «چه کارایی
+    // داری», and a clarification prefix («منظورم اینه که...»). Those
+    // phrasings used to miss the capability pool and fall to the unknown
+    // echo. Priority 61 sits above work (50) so «کار» inside «چه کارایی
+    // داری» never steals the turn, and below about_darya_now (62) so a
+    // bare «چیکار میکنی» stays a check-in.
+    rule(
+      'smalltalk_capability',
+      61,
+      // eslint-disable-next-line max-len
+      /(?:چه قابلیت|قابلیت هات|قابلیت‌هات|قابلیتایی|قابلیتهایی|قابلیت هایی|توانایی هات|توانایی‌هات|چی بلدی|چیکار بلدی|چه کارایی داری|چه کارهایی داری|چی کارهایی میتونی|تو چی کارهایی میتونی|چه کارهایی میتونی بکنی)/u,
+      R['ruleSmalltalkCapability']
+    ),
+
     // The user is annoyed by Darya's question or follow-up ("به تو ربطی
     // نداره", "نظرت رو نگو"). The reply respectfully accepts the
     // boundary and hands the direction of the conversation back to the
@@ -1963,7 +1978,9 @@
       'sports_talk',
       53,
       pw(
-        'مربی.{0,20}(?:خط هافبک|باخت|نابود|فاجعه|افتضاح)|داور.{0,20}(?:اشتباه|فاجعه|نابود|بد بود)|تیم.{0,20}(?:باخت|باخته|شکست خورد)|خط هافبک|هافبک.{0,10}(?:فاجعه|افتضاح)|دیشب.{0,10}(?:باختیم|باخت)|تیممون.{0,10}(?:باخت|باخته)|تیمم.{0,10}(?:باخت|باخته)|گلمون.{0,8}(?:نشد|نیومد)|پنالتی.{0,10}(?:سوخت|خراب شد)' +
+        // The half-space normalizer splits «نابود» to «نا بود» in matching
+        // text, so both spellings are required (AGENTS.md dual-spelling).
+        'مربی.{0,20}(?:خط هافبک|باخت|نابود|نا بود|فاجعه|افتضاح)|داور.{0,24}(?:اشتباه|فاجعه|نابود|نا بود|بد بود)|تیم.{0,20}(?:باخت|باخته|شکست خورد)|خط هافبک|هافبک.{0,10}(?:فاجعه|افتضاح)|دیشب.{0,10}(?:باختیم|باخت)|تیممون.{0,10}(?:باخت|باخته)|تیمم.{0,10}(?:باخت|باخته)|گلمون.{0,8}(?:نشد|نیومد)|پنالتی.{0,10}(?:سوخت|خراب شد)' +
           // Referee calls: «داور پنالتی رو نگرفت» and similar.
           '|داور.{0,10}(?:پنالتی|کارد|خطا).{0,10}(?:نگرفت|نداد|نزد)'
       ),

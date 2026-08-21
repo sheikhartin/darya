@@ -259,7 +259,10 @@ and mid-career changes at any age), video games
 picks, and per-genre lists), concrete career plans for common paths
 (software development, data science, design, teaching, marketing,
 entrepreneurship), psychology and health basics (CBT, neuroplasticity,
-sleep needs), sports (football rules, the Olympics, the marathon),
+sleep needs), sports (football rules, tennis, cricket, baseball, ice hockey, golf,
+gymnastics, swimming, athletics, the Olympics, the marathon), notable
+people asked as «فلانی کیه» or "who is" (Iranian public figures and a
+broader sports and culture set, answered descriptively, never as gossip),
 history (the Achaemenid Empire and Cyrus the Great, the Egyptian
 pyramids, the Berlin Wall, methods for reading war sources, ancient
 Persian-Greek wars, the Arab conquest, Mongol invasions,
@@ -688,7 +691,9 @@ and topic continuity so routing regressions are caught by the test run.
   adds deep personas spanning passions, entertainment, breakups,
   loneliness, loss, jealousy, anger, sadness, poverty, depression,
   excitement, flirty users, rude users, and the emotional-shift memory
-  touch, and `tests/mixed-topic-sessions.test.mjs` runs 27+ long sessions
+  touch, `tests/companion-intelligence.test.mjs` probes informal
+  Persian capability and who-is phrasing plus hard multi-step cases,
+  and `tests/mixed-topic-sessions.test.mjs` runs 27+ long sessions
   in which the user jumps between unrelated subjects, validating that the
   context-window and memory stay coherent under topic-switching pressure.
 - **`bash run-tests.sh -n 50`** stress-runs the engine tests 50 times

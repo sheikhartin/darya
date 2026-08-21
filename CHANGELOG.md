@@ -7,6 +7,47 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-08-21
+
+### Added
+
+- A people shelf answers informal who-is questions in the register people
+  actually type («فلانی کیه», "who is messi", "who's messi") for Iranian
+  public figures and a broader sports and culture set: Googoosh, Shajarian,
+  Ali Daei, Ali Karimi, Mehdi Taremi, Hassan Reyvandi, Golshifteh Farahani,
+  Navid Mohammadzadeh, Reza Attaran, Asghar Farhadi, Hadi Choopan, Mehran
+  Modiri, Forough Farrokhzad, Ferdowsi, Rumi, Shadmehr Aghili, Bahram
+  Afshari, plus Serena Williams, Djokovic, Hamilton, Biles, Bolt, Phelps,
+  Tendulkar, Pelé, and Maradona. Bios stay descriptive; they never rank
+  private lives or invent a biography for an unknown name.
+- Sport overviews for tennis, cricket, baseball, ice hockey, golf,
+  gymnastics, competitive swimming, and athletics sit beside the existing
+  football and volleyball facts.
+- `tests/companion-intelligence.test.mjs` evaluates hard cases, not polite
+  chat: informal Persian capability phrasing, who-is versus GOAT debate,
+  unknown people, memory after digressions, corrections, ethics, crisis,
+  self-awareness, creativity, wisdom, critical thinking, adaptability,
+  hostility, uncertainty, and multi-step grief-then-fact-then-care.
+
+### Fixed
+
+- Informal capability questions such as «منظورم این هست که چه قابلیت‌هایی
+  داری؟», «چی بلدی», «چه کارایی داری», and "what capabilities do you have"
+  now reach the honest range-and-limits pool instead of the unknown echo.
+- Knowledge framing now treats «کیه»/«کیست»/"who is"/"who's" as a person
+  question, so a bio is not swallowed by the Messi-or-Ronaldo debate.
+- Bare Messi and Ronaldo names were removed from the GOAT keywords; a
+  comparison such as «مسی یا رونالدو» still opens the debate.
+- «داور بازی رو نابود کرد» reaches sports talk after the half-space
+  normalizer splits «نابود» to «نا بود».
+- «حافظ کیه» reaches the Hafez biography.
+
+### Validated
+
+- The complete Node gate passes 2,508 tests with zero failures, including
+  78 companion-intelligence cases for informal capability, who-is, sports,
+  unknown people, memory, ethics, crisis, and multi-step hard turns.
+
 ## [1.7.0] - 2026-08-21
 
 ### Added

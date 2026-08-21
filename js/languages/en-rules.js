@@ -756,8 +756,11 @@
     rule(
       'smalltalk_capability',
       60,
+      // Informal and clarification forms ("what capabilities do you have",
+      // "i mean what can you do", "what features do you have") must reach
+      // the same honest range-and-limits pool as "what can you do".
       // eslint-disable-next-line max-len
-      /\b(what can you do|how can you help|what do you do|how do you work|what are you capable of|what's your purpose)\b/i,
+      /\b(what can you do|how can you help|what do you do|how do you work|what are you capable of|what(?:'s| is| are) your (?:purpose|capabilities|capability|features|limits)|what capabilities|what features do you have|your capabilities|your features|tell me (?:your|the) (?:capabilities|features)|i mean what can you)\b/i,
       R['ruleSmalltalkCapability']
     ),
 

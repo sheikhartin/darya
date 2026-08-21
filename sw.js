@@ -28,8 +28,8 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache. Shell refresh: 1.6.0 (software security,
- * practical work and migration, conflict history, and project knowledge).
+ * into the versioned cache. Shell refresh: 1.7.1 (people shelf, informal
+ * who-is framing, capability phrasing, companion-intelligence tests).
  */
 
 'use strict';
@@ -129,6 +129,7 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-ides.js',
   './js/data/knowledge-facts-fonts.js',
   './js/data/knowledge-facts-influencers.js',
+  './js/data/knowledge-facts-people.js',
   './js/data/knowledge-facts-sport-events.js',
   './js/data/knowledge-facts-investing.js',
   './js/data/knowledge-facts-sexuality.js',

@@ -714,7 +714,8 @@ Android app serves the same bundle locally.
 
 - `npm test` runs every unit and static regression suite named in
   `package.json`, including safety, memory, bilingual parity, current-life,
-  cultural-language, age-context, and false-positive coverage.
+  cultural-language, age-context, companion-intelligence (informal who-is
+  and capability phrasing), and false-positive coverage.
 - `./run-tests.sh` discovers every `tests/*.test.mjs` file automatically,
   runs the smoke gate, and supports repeated engine-only stress rounds.
 - `npm run test:e2e` covers keyboard and modal focus, quick replies,

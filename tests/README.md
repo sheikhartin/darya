@@ -38,6 +38,12 @@ moods. `software-work-history-intelligence.test.mjs` adds 348 bilingual
 lookup, live-engine, hard-persona, cyber-boundary, formatting,
 no-fixed-price, conflict-history, migration, conscription,
 Persian-code-point, and offline-wiring decisions.
+`companion-intelligence.test.mjs` is the hard-case companion corpus:
+informal Persian («چه قابلیت‌هایی داری», «فلانی کیه» not «فلانی کیست»),
+English who-is and capability phrasing, sports and culture facts,
+unknown-person honesty, memory after digressions, corrections, ethics,
+crisis, self-awareness, creativity, wisdom, critical thinking,
+adaptability, and multi-step grief-then-fact-then-care.
 `knowledge-world.test.mjs` also carries the bilingual society,
 sex-work, pornography, addiction, Iran-law, cultural-humor, travel, and
 planetary-place matrix with operational-boundary and false-positive guards.

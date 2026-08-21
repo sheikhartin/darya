@@ -339,16 +339,12 @@
         'بهترین فوتبالیست جهان',
         'بهترین فوتبالیست تاریخ',
         'مسی یا رونالدو',
-        'مسی',
-        'رونالدو',
         'messi or ronaldo',
         'greatest player',
         'best player ever',
         'best footballer',
         'greatest footballer',
-        'goat of football',
-        'messi',
-        'ronaldo'
+        'goat of football'
       ],
       weak: ['اسطوره'],
       weakSafe: true,

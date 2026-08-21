@@ -1,6 +1,6 @@
 # Knowledge research and source policy
 
-Last reviewed: 2026-08-20
+Last reviewed: 2026-08-21
 
 Darya is fully offline at runtime. Curated answers therefore need a clear
 line between durable background knowledge and facts that can change after
@@ -200,6 +200,12 @@ comment sections are anecdotal, self-selected, and sometimes politically
 charged. They informed test wording only, never a factual answer or legal
 claim.
 
+Iranian social-media listening for the people shelf used public Instagram
+ranking snapshots (StarNgage and Heepsy, reviewed 2026) only to see which
+names people actually type as «فلانی کیه». Follower counts are live facts
+and are not frozen into answers. Bios stay descriptive. Political figures
+as primary subjects, and legally controversial entertainers, were skipped.
+
 Examples reviewed:
 
 - r/iran discussion of individual variation in military-service experience
@@ -223,6 +229,8 @@ lenses:
 6. Wellbeing, coercive-control safety, body image, and crisis escalation.
 7. Persian language quality, including Iranian Yeh and Kaf code points.
 8. Offline PWA and Capacitor asset parity.
+9. Public-figure bios: descriptive only, no gossip, no ranking of private
+   lives; social listening chooses who people ask about, not what to claim.
 
 A review pass is not a substitute for a licensed Iranian lawyer, clinician,
 historian specializing in every conflict, or current government source. It
