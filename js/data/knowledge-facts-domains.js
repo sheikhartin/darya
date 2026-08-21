@@ -381,10 +381,13 @@
         'بهترین مبارز تاریخ',
         'بهترین مبارز ام‌ام‌ای',
         'بهترین فایتر تاریخ',
+        'بهترین فایتر',
+        'بهترین مبارز',
         'best mma fighter',
         'greatest mma fighter',
         'goat of mma',
-        'best fighter of all time'
+        'best fighter of all time',
+        'best fighter'
       ],
       weak: [],
       weakSafe: true,
@@ -561,9 +564,6 @@
         'mma rules',
         'ufc octagon',
         'why is the octagon an octagon',
-        'khabib',
-        'mcgregor',
-        'conor mcgregor',
         'basic rules of mma',
         'what is mma',
         'ufc'

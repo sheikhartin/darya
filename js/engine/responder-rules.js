@@ -332,8 +332,8 @@
           const factualReply = factual.text;
           const factualFollowup =
             this.lang.code === 'fa'
-              ? ' دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
-              : ' Would you like to go deeper, or is there another question?';
+              ? ' دوست داری بیشتر برات بگویم یا سؤال دیگری داری؟'
+              : ' Want me to tell you more, or is there another question?';
           this._lastKnowledgeTopic = factual.topic;
           this._lastKnowledgeTurn = this.memory.turnCount;
           // A knowledge answer becomes the active subject so a following

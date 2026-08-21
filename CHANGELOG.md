@@ -7,6 +7,72 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-21
+
+### Added
+
+- Conversational register layer (`js/text/conversational.js`): every
+  bot message now ships in everyday spoken Persian («کتاب‌هاش رو
+  گرفته», «مهمه», «می‌تونه») and naturally contracted English ("I'm
+  here, don't worry") instead of the bookish written register. The
+  layer converts verb morphology (می‌کند → می‌کنه, می‌خواهم → می‌خوام),
+  merges the copula (مهم است → مهمه), collapses perfect forms
+  (گرفته است → گرفته), and rewrites possessives (کتاب‌هایش →
+  کتاب‌هاش) while protecting quoted poetry and titles, homographs
+  («اینترنت کند», «بدهی» the noun), and past-tense forms from ever
+  being misrewritten. It wraps the engine's public surface (respond,
+  greeting, farewell, exit confirmation, quick replies), so the UI,
+  export, and tests all see one voice.
+- Combat-sports shelf (`knowledge-facts-fighters.js` and
+  `knowledge-facts-fighters-legends.js`): 50+ famous fighters and
+  martial artists in both languages, from Royce Gracie, Fedor,
+  Anderson Silva, and GSP through Jon Jones, Khabib, and McGregor to
+  Topuria, Makhachev, Pereira, Chimaev, Aspinall, the women's
+  divisions (Nunes, Shevchenko, Rousey, Zhang Weili, Kayla Harrison),
+  Iranian names (Beneil Dariush, Amir Aliakbari), and the wider arts
+  (Bruce Lee, Mike Tyson, Buakaw, Rico Verhoeven), plus a
+  greatest-boxer debate entry.
+- Knowledge follow-up layer (`responder-knowledge-followups.js`):
+  «رکوردش چیه؟» / "what is his record?" answers from the fact's
+  record snapshot with an honesty note (settled for retired careers,
+  my-offline-data-may-be-stale for active ones, and an honest
+  no-numbers reply when the shelf has no stats); a «بازم بگو»-style
+  deepening request serves a curated deep-dive paragraph exactly once
+  (Khabib, Bruce Lee, Messi, Jon Jones, GSP, McGregor, Topuria,
+  Anderson Silva) and then admits the offline shelf's end with a
+  pointer to reliable sources instead of improvising.
+- Famous-figure play: «من مسی‌ام» and "I'm Messi" get playful replies
+  and are never stored as the user's name; «من مسی بعدی‌ام» and
+  "I'm the next Messi" get encouragement plus a grounded question
+  (philosophers included: «من جانشین سقراطم»); the «مسی بهتره یا سیم
+  مسی؟» copper-wire pun and "Messi or messy?" land as jokes; and
+  same-domain comparisons («مسی بهتره یا رونالدو؟», "tyson or ali")
+  answer from the curated GOAT debates while cross-domain ones
+  («مسی یا سقراط») get a cheerful apples-and-oranges reply.
+- Football records for Messi and Ronaldo with the same honesty notes,
+  and a deep-dive paragraph for Messi's career story.
+- Three permanent suites: `conversational-voice.test.mjs` (64 tests:
+  register-transform units plus 50 persona scenario sweeps asserting
+  no bookish marker ever reaches the user), `fighters-knowledge.test.mjs`
+  (124 tests: breadth, records, honesty notes, depth limits), and
+  `persona-challenge.test.mjs` (57 hard mixed-persona tests: jokers,
+  dreamers, pun-lovers, rapid-fire fans, grievers, trolls, skeptics,
+  topic-hoppers, and bilingual pressure).
+
+### Changed
+
+- The knowledge follow-up invitation now offers Darya's own deep dive
+  («دوست داری بیشتر برات بگم؟» / "Want me to tell you more?") instead
+  of asking the user to elaborate, matching the new tell-me-more
+  behavior.
+- The general MMA fact no longer owns the «خبیب»/"mcgregor" keywords;
+  the dedicated fighter entries answer those, and the best-fighter
+  GOAT entry gained the everyday «بهترین فایتر» phrasings.
+- Test suites compare engine replies against pools through the
+  conversational layer (`casual`/`casualPool`/`casualSet` helpers in
+  `tests/helpers.mjs`), keeping the pool-membership guarantees intact
+  in the new register.
+
 ## [1.8.0] - 2026-08-21
 
 ### Added

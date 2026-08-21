@@ -28,8 +28,8 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache. Shell refresh: 1.6.0 (software security,
- * practical work and migration, conflict history, and project knowledge).
+ * into the versioned cache. Shell refresh: 1.9.0 (conversational
+ * register layer, the combat-sports shelf, and knowledge follow-ups).
  */
 
 'use strict';
@@ -84,6 +84,7 @@ const PRECACHE_URLS = [
   './js/engine/responder-entity.js',
   './js/engine/responder-overrides.js',
   './js/engine/responder-recall.js',
+  './js/engine/responder-knowledge-followups.js',
   './js/engine/responder-lifefacts.js',
   './js/engine/responder-profile.js',
   './js/engine/responder-promise.js',
@@ -142,6 +143,8 @@ const PRECACHE_URLS = [
   './js/data/knowledge-facts-society.js',
   './js/data/knowledge-facts-travel.js',
   './js/data/knowledge-facts-sports.js',
+  './js/data/knowledge-facts-fighters.js',
+  './js/data/knowledge-facts-fighters-legends.js',
   './js/data/knowledge-facts-people.js',
   './js/data/knowledge-fun-facts.js',
   './js/data/knowledge-lists.js',
@@ -150,6 +153,7 @@ const PRECACHE_URLS = [
   './js/languages/index.js',
   './js/text/halfspace-data.js',
   './js/text/halfspace.js',
+  './js/text/conversational.js',
   './js/text/entity-extractor-data.js',
   './js/text/entity-extractor.js',
   './js/languages/fa.js',

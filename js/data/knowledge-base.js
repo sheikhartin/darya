@@ -1272,12 +1272,28 @@
     );
   }
 
+  /**
+   * Returns the full fact object for a topic id, or null. Used by the
+   * knowledge follow-up layer (record and tell-me-more requests) to
+   * reach the optional `record` and `more` fields of the last answered
+   * fact.
+   * @param {string} id - Fact id, e.g. 'jon_jones'
+   * @returns {object|null}
+   */
+  function factById(id) {
+    if (!id) {
+      return null;
+    }
+    return FACTS.find((fact) => fact.id === id) || null;
+  }
+
   const DaryaKnowledge = {
     domains,
     answer,
     lookup,
     lookupGenre,
     lookupFragment,
+    factById,
     randomFacts,
     detectMediaRequest,
     detectMediaGenre,

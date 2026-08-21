@@ -88,8 +88,8 @@ for (const [index, [language, prompt]] of LEGAL_CASES.entries()) {
     assert.match(
       reply,
       language.code === 'fa'
-        ? /نمی‌توانم|تضمین|وکیل|حقوقی|آفلاین/u
-        : /cannot|guarantee|lawyer|legal|offline/i
+        ? /نمی‌توانم|نمی‌تونم|تضمین|وکیل|حقوقی|آفلاین/u
+        : /cannot|can't|guarantee|lawyer|legal|offline/i
     );
     assert.match(
       reply,
@@ -209,7 +209,7 @@ test('religion, media, and legal caution release context on hard pivots', () => 
   );
   assert.match(religion, /Abrahamic|Jesus|prophecy/i);
   assert.match(media, /Herbert|Villeneuve/i);
-  assert.match(legal, /lawyer|legal|cannot|offline/i);
+  assert.match(legal, /lawyer|legal|cannot|can't|offline/i);
   assert.match(coding, /HTTP|endpoint|contract/i);
   assert.doesNotMatch(coding, /religion|arrest|Dune/i);
 });

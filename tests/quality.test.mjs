@@ -24,7 +24,8 @@ import {
   contrastRatio,
   read,
   SCRIPT_ORDER,
-  ROOT
+  ROOT,
+  casualPool
 } from './helpers.mjs';
 
 function fresh(lang) {
@@ -425,7 +426,7 @@ test('knowledge shelf includes ten carefully bounded thinker inspirations', () =
   );
   assert.ok(enReply.length > 40, 'EN socrates reply too short');
   assert.ok(
-    !EN.genericFallbacks.includes(enReply),
+    !casualPool(EN.genericFallbacks).includes(enReply),
     'EN socrates should not return any generic fallback'
   );
 
@@ -448,7 +449,7 @@ test('knowledge shelf includes ten carefully bounded thinker inspirations', () =
   );
   assert.ok(faReply.length > 30, 'FA socrates reply too short');
   assert.ok(
-    !FA.genericFallbacks.includes(faReply),
+    !casualPool(FA.genericFallbacks).includes(faReply),
     'FA socrates should not return any generic fallback'
   );
 });
@@ -545,7 +546,7 @@ test('FA queries with ZWNJ characters route to knowledge topic', () => {
     );
 
     assert.ok(
-      !FA.genericFallbacks.includes(reply),
+      !casualPool(FA.genericFallbacks).includes(reply),
       'FA ZWNJ keyword "' +
         zwnjKeywords[z].slice(0, 15) +
         '..." should not return any generic fallback'
@@ -658,7 +659,7 @@ test('all FA conversation rules match ZWNJ, no-ZWNJ, and space variants', () => 
       );
 
       assert.ok(
-        reply.length > 20 && !FA.genericFallbacks.includes(reply),
+        reply.length > 20 && !casualPool(FA.genericFallbacks).includes(reply),
         'FA variant "' + input + '" should return a substantive response'
       );
     }
@@ -878,7 +879,7 @@ test('new knowledge domains (relationship, career, anxiety) have deep content qu
       `EN "${keyword}" (${domain}) should not return empty-input reply`
     );
     assert.ok(
-      !EN.genericFallbacks.includes(reply),
+      !casualPool(EN.genericFallbacks).includes(reply),
       `EN "${keyword}" (${domain}) should not return any generic fallback`
     );
   }
@@ -912,7 +913,7 @@ test('new knowledge domains (relationship, career, anxiety) have deep content qu
       `FA "${keyword}" (${domain}) should not return empty-input reply`
     );
     assert.ok(
-      !FA.genericFallbacks.includes(reply),
+      !casualPool(FA.genericFallbacks).includes(reply),
       `FA "${keyword}" (${domain}) should not return any generic fallback`
     );
   }
@@ -1934,7 +1935,7 @@ test('EN contractions match with ASCII apostrophe, smart quote, and no apostroph
       'EN "' + label + '" variant reply should be substantive'
     );
     assert.ok(
-      !EN.genericFallbacks.includes(reply),
+      !casualPool(EN.genericFallbacks).includes(reply),
       'EN "' + label + '" variant should not return generic fallback'
     );
   }
@@ -3844,8 +3845,8 @@ test('proactive idle opener is armed, guarded by userSpoke, and cancellable', ()
   assert.match(core, /userSpoke/u);
 });
 
-test('release metadata is aligned at version 1.8.0', () => {
-  const expected = '1.8.0';
+test('release metadata is aligned at version 1.9.0', () => {
+  const expected = '1.9.0';
   const packageJson = JSON.parse(read('package.json'));
   const lock = JSON.parse(read('package-lock.json'));
   const manifest = JSON.parse(read('manifest.json'));
@@ -3855,11 +3856,11 @@ test('release metadata is aligned at version 1.8.0', () => {
   assert.equal(lock.version, expected);
   assert.equal(lock.packages[''].version, expected);
   assert.equal(manifest.version, expected);
-  assert.match(gradle, /versionCode 180/u);
-  assert.match(gradle, /versionName "1\.8\.0"/u);
+  assert.match(gradle, /versionCode 190/u);
+  assert.match(gradle, /versionName "1\.9\.0"/u);
   assert.match(
     read('js/engine/utils-constants.js'),
-    /DARYA_VERSION = '1\.8\.0'/u
+    /DARYA_VERSION = '1\.9\.0'/u
   );
 });
 

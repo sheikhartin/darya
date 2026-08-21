@@ -73,7 +73,11 @@
       weakSafe: true,
       hints: ['فوتبال', 'کیست', 'پرتغال', 'football', 'who', 'portugal'],
       fa: 'کریستیانو رونالدو فوتبالیست پرتغالی است که با گلزنی بی‌وقفه، آمادگی بدنی و اخلاق حرفه‌ای به یکی از بهترین‌های تاریخ فوتبال تبدیل شد. در منچستریونایتد، رئال مادرید و یوونتوس بازی کرده و رکوردهای گلزنی ملی و باشگاهی زیادی دارد. به‌خاطر نظم تمرین و طول عمر ورزشی‌اش الگوی بسیاری از ورزشکاران است.',
-      en: 'Cristiano Ronaldo is a Portuguese footballer who became one of the greatest in history through relentless goal-scoring, physical conditioning, and professionalism. He has played for Manchester United, Real Madrid, and Juventus, holding many club and national scoring records. His training discipline and sporting longevity make him a model for many athletes.'
+      en: 'Cristiano Ronaldo is a Portuguese footballer who became one of the greatest in history through relentless goal-scoring, physical conditioning, and professionalism. He has played for Manchester United, Real Madrid, and Juventus, holding many club and national scoring records. His training discipline and sporting longevity make him a model for many athletes.',
+      record: {
+        fa: 'رونالدو پرگل‌ترین بازیکن تاریخ فوتباله: بیشتر از ۹۰۰ گل رسمی، رکورد گل‌های ملی (بالای ۱۳۰ گل برای پرتغال)، رکورد گل‌های لیگ قهرمانان اروپا و ۵ توپ طلا. چون هنوز بازی می‌کنه، این عددها هر هفته ممکنه بالاتر بره.',
+        en: "Ronaldo is the top scorer in football history: over 900 official goals, the all-time international record (130-plus for Portugal), the Champions League scoring record and 5 Ballon d'Ors. He is still playing, so these numbers can climb every single week."
+      }
     },
     {
       id: 'lionel_messi',
@@ -87,7 +91,15 @@
       weakSafe: true,
       hints: ['فوتبال', 'کیست', 'آرژانتین', 'football', 'who', 'argentina'],
       fa: 'لیونل مسی فوتبالیست آرژانتینی است که با دریبل، دید بازی و گل‌سازی بی‌نظیرش از نسل خودش متمایز شد. بیشتر دورانش را در بارسلونا گذراند و بعد با آرژانتین قهرمان جام جهانی ۲۰۲۲ شد. هشت توپ طلا و رکوردهای فراوان او را در بحث «بهترین تاریخ» همیشه مطرح نگه می‌دارد.',
-      en: 'Lionel Messi is an Argentine footballer distinguished by his dribbling, vision, and playmaking. He spent most of his career at Barcelona and later won the 2022 World Cup with Argentina. Eight Ballon d’Or awards and many records keep him permanently in the greatest-of-all-time conversation.'
+      en: 'Lionel Messi is an Argentine footballer distinguished by his dribbling, vision, and playmaking. He spent most of his career at Barcelona and later won the 2022 World Cup with Argentina. Eight Ballon d’Or awards and many records keep him permanently in the greatest-of-all-time conversation.',
+      record: {
+        fa: 'مسی رکورددار ۸ توپ طلاست، بالای ۸۰۰ گل رسمی زده، بیشترین گل و پاس گل تاریخ لالیگا رو داره و با آرژانتین جام جهانی ۲۰۲۲ و دو کوپا آمریکا رو برده. هنوز بازی می‌کنه، پس این عددها ثابت نیستن.',
+        en: "Messi holds the record with 8 Ballon d'Ors, has scored over 800 official goals, owns La Liga's all-time goals and assists records, and won the 2022 World Cup plus two Copa Americas with Argentina. He is still playing, so those numbers are not final."
+      },
+      more: {
+        fa: 'مسی در ۱۳ سالگی به‌خاطر هزینه‌ی درمان کمبود هورمون رشد به بارسلونا رفت و اونجا به بزرگ‌ترین بازیکن تاریخ باشگاه تبدیل شد؛ ۴ لیگ قهرمانان و ده‌ها جام دیگه. سال ۲۰۲۱ با گریه از بارسا خداحافظی کرد، به پاری‌سن‌ژرمن رفت و بعد با رفتن به اینتر میامی، فوتبال آمریکا رو زیر و رو کرد. جام جهانی ۲۰۲۲ قطر، با اون فینال دیوانه‌وار مقابل فرانسه، قصه‌اش رو کامل کرد.',
+        en: 'Messi moved to Barcelona at 13 because the club paid for his growth-hormone treatment, then became the greatest player in its history: 4 Champions Leagues and dozens of trophies. He left Barca in tears in 2021, joined Paris Saint-Germain, and later turned American soccer upside down at Inter Miami. The 2022 World Cup in Qatar, with that insane final against France, completed the story.'
+      }
     },
     {
       id: 'lebron_james',
@@ -130,7 +142,16 @@
       weakSafe: true,
       hints: ['ام ام ای', 'کیست', 'داغستان', 'mma', 'who', 'ufc'],
       fa: 'حبیب نورمحمداف رزمی‌کار داغستانی است که قهرمان سبک‌وزن UFC شد و بدون حتی یک شکست از ورزش حرفه‌ای کناره گرفت؛ رکوردی نادر در ام‌ام‌ای. با کشتی و گرپلینگ بی‌رقیبش حریفان را کنترل می‌کرد. بعد از بازنشستگی به مربیگری و کارهای خیریه مشغول است.',
-      en: 'Khabib Nurmagomedov is a Dagestani fighter who became the UFC lightweight champion and retired undefeated, a rare feat in MMA. He controlled opponents with unmatched wrestling and grappling. After retirement he moved into coaching and charity work.'
+      en: 'Khabib Nurmagomedov is a Dagestani fighter who became the UFC lightweight champion and retired undefeated, a rare feat in MMA. He controlled opponents with unmatched wrestling and grappling. After retirement he moved into coaching and charity work.',
+      record: {
+        fa: 'خبیب با رکورد بی‌نقص ۲۹ برد و ۰ باخت در سال ۲۰۲۰ بازنشسته شد؛ سر قولی که به مادرش داد هم موند و دیگه برنگشت، پس این عدد دیگه ثابته.',
+        en: 'Khabib retired in 2020 with a perfect 29-0 record; he kept the promise he made to his mother and never came back, so that number is settled for good.',
+        final: true
+      },
+      more: {
+        fa: 'خبیب رو پدرش عبدالمناپ در کوهستان‌های داغستان تربیت کرد؛ ویدیوی کشتی‌گرفتنش با توله‌خرس در بچگی معروفه. بزرگ‌ترین شبش مبارزه با کانر مک‌گرگور در ۲۰۱۸ بود: پرفروش‌ترین رویداد تاریخ UFC که بعد از تسلیم‌کردن کانر، با پریدنش از قفس هم جنجالی شد. بعد از فوت پدرش در ۲۰۲۰، یه مبارزه‌ی دیگه رفت و همون‌جا در اوج خداحافظی کرد؛ حالا مربی قهرمان‌هاییه مثل اسلام ماخاچف.',
+        en: 'Khabib was raised by his father Abdulmanap in the mountains of Dagestan; the childhood video of him wrestling a bear cub is famous. His biggest night was the 2018 Conor McGregor fight, the best-selling event in UFC history, which turned chaotic when he jumped the cage after submitting Conor. After his father died in 2020 he fought once more and retired on top; he now coaches champions like Islam Makhachev.'
+      }
     },
     {
       id: 'taylor_swift',

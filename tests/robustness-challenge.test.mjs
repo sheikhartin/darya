@@ -58,7 +58,7 @@ test('fa clarification: منظورم این هست که چه قابلیت‌ها
   assert.doesNotMatch(reply, EVASIVE);
   assert.match(
     reply,
-    /گفتگو|حافظه|آفلاین|گوش بدهم|توضیح بدهم|نمی‌توانم|محدودیت/i
+    /گفتگو|حافظه|آفلاین|گوش بدهم|توضیح بدهم|نمی‌توانم|نمی‌تونم|محدودیت/i
   );
 });
 
@@ -72,7 +72,7 @@ test('fa clarification: منظورم اینه که چه قابلیت‌هایی 
     assert.doesNotMatch(reply, EVASIVE, `${input} must not be evasive`);
     assert.match(
       reply,
-      /گفتگو|آفلاین|محدودیت|نمی‌توانم|یاد/i,
+      /گفتگو|آفلاین|محدودیت|نمی‌توانم|نمی‌تونم|یاد/i,
       `${input} must answer capabilities`
     );
   }
@@ -80,7 +80,7 @@ test('fa clarification: منظورم اینه که چه قابلیت‌هایی 
 
 test('fa clarification: می‌خوام بدونم قابلیت‌هات چیه beats the need rule', () => {
   const reply = replyFor(FA, 'می‌خوام بدونم قابلیت‌هات چیه');
-  assert.match(reply, /گفتگو|آفلاین|محدودیت|نمی‌توانم/i);
+  assert.match(reply, /گفتگو|آفلاین|محدودیت|نمی‌توانم|نمی‌تونم/i);
 });
 
 test('en clarification: "I mean, what capabilities do you have?" answers capabilities', () => {
@@ -134,7 +134,7 @@ test('fa capability variants all answer, never the unknown pool', () => {
     assert.doesNotMatch(reply, EVASIVE, `${input} must not be evasive`);
     assert.match(
       reply,
-      /گفتگو|آفلاین|محدودیت|نمی‌توانم|قفسه|گوش بدهم|توضیح بدهم/i,
+      /گفتگو|آفلاین|محدودیت|نمی‌توانم|نمی‌تونم|قفسه|گوش بدهم|توضیح بدهم/i,
       `${input} must answer capabilities, got: ${reply}`
     );
   }
@@ -248,7 +248,7 @@ test('fa chat understands pure-Latin interjections instead of redirecting', () =
   assert.doesNotMatch(replyFor(FA, 'thanks'), /فارسی|زبان/i);
   assert.match(
     replyFor(FA, 'hi'),
-    /سلام|درود|خوش آمدی|خوبی|امروز|گفتگو|چه چیزی|چیزی|دوباره|نخ|برگشتی|موضوعی/i
+    /سلام|درود|خوش آمدی|خوش اومدی|خوبی|خوبه|دیدنت|امروز|گفتگو|چه چیزی|چیزی|چی|دوباره|نخ|برگشتی|موضوعی/i
   );
 });
 
@@ -262,7 +262,7 @@ test('fa chat "bye" enters the two-step exit flow, not the language redirect', (
   );
   assert.match(
     first,
-    /پایان|بروی|خداحافظ|می‌خواهی/i,
+    /پایان|برو|بری|تمام کنیم|خداحافظ|می‌خواهی|می‌خوای/i,
     `exit confirmation expected, got: ${first}`
   );
 });
@@ -505,7 +505,7 @@ test('fa میتونی عاشق بشی؟ gets an honest identity answer, never a 
 
 test('en "can you fall in love?" gets an honest answer', () => {
   const reply = replyFor(EN, 'can you fall in love?');
-  assert.match(reply, /not|program|bot|feel|love/i);
+  assert.match(reply, /not|n't|program|bot|feel|love/i);
 });
 
 test('fa تو هوشیاری؟ and تو احساس داری؟ get honest self-awareness answers', () => {
@@ -543,7 +543,7 @@ test('fa live-data phrasings get the honest offline reply', () => {
     const reply = replyFor(FA, input);
     assert.match(
       reply,
-      /آفلاین|لحظه‌ای|اینترنت|زنده|نمی‌توانم|صادقانه/i,
+      /آفلاین|لحظه‌ای|اینترنت|زنده|نمی‌توانم|نمی‌تونم|صادقانه/i,
       `${input} must lead with the offline limit, got: ${reply}`
     );
   }
@@ -560,7 +560,7 @@ test('en live-data phrasings get the honest offline reply', () => {
     const reply = replyFor(EN, input);
     assert.match(
       reply,
-      /offline|live|internet|cannot|honest/i,
+      /offline|live|internet|cannot|can't|honest/i,
       `${input} must lead with the offline limit, got: ${reply}`
     );
   }
@@ -612,7 +612,7 @@ test('fa misunderstood gets empathy', () => {
 test('fa bad day gets empathy for the day', () => {
   const reply = replyFor(FA, 'امروز روز بدی بود');
   assert.doesNotMatch(reply, EVASIVE);
-  assert.match(reply, /سنگین|دلم می‌سوزد|روز بد|چه روز|نفس/i);
+  assert.match(reply, /سنگین|دلم می‌سوزد|دلم می‌سوزه|روز بد|چه روز|نفس/i);
 });
 
 // ============================================================================
@@ -856,6 +856,6 @@ test('regression: fa جوابت با قبل فرق داره no longer repeats it
 
 test('regression: capability questions are never answered by the darya_self robot facts', () => {
   const reply = replyFor(FA, 'چه چیزهایی بلدی؟');
-  assert.match(reply, /گفتگو|آفلاین|محدودیت|نمی‌توانم/i);
+  assert.match(reply, /گفتگو|آفلاین|محدودیت|نمی‌توانم|نمی‌تونم/i);
   assert.doesNotMatch(reply, /پدر و مادر|تولد/);
 });

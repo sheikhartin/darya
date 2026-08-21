@@ -15,7 +15,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { freshEngine, EN, FA } from './helpers.mjs';
+import { freshEngine, EN, FA, casualPool } from './helpers.mjs';
 
 // ==========================================================================
 // Full expression evaluator: multi-operator math is never answered by
@@ -61,7 +61,7 @@ test('math: negative square root is answered honestly', () => {
   const reply = freshEngine(EN).respond('sqrt of -4');
   assert.match(reply, /no real square root/i, reply);
   const fa = freshEngine(FA).respond('جذر -۴');
-  assert.match(fa, /جذر حقیقی ندارد/u, fa);
+  assert.match(fa, /جذر حقیقی ندار[ده]/u, fa);
 });
 
 test('math: single-operator legacy path still works', () => {
@@ -88,7 +88,7 @@ test('capitals: a named country gets its single capital', () => {
 
 test('capitals: FA named country gets its single capital', () => {
   const reply = freshEngine(FA).respond('پایتخت فرانسه کجاست');
-  assert.match(reply, /پایتخت فرانسه پاریس است/u, reply);
+  assert.match(reply, /پایتخت فرانسه پاریسه/u, reply);
   const jp = freshEngine(FA).respond('پایتخت ژاپن چیه');
   assert.match(jp, /توکیو/u, jp);
 });
@@ -118,7 +118,7 @@ test('live data: FA current-price and weather asks get the honest limitation', (
     const reply = freshEngine(FA).respond(input);
     assert.match(
       reply,
-      /آفلاین|اینترنت وصل نمی‌شوم/u,
+      /آفلاین|اینترنت وصل نمی‌ش(?:وم|م)/u,
       `${input} should lead with the limitation, got: ${reply}`
     );
   }
@@ -204,7 +204,11 @@ test('profile: EN location disclosure is stored and recalled', () => {
 
 test('profile: EN location recall without disclosure is honest', () => {
   const reply = freshEngine(EN).respond('where do I live?');
-  assert.match(reply, /have not told me|do not know/i, reply);
+  assert.match(
+    reply,
+    /haven't told me|have not told me|do not know|don't know/i,
+    reply
+  );
 });
 
 test('profile: EN emotional "i live in fear" is never stored as a city', () => {
@@ -230,7 +234,7 @@ test('profile: FA «اهل شیرازم» stores the city', () => {
 test('profile: FA location recall question is never parsed as disclosure', () => {
   const engine = freshEngine(FA);
   const reply = engine.respond('یادته کجا زندگی میکنم؟');
-  assert.match(reply, /نگفته‌ای|نمی‌دانم/u, reply);
+  assert.match(reply, /نگفته‌ای|نگفتی|نمی‌دانم|نمی‌دونم/u, reply);
   assert.equal(engine._userProfile.location, null);
 });
 
@@ -306,7 +310,7 @@ test('quality: sustained topic + "what should I do" gets the advice bridge', () 
   }
   const reply = engine.respond('what should I do?');
   assert.ok(
-    (EN.adviceBridgeResponses || []).includes(reply),
+    casualPool(EN.adviceBridgeResponses || []).includes(reply),
     `expected the advice bridge after a sustained topic, got: ${reply}`
   );
 });
@@ -318,7 +322,7 @@ test('quality: early "what should I do" keeps the normal reflective pool', () =>
   );
   const reply = engine.respond('what should I do');
   assert.ok(
-    !(EN.adviceBridgeResponses || []).includes(reply),
+    !casualPool(EN.adviceBridgeResponses || []).includes(reply),
     `advice bridge fired too early: ${reply}`
   );
 });
@@ -359,7 +363,7 @@ test('exit: ordinary sessions keep the normal exit copy', () => {
   engine.respond('hello');
   const confirm = engine.respond('goodbye');
   assert.ok(
-    (EN.exitConfirmMessages || []).includes(confirm),
+    casualPool(EN.exitConfirmMessages || []).includes(confirm),
     `ordinary exit should use the normal pool, got: ${confirm}`
   );
 });

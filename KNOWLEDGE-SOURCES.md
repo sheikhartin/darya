@@ -227,3 +227,20 @@ lenses:
 A review pass is not a substitute for a licensed Iranian lawyer, clinician,
 historian specializing in every conflict, or current government source. It
 is a way to expose conflicting requirements before release.
+
+## Combat sports and famous athletes
+
+- Official promotion pages (UFC.com athlete profiles and news) for
+  career milestones, title changes, and retirement announcements.
+- Established sports journalism (ESPN MMA, BBC Sport, CBS Sports) for
+  major results and era context.
+- Fight databases (Sherdog, Tapology) for win-loss records; these are
+  treated as snapshots, never frozen truths.
+- Encyclopaedia Britannica and major museum/archive pages for
+  historical figures (Muhammad Ali, Bruce Lee, early UFC history).
+
+Win-loss records, championship status, and rankings of ACTIVE athletes
+are live facts: every stored record is phrased as an offline snapshot,
+served together with an explicit staleness note, and retired careers
+are marked settled. Darya never invents a number when the shelf has
+none; she points to live sources instead.

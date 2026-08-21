@@ -92,7 +92,7 @@ test('profession recall works with the possessive form', () => {
 test('profession recall with nothing stored is honest', () => {
   const engine = freshEngine(EN);
   const recall = engine.respond('what does my sister do?');
-  assert.match(recall, /not told|do not know|yet/i);
+  assert.match(recall, /not told|haven't told|do not know|don't know|yet/i);
 });
 
 test('FA: profession is stored with the glued copula and recalled', () => {
@@ -124,7 +124,7 @@ test('family member name is stored and recalled', () => {
 test('name recall with nothing stored is honest', () => {
   const engine = freshEngine(EN);
   const recall = engine.respond('what is my dog called?');
-  assert.match(recall, /not told|do not know|yet/i);
+  assert.match(recall, /not told|haven't told|do not know|don't know|yet/i);
 });
 
 test('FA: pet name is stored and recalled', () => {
@@ -149,7 +149,7 @@ test('count of children is stored and recalled', () => {
 test('count recall with nothing stored is honest', () => {
   const engine = freshEngine(EN);
   const recall = engine.respond('how many kids do i have?');
-  assert.match(recall, /not told|do not know|yet/i);
+  assert.match(recall, /not told|haven't told|do not know|don't know|yet/i);
 });
 
 test('FA: count is stored with the Persian verb order and recalled', () => {
@@ -174,7 +174,7 @@ test('relationship status is stored and recalled', () => {
 test('relationship recall with nothing stored is honest', () => {
   const engine = freshEngine(EN);
   const recall = engine.respond('am i married?');
-  assert.match(recall, /not told|do not know|yet/i);
+  assert.match(recall, /not told|haven't told|do not know|don't know|yet/i);
 });
 
 test('FA: relationship status is stored and recalled', () => {
@@ -333,7 +333,7 @@ test('a fresh engine has no memory of a previous session', () => {
   const second = freshEngine(EN);
   const recall = second.respond('what is my name?');
   assert.doesNotMatch(recall, /Arman/i);
-  assert.match(recall, /not told|do not know|yet/i);
+  assert.match(recall, /not told|haven't told|do not know|don't know|yet/i);
 });
 
 test('FA: a fresh engine has no memory of a previous session', () => {

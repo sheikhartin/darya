@@ -28,6 +28,7 @@ const ROOT = path.join(__dirname, '..');
 const SCRIPT_ORDER = [
   'js/text/halfspace-data.js',
   'js/text/halfspace.js',
+  'js/text/conversational.js',
   'js/text/entity-extractor-data.js',
   'js/text/entity-extractor.js',
   // The knowledge layer is split across domain part files that register
@@ -72,6 +73,8 @@ const SCRIPT_ORDER = [
   'js/data/knowledge-facts-society.js',
   'js/data/knowledge-facts-travel.js',
   'js/data/knowledge-facts-sports.js',
+  'js/data/knowledge-facts-fighters.js',
+  'js/data/knowledge-facts-fighters-legends.js',
   'js/data/knowledge-facts-people.js',
   'js/data/knowledge-fun-facts.js',
   'js/data/knowledge-lists.js',
@@ -126,6 +129,7 @@ const SCRIPT_ORDER = [
   'js/engine/responder-lifefacts.js',
   'js/engine/responder-overrides.js',
   'js/engine/responder-recall.js',
+  'js/engine/responder-knowledge-followups.js',
   'js/engine/responder-promise.js',
   'js/engine/responder-exercises.js',
   'js/engine/responder-mood.js',
@@ -218,6 +222,38 @@ function contrastRatio(foreground, background) {
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
+/**
+ * Convert one bot-facing pool string into the conversational register
+ * the engine now emits (see js/text/conversational.js). The language is
+ * inferred from the script, so mixed FA/EN test tables can share one
+ * helper. Idempotent: already-conversational text passes through.
+ * @param {string} text
+ * @returns {string}
+ */
+function casual(text) {
+  const langCode = /[\u0600-\u06FF]/u.test(text) ? 'fa' : 'en';
+  return G.DaryaConversational.toConversational(text, langCode);
+}
+
+/**
+ * Map a raw response pool to conversational register, for comparing
+ * engine replies against source pools.
+ * @param {string[]} pool
+ * @returns {string[]}
+ */
+function casualPool(pool) {
+  return (pool || []).map(casual);
+}
+
+/**
+ * Same as casualPool but returns a Set for membership checks.
+ * @param {string[]} pool
+ * @returns {Set<string>}
+ */
+function casualSet(pool) {
+  return new Set(casualPool(pool));
+}
+
 export {
   DaryaEngine,
   freshEngine,
@@ -236,5 +272,8 @@ export {
   ZWNJ,
   TimeFetcher,
   SCRIPT_ORDER,
-  ROOT
+  ROOT,
+  casual,
+  casualPool,
+  casualSet
 };

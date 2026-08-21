@@ -23,7 +23,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { freshEngine, EN, FA } from './helpers.mjs';
+import { freshEngine, EN, FA, casualPool } from './helpers.mjs';
 
 // --------------------------------------------------------------------------
 // Assertion helpers
@@ -36,7 +36,7 @@ import { freshEngine, EN, FA } from './helpers.mjs';
  */
 function assertBoundary(lang, input) {
   const reply = freshEngine(lang).respond(input);
-  const pool = [...(lang.daryaHarassmentResponses || [])];
+  const pool = casualPool(lang.daryaHarassmentResponses || []);
   assert.ok(
     pool.includes(reply),
     `"${input}" should get a calm boundary reply, got: "${reply}"`
@@ -51,7 +51,7 @@ function assertBoundary(lang, input) {
 function assertFrustration(lang, input) {
   const reply = freshEngine(lang).respond(input);
   assert.ok(
-    (lang.frustrationResponses || []).includes(reply),
+    casualPool(lang.frustrationResponses || []).includes(reply),
     `"${input}" should de-escalate via the frustration pool, got: "${reply}"`
   );
   return reply;
@@ -64,7 +64,7 @@ function assertFrustration(lang, input) {
 function assertNotBoundary(lang, input) {
   const reply = freshEngine(lang).respond(input);
   assert.ok(
-    !(lang.daryaHarassmentResponses || []).includes(reply),
+    !casualPool(lang.daryaHarassmentResponses || []).includes(reply),
     `"${input}" should NOT be read as a Darya-directed insult, got: "${reply}"`
   );
   return reply;

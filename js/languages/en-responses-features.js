@@ -224,6 +224,68 @@
     'Noted: a richer dataset of good questions and broader topics. Until then, name any subject and I will answer from the offline shelf. Where should we begin?'
   ];
 
+  // "Tell me more" after a knowledge answer whose deep-dive paragraph is
+  // already spent (or never existed): honest about the offline shelf's
+  // depth, honest that the snapshot ages, and points to real sources
+  // instead of improvising facts.
+  R.knowledgeDepthLimitResponses = [
+    "Honestly, that's everything my offline shelf holds on this one. My data doesn't update itself either, so for fresher detail, Wikipedia or another solid source is your best bet. But if you have a specific question about it, try me; I might know that exact piece.",
+    "You've hit the bottom of my offline shelf on this topic! I never connect to the internet, so past a certain point my info goes stale. A quick look at a reliable source beats me guessing. Anything else you'd like to dig into?",
+    "I genuinely don't have more than that, and I'd rather say so than invent details. My database is offline and can lag behind the news. If you want the deeper story, Wikipedia or a specialist site is the right shelf."
+  ];
+
+  // Appended after a fighter's record when the career is still active:
+  // the number is a snapshot, not a promise.
+  R.recordStalenessNotes = [
+    'One caveat: my database is offline and never updates, and until an athlete retires the numbers keep moving. For the exact figure, check Wikipedia or a good stats site.',
+    "Just keep in mind I'm offline, and the stats of active athletes change all the time; that number is from my last update, not from today. A quick check of a live source will make sure."
+  ];
+
+  // Appended after a settled (retired) record: the number is history.
+  R.recordFinalNotes = [
+    "Since the career is over, that number isn't going anywhere; unless a comeback itch strikes one day!",
+    "That's one of those records that's now carved into the history books."
+  ];
+
+  // A record/stats question about the last topic when no record data is
+  // on the shelf: honest, no invented numbers, a pointer to live sources.
+  R.recordUnknownResponses = [
+    "I don't have the exact stats on my offline shelf, and I won't make numbers up; Wikipedia or a good stats site carries the live figure. But if you're curious about the career itself, I'm here.",
+    "Honestly, I don't keep live stats; my data is offline and numbers like that keep moving anyway. A quick search of a reliable source will give you the real figure. Anything else about them you'd like to talk over?"
+  ];
+
+  // "I'm Messi!" - a playful claim to BE a famous figure. Never stored
+  // as the user's name; met with humor plus a real opening.
+  R.famousClaimResponses = [
+    'Wait, THE {figure}? In my chat? What an honor! Okay, between us: what made you think of {figure} today?',
+    "Well well, {figure} dropping by to talk to me! Nice one. Though honestly, I'm more interested in you than in {figure}; what's going on today?",
+    '{figure}, live and in person! I love it. Jokes aside, is there something behind that line, or are you just in a good mood?'
+  ];
+
+  // "I'm the next Messi" - the aspirational version deserves warmth plus
+  // one grounded question, never mockery.
+  R.famousNextResponses = [
+    "I love that confidence! {figure} started out as a kid with a dream too. Seriously though: where are you on that road, and what's your next step?",
+    'Good line. Becoming {figure} takes daily practice more than raw talent, though. How long have you been working at it?',
+    "Why not? Every legend started somewhere. But let me ask a real one: to get to {figure}'s level, what's one thing you could do this very week?"
+  ];
+
+  // "Messi or Socrates?" - a cross-domain celebrity comparison is
+  // apples and oranges; say so with a smile and ask what's behind it.
+  R.famousCompareResponses = [
+    "Comparing {a} and {b} is a bit like comparing pizza and poetry; both great, completely different worlds! Now I'm curious: what put those two side by side for you?",
+    "Fun question! {a} is a legend on their own turf, and {b} rules a different universe entirely. There's no winner, but I'd love to know which one pulls you in more, and why.",
+    "Ooh, {a} or {b}? That's apples and oranges territory! Each one owns their own mountain. Which side are you on?"
+  ];
+
+  // "Messi or messy?" - the wordplay version. Land the joke, then hand
+  // the mic back.
+  R.famousPunResponses = [
+    "Tough one! Messi has eight Ballon d'Ors, but messy has my room beat every single day; depends whether you want goals or chaos! Seriously though, are you into football?",
+    "Messi dribbles past defenders, messy describes my knowledge shelf after a long chat; both undefeated in their own game! Where'd you get that one? I like it.",
+    "Finally someone asks the important questions! Easy: on the pitch it's Messi, in my head it's messy. Got any more riddles for me?"
+  ];
+
   R.userProfilePools = {
     ageStored: [
       'Got it: {age} years old. I will remember that for our conversation.',
