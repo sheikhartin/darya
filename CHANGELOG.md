@@ -7,6 +7,21 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ## [Unreleased]
 
+### Fixed
+
+- Famous-figure pool picks are now rendered (placeholders substituted)
+  BEFORE `_pickVaried` selects a line. The no-repeat machinery compares
+  pool lines against the replies already sent this session, and stored
+  replies are always the substituted text: for the templated claim,
+  next, and compare pools (`{figure}`, `{a}`, `{b}`) the raw template
+  never equals its own rendering, so the recency filter, opener gate,
+  and question log were blind to every line of those pools. A user
+  repeating «من مسی‌ام» / "I am Messi" could receive the identical
+  reply indefinitely, and the persona suite's "repeating the claim
+  gets fresh replies" test failed on CI about once every 27 runs
+  (a uniform dice roll over 3 lines). Consecutive turns from those
+  pools are now guaranteed to vary within the recency window.
+
 ## [1.9.0] - 2026-08-21
 
 ### Added

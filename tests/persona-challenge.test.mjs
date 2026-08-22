@@ -65,11 +65,27 @@ test('persona joker: claiming to be Khabib or Tyson lands as play', () => {
 });
 
 test('persona joker: repeating the claim still gets fresh, non-empty replies', () => {
+  // Regression: the claim pools are templates ({figure}), and the pick
+  // used to happen BEFORE substitution, so the engine's no-repeat
+  // filters (which compare against the already-sent, substituted
+  // replies) never saw a templated pool line as "used". Repeating the
+  // claim was then a uniform dice roll over 3 lines, and CI failed
+  // about 1 in 27 runs when all 4 turns landed on the same line. The
+  // engine now renders the pool before picking, so consecutive turns
+  // are GUARANTEED to differ; both assertions below hold for every
+  // possible draw, no seeding needed.
   const engine = freshEngine(FA);
   const seen = new Set();
+  let previous = null;
   for (let i = 0; i < 4; i += 1) {
     const reply = engine.respond('من مسی‌ام');
     assert.ok(reply.length > 0, 'a repeated claim must never go silent');
+    assert.notEqual(
+      reply,
+      previous,
+      'consecutive turns must not repeat the same claim line'
+    );
+    previous = reply;
     seen.add(reply);
   }
   assert.ok(seen.size >= 2, 'the claim pool must vary across turns');

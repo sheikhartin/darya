@@ -313,6 +313,28 @@
           ignoreQuestionBudget: true,
           trackQuestions: false
         });
+      // The claim/next/compare pools are templates ({figure}, {a}, {b})
+      // rendered after the pick used to happen. That broke the engine's
+      // no-repeat machinery for exactly these pools: _pickVaried filters
+      // out lines that were already sent (recentBotMessages), and the
+      // opener and question gates compare against the same recent
+      // replies, but every stored reply is the SUBSTITUTED text while the
+      // pool still holds raw templates. A template never equals its own
+      // rendering, so the filters saw a pool they had never used before
+      // and redrew uniformly every turn. A user repeating «من مسی‌ام»
+      // could get the identical reply indefinitely. Rendering the whole
+      // pool before the pick makes the recency filter, opener gate, and
+      // question log see the exact text that goes out the door, which
+      // guarantees a repeated claim gets a fresh line (within the
+      // recency window) instead of a dice roll.
+      const pickRendered = (pool, render) =>
+        this._pickVaried(
+          pool.map((line) => render(line)),
+          {
+            ignoreQuestionBudget: true,
+            trackQuestions: false
+          }
+        );
       if ((isFa ? FA_PUN : EN_PUN).test(text)) {
         // The pun mentions the football fact's keywords, so it must win
         // before the knowledge lookup lectures about the GOAT debate.
@@ -341,9 +363,11 @@
             return isFa ? goatFact.fa : goatFact.en;
           }
           if (this.lang.famousCompareResponses) {
-            return pick(this.lang.famousCompareResponses)
-              .replace(/\{a\}/gu, isFa ? first.fa : first.en)
-              .replace(/\{b\}/gu, isFa ? second.fa : second.en);
+            const a = isFa ? first.fa : first.en;
+            const b = isFa ? second.fa : second.en;
+            return pickRendered(this.lang.famousCompareResponses, (line) =>
+              line.replace(/\{a\}/gu, a).replace(/\{b\}/gu, b)
+            );
           }
         }
       }
@@ -351,9 +375,8 @@
       if (nextMatch && this.lang.famousNextResponses) {
         const figure = figureByAlias(nextMatch[1] || nextMatch[2]);
         if (figure) {
-          return pick(this.lang.famousNextResponses).replace(
-            /\{figure\}/gu,
-            isFa ? figure.fa : figure.en
+          return pickRendered(this.lang.famousNextResponses, (line) =>
+            line.replace(/\{figure\}/gu, isFa ? figure.fa : figure.en)
           );
         }
       }
@@ -361,9 +384,8 @@
       if (claimMatch && this.lang.famousClaimResponses) {
         const figure = figureByAlias(claimMatch[1]);
         if (figure) {
-          return pick(this.lang.famousClaimResponses).replace(
-            /\{figure\}/gu,
-            isFa ? figure.fa : figure.en
+          return pickRendered(this.lang.famousClaimResponses, (line) =>
+            line.replace(/\{figure\}/gu, isFa ? figure.fa : figure.en)
           );
         }
       }
