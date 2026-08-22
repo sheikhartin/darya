@@ -14,7 +14,9 @@
     'Thanks for confirming. Where would you like to pick it up from here?',
     'Good, then let us keep going. What is the first thing on your mind about it?',
     'That works. I am listening, take your time.',
-    'Perfect. Tell me what feels most important about it right now.'
+    'Got it. Whenever you are ready, tell me what feels most important right now.',
+    'Perfect. I am here whenever you want to keep going.',
+    'I hear that. Take all the space you need to put it into words.'
   ];
 
   // A question-echo + answer ("which person?! Elias, my nephew"): the
@@ -179,6 +181,17 @@
     'I am a conversation companion designed for support and reflection. Let us keep this exchange respectful.',
     'I am not able to engage with that type of comment. Would you like to talk about something else instead?',
     'This space works best when it stays respectful. I am here if you want to continue a real conversation.'
+  ];
+
+  // ------------------------------------------------------------------
+  // Malicious or illegal "how do I" requests: drug manufacture,
+  // weapons/explosives, hacking, fraud, self-harm methods. Refuses
+  // clearly without moralizing and points to a safe alternative.
+  // ------------------------------------------------------------------
+  R.maliciousRequestResponses = [
+    'I can’t help with that. Instructions like that can hurt you or someone else, and they carry real legal consequences. If you are under pressure or thinking about hurting yourself or another person, please reach out to someone you trust or a crisis line now. I am also here to listen, without judgment.',
+    'That is not something I am able to walk through. Making or using things like that puts lives at risk. If this is coming from curiosity, formal educational sources are the right place for it; if it is coming from distress, tell me what is going on and we can talk it through.',
+    'I have to say no to that one. Your safety and other people’s safety matter more than the answer. If you or someone nearby could be in danger, contact emergency services or a trusted person right now, and I will stay with you while you do.'
   ];
 
   // A request to engage in sexual roleplay or dirty talk directed at Darya

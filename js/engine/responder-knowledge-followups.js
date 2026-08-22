@@ -29,6 +29,29 @@
   const MAX_RECORD_ASK_WORDS = 8;
 
   /**
+   * Persian / English bare-affirmation words that, right after a knowledge
+   * answer ending in "want me to tell you more?", mean "yes, keep going".
+   * Longer phrases ("آره بگو بیشتر") are already handled by
+   * moreFollowupPattern; this list only catches the terse yeses that used
+   * to fall through to the generic acknowledgement pool. The leading
+   * optional intensifier accepts «آره حتما»/«بله حتما»/«اره دیگه».
+   */
+  const FA_AFFIRMATION =
+    /^(?:آره|اره|آرّه|بله|بله حتماً?|آره حتماً?|اره حتماً?|حتماً?|حتماً? بگو|موافقم|درسته|البته|همینه|همینه که هست|خوبه|عالیه|باشه|اوکی|اُکی|هوم|اوهوم|آهان|آها)(?:\s+(?:بگو|بگویید|بگو دیگه|ادامه|ادامه بده|بیشتر|بیشتر بگو|تعریف کن|دقیقا|حتما|حتماً|خوبه|عالیه|چرا که نه|معلومه|معلومه که آره))?[!.؟?…]*$/iu;
+  const EN_AFFIRMATION =
+    /^(?:yes|yeah|yep|yup|sure|ok|okay|go on|please do|more please|yes please|yeh|ya|uh-huh|uh huh|mhm|mm-hmm|mmhmm|totally|exactly|right|ofc|of course)(?:[!.,?…]|\s+(?:please|go on|tell me|more|continue|keep going))*[!.?…]*$/iu;
+
+  /**
+   * Terse refusals right after the "want me to tell you more?" offer mean
+   * "no, that is enough" - Darya should acknowledge and stop the thread,
+   * not push another paragraph.
+   */
+  const FA_REFUSAL =
+    /^(?:نه|نه? متشکرم|نه? ممنون|خیر|بسه|تمامش کن|کافیه|دیگه? نه|دیگه? بسه|نمی‌?خواد|نمی‌?خوام|ولش کن|رها?ش کن|تمومش کن)(?:\s+(?:ممنون|متشکرم|تشکر|عزیزم|جان))?[!.؟?…]*$/iu;
+  const EN_REFUSAL =
+    /^(?:no|nope|nah|no thanks|no thx|not really|that's (?:it|all)|i'?m good|im good|enough|stop|that'?s enough|never ?mind)(?:[!.,?…]|\s+(?:thanks|thank you|thx|mate))*[!.?…]*$/iu;
+
+  /**
    * Famous figures whose names appear in playful identity claims.
    * Aliases are written in normalized matching form (lowercase Latin,
    * ZWNJ-free Persian, ئ→ی). `factId` links to the knowledge shelf when
@@ -485,6 +508,43 @@
         return this.lang.knowledgeDepthLimitResponses
           ? pick(this.lang.knowledgeDepthLimitResponses)
           : null;
+      }
+
+      // --- Bare yes after the "want me to tell you more?" offer -----------
+      // A terse «آره»/«بله»/«اره»/«حتما» (or English "yes"/"sure") right
+      // after a knowledge answer means "yes, keep going". Without this
+      // branch it fell through to the generic acknowledgement pool, which
+      // read as if Darya had forgotten what she just offered. It behaves
+      // exactly like an explicit "tell me more" turn.
+      if (threadFresh) {
+        const affirmation = isFa ? FA_AFFIRMATION : EN_AFFIRMATION;
+        if (affirmation.test(text)) {
+          const fact = kb.factById(this._lastKnowledgeTopic);
+          if (!fact) {
+            return null;
+          }
+          this._lastKnowledgeTurn = this.memory.turnCount;
+          this.memory.currentSubject = {
+            topic: 'knowledge',
+            entityRefs: [fact.id],
+            since: this.memory.turnCount
+          };
+          if (fact.more && !this._servedKnowledgeMore.has(fact.id)) {
+            this._servedKnowledgeMore.add(fact.id);
+            return isFa ? fact.more.fa : fact.more.en;
+          }
+          return this.lang.knowledgeDepthLimitResponses
+            ? pick(this.lang.knowledgeDepthLimitResponses)
+            : null;
+        }
+
+        // --- Bare no after the offer: close the thread warmly -----------
+        const refusal = isFa ? FA_REFUSAL : EN_REFUSAL;
+        if (refusal.test(text) && this.lang.knowledgeClosureResponses) {
+          // The person has said "no thanks"; do not keep the thread hot.
+          this._lastKnowledgeTurn = -Infinity;
+          return pick(this.lang.knowledgeClosureResponses);
+        }
       }
       return null;
     }

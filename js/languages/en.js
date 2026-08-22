@@ -56,6 +56,7 @@
     dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
+    maliciousRequestPattern,
     stopWords,
     questionTopics,
     topicSeriousness,
@@ -226,6 +227,7 @@
     dateTimeYearPattern,
     daryaHarassmentPattern,
     sexualHarassmentPattern,
+    maliciousRequestPattern,
     ruleTellJoke: R.ruleTellJoke,
     ruleTellStory: R.ruleTellStory,
     ruleTellStoryHorror: R.ruleTellStoryHorror,
@@ -256,6 +258,7 @@
     dateTimeFollowups: R.dateTimeFollowups,
     daryaHarassmentResponses: R.daryaHarassmentResponses,
     sexualHarassmentResponses: R.sexualHarassmentResponses,
+    maliciousRequestResponses: R.maliciousRequestResponses,
     ruleDirtyTalkRequest: R['ruleDirtyTalkRequest'],
     emotionCalibration: R.emotionCalibration,
     // Question recall (see responder-recall.js): "do you remember what
@@ -287,6 +290,7 @@
     // record/stats questions and tell-me-more turns on the last
     // answered fact, plus the playful famous-figure claims.
     knowledgeDepthLimitResponses: R.knowledgeDepthLimitResponses,
+    knowledgeClosureResponses: R.knowledgeClosureResponses,
     recordStalenessNotes: R.recordStalenessNotes,
     recordFinalNotes: R.recordFinalNotes,
     recordUnknownResponses: R.recordUnknownResponses,

@@ -232,6 +232,40 @@
       en: 'Persian food revolves around rice and stews: chelo kebab and ghormeh sabzi are among the most famous, with saffron, dried lime, and fresh herbs as signature flavors. Tahdig, the crispy golden layer of rice at the bottom of the pot, is one of the most loved parts of the Iranian table. Gatherings usually serve several stews and rice dishes together.'
     },
     {
+      id: 'qeymeh_recipe',
+      keywords: [
+        'طرز تهیه قیمه',
+        'طرز پخت قیمه',
+        'قیمه چطور درست کنم',
+        'قیمه چجوری درست میشه',
+        'قیمه چطور بپزم',
+        'قیمه درست کردن',
+        'خورشت قیمه',
+        'خورش قیمه',
+        'قیمه نثار',
+        'قیمه',
+        'khoresh gheymeh',
+        'ghaymeh recipe',
+        'qeymeh recipe',
+        'persian split pea stew'
+      ],
+      weak: ['قیمه', 'gheymeh', 'qeymeh'],
+      weakSafe: true,
+      hints: [
+        'غذا',
+        'طرز',
+        'تهیه',
+        'پخت',
+        'خورشت',
+        'غذای',
+        'recipe',
+        'stew',
+        'cooking'
+      ],
+      fa: 'قیمه (یا خورشت قیمه) یکی از خورش‌های مجلسی ایرانیه. مواد برای چهار نفر: گوشت خورشتی گوسفندی ۳۰۰ گرم، لپه نصف پیمانه (از چند ساعت قبل خیس‌خورده)، پیاز دو عدد متوسط، رب گوجه دو تا سه قاشق غذاخوری، لیمو عمانی چهار تا پنج عدد، زردچوبه، نمک و فلفل و روغن به مقدار لازم. پیاز داغ درست کن، گوشت و زردچوبه رو تفت بده، رب رو جداگانه سرخ کن تا خامی‌ش بره، لپه و لیمو عمانی رو اضافه کن و روی حرارت ملایم بذار دو سه ساعت جا بیفته. معمولاً با سیب‌زمینی سرخ‌شده و برنج زعفرونی سرو می‌شه.',
+      en: 'Khoresh gheymeh is a classic Persian split-pea and lamb (or beef) stew, traditionally served with saffron rice and crispy fried potatoes. For four people you need about 300 g stew meat, half a cup of yellow split peas soaked a few hours, two medium onions, two to three tablespoons of tomato paste, four or five dried limes (limoo amani), plus turmeric, salt, pepper and oil. Fry the onions, brown the meat with turmeric, fry the tomato paste separately until it deepens in color, add the split peas and crushed dried limes, and simmer gently for two to three hours until the meat is tender.'
+    },
+    {
       id: 'saffron',
       keywords: [
         'زعفران',

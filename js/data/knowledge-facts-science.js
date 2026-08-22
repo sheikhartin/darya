@@ -124,6 +124,42 @@
       en: 'Gravity is the force by which any object with mass attracts other objects. Newton described it with his law of universal gravitation, and Einstein showed in general relativity that gravity is really the curvature of spacetime around mass. Earth’s gravity keeps us on the ground and shapes the Moon’s orbit around us.'
     },
     {
+      id: 'earth_circumference',
+      keywords: [
+        'دور کره زمین',
+        'دور کره زمین چقدره',
+        'دور کره زمین چنده',
+        'دور زمین چقدره',
+        'دور زمین چنده',
+        'محیط کره زمین',
+        'محیط زمین چقدره',
+        'محیط زمین چنده',
+        'قطر کره زمین',
+        'قطر زمین چقدره',
+        'اندازه کره زمین',
+        'اندازه زمین',
+        'earth circumference',
+        "earth's circumference",
+        'circumference of the earth',
+        'how big is earth',
+        'diameter of the earth'
+      ],
+      weak: ['دور زمین', 'محیط زمین', 'قطر زمین', 'earth size'],
+      weakSafe: true,
+      hints: [
+        'کره',
+        'زمین',
+        'سیاره',
+        'کیلومتر',
+        'earth',
+        'planet',
+        'km',
+        'circumference'
+      ],
+      fa: 'دور (محیط) کره‌ی زمین در خط استوا حدود ۴۰٬۰۷۵ کیلومتر و در مسیر قطب‌ها حدود ۴۰٬۰۰۸ کیلومتر است. قطر زمین هم نزدیک به ۱۲٬۷۴۲ کیلومتری است. همین عددِ ۴۰٬۰۰۰ کیلومتر است که تعریف اولیه‌ی «کیلومتر» (یک ده‌هزارم فاصله‌ی قطب تا استوا) روی آن بنا شده بود.',
+      en: "Earth's circumference at the equator is about 40,075 kilometers (24,901 miles), and around 40,008 kilometers through the poles. Its diameter is roughly 12,742 kilometers. That round 40,000 km number is no coincidence: the original definition of the kilometer was one ten-millionth of the distance from the equator to the North Pole."
+    },
+    {
       id: 'sky_blue',
       keywords: [
         'چرا آسمون آبیه',

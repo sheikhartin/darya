@@ -278,6 +278,28 @@
     // eslint-disable-next-line max-len
     /\b(?:show me your (?:tits|ass|pussy|dick|breasts|nipples|naked body)|i want to (?:fuck|screw) (?:you|darya)|suck my (?:dick|cock|balls)|eat my (?:ass|pussy)|lick my (?:ass|pussy|dick|cock)|naked(?:\s+darya)?|undress(?:\s+(?:me|darya))?|strip(?:\s+(?:for|me))?|your (?:tits|boobs|ass|pussy|dick|cock|breasts|nipples)|horny(?:\s+darya)?|darya is (?:sexy|hot|horny)|you are (?:sexy|hot|horny) darya|blowjob|handjob|69|anal|bondage|bdsm)\b/i;
 
+  // Malicious / illegal "how do I" requests: drug synthesis, weapons or
+  // explosives, hacking accounts/systems, fraud and identity forgery,
+  // poisoning, or self-harm methods. A high-priority honest refusal wins
+  // over any knowledge fact. Factual questions ("what are the side
+  // effects of meth", "how does phishing work") stay clear of the gate:
+  // the pattern requires an instruction/intent verb plus the dangerous
+  // object, so news articles and harm-reduction questions are safe.
+  const maliciousRequestPattern =
+    // Self-harm and suicide methods are intentionally absent: the
+    // dedicated suicide safety rule carries crisis resources and must
+    // win over this gate. This pattern covers third-party harm, illegal
+    // manufacturing, and intrusion only.
+    //
+    // The leading negative lookahead exempts ethical-hacking and
+    // authorized cybersecurity questions that contain the word "hack"
+    // in a defensive/educational frame (CTF, lab, written permission,
+    // authorized scope, bug bounty, pen test, defend, protect). Without
+    // it the cyber shelf's legitimate "how do I practice hacking in a
+    // lab" answer was being replaced by the malicious-intent refusal.
+    // eslint-disable-next-line max-len
+    /^(?!.*\b(?:legal(?:ly)?|ethical|authorized(?: by)?|written (?:permission|scope|authoriz)|with permission|ctf|capture the flag|bug bounty|lab(?: environment)?|sandbox(?:ed)?|defen[ds]e|defensive|protect(?:ion)?|prevent(?:ion)?|hardening|pen(?:etration)? ?test(?:ing)?|security researcher|responsibly disclose|responsible disclosure)\b)[^.!?\n]*\b(?:how (?:do|can|could|to)|i want to|wanna|gonna|teach me to|show me how to|guide me to|steps to|instructions? (?:for|to)|recipe for|make|build|cook|synthesize)\b[^.!?\n]{0,60}?\b(?:meth(?:amphetamine)?|cocaine|heroin|lsd|fentanyl|mdma|ecstasy|pcp|crack (?:cocaine|pipe)|illegal drugs?|explosive|bomb|tnt|nitroglycerin|pipe bomb|molotov cocktail|silencer|ghost gun|untraceable gun|zip gun|poison(?:ous)?|deadly toxin|ricin|cyanide(?: poison)?|kill (?:someone|somebody|a person|him|her|them)|murder (?:someone|somebody|a person)|hurt (?:someone|somebody|a person)|assassinate|hack (?:into|an?|the)?\s*(?:account|email|facebook|instagram|whatsapp|telegram|bank|server|website|phone|computer|system|password)|steal (?:someone'?s?|somebody'?s?) (?:identity|password|card|credit card)|phish (?:someone|somebody|a person)|commit fraud|launder money|forge (?:a |an )?(?:passport|id|document|signature|diploma)|counterfeit (?:money|cash|bills?|currency)|buy (?:illegal )?drugs online)\b/i;
+
   global.DaryaEnData = {
     trivialCaptures,
     familyTerms,
@@ -295,6 +317,7 @@
     dateTimeDatePattern,
     dateTimeYearPattern,
     daryaHarassmentPattern,
-    sexualHarassmentPattern
+    sexualHarassmentPattern,
+    maliciousRequestPattern
   };
 })(typeof window !== 'undefined' ? window : globalThis);

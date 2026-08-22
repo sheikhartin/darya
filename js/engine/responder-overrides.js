@@ -214,6 +214,16 @@
         this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
         this.currentTurnDialogueAct === 'acknowledgement' ||
         this.memory.isInDistressStreak() ||
+        // A turn that matched a substantive, topic-bearing rule already
+        // has a tailored, in-character reply (a greeting, a how-are-you
+        // answer, a knowledge fact, a profile or emotion reply). Replacing
+        // that with an affectionate "so you are a person of few words"
+        // eyebrow-raise breaks the conversation and read as Darya not
+        // listening. The huff is reserved for genuinely empty terse turns
+        // that otherwise fall back to a generic line.
+        (this._matchedRuleForTurn &&
+          this._matchedRuleForTurn.topic &&
+          this._matchedRuleForTurn.priority >= 30) ||
         // Session safety mode: after any safety-critical event, the
         // playful huff stays off for the rest of the session. A person
         // who disclosed a crisis must never get an affectionate
@@ -309,6 +319,25 @@
       // response for their interpretation. Mark them claimed so broad
       // knowledge, profile, and conversational overrides cannot replace them.
       let _overrideFired = matchedRule?.locksOverrides === true;
+      // Malicious or illegal how-to requests (drug manufacture, weapons,
+      // hacking accounts, fraud) that slipped past the topic rules get a
+      // clean refusal here. Safety-critical topics (self-harm, crisis,
+      // crime for profit) keep their own richer replies and are never
+      // replaced by this generic gate.
+      if (
+        !_safetyTurn &&
+        matchedRule?.topic !== 'crime_for_profit' &&
+        !_overrideFired &&
+        this.lang.maliciousRequestPattern &&
+        this.lang.maliciousRequestPattern.test(matchingText) &&
+        this.lang.maliciousRequestResponses
+      ) {
+        reply = this._pickVaried(this.lang.maliciousRequestResponses, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+        _overrideFired = true;
+      }
       // Ideation wrapped in a joking softener ("i wanna die lol jk",
       // «میخوام بمیرم ولی شوخی کردم») is a classic test-balloon
       // disclosure: it deserves a gentle, serious check-in rather than

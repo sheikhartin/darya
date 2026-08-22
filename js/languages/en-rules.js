@@ -785,7 +785,7 @@
       // never as a question about whether the user is genuinely fine.
 
       // eslint-disable-next-line max-len
-      /\b(how are you|how're you|how r u|how are u|how(?:'s| is) it going|how you doing|you good|u good|are you good|what(?:'s| is) up|sup|how(?:'s| is) everything|how have you been)\b/i,
+      /\b(?:how are you|how're you|how r u|how r ya|how are u|how are ya|how ya doin(?:g)?|how u doin(?:g)?|how(?:'s| is) it going\b|how you doing|you good(?:'?re)?(?:[?!.]|$)|u good(?:[?!.]|$)|r u ok(?:[?!.]|$)|r u good(?:[?!.]|$)|are you good(?:[?!.]|$)|what(?:'s| is) up(?:\?|$)|whats good\b|what'?s up(?:\?|$)|wassup\b|sup\b|how(?:'s| is) everything|how have you been)\b/i,
       R['ruleSmalltalkHowareyou']
     ),
 
