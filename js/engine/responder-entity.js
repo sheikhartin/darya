@@ -421,11 +421,27 @@
         // switch to the non-question lines (or the acknowledgement
         // pool) instead of repeating a question word-for-word.
         if (pool && pool.length && this.memory.askedQuestionTexts) {
-          const unspent = pool.filter(
-            (line) =>
-              !this._isQuestionResponse(line) ||
-              !this.memory.askedQuestionTexts.has(line)
-          );
+          // Filter by both the raw text and the conversational
+          // (contracted) form, because the session-wide set tracks
+          // both once respond() runs the conversational layer.
+          const unspent = pool.filter((line) => {
+            if (!this._isQuestionResponse(line)) {
+              return true;
+            }
+            if (this.memory.askedQuestionTexts.has(line)) {
+              return false;
+            }
+            const contracted = this._conversational
+              ? this._conversational(line)
+              : line;
+            if (
+              contracted !== line &&
+              this.memory.askedQuestionTexts.has(contracted)
+            ) {
+              return false;
+            }
+            return true;
+          });
           pool =
             unspent.length > 0
               ? unspent
@@ -434,9 +450,13 @@
                 );
         }
         if (pool && pool.length) {
+          // Track the question through the normal asked-question path
+          // so _pickVaried's session-wide no-repeat filter can see
+          // it on the next turn. Without this, a long "ok/ok/ok"
+          // streak could re-pick a question the user already saw
+          // verbatim (the "Perfect. Tell me what feels..." repeat).
           reply = this._pickVaried(pool, {
-            ignoreQuestionBudget: true,
-            trackQuestions: false
+            ignoreQuestionBudget: true
           });
         }
       }
@@ -710,8 +730,20 @@
       }
 
       if (candidates.length === 0) {
+        // The no-recent + no-repeat filters together exhausted the
+        // pool. Prefer a non-question statement (the conversation can
+        // keep flowing without repeating a question) over falling back
+        // to the full budgeted list, which is what allowed the
+        // "Perfect. Tell me..." line to repeat after a long "ok" streak.
         const last = recent[recent.length - 1];
-        candidates = budgeted.filter((item) => item !== last);
+        const nonQuestions = budgeted.filter(
+          (item) => item !== last && !this._isQuestionResponse(item)
+        );
+        if (nonQuestions.length > 0) {
+          candidates = nonQuestions;
+        } else {
+          candidates = budgeted.filter((item) => item !== last);
+        }
       }
       if (candidates.length === 0) {
         candidates = budgeted;
@@ -745,6 +777,24 @@
         );
         if (freshOpeners.length > 0) {
           candidates = freshOpeners;
+        }
+      }
+
+      // Hard no-repeat for questions (session-wide, final safety net):
+      // even when every other filter collapses, a question already
+      // asked verbatim this session must not be picked again while any
+      // other candidate exists. The recency and asked-question filters
+      // above already do this on a best-effort basis; this final gate
+      // catches the case where the personality/scorer pruning left
+      // only already-asked questions in the candidate set.
+      if (this.memory.askedQuestionTexts && candidates.length > 1) {
+        const unasked = candidates.filter(
+          (item) =>
+            !this._isQuestionResponse(item) ||
+            !this.memory.askedQuestionTexts.has(item)
+        );
+        if (unasked.length > 0) {
+          candidates = unasked;
         }
       }
 

@@ -208,6 +208,19 @@
     'این فضا وقتی بهتر کار می‌کند که محترم بماند. من اینجا هستم اگر بخواهی گفتگوی واقعی داشته باشیم.'
   ];
 
+  // ------------------------------------------------------------------
+  // Malicious or illegal "how do I" requests (Persian): manufacturing
+  // drugs or weapons, hacking accounts, fraud, self-harm methods. The
+  // reply refuses clearly, does not moralize, and points the person to
+  // a safe alternative (harm reduction, a trusted person, or the
+  // emergency lines when the request is about hurting themselves).
+  // ------------------------------------------------------------------
+  R.maliciousRequestResponses = [
+    'این درخواستی نیست که بتونم راهنماییش کنم، چون می‌تونه به تو یا آدم‌های دیگه آسیب بزنه. اگه زیر فشاری یا فکر آسیب‌زدن به خودت یا کسی دیگه تو سرت می‌چرخه، پیش یه آدم مورد اعتماد یا خط ۱۲۳ (اورژانس اجتماعی) برو؛ اینجا هم می‌تونم بدون قضاوت گوش بدم.',
+    'متأسفم، این یکی رو نمی‌تونم توضیح بدم. ساختن یا استفاده از این چیزها می‌تونه جون آدم‌ها رو به خطر بندازه و عواقب قانونی جدی داشته باشه. اگه کنجکاوی علمی‌داری، منبع‌های آموزشی رسمی و معتبر جای درستش هستن؛ اگه حالت بده، می‌تونی همین‌جا برام بگی.',
+    'نمی‌تونم در این مورد راهنمایی کنم. هم امنیت خودت مهمه هم امنیت بقیه. اگه این سؤال از سر فشار یا ناامیدی هست، با یک نفر تماس بگیر که بتونه حضوری کمکت کنه، و اگه خواستی می‌تونیم با هم درباره‌ی حسی که پشت سؤال هست حرف بزنیم.'
+  ];
+
   // A request to engage in sexual roleplay or dirty talk directed at Darya
   // («بیا حرف زشت بزنیم», «دوست دختر مجازیم باش», «چت جنسی کن»). Distinct
   // from crude harassment (above) and from a genuine intimacy question (the

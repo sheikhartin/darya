@@ -23,8 +23,26 @@
   // weak topic words and «چند وقته فوتبال بازی نکردم» would get the
   // football encyclopedia entry instead of empathy (the "knowledge:
   // psychology, sports, history" test pins exactly these statements).
+  // «دوست دارم بدونم/بدانم ...» and «می‌خوام بدونم ...» are the
+  // Persian "I want to know..." curiosity frame. The phrase does
+  // contain «دوست دارم», which is a weak trigger for the crush
+  // confession fact, but in this construction it is an information
+  // request ("دوست دارم بدونم درباره جنگ سرد چی میدونی"), not a
+  // romantic disclosure. The guard suppresses the weak topic word here
+  // so dating advice can never answer a knowledge question.
   const FA_WEAK_STATEMENT =
-    /(?:چند|چقدر)\s*(?:وقته|وقتیه|وقتی|مدته|مدتیه|روزه|ماهه|ساله|سالی)|چقدر\s*.{0,12}(?:دوست\s+دارم|علاقه\s+دارم)/u;
+    // eslint-disable-next-line max-len
+    /(?:چند|چقدر)\s*(?:وقته|وقتیه|وقتی|مدته|مدتیه|روزه|ماهه|ساله|سالی)|چقدر\s*.{0,12}(?:دوست\s+دارم|علاقه\s+دارم)|(?:دوست\s+دارم|علاقه\s+دارم|می‌?خوام|دلم\s+می‌?خواد)\s*(?:بدونم|بدانم|بفهمم|بدونی)/u;
+
+  // A curiosity frame ("I want to know...") makes a generic desire word
+  // like «دوست دارم» or «می‌خوام» an information-seeking marker, not a
+  // signal about the user's own feelings. When this pattern matches,
+  // weak topic words that would otherwise read as confessions (the
+  // crush fact's «دوست دارم») must be suppressed entirely; the real
+  // topic lives in the words that follow.
+  const FA_CURIOSITY_FRAME =
+    // eslint-disable-next-line max-len
+    /(?:دوست\s+دارم|علاقه\s+دارم|می‌?خوام|دلم\s+می‌?خواد|کنجکاوم)\s*(?:بدونم|بدانم|بفهمم|بدونی)|(?:برام|به\s*من)\s*(?:بگو|توضیح\s*بده|تعریف\s*کن)\s*(?:درباره|راجع\s*به|در\s*مورد)|(?:بگو|توضیح\s*بده|تعریف\s*کن)\s*(?:درباره|راجع\s*به|در\s*مورد)/u;
 
   // Where-to-buy phrases boost the marketplace fact so it beats any
   // item-specific buying guide ("where to buy a phone" wants stores).
@@ -97,7 +115,26 @@
       // «چندتا»/«چند» ("a few/some") mark list requests in Persian
       // («چندتا فیلم بگو»), the same job "some" does in English.
       'چندتا',
-      'چند'
+      'چند',
+      // «دوست دارم بدونم ...» / «می‌خوام بدونم ...» / «کنجکاوم بدونم ...»
+      // are explicit information-seeking frames ("I want to know...",
+      // "I'd like to know...", "I'm curious to know..."). Without this
+      // entry the bare «دوست دارم» weak word on the crush-confession fact
+      // used to answer those turns with dating advice (e.g. «دوست دارم
+      // بدونم حال خودت چطوره» or «دوست دارم بدونم درباره جنگ سرد چی
+      // میدونی»), even though the sentence is a genuine knowledge
+      // question. Including «بدانم»/«بدونم» as framing opens the door to
+      // whatever topic actually follows, while the lookup still gates
+      // the answer on a matching topic word.
+      'بدونم',
+      'بدانم',
+      'می‌خوام بدونم',
+      'میخوام بدونم',
+      'دوست دارم بدونم',
+      'کنجکاوم',
+      'اطلاعات بده',
+      'می‌دونی',
+      'میدونی'
     ],
     en: [
       'tell',
@@ -210,6 +247,18 @@
       for (const kw of fact.weak || []) {
         const k = kw.toLowerCase();
         if (!wordInText(lower, k)) {
+          continue;
+        }
+        // A curiosity frame ("I want to know...") turns desire words
+        // like «دوست دارم»/«می‌خوام» into information-seeking markers,
+        // not signals of the user's own feelings. Skip those weak
+        // phrases entirely when the frame is present so the crush
+        // confession fact can never answer a knowledge question.
+        if (
+          isFa &&
+          FA_CURIOSITY_FRAME.test(lower) &&
+          /^(?:دوست\s+دارم|علاقه\s+دارم|می‌?خوام|دلم\s+می‌?خواد)$/u.test(k)
+        ) {
           continue;
         }
         matchedAny = true;
@@ -619,6 +668,7 @@
         'قورمه سبزی',
         'قورمه'
       ],
+      qeymeh_recipe: ['قیمه', 'قیمه نثار', 'لپه', 'خورشت قیمه'],
       saffron: ['زعفران'],
       tea: ['چای'],
       relationship_plan: ['رابطه سالم', 'رابطه خوب', 'برنامه رابطه', 'رابطه'],

@@ -65,6 +65,12 @@ const LIVED_TOPICS = new Set([
   'divorce',
   'tech_frustration',
   'harassment_threat',
+  // A new crush or first-love disclosure («عاشق شدم», «عاشق کسی شدم»,
+  // «کراش زدم») is a lived experience: the preference-capture layer
+  // must not store «کسی شدم» as a liked thing, and the emotional reply
+  // must always beat any knowledge/light-warmth line.
+  'crush',
+  'new_love',
   // Blanket generalizations get a gentle-challenge pool that already
   // acknowledges the speaker ("That is a strong claim..."), so the
   // generic empathy prefix must never stack on top.
@@ -474,6 +480,11 @@ class DaryaResponseEngine {
     );
     const matchedRule = matches[0]?.rule || null;
     const captured = matches[0]?.captured || '';
+    // Expose the winning rule to post-pipeline overrides (the playful
+    // huff in particular) so they can refuse to replace a topic-bearing
+    // reply with a generic eyebrow-raise. Reset every turn; null when
+    // no rule matched.
+    this._matchedRuleForTurn = matchedRule;
     // A deferred-topic promise that Darya already circled back on is
     // fulfilled (and retired) the moment the person engages with real
     // content again: any matched rule counts as engagement.

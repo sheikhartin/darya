@@ -225,6 +225,15 @@
     'بیشتر از این رو صادقانه ندارم؛ ترجیح می‌دم بگم «نمی‌دونم» تا اینکه چیزی از خودم بسازم. دیتابیس من آفلاینه و ممکنه از اخبار جدید عقب باشه. اگه دقیق‌ترش رو خواستی، ویکی‌پدیا یا سایت‌های تخصصی جای درستشه.'
   ];
 
+  // Terse "no" after the "want me to tell you more?" offer: acknowledge
+  // warmly and let the person lead the next thread instead of pushing
+  // another paragraph they did not ask for.
+  R.knowledgeClosureResponses = [
+    'باشه، همونو برات نگه می‌دارم. هر وقت خواستی برگردیم سرش، اینجام.',
+    'باشه، حرفی نیست. اگه سؤال دیگه‌ای داشتی یا خواستی موضوع دیگه‌ای بگی، من آماده‌ام.',
+    'قبوله. اگه بعداً خواستی عمیق‌تر بریم یا یه موضوع کاملاً دیگه رو پیش بکشیم، فقط بگو.'
+  ];
+
   // Appended after a fighter's record when the career is still active:
   // the number is a snapshot, not a promise.
   R.recordStalenessNotes = [

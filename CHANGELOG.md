@@ -5,22 +5,110 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
-## [Unreleased]
+## [1.9.1] - 2026-08-22
 
 ### Fixed
 
-- Famous-figure pool picks are now rendered (placeholders substituted)
-  BEFORE `_pickVaried` selects a line. The no-repeat machinery compares
-  pool lines against the replies already sent this session, and stored
-  replies are always the substituted text: for the templated claim,
-  next, and compare pools (`{figure}`, `{a}`, `{b}`) the raw template
-  never equals its own rendering, so the recency filter, opener gate,
-  and question log were blind to every line of those pools. A user
-  repeating «من مسی‌ام» / "I am Messi" could receive the identical
-  reply indefinitely, and the persona suite's "repeating the claim
-  gets fresh replies" test failed on CI about once every 27 runs
-  (a uniform dice roll over 3 lines). Consecutive turns from those
-  pools are now guaranteed to vary within the recency window.
+- Greetings like «درود - خوب هستی؟», «سلام عزیزم خوبی؟»,
+  «درود بر تو حالت چطوره», «صبح بخیر چطوری», and the curiosity
+  frame «دوست دارم بدونم حالت چطوره» now all reach the warm
+  how-are-you answer instead of the nonsense fallback. The
+  smalltalk_howareyou rule was rewritten to tolerate a greeting
+  word, an affectionate word (عزیز/جان/علیک/...), either before
+  or after the check-in, and to accept the full family of
+  everyday variants (احوالت چطوره, خوشی, اوضاع چطوره, چطوراتی,
+  حالت چطوره, حال خودت چطوره). The EN twin now covers
+  `how r ya`, `yo you good`, `what's up`, and `how is it going`
+  without treating them as distress.
+- Bare «آره / اره / بله / حتما / اوکی / باشه / هوم / اوهوم /
+  موافقم» after a knowledge answer's «دوست داری بیشتر برات بگم
+  یا سؤال دیگه‌ای داری؟» offer now continues the deep-dive
+  paragraph of the same fact (e.g. Jon Jones's opponents and
+  retirement) instead of falling through to the generic
+  «می‌بینم که حرفم رو تأیید کردی» ack pool. A bare «نه، ممنون»
+  closes the thread with a dedicated warm closure.
+- Bot questions no longer ship with a period. The conversational
+  layer now enforces that a final clause ending in an
+  interrogative tail (چطوره, می‌خوای, دوست داری, are you, ...)
+  ends in «؟» / «?» while leaving mid-sentence periods intact
+  (e.g. the Mars fact's inner «نامیده می‌شه.» is untouched).
+  The pool line «حس خوبی دارم، ممنون! دوست دارم بدانم حال خودت
+  چطور است.» was also rewritten in the colloquial register.
+- «دوست دارم بدونم درباره‌ی جنگ سرد چی میدونی» and other
+  curiosity-frame questions are no longer answered with the
+  crush-confession script. The knowledge-framing regex accepts
+  the «دوست دارم بدونم / می‌خوام بدونم / کنجکاوم بدونم»
+  prefixes and the generic «بهترین ...» superlative, and the
+  crush-confession knowledge fact was gated so the prefix can
+  never select it as a "crush" topic.
+- A malicious or illegal how-to request (drug manufacture,
+  weapons / explosives, hacking accounts, ransomware, fraud)
+  is now refused clearly in both languages with a warm,
+  non-moralizing line that points to emergency and trusted
+  support. Ethical / authorized cybersecurity questions
+  («چطور هک اخلاقی را قانونی در آزمایشگاه تمرین کنم», "how
+  can I practice hacking a website legally in a lab") stay
+  helpful. The English pattern also stops matching the
+  self-harm "kill myself / hurt myself" phrasings, which
+  must (and do) go through the crisis rule.
+- «حالم خیلی خوب نیست امروز», «حالم گرفته», «حالم سر جایش
+  نیست», «حالی ازم نیست», «دلم خوش نیست» now route to the
+  sadness care pool instead of a vague prompt or the word-
+  repetition nudge.
+- «عاشق شدم», «عاشقم», «عاشق کسی شدم», «تازه عاشق شدم»,
+  «دلم لرزید» now land on the crush / first-love pool rather
+  than a profile preference or ambiguous-input reply. The
+  crush rule is treated as a lived topic so it is never
+  clobbered by preference capture, knowledge, or the playful
+  huff.
+- «از خودم متنفرم» and «خودمو دوست ندارم» reach the
+  self-esteem pool; they were previously misread as a
+  preference disclosure and stored as "خودم".
+- «طرز تهیه قیمه» returns the actual qeymeh recipe (lamb,
+  split peas, limoo amani, onion, tomato paste) instead of
+  the ghormeh-sabzi "why it is bitter" fix.
+- «بهترین فست فود تهران» returns a concrete, neighborhood-
+  and taste-aware answer instead of the unknown-topic
+  fallback.
+- «دور کره زمین چقدره» and other phrasings now return the
+  Earth circumference / diameter fact (40,075 km equatorial,
+  12,742 km diameter) instead of "no precise answer".
+- «می‌خوام با تو سکس داشته باشم», «باهات بخوابم»,
+  «برام سکسی حرف بزن», and «بیا سکس کنیم» all reach the
+  intimacy boundary pool, and the answer never mirrors
+  explicit words back.
+- The playful huff ("یک کلمه؟ آخرش یه کلمه؟") no longer
+  replaces a substantive, topic-bearing reply (a greeting,
+  how-are-you answer, knowledge fact, emotion reply). It is
+  now reserved for genuinely empty terse turns.
+- The English short-answer context pool after a long
+  "ok/ok/ok" streak no longer repeats a question verbatim;
+  the pool itself was expanded with non-question lines and
+  the session-wide no-question filter now also sees the
+  post-conversational (contracted) form of each line. The
+  Persian twin already had this protection.
+- EN "I'm upset about how things are going" is no longer
+  misread as a how-are-you greeting and now reaches the
+  anger pool.
+
+### Added
+
+- New knowledge fact `earth_circumference` for Earth's
+  equatorial and polar circumference plus diameter.
+- New knowledge fact `qeymeh_recipe` with the full
+  ingredient list and method for khoresh-e qeymeh.
+- New knowledge fact `fastfood_in_cities` covering
+  "best fast food in Tehran / Isfahan / Mashhad / ...".
+- New `maliciousRequestPattern` in both FA and EN plus
+  matching `maliciousRequestResponses`, wired before every
+  other override. The pattern carries a defensive/legal
+  carve-out so authorized cybersecurity practice and
+  education keep working.
+- New `tests/deep-conversations.test.mjs` with 99 cases
+  covering greetings, question-mark consistency, the
+  آره-after-knowledge thread, curiosity vs. crush,
+  hostility, sexual-roleplay boundaries, crisis,
+  malicious requests, memory, and factual/math answers.
 
 ## [1.9.0] - 2026-08-21
 

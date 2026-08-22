@@ -39,15 +39,41 @@
     },
 
     /**
+     * Returns true when the previous turn ended in a question Darya
+     * asked. Exposed so the app layer can, for example, keep the
+     * input focused or suppress unrelated suggestions.
+     * @returns {boolean}
+     */
+    previousTurnAskedQuestion() {
+      return this.memory.consecutiveQuestions > 0;
+    },
+
+    /**
      * Public entry point for one user turn: produces the reply in
      * conversational register. Quick-reply chips attached to the turn
      * are converted too, so every string the UI shows shares one
-     * voice.
+     * voice. The conversational layer may contract English ("what is"
+     * -> "what's") or switch Persian register; the session-wide
+     * no-repeat question set is updated with the FINAL text so a
+     * question is never repeated verbatim in the form the user sees.
      * @param {string} rawText - The user's message
      * @returns {string}
      */
     respond(rawText) {
-      const reply = this._conversational(this._respondTurn(rawText));
+      const raw = this._respondTurn(rawText);
+      const reply = this._conversational(raw);
+      if (
+        reply !== raw &&
+        this.memory.askedQuestionTexts &&
+        this._isQuestionResponse(reply)
+      ) {
+        // The pre-conversational text may already be in the set (for
+        // example from noteBotQuestion inside the pipeline). If the
+        // conversational layer changed the wording (e.g. "What is" ->
+        // "What's"), the final text the user actually sees must also
+        // be tracked or the no-repeat filter cannot see it.
+        this.memory.askedQuestionTexts.add(reply);
+      }
       if (Array.isArray(this.lastTurnQuickReplies)) {
         this.lastTurnQuickReplies = this.lastTurnQuickReplies.map((chip) =>
           this._conversational(chip)

@@ -234,6 +234,14 @@
     "I genuinely don't have more than that, and I'd rather say so than invent details. My database is offline and can lag behind the news. If you want the deeper story, Wikipedia or a specialist site is the right shelf."
   ];
 
+  // Terse "no" after the "want me to tell you more?" offer: close the
+  // thread warmly and hand the next move back to the person.
+  R.knowledgeClosureResponses = [
+    'Sounds good - I’ll leave it right there. Whenever you want to come back to it or pivot somewhere else, I’m here.',
+    'Fair enough. If another question comes up or you want to talk about something completely different, just say the word.',
+    'No problem at all. I’ll keep that on the shelf; ping me whenever you want more, or bring a new topic.'
+  ];
+
   // Appended after a fighter's record when the career is still active:
   // the number is a snapshot, not a promise.
   R.recordStalenessNotes = [

@@ -282,6 +282,31 @@
     // eslint-disable-next-line max-len
     /(?<!\p{L})(?:سکسی|بوس(?:یدن|ید)?|ببوس|بیا (?:بستر|تخت|پیشم|خونه)|بدنت(?:و| رو)|سینه(?: هات|ت)|کون(?:ت)?|ساک(?: بزن| کن)|بکنمت|جنده|قحبه|بزن قدش|عریان|لخت|برهنه)(?!\p{L})/iu;
 
+  // Malicious / illegal "how do I do X" requests. Matches requests for
+  // step-by-step help producing or using things whose primary purpose is
+  // harm (drugs synthesis, weapons/explosives, hacking, fraud, poisoning,
+  // self-harm methods). Matched HIGH PRIORITY in the pipeline so the
+  // honest-refusal pool wins over any knowledge fact or generic reply.
+  // The patterns are anchored to instruction verbs (چطور/چگونه/چجوری/
+  // میخوام/یاد بده/درست کن/بساز/هک) so a factual question like
+  // «مواد مخدر چه عوارضی داره» or a news story about a hack never trips
+  // the gate; only an actual "how do I make/do it" request does.
+  const maliciousRequestPattern =
+    // Self-harm and suicide methods are deliberately absent: those are
+    // routed to the dedicated crisis rule (ruleSafety / ruleSafetyMethod)
+    // which carries hotline numbers, while this gate is for third-party
+    // harm, illegal manufacturing, and intrusion.
+    //
+    // A defensive/legal guard exempts ethical-hacking and authorized
+    // security questions: the same «چطور هک ...» phrase is a legitimate
+    // learning request when it also contains «قانونی»، «اخلاقی»،
+    // «آزمایشگاه»، «مجوز»، «محافظت»، «دفاع»، «جلویش را بگیرم» or
+    // «CTF». The check looks at the WHOLE message, so those words
+    // anywhere in the turn suppress the gate and let the cyber-security
+    // knowledge shelf answer.
+    // eslint-disable-next-line max-len
+    /(?!.*(?:قانونی|اخلاقی|آزمایشگاه|محیط\s*ایزوله|مجوز\s*(?:دارم|داشته|کتبی)|محدوده\s*مجاز|با\s*اجازه|دفاع|محافظت|جلویش\s*را?\s*بگیر|پیشگیری|CTF|سی\s*تی\s*اف|سایبری\s*دفاعی|پن(?:تست|تستر)|تست\s*نفوذ\s*(?:قانونی|مجاز|با\s*اجازه)))(?:(?:چطور|چگونه|چجوری|چه\s?جوری).{0,40}?(?:مواد(?:\s*مخدر|صنعتی|شیمیایی)|متامفتامین|شیشه(?:\s*مخدر)|کراک|هروئین|کوکائین|ال‌اس‌دی|قرص(?:\s*اکس|توهم|غیرمجاز)|بمب(?:\s*بشازم|\s*بسازم|\s*درست کنم)|مواد(?:\s*منفجره)|تی‌ان‌تی|باروت|سم(?:\s*کشنده|های\s*کشنده)|اسلحه(?:\s*[^\s]{1,12}){0,3}(?:\s*بشازم|\s*بسازم|\s*درست\s*کنم|\s*بخرم)|تفنگ(?:\s*دست‌ساز|\s*دست\s*ساز)?(?:\s*بشازم|\s*بسازم|\s*درست\s*کنم)|سرقت(?:\s*مسلحانه)|چاقو(?:\s*کشیدن\s*رو)|نفوذ(?:\s*به|\s*غیر\s*مجاز)|بدافزار(?:\s*بسازم|\s*درست\s*کنم)|باج‌افزار|جعل(?:\s*مدرک|\s*سند|\s*کارت|\s*گذرنامه|\s*هویت)|تقلب(?:\s*در\s*امتحان|\s*کنکور)|پول‌?شویی|اخاذی|باج‌?گیری|خشونت(?:\s*علیه)|کسی(?:\s*رو\s*بکش|\s*را\s*بکش)|آدم(?:\s*بکش|\s*بکشیم))|(?:چطور|چگونه|چجوری|می‌?خوام|یادم?\s*بده|آموزش|راهنمایی(?:م)?\s*کن)\s*(?:هک|هَک)\s*(?:کردن|کنم|بکنم|یاد\s*بگ?یرم)?(?:\s*(?:حساب|اکانت|شبکه|سایت|اینستاگرام|تلگرام|واتساپ|رمز|پسورد|گوشی|موبایل|کامپیوتر|سیستم|بانک|درگاه|یک|یه|یک نفر|کسی))?|فیشینگ(?:\s*انجام|برام\s*بساز)|باج\s*افزار\s*(?:بسازم|درست\s*کنم)|(?:می‌?خوام|می‌?خوایم|دلم\s*می‌?خواد|برام)\s*.{0,30}?(?:بمب\s*بشازم|بمب\s*بسازم|بمب\s*درست\s*کنم|اسلحه(?:\s*[^\s]{1,12}){0,3}\s*(?:بشازم|بسازم|بخرم)|مواد\s*مخدر\s*(?:درست\s*کنم|بسازم|تهیه\s*کنم|بخرم|پیدا\s*کنم)|مواد\s*منفجره\s*(?:بشازم|بسازم)|هک\s*(?:کنم|بکنم)|بدافزار\s*(?:بسازم|درست\s*کنم)|آدم\s*بکشم|کسی\s*رو\s*بکشم))/iu;
+
   global.DaryaFaData = {
     trivialCaptures,
     familyTerms,
@@ -299,6 +324,7 @@
     dateTimeDatePattern,
     dateTimeYearPattern,
     daryaHarassmentPattern,
-    sexualHarassmentPattern
+    sexualHarassmentPattern,
+    maliciousRequestPattern
   };
 })(typeof window !== 'undefined' ? window : globalThis);

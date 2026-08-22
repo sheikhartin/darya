@@ -760,6 +760,145 @@
   // ======================================================================
 
   /**
+   * Persian question-signalling suffixes. A bot sentence ending in a
+   * period but carrying one of these (optionally with a trailing copula)
+   * is a question that lost its mark; replace the trailing period with
+   * «؟». Matched against the LAST word of the sentence so embedded
+   * «چطور» in a statement ("this is how...") never triggers it.
+   * The set is deliberately conservative: every entry is an unambiguous
+   * interrogative when it sits at the end of a sentence.
+   */
+  const FA_QUESTION_TAILS = [
+    'چطوره',
+    'چطور',
+    'چطوری',
+    'چجوری',
+    'چگونه',
+    'کجایی',
+    'کجایید',
+    'کیستی',
+    'چیه',
+    'چیست',
+    'کیه',
+    'کیست',
+    'چنده',
+    'چقدره',
+    'چقدر',
+    'می‌خوای',
+    'میخوای',
+    'می‌خواهی',
+    'میخواهی',
+    'دوست داری',
+    'موافقی',
+    'موافقید',
+    'می‌تونی',
+    'میتونی',
+    'می‌توانی',
+    'داری',
+    'نداری',
+    'هستی',
+    'هستید',
+    'درسته',
+    'درست است',
+    'نکنم',
+    'بزنیم',
+    'بگم',
+    'بگی',
+    'بپرسم',
+    'بریم',
+    'بیام',
+    'میای',
+    'می‌آیی'
+  ];
+
+  /**
+   * English question-signalling tails. Same contract as
+   * FA_QUESTION_TAILS: only clear interrogative sentence-endings.
+   */
+  const EN_QUESTION_TAILS = [
+    'are you',
+    "aren't you",
+    'do you',
+    "don't you",
+    'did you',
+    "didn't you",
+    'will you',
+    "won't you",
+    'can you',
+    "can't you",
+    'could you',
+    'would you',
+    'should you',
+    'is it',
+    "isn't it",
+    'is that',
+    'is this',
+    'right now',
+    'tell me',
+    'want more',
+    'another question'
+  ];
+
+  /**
+   * Replaces the trailing period of a sentence that clearly ends in an
+   * interrogative marker with the language-appropriate question mark.
+   * Only the FINAL sentence of the outgoing reply is touched: a mid-
+   * sentence clause that happens to end with «نامیده می‌شه.» followed
+   * by more explanation must keep its period. Runs AFTER the
+   * conversational rewrites, on the un-quoted output, so it sees the
+   * colloquial forms that Darya actually sends (e.g. «می‌خوای»).
+   * @param {string} text - Full outgoing bot text
+   * @param {string} langCode - 'fa' or 'en'
+   * @returns {string}
+   */
+  function enforceFinalQuestionMarks(text, langCode) {
+    if (typeof text !== 'string' || !text) {
+      return text;
+    }
+    const tails = langCode === 'fa' ? FA_QUESTION_TAILS : EN_QUESTION_TAILS;
+    if (!tails || tails.length === 0) {
+      return text;
+    }
+    const qMark = langCode === 'fa' ? '؟' : '?';
+    // Locate the last sentence-ending punctuation in the reply and
+    // only inspect what comes after the PREVIOUS sentence boundary.
+    // This makes the pass a pure "is the whole final sentence a
+    // question?" decision and prevents mid-reply periods from being
+    // rewritten.
+    const lastBoundary = text.search(/[.!?؟…][^.!?؟…]*$/u);
+    if (lastBoundary === -1) {
+      return text;
+    }
+    const punct = text[lastBoundary];
+    if (punct !== '.' && punct !== '!') {
+      return text; // already a question mark or ellipsis
+    }
+    // The sentence body runs from after the previous boundary (or the
+    // start of text) up to (but not including) the final punctuation.
+    const head = text.slice(0, lastBoundary);
+    const body = head
+      .slice(
+        Math.max(
+          head.lastIndexOf('.'),
+          head.lastIndexOf('!'),
+          head.lastIndexOf('?'),
+          head.lastIndexOf('؟'),
+          head.lastIndexOf('…')
+        ) + 1
+      )
+      .trim();
+    if (!body) {
+      return text;
+    }
+    const tailText = body.toLowerCase();
+    const matched = tails.some((tail) => tailText.endsWith(tail));
+    if (!matched) {
+      return text;
+    }
+    return text.slice(0, lastBoundary) + qMark + text.slice(lastBoundary + 1);
+  }
+
+  /**
    * Rewrites bot output into conversational register, leaving quoted
    * segments («...», "...") untouched so poetry and titles keep their
    * original wording.
@@ -782,8 +921,8 @@
       match = PROTECTED_SEGMENT.exec(text);
     }
     result += transform(text.slice(cursor));
-    return result;
+    return enforceFinalQuestionMarks(result, langCode);
   }
 
-  global.DaryaConversational = { toConversational };
+  global.DaryaConversational = { toConversational, enforceFinalQuestionMarks };
 })(typeof window !== 'undefined' ? window : globalThis);

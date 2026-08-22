@@ -78,6 +78,52 @@
       en: 'Because of high calorie density, salt, and industrial fats, eating a lot of fast food is linked to weight gain and heart and blood-sugar problems. You can choose healthier options: a smaller size, a side salad, a sugar-free drink, and grilled instead of fried. The key is frequency and portion size, not never eating fast food at all.'
     },
     {
+      id: 'fastfood_in_cities',
+      keywords: [
+        'بهترین فست فود تهران',
+        'فست فود تهران',
+        'فست فودهای تهران',
+        'فست فود خوب تهران',
+        'معروف ترین فست فود تهران',
+        'بهترین فست فود اصفهان',
+        'فست فود مشهد',
+        'فست فود شیراز',
+        'فست فود تبریز',
+        'بهترین برگر تهران',
+        'بهترین پیتزا تهران',
+        'بهترین ساندویچ تهران',
+        'best fast food tehran',
+        'fast food in tehran'
+      ],
+      weak: [
+        'فست فود',
+        'برگر',
+        'پیتزا',
+        'ساندویچ',
+        'همبرگر',
+        'fast food',
+        'burger',
+        'pizza'
+      ],
+      weakSafe: true,
+      hints: [
+        'تهران',
+        'اصفهان',
+        'مشهد',
+        'شیراز',
+        'تبریز',
+        'ایران',
+        'شهر',
+        'بهترین',
+        'tehran',
+        'isfahan',
+        'mashhad',
+        'iran'
+      ],
+      fa: 'برای «بهترین فست فود تهران» یک جواب قطعی وجود نداره چون به سلیقه و محله بستگی داره، ولی چند اسمی که زیاد بین مردم می‌چرخه: پیتزا و برگرهای زنجیره‌ای مثل عطاویچ و پیتزا پیتزا، برگرهای مستقل مثل بامبو و دال بامبو در مرکز و شرق تهران، ساندویچ‌های قدیمی مثل آبنوس و فریدو در خیابون‌های مرکزی، و فلافل و سمبوسه‌ی جنوب‌شهر. اگر گفتی کدوم محله‌ای یا دنبال چه نوعی (برگر، پیتزا، ساندویچ، گیاهی)، می‌تونم دقیق‌تر راهنمایی کنم.',
+      en: 'There is no single "best" fast food in Tehran because it depends on your taste and the neighborhood, but the names that come up often are the chain burger/pizza spots like Atavich and Pizza Pizza, independent burger spots like Bamboo and Dal Bamboo in central and eastern Tehran, old-school sandwich places like Abnus and Fereydoon in central streets, plus the falafel and samoseh stands in the south of the city. Tell me your neighborhood and what style you are after (burger, pizza, sandwich, veggie) and I can narrow it down.'
+    },
+    {
       id: 'iranian_fastfood',
       keywords: [
         'فست فود ایرانی',
