@@ -37,8 +37,10 @@
    * optional intensifier accepts «آره حتما»/«بله حتما»/«اره دیگه».
    */
   const FA_AFFIRMATION =
+    // eslint-disable-next-line max-len
     /^(?:آره|اره|آرّه|بله|بله حتماً?|آره حتماً?|اره حتماً?|حتماً?|حتماً? بگو|موافقم|درسته|البته|همینه|همینه که هست|خوبه|عالیه|باشه|اوکی|اُکی|هوم|اوهوم|آهان|آها)(?:\s+(?:بگو|بگویید|بگو دیگه|ادامه|ادامه بده|بیشتر|بیشتر بگو|تعریف کن|دقیقا|حتما|حتماً|خوبه|عالیه|چرا که نه|معلومه|معلومه که آره))?[!.؟?…]*$/iu;
   const EN_AFFIRMATION =
+    // eslint-disable-next-line max-len
     /^(?:yes|yeah|yep|yup|sure|ok|okay|go on|please do|more please|yes please|yeh|ya|uh-huh|uh huh|mhm|mm-hmm|mmhmm|totally|exactly|right|ofc|of course)(?:[!.,?…]|\s+(?:please|go on|tell me|more|continue|keep going))*[!.?…]*$/iu;
 
   /**
@@ -47,8 +49,10 @@
    * not push another paragraph.
    */
   const FA_REFUSAL =
+    // eslint-disable-next-line max-len
     /^(?:نه|نه? متشکرم|نه? ممنون|خیر|بسه|تمامش کن|کافیه|دیگه? نه|دیگه? بسه|نمی‌?خواد|نمی‌?خوام|ولش کن|رها?ش کن|تمومش کن)(?:\s+(?:ممنون|متشکرم|تشکر|عزیزم|جان))?[!.؟?…]*$/iu;
   const EN_REFUSAL =
+    // eslint-disable-next-line max-len
     /^(?:no|nope|nah|no thanks|no thx|not really|that's (?:it|all)|i'?m good|im good|enough|stop|that'?s enough|never ?mind)(?:[!.,?…]|\s+(?:thanks|thank you|thx|mate))*[!.?…]*$/iu;
 
   /**

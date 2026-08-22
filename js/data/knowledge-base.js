@@ -31,6 +31,7 @@
   // romantic disclosure. The guard suppresses the weak topic word here
   // so dating advice can never answer a knowledge question.
   const FA_WEAK_STATEMENT =
+    // eslint-disable-next-line max-len
     /(?:چند|چقدر)\s*(?:وقته|وقتیه|وقتی|مدته|مدتیه|روزه|ماهه|ساله|سالی)|چقدر\s*.{0,12}(?:دوست\s+دارم|علاقه\s+دارم)|(?:دوست\s+دارم|علاقه\s+دارم|می‌?خوام|دلم\s+می‌?خواد)\s*(?:بدونم|بدانم|بفهمم|بدونی)/u;
 
   // A curiosity frame ("I want to know...") makes a generic desire word
@@ -40,6 +41,7 @@
   // crush fact's «دوست دارم») must be suppressed entirely; the real
   // topic lives in the words that follow.
   const FA_CURIOSITY_FRAME =
+    // eslint-disable-next-line max-len
     /(?:دوست\s+دارم|علاقه\s+دارم|می‌?خوام|دلم\s+می‌?خواد|کنجکاوم)\s*(?:بدونم|بدانم|بفهمم|بدونی)|(?:برام|به\s*من)\s*(?:بگو|توضیح\s*بده|تعریف\s*کن)\s*(?:درباره|راجع\s*به|در\s*مورد)|(?:بگو|توضیح\s*بده|تعریف\s*کن)\s*(?:درباره|راجع\s*به|در\s*مورد)/u;
 
   // Where-to-buy phrases boost the marketplace fact so it beats any
