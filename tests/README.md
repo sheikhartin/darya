@@ -35,6 +35,32 @@ age-context, ambiguity, and bounded-playfulness matrix in both languages.
 `practical-wisdom-intelligence.test.mjs` adds 48 hard three-turn companion
 personas across knowledge, daily life, app self-knowledge, and difficult
 moods.
+`conversational-voice.test.mjs` pins the everyday-register invariant:
+unit tests of the conversational layer (verb morphology, copula
+merging, homograph and poetry guards) plus 50 persona scenario sweeps
+in both languages asserting no bookish marker («می‌باشد», bare « است»,
+"do not", "cannot") ever reaches the user on any pool pick.
+`fighters-knowledge.test.mjs` guards the combat-sports shelf: 50+
+fighters reachable by name in both languages, record answers that
+always carry the settled/stale honesty note, and tell-me-more depth
+that serves the deep dive once and then admits the shelf's end.
+`math-intelligence.test.mjs` guards the extended calculator and the
+math-concept shelf: factorials, GCD/LCM, averages, remainders, parity,
+divisibility, percent relations, cube roots, and rounding compute
+exactly in both digit systems, undefined cases refuse honestly, and
+concept questions (pi, Fibonacci, Pythagoras, infinity) answer from
+the shelf.
+`unusual-writing.test.mjs` pins the messy-register invariants: dashes
+as punctuation, tatweel stretching, stacked punctuation, decorations,
+ALL CAPS, glued separators, and spelling variants all route correctly,
+while subtraction, negative numbers, and hyphenated safety-critical
+English keep their dashes.
+`persona-challenge.test.mjs` is the mixed-persona pressure corpus (57
+tests): identity jokers («من مسی‌ام»), dreamers ("I'm the next
+Messi"), pun-lovers («مسی بهتره یا سیم مسی؟»), rapid-fire fans,
+grievers whose loss mentions a celebrity, trolls, skeptics, and
+topic-hoppers, pinning that jokes never become stored facts and
+feelings always beat trivia.
 `robustness-challenge.test.mjs` is the adversarial companion corpus: 59
 hard cases in both languages covering clarification restatements
 («منظورم این هست که چه قابلیت‌هایی داری؟»), everyday 2026 colloquial

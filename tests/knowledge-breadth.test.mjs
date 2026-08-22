@@ -24,7 +24,7 @@ import {
 
 /** Evasive lines that must never appear when the engine knows the topic. */
 const EVASIVE =
-  /(?:I do not (?:know|have)|don'?t (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
+  /(?:I do(?: not|n'?t) (?:know|have)|no (?:ready )?answer|not familiar|outside my|راستش جواب|جواب روشن|همین حالا (?:نمی‌دانم|نمیدانم|جوابی ندارم)|آماده‌ای ندارم|آشنایی ندارم|از دانش من خارج|خوب نمی‌شناسم)/iu;
 
 /** The canned dodge lines the hostile transcript flagged specifically. */
 const DODGE =

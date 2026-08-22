@@ -246,8 +246,8 @@
     _knowledgeFollowup(answerText) {
       const sentence =
         this.lang.code === 'fa'
-          ? 'دوست داری بیشتر درباره‌اش بگویی یا سؤال دیگری داری؟'
-          : 'Would you like to go deeper, or is there another question?';
+          ? 'دوست داری بیشتر برات بگویم یا سؤال دیگری داری؟'
+          : 'Want me to tell you more, or is there another question?';
       const separator = String(answerText || '').includes('\n') ? '\n\n' : ' ';
       return `${separator}${sentence}`;
     },
@@ -446,6 +446,48 @@
           this.lang.daryaHarassmentResponses
         ) {
           reply = this._pickVaried(this.lang.daryaHarassmentResponses);
+          _overrideFired = true;
+        }
+      }
+
+      // Famous-figure play (see responder-knowledge-followups.js): «من
+      // مسی‌ام», "I'm the next Messi", and the «مسی بهتره یا سیم مسی؟»
+      // pun. Runs before profile capture (a joke claim must never be
+      // stored as the user's name) and before the knowledge lookup (the
+      // pun mentions football keywords and would otherwise get the
+      // earnest GOAT-debate lecture).
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !_overrideFired
+      ) {
+        const famousReply = this._handleFamousClaimTurn(matchingText);
+        if (famousReply) {
+          reply = famousReply;
+          _overrideFired = true;
+        }
+      }
+
+      // Knowledge follow-ups (see responder-knowledge-followups.js):
+      // record/stats questions («رکوردش چیه؟», "what is his record?")
+      // and tell-me-more turns on the fact just answered. Runs before
+      // the factual lookup so a record ask that names the fighter is
+      // answered with the record plus the honesty note, never with the
+      // same biography again.
+      if (
+        !_safetyTurn &&
+        !_minorAttractionTurn &&
+        !_nearPeerLoveTurn &&
+        !isRepeatedGreeting &&
+        !isSpamNoise &&
+        !_overrideFired
+      ) {
+        const followupReply = this._handleKnowledgeFollowupTurn(matchingText);
+        if (followupReply) {
+          reply = followupReply;
           _overrideFired = true;
         }
       }

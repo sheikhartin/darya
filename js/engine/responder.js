@@ -147,6 +147,11 @@ class DaryaResponseEngine {
     this._mediaRecommendationState = null;
     this._usedMediaTitles = new Map();
     this._usedFunFacts = new Set();
+    // Knowledge facts whose deep-dive `more` paragraph was already
+    // served this session, so a second tell-me-more turn gets the honest
+    // depth-limit reply instead of the same paragraph again (see
+    // responder-knowledge-followups.js).
+    this._servedKnowledgeMore = new Set();
     // Tracks a minor-attraction disclosure that arrived without adult
     // context, awaiting the speaker's age in a follow-up turn (see
     // responder-safety.js). Null when no disclosure is pending.
@@ -260,7 +265,15 @@ class DaryaResponseEngine {
     );
   }
 
-  respond(rawText) {
+  /**
+   * Produces the raw (written-register) reply for one user turn. The
+   * public respond() wrapper in responder-public.js passes this
+   * through the conversational-register layer before anything outside
+   * the engine sees it.
+   * @param {string} rawText - The user's message
+   * @returns {string}
+   */
+  _respondTurn(rawText) {
     // Never leak a contextual offer across turns that return early (empty,
     // foreign-script, or farewell input).
     this.lastTurnShouldOfferBreathing = false;

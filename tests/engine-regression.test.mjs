@@ -205,7 +205,7 @@ test('achievement rule: getting fired stays on the work-stress pool', () => {
 test('fun facts: an astronomy request draws from the space pool in English', () => {
   const e = freshEngine(EN);
   const reply = e.respond('Tell me a fun fact about astronomy');
-  assert.match(reply, /Here is one interesting fact/i);
+  assert.match(reply, /Here's one interesting fact/i);
   assert.doesNotMatch(reply, /Olympic|athletes|sports/i);
 });
 
@@ -274,7 +274,10 @@ test('dirty talk: FA requests get a warm, non-shaming boundary', () => {
       e.currentTurnTopics.includes('dirty_talk_request'),
       `${turn} should route to dirty_talk_request`
     );
-    assert.match(reply, /طبیعی|شرم|نمی‌توانم|نقش|شنونده|صمیمیت|انسانی/i);
+    assert.match(
+      reply,
+      /طبیعی|شرم|نمی‌توانم|نمی‌تونم|نقش|شنونده|صمیمیت|انسانی/i
+    );
     assert.doesNotMatch(reply, /آشنایی ندارم|جواب آماده|مهم‌ترین مانع/i);
   }
 });
@@ -358,7 +361,7 @@ test('break-lines: a list answer separates Darya closing question with a blank l
   const reply = freshEngine(EN).respond('recommend a good movie');
   assert.match(
     reply,
-    /\n\nWould you like to go deeper/i,
+    /\n\nWant me to tell you more/i,
     `expected a blank line before the follow-up: "${reply}"`
   );
 });

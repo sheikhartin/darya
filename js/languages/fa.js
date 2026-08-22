@@ -374,6 +374,21 @@
         /(?<![\p{L}۰-۹])(?:داشته باشی|داشته باشم|یاد بگیری|اضافه کنی|بسازی|بسازم|بسازیم|انجام بدی|گسترش|بیشتر کنی|فهمیدی)(?![\p{L}۰-۹])/u
     },
     knowledgeExpansionResponses: R.knowledgeExpansionResponses,
+    // Knowledge follow-up layer (see responder-knowledge-followups.js):
+    // record/stats questions and tell-me-more turns on the last
+    // answered fact, plus the playful famous-figure claims.
+    knowledgeDepthLimitResponses: R.knowledgeDepthLimitResponses,
+    recordStalenessNotes: R.recordStalenessNotes,
+    recordFinalNotes: R.recordFinalNotes,
+    recordUnknownResponses: R.recordUnknownResponses,
+    famousClaimResponses: R.famousClaimResponses,
+    famousNextResponses: R.famousNextResponses,
+    famousPunResponses: R.famousPunResponses,
+    famousCompareResponses: R.famousCompareResponses,
+    recordQuestionPattern:
+      /(?<![\p{L}۰-۹])(?:رکورد|رکوردش|کارنامه|کارنامه اش|کارنامش|امار|اماره|امارش|آمار|آمارش|چند تا برد|چندتا برد|چند برد|چند باخت|چند تا باخت|چند مبارزه|چندتا مبارزه)(?![\p{L}۰-۹])/u,
+    moreFollowupPattern:
+      /^(?:خب |خب، |باشه )?(?:بیشتر|بیش تر|بازم|باز هم|ادامه|دیگه چی|دیگه چی داری|دیگه چی میدونی|دیگه چی می دونی)(?: هم)?(?: بگو| توضیح بده| ازش بگو| بده| تعریف کن| در موردش بگو| درباره اش بگو| ازش می دونی| میدونی| می دونی)?[!.؟?…]*$/u,
     // Session user profile: patterns that detect age/name disclosures
     // ("من ۲۴ سالمه", "اسمم آریاه") and recall questions ("چند سالمه؟",
     // "اسمم چیه؟"), plus the reply pools. Values live only on the

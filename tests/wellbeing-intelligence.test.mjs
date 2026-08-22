@@ -163,7 +163,7 @@ test('EN: a recall with nothing stored is honest, not invented', () => {
 
 test('FA: a recall with nothing stored is honest, not invented', () => {
   const reply = freshEngine(FA).respond('چی دوست دارم');
-  assert.match(reply, /نگفته|نمی‌دانم/u);
+  assert.match(reply, /نگفت|نمی‌دانم|نمی‌دونم/u);
 });
 
 test('EN: "i would love" is not captured as a preference', () => {

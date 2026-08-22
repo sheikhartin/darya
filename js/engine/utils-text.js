@@ -86,6 +86,15 @@
     let text = lang
       .normalize(rawText)
       .replace(/[^\p{L}\p{N}\p{M}'\u2019\u02BC\-\s]+/gu, ' ')
+      // Tatweel (ـ) is visual stretching («سلامـــ»), never meaning:
+      // dropped so the stretched word matches its plain form.
+      .replace(/\u0640+/gu, '')
+      // A dash used as punctuation («سلام - چهطوری؟», «سلام-خوبی»,
+      // "hi - how are you") becomes a separator. Only dashes BETWEEN
+      // Latin alphanumerics survive, so hyphenated English compounds
+      // ("self-harm", "post-partum") and digit ranges ("5-3",
+      // "2024-2025") keep matching exactly as before.
+      .replace(/(?<![A-Za-z0-9])-|-(?![A-Za-z0-9])/gu, ' ')
       .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
       .replace(/[ \t\r\n]+/gu, ' ')
       .trim();

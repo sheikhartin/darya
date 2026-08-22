@@ -23,6 +23,40 @@
 
   Object.assign(global.DaryaResponseEngine.prototype, {
     /**
+     * Passes outgoing bot text through the conversational-register
+     * layer (formal written Persian → everyday spoken Persian,
+     * uncontracted English → natural contracted English). Quoted
+     * segments (poetry, titles) are preserved by the layer itself.
+     * @param {string} text
+     * @returns {string}
+     */
+    _conversational(text) {
+      const layer = global.DaryaConversational;
+      if (!layer || typeof text !== 'string') {
+        return text;
+      }
+      return layer.toConversational(text, this.lang.code);
+    },
+
+    /**
+     * Public entry point for one user turn: produces the reply in
+     * conversational register. Quick-reply chips attached to the turn
+     * are converted too, so every string the UI shows shares one
+     * voice.
+     * @param {string} rawText - The user's message
+     * @returns {string}
+     */
+    respond(rawText) {
+      const reply = this._conversational(this._respondTurn(rawText));
+      if (Array.isArray(this.lastTurnQuickReplies)) {
+        this.lastTurnQuickReplies = this.lastTurnQuickReplies.map((chip) =>
+          this._conversational(chip)
+        );
+      }
+      return reply;
+    },
+
+    /**
      * Checks whether the (normalized) input signals the user wants to leave.
      * @param {string} rawText
      * @returns {boolean}
@@ -139,7 +173,7 @@
     greeting() {
       const text = this._phaseGreeting();
       this.memory.rememberBotMessage(text);
-      return text;
+      return this._conversational(text);
     },
 
     /**
@@ -159,7 +193,7 @@
         trackQuestions: false
       });
       this.memory.rememberBotMessage(text);
-      return text;
+      return this._conversational(text);
     },
 
     /**
@@ -181,7 +215,7 @@
         trackQuestions: false
       });
       this.memory.rememberBotMessage(text);
-      return text;
+      return this._conversational(text);
     },
 
     detectEntityCorrection(normalizedText) {

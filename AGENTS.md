@@ -39,6 +39,14 @@
   (کوروش, داریوش, آریا, آرتین, سپنتا, باران, آناهیتا) rather than
   Arabic-origin given names like علی or محمد. Fixed Arabic phrases
   (سلام علیکم) are not names and stay as they are.
+- User-facing prose ships in everyday conversational register, never
+  bookish written language: Persian says «کتاب‌هاش رو گرفته», not
+  «کتاب‌هایش را گرفته است», and English contracts naturally ("I'm",
+  "don't"). In Darya the conversational layer
+  (`js/text/conversational.js`) enforces this on every outgoing bot
+  message; write new pools colloquial-first anyway, and keep quoted
+  poetry and titles in their original wording (the layer protects
+  quoted segments).
 - The Persian normalizer maps ئ to ی (so «مطمئن» arrives as «مطمین» and
   «رئیس» as «رییس»). Every rule pattern, keyword list, stopword, and
   lexicon that contains ئ must also carry the normalized ی form; the

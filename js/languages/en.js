@@ -283,6 +283,21 @@
         /\b(?:you should|you need|you must|have to|learn|improve|build|add|expand|grow|make yourself|understand|got it)\b/i
     },
     knowledgeExpansionResponses: R.knowledgeExpansionResponses,
+    // Knowledge follow-up layer (see responder-knowledge-followups.js):
+    // record/stats questions and tell-me-more turns on the last
+    // answered fact, plus the playful famous-figure claims.
+    knowledgeDepthLimitResponses: R.knowledgeDepthLimitResponses,
+    recordStalenessNotes: R.recordStalenessNotes,
+    recordFinalNotes: R.recordFinalNotes,
+    recordUnknownResponses: R.recordUnknownResponses,
+    famousClaimResponses: R.famousClaimResponses,
+    famousNextResponses: R.famousNextResponses,
+    famousPunResponses: R.famousPunResponses,
+    famousCompareResponses: R.famousCompareResponses,
+    recordQuestionPattern:
+      /\b(?:record|stats|statistics|win[- ]?loss|how many (?:wins|losses|fights|bouts)|fight record|pro record)\b/i,
+    moreFollowupPattern:
+      /^(?:ok |okay |well |so )?(?:tell me\s+more|more|more please|say more|go on|keep going|what else|anything else|continue|and then what|what else do you know)[!.?…]*$/i,
     // Session user profile: patterns that detect age/name disclosures
     // ("I'm 24 years old", "my name is Sara") and recall questions
     // ("how old am I?", "what is my name?"), plus the reply pools.
