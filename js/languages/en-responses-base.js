@@ -343,6 +343,19 @@
     'You seem a bit distracted today. I am here whenever you feel like chatting.',
     'It has been a few short replies in a row. No pressure at all, just letting you know I am paying attention.'
   ];
+  // Human-spark openers and tags (see responder-overrides
+  // _maybeHumanSpark): small, safe interjections that occasionally
+  // color a LIGHT turn so the reply rhythm feels human, not metronomic.
+  // They never carry content of their own, so they can precede any
+  // light reply without changing its meaning.
+  R.humanSparkOpeners = [
+    'By the way,',
+    'Honestly,',
+    'Look,',
+    'Hmm,',
+    'Okay so,'
+  ];
+  R.humanSparkTags = [', right?', ', no?'];
   R.wellBeingResponses = [
     'I appreciate you asking. I am doing well, thank you. More importantly, how are you feeling after everything you shared?',
     'That is kind of you to check in. I am doing fine. How are you holding up right now?',

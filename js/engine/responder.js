@@ -207,6 +207,10 @@ class DaryaResponseEngine {
     // asked for a rating on the mood scale, cleared when the answer
     // lands (or the request is released). Session-only.
     this._pendingMoodRequest = null;
+    // Last turn that carried a human spark (opener/tag/exclamation), so
+    // the spark stays rare and cooldown-limited (see responder-overrides
+    // _maybeHumanSpark). Session-only; -Infinity means "never".
+    this._lastHumanSparkTurn = -Infinity;
     // Quick-reply chips for the UI: a short list of tappable options
     // (exercise yes/no, mood scale) attached to the last reply. The app
     // reads it after delivering the reply and renders the chips; reset

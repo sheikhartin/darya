@@ -192,7 +192,7 @@ test('regression: Persian question marks not mistaken for letters', () => {
 test('fa: safety rule gives crisis-appropriate response', () => {
   const engine = freshEngine(FA);
   const reply = engine.respond('دیگه نمیخوام زندگی کنم');
-  assert.match(reply, /تنها نیستید|کمک تخصصی|توجه فوری/);
+  assert.match(reply, /تنها نیستید|تنها نیستی|کمک تخصصی|توجه فوری/);
 });
 
 test('en: safety rule gives crisis-appropriate response', () => {
@@ -4016,7 +4016,7 @@ test('FA: safety overrides Darya harassment in Persian', () => {
   // دیگه نمیخوام زندگی کنم و دریا تو احمقی
   assert.match(
     reply,
-    /تنها نیستید|کمک تخصصی|توجه فوری/iu,
+    /تنها نیستید|تنها نیستی|کمک تخصصی|توجه فوری/iu,
     'FA safety should take priority over harassment'
   );
 });

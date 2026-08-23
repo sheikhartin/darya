@@ -72,7 +72,7 @@
   ];
   R.sessionCheckIns = [
     'در این گفتگو درباره‌ی چند موضوع مختلف صحبت کردیم. کدام‌شان الآن بیشتر ذهن‌تان را درگیر کرده؟',
-    'تا اینجا چیزهای زیادی گفتید. مایلید روی یکی‌شان بیشتر مکث کنیم؟',
+    'تا اینجا کلی چیز گفتی. دوست داری روی یکی‌شون بیشتر مکث کنیم؟',
     'چند نخ مختلف در صحبت‌های امروز پیدا شد. آیا یکی هست که دوست داشته باشید به آن برگردید؟'
   ];
   R.questionFallbacks = [
@@ -356,6 +356,13 @@
     'فکر می‌کنم کمی به بن‌بست خوردیم. دوست داری مسیر عوض کنیم یا کمی استراحت کنیم؟',
     'انگار امروز حوصله‌ات کم است. من اینجام، هر وقت حال کردی.'
   ];
+  // Human-spark openers and tags (see responder-overrides
+  // _maybeHumanSpark): small, safe interjections that occasionally
+  // color a LIGHT turn so the reply rhythm feels human, not metronomic.
+  // They never carry content of their own, so they can precede any
+  // light reply without changing its meaning.
+  R.humanSparkOpeners = ['راستی،', 'راستش،', 'خب،', 'ببین،', 'هوم،'];
+  R.humanSparkTags = ['، نه؟', '، می‌دونی؟'];
   R.wellBeingResponses = [
     'ممنون که پرسیدی. حالم خوب است. مهم‌تر از آن، تو چطوری بعد از تمام چیزهایی که گفتی؟',
     'مهربونیت رو حس می‌کنم. حالم خوب است. خودت چه طور؟',

@@ -63,6 +63,17 @@
   const PLAYFUL_HUFF_CHANCE = 0.25;
   const PLAYFUL_HUFF_MIN_TURNS = 4;
   const PLAYFUL_HUFF_STREAK = 3;
+  // Occasional "human spark": on light, safe turns Darya sometimes opens
+  // with a conversational interjection («راستی،», "Honestly,"), tags a
+  // statement with a friendly check-in («، نه؟», ", right?"), or lets an
+  // exclamatory close through on joyful turns. This is deliberate,
+  // bounded chaos: it makes the reply rhythm feel human instead of
+  // metronomic. Gated off safety, heavy, and structured-flow turns.
+  const HUMAN_SPARK_CHANCE = 0.14;
+  const HUMAN_SPARK_MIN_TURNS = 2;
+  const HUMAN_SPARK_COOLDOWN_TURNS = 3;
+  const HUMAN_SPARK_OPENER_SHARE = 0.5;
+  const HUMAN_SPARK_TAG_SHARE = 0.3;
   const WARMTH_MIN_SERIOUSNESS = 0.3;
   const WARMTH_MAX_SERIOUSNESS = 0.6;
   const WARMTH_MIN_TURN_GAP = 3;
@@ -296,6 +307,11 @@
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
     PLAYFUL_HUFF_STREAK,
+    HUMAN_SPARK_CHANCE,
+    HUMAN_SPARK_MIN_TURNS,
+    HUMAN_SPARK_COOLDOWN_TURNS,
+    HUMAN_SPARK_OPENER_SHARE,
+    HUMAN_SPARK_TAG_SHARE,
     WARMTH_MIN_SERIOUSNESS,
     WARMTH_MAX_SERIOUSNESS,
     WARMTH_MIN_TURN_GAP,

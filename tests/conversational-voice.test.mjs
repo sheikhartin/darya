@@ -297,3 +297,229 @@ test('voice: empty input and repeated greetings stay conversational', () => {
   again.respond('سلام');
   assertConversational(again.respond('سلام'), FA, 'repeated greeting');
 });
+
+// --------------------------------------------------------------------------
+// Sentence punctuation: question-shaped sentences always read as
+// questions, exclamation-shaped ones as exclamations, statements stay
+// statements.
+// --------------------------------------------------------------------------
+
+test('voice: question-shaped sentences gain the question mark', () => {
+  assert.equal(casual('چرا نرفتی', 'fa'), 'چرا نرفتی؟');
+  assert.equal(casual('اسم تو چیه', 'fa'), 'اسم تو چیه؟');
+  assert.equal(
+    casual('می‌شنومت. کجا زندگی می‌کنی', 'fa'),
+    'می‌شنومت. کجا زندگی می‌کنی؟'
+  );
+  assert.equal(casual('حالت چطوره.', 'fa'), 'حالت چطوره؟');
+  assert.equal(casual('Is that so.', 'en'), 'Is that so?');
+  assert.equal(casual('What is your name.', 'en'), "What's your name?");
+  assert.equal(casual('Hello. How are you', 'en'), 'Hello. How are you?');
+  assert.equal(
+    casual('Curious what brought you in today.', 'en'),
+    'Curious what brought you in today?'
+  );
+  assert.equal(
+    casual('What do you miss about it.', 'en'),
+    'What do you miss about it?'
+  );
+});
+
+test('voice: statements never become questions', () => {
+  assert.equal(
+    casual('What matters is how you show up.', 'en'),
+    'What matters is how you show up.'
+  );
+  assert.equal(
+    casual('You do not have to decide right now.', 'en'),
+    "You don't have to decide right now."
+  );
+  assert.equal(
+    casual('این کار درسته. حالتان درسته.', 'fa'),
+    'این کار درسته. حالتون درسته.'
+  );
+  assert.equal(casual('چراغ رو روشن کن.', 'fa'), 'چراغ رو روشن کن.');
+  assert.equal(casual('چرا که نه.', 'fa'), 'چرا که نه.');
+  assert.equal(
+    casual('می‌شنوم که چند بار احوالپرسی کردی.', 'fa'),
+    'می‌شنوم که چند بار احوالپرسی کردی.'
+  );
+});
+
+test('voice: exclamatory sentences gain the exclamation mark', () => {
+  assert.equal(casual('وای، چه قشنگ', 'fa'), 'وای، چه قشنگ!');
+  assert.equal(casual('چقدر خوبه', 'fa'), 'چقدر خوبه!');
+  assert.equal(
+    casual('Wow, that is something.', 'en'),
+    "Wow, that's something!"
+  );
+});
+
+test('voice: list items and quoted text are never repunctuated', () => {
+  const list = casual(
+    '1. Elden Ring (2022): an open world that set a standard\n2. Hades (2020): a mythic roguelike\n\nWant more?',
+    'en'
+  );
+  assert.ok(
+    list.includes(
+      '1. Elden Ring (2022): an open world that set a standard\n2. Hades'
+    )
+  );
+  const quoted = casual(
+    'از حافظ: «یوسف گم‌گشته بازآید به کنعان غم مخور». دوست داری بیشتر بگم',
+    'fa'
+  );
+  assert.ok(quoted.includes('غم مخور'));
+  assert.ok(quoted.endsWith('بگم؟'));
+});
+
+// --------------------------------------------------------------------------
+// Modern fluent Persian: the polite-plural and written forms every pool
+// is allowed to carry collapse to the friendly singular Darya speaks.
+// --------------------------------------------------------------------------
+
+test('voice: polite plural collapses to friendly singular', () => {
+  assert.equal(
+    casual('لطفاً کتاب‌هایتان را از روی زمین بردارید بزرگوار', 'fa'),
+    'لطفاً کتاب‌هاتون رو از روی زمین بردار بزرگوار'
+  );
+  assert.equal(casual('حرفتان را باور می‌کنم', 'fa'), 'حرفتون رو باور می‌کنم');
+  assert.equal(
+    casual('غم می‌تواند سراغتان بیاید', 'fa'),
+    'غم می‌تونه سراغتون بیاد'
+  );
+  assert.equal(
+    casual('آیا با پزشک صحبت کرده‌اید؟', 'fa'),
+    'با پزشک صحبت کردی؟'
+  );
+  assert.equal(
+    casual('اگر یک دوست همین حرف را می‌زد به او چه می‌گفتید؟', 'fa'),
+    'اگه یه دوست همین حرف رو می‌زد به اون چه می‌گفتی؟'
+  );
+  assert.equal(
+    casual('شما برای غمگین بودن بهانه لازم ندارید.', 'fa'),
+    'شما برای غمگین بودن بهانه لازم ندارین.'
+  );
+  assert.equal(
+    casual('هر قدر که بخواهید گوش می‌دهم.', 'fa'),
+    'هر قدر که بخوای گوش می‌دم.'
+  );
+});
+
+test('voice: real -stan words are never touched', () => {
+  assert.equal(casual('استان فارس زیباست.', 'fa'), 'استان فارس زیباست.');
+  assert.equal(
+    casual('یه داستان کوتاه برات دارم: زمستان رسید.', 'fa'),
+    'یه داستان کوتاه برات دارم: زمستان رسید.'
+  );
+});
+
+// --------------------------------------------------------------------------
+// Human spark: bounded chaos on light turns, strict silence elsewhere.
+// --------------------------------------------------------------------------
+
+test('spark: opener, tag, and exclamation fire on light turns only', () => {
+  const engine = freshEngine(EN);
+  const realRandom = Math.random;
+  let queue = [];
+  Math.random = () => (queue.length > 0 ? queue.shift() : 0.99);
+  try {
+    engine.respond('hi there');
+    engine.respond('nice weather today');
+    engine.currentTurnSeriousness = 0.1;
+    engine.currentTurnDialogueAct = 'statement';
+    const spark = (gate, roll, text) => {
+      engine._lastHumanSparkTurn = -Infinity;
+      queue = [gate, roll, 0.1];
+      return engine._maybeHumanSpark(text);
+    };
+    assert.ok(
+      spark(0.05, 0.05, 'The rain finally stopped today.').startsWith(
+        'By the way, the rain'
+      )
+    );
+    assert.equal(
+      spark(0.05, 0.6, 'Sounds like a good day.'),
+      'Sounds like a good day, right?'
+    );
+    engine._lastEmotionAnalysis = { emotion: 'happy', intense: false };
+    assert.equal(
+      spark(0.05, 0.9, 'That is wonderful news.'),
+      'That is wonderful news!'
+    );
+    // A reply that already asks something never gets a second question.
+    assert.equal(
+      spark(0.05, 0.6, 'Already a question?'),
+      'Already a question?'
+    );
+    // An unsafe-to-lowercase leading word (a question word) skips the
+    // opener entirely: "Honestly, Why..." would read wrong.
+    assert.equal(
+      spark(0.05, 0.05, 'Why did the chicken cross the road?'),
+      'Why did the chicken cross the road?'
+    );
+    // Non-positive emotions never get the exclamation bump.
+    engine._lastEmotionAnalysis = { emotion: 'sadness', intense: false };
+    assert.equal(spark(0.05, 0.9, 'That is fine.'), 'That is fine.');
+  } finally {
+    Math.random = realRandom;
+  }
+});
+
+test('spark: safety, heavy, and structured turns stay untouched', () => {
+  const engine = freshEngine(FA);
+  const realRandom = Math.random;
+  Math.random = () => 0.01;
+  try {
+    engine.respond('سلام');
+    engine.respond('هوای امروز خوبه');
+    engine.currentTurnSeriousness = 0.1;
+    engine.currentTurnDialogueAct = 'statement';
+    const before = 'یه موضوع ساده درباره‌ی هوا.';
+    engine.memory.safetyModeSince = 2;
+    assert.equal(engine._maybeHumanSpark(before), before);
+    engine.memory.safetyModeSince = null;
+    engine.currentTurnSeriousness = 0.9;
+    assert.equal(engine._maybeHumanSpark(before), before);
+    engine.currentTurnSeriousness = 0.1;
+    engine._activeExercise = {
+      id: 'breathing',
+      stepIndex: 0,
+      startedAtTurn: 1
+    };
+    assert.equal(engine._maybeHumanSpark(before), before);
+    engine._activeExercise = null;
+    engine._lastKnowledgeTurn = engine.memory.turnCount;
+    assert.equal(engine._maybeHumanSpark(before), before);
+  } finally {
+    Math.random = realRandom;
+  }
+});
+
+test('spark: never fires twice in a row (cooldown)', () => {
+  const engine = freshEngine(EN);
+  const realRandom = Math.random;
+  Math.random = () => 0.01;
+  try {
+    engine.respond('hi there');
+    engine.respond('saw a dog today');
+    engine.currentTurnSeriousness = 0.1;
+    engine.currentTurnDialogueAct = 'statement';
+    engine._lastHumanSparkTurn = -Infinity;
+    const first = engine._maybeHumanSpark('The rain finally stopped.');
+    assert.notEqual(first, 'The rain finally stopped.');
+    assert.equal(
+      engine._maybeHumanSpark('The rain came back.'),
+      'The rain came back.'
+    );
+  } finally {
+    Math.random = realRandom;
+  }
+});
+
+test('spark: crisis replies are never colored', () => {
+  const engine = freshEngine(EN);
+  const reply = engine.respond('i want to kill myself');
+  assert.ok(/988|116 123/.test(reply));
+  assert.ok(!/^(By the way|Honestly|Look,|Hmm,|Okay so,)/.test(reply));
+});

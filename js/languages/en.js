@@ -216,6 +216,8 @@
     teasingMockingResponses: R.teasingMockingResponses,
     stopWords,
     boredomResponses: R.boredomResponses,
+    humanSparkOpeners: R.humanSparkOpeners,
+    humanSparkTags: R.humanSparkTags,
     wellBeingPattern,
     insultPattern,
     wellBeingResponses: R.wellBeingResponses,

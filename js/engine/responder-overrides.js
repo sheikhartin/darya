@@ -20,6 +20,11 @@
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
     PLAYFUL_HUFF_STREAK,
+    HUMAN_SPARK_CHANCE,
+    HUMAN_SPARK_MIN_TURNS,
+    HUMAN_SPARK_COOLDOWN_TURNS,
+    HUMAN_SPARK_OPENER_SHARE,
+    HUMAN_SPARK_TAG_SHARE,
     SAFETY_CRITICAL_TOPICS,
     containsDeathLexicon
   } = global.DaryaUtils;
@@ -251,6 +256,114 @@
         ignoreQuestionBudget: true,
         trackQuestions: false
       });
+    },
+
+    /**
+     * Occasionally colors a LIGHT, safe turn with a small human spark:
+     * a conversational opener («راستی،», "Honestly,"), a friendly
+     * check-in tag («، نه؟», ", right?"), or an exclamatory close on a
+     * joyful turn. This is the bounded chaos that keeps Darya reading
+     * as a person rather than a metronome: rare, cooldown-limited, and
+     * strictly gated off safety, heavy, distress, and structured-flow
+     * turns (exercises, mood scales, factual/math answers). The spark
+     * never carries content, so it cannot change what the reply means.
+     * @param {string} reply - The reply built so far.
+     * @returns {string}
+     */
+    _maybeHumanSpark(reply, options) {
+      const turnOptions = options || {};
+      const openers = this.lang.humanSparkOpeners;
+      const tags = this.lang.humanSparkTags;
+      if (
+        !Array.isArray(openers) ||
+        openers.length === 0 ||
+        !Array.isArray(tags) ||
+        tags.length === 0
+      ) {
+        return reply;
+      }
+      if (
+        this.memory.safetyModeSince != null ||
+        turnOptions.isRepeatedGreeting ||
+        turnOptions.isSpamNoise ||
+        this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
+        this.currentTurnDialogueAct === 'acknowledgement' ||
+        this.currentTurnDialogueAct === 'test_input' ||
+        (this.memory.isInDistressStreak && this.memory.isInDistressStreak()) ||
+        containsDeathLexicon(this._currentNormalizedInput || '') ||
+        this._activeExercise != null ||
+        this._pendingMoodRequest != null ||
+        (this.lastTurnQuickReplies && this.lastTurnQuickReplies.length > 0) ||
+        this._lastKnowledgeTurn === this.memory.turnCount ||
+        this.memory.turnCount < HUMAN_SPARK_MIN_TURNS ||
+        this.memory.turnCount - this._lastHumanSparkTurn <
+          HUMAN_SPARK_COOLDOWN_TURNS ||
+        /^[\s\d۰-۹]/u.test(reply)
+      ) {
+        return reply;
+      }
+      if (Math.random() >= HUMAN_SPARK_CHANCE) {
+        return reply;
+      }
+      const roll = Math.random();
+      this._lastHumanSparkTurn = this.memory.turnCount;
+      if (roll < HUMAN_SPARK_OPENER_SHARE) {
+        const joined = this._lowercaseAfterOpener(reply);
+        if (joined === String(reply)) {
+          // The leading word is not a safe-to-lowercase function word
+          // (a question word, "I", or a proper noun): "Honestly, Why..."
+          // would read wrong, so this turn keeps its plain reply.
+          return reply;
+        }
+        const opener = this._pickVaried(openers, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+        return opener + ' ' + joined;
+      }
+      if (roll < HUMAN_SPARK_OPENER_SHARE + HUMAN_SPARK_TAG_SHARE) {
+        const trimmed = String(reply).replace(/[.\s]+$/u, '');
+        if (/[؟?!…"»)]$/u.test(trimmed)) {
+          return reply;
+        }
+        const tag = this._pickVaried(tags, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+        return trimmed + tag;
+      }
+      // Exclamatory close: only for genuinely positive turns, and only
+      // when the reply still ends on a plain period. Joy shared with a
+      // period is fine, but an occasional "!" is what a friend types.
+      const emotion = this._lastEmotionAnalysis
+        ? this._lastEmotionAnalysis.emotion
+        : null;
+      const positive =
+        emotion === 'happy' || emotion === 'excited' || emotion === 'grateful';
+      const trimmedEnd = String(reply).replace(/\s+$/u, '');
+      if (positive && trimmedEnd.endsWith('.')) {
+        return trimmedEnd.slice(0, -1) + '!';
+      }
+      return reply;
+    },
+
+    /**
+     * Lowercases a leading function word so a spark opener joins
+     * naturally ("Honestly, the rain stopped", never "Honestly, The
+     * rain stopped"). Only a closed set of sentence-starting function
+     * words is touched, so proper nouns ("Iran won") and "I" survive.
+     * Persian has no letter case, so FA replies pass through intact.
+     * @param {string} reply
+     * @returns {string}
+     */
+    _lowercaseAfterOpener(reply) {
+      if (this.lang.code !== 'en') {
+        return reply;
+      }
+      return String(reply).replace(
+        /^(The|This|That|These|Those|It|We|They|You|And|But|So)(?=[ ,])/u,
+        (word) => word.toLowerCase()
+      );
     },
 
     _knowledgeFollowup(answerText) {
@@ -1597,7 +1710,13 @@
       // Human touch: on a long streak of terse, repetitive replies, Darya
       // may gently huff with affection instead of staying a robotic calm
       // listener. Skipped on safety and heavy turns inside the method.
+      // The human spark runs first: if the huff then replaces the reply,
+      // the spark is simply lost, which is the safe order (never both).
       if (!isSafetyTurn && !_overrideFired) {
+        reply = this._maybeHumanSpark(reply, {
+          isRepeatedGreeting,
+          isSpamNoise
+        });
         reply = this._maybePlayfulHuff(reply);
       }
 
