@@ -63,6 +63,7 @@ required_files=(
   "index.html"
   "css/style.css"
   "js/app/index.js"
+  "js/app/native.js"
   "js/app/composer.js"
   "js/app/language.js"
   "js/app/conversation.js"

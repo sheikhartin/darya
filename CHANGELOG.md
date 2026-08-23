@@ -5,6 +5,39 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.2] - 2026-08-23
+
+### Fixed
+
+- The download-conversation button now works in the Android app. The
+  Android WebView has no download machinery at all, so the website's
+  blob-URL anchor download was a silent no-op inside the APK (not a
+  permissions problem). A first-party Capacitor plugin
+  (`ExportPlugin.java`) now saves the transcript into the system
+  Downloads folder through MediaStore, which needs no storage
+  permission; on Android 9 and older the file lands in the app's own
+  Downloads directory, reported honestly in the confirmation toast. If
+  the write fails, the transcript is copied to the clipboard so the
+  button never silently does nothing. The browser path is unchanged.
+- The Android app no longer shows the previous version's UI after an
+  update. Builds up to 1.9.1 registered the PWA's service worker inside
+  the Capacitor WebView; after an app update that leftover worker kept
+  serving the old app shell (and the old engine) from Cache Storage,
+  so the app looked stuck until its whole data was cleared. The native
+  shell now never registers the worker and retires any leftover
+  registrations and app-owned caches at boot
+  (`js/app/native.js`), and MainActivity injects the same retirement
+  once per page start so devices already stuck on a cached old shell
+  recover without clearing app data. The website keeps the full
+  service-worker offline behavior.
+
+### Added
+
+- `js/app/native.js`: the native-shell integration layer (environment
+  detection, transcript saving through the Export plugin, service
+  worker and cache retirement), covered by
+  `tests/native-shell.test.mjs` and `tests/e2e-native-shell.test.mjs`.
+
 ## [1.9.1] - 2026-08-22
 
 ### Fixed
