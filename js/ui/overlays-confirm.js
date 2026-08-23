@@ -230,11 +230,22 @@
       }
     }
 
+    /**
+     * Reports whether the new-chat confirmation dialog is currently
+     * shown. Lets outside navigation (the hardware back policy) close
+     * the topmost surface instead of leaving the app.
+     * @returns {boolean}
+     */
+    function isConfirmVisible() {
+      return Boolean(confirmOverlay);
+    }
+
     return {
       dismissNewChatConfirm,
       showNewChatConfirm,
       showExitConfirmBar,
-      hideExitConfirmBar
+      hideExitConfirmBar,
+      isConfirmVisible
     };
   }
 

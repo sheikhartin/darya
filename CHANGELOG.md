@@ -33,10 +33,23 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ### Added
 
+- The Android back gesture now follows the app's own navigation stack
+  instead of killing the activity (Capacitor 8 ships no back handling,
+  so back closed the app even mid-conversation). A first-party
+  `ShellPlugin` hands each press to the web policy
+  (`js/app/backbutton.js`), which unwinds one surface at a time: the
+  open menu closes, then the new-chat dialog, then the breathing
+  overlay, then the pending farewell bar (cancel and stay); during an
+  active conversation back asks for confirmation before ending it
+  (the same bar and Yes/No semantics as saying goodbye); after the
+  conversation ended it returns to the picker; and on the picker
+  itself back leaves the app to the device home screen. Before the
+  web policy subscribes, the platform default applies.
 - `js/app/native.js`: the native-shell integration layer (environment
-  detection, transcript saving through the Export plugin, service
-  worker and cache retirement), covered by
-  `tests/native-shell.test.mjs` and `tests/e2e-native-shell.test.mjs`.
+  detection, transcript saving through the Export plugin, back-button
+  plumbing, service worker and cache retirement), covered by
+  `tests/native-shell.test.mjs`, `tests/backbutton.test.mjs`, and
+  `tests/e2e-native-shell.test.mjs` / `tests/e2e-backbutton.test.mjs`.
 
 ### Changed
 

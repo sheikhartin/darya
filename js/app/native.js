@@ -32,6 +32,12 @@
   /** Capacitor plugin id of the Android-side export plugin. */
   var EXPORT_PLUGIN_NAME = 'Export';
 
+  /** Capacitor plugin id of the Android shell plugin (back button). */
+  var SHELL_PLUGIN_NAME = 'Shell';
+
+  /** Event the shell plugin emits when back is pressed or swiped. */
+  var BACK_BUTTON_EVENT = 'backButton';
+
   /** Save locations reported by the plugin (see ExportPlugin.java). */
   var SAVE_LOCATION_DOWNLOADS = 'downloads';
   var SAVE_LOCATION_APP_FILES = 'app-files';
@@ -98,6 +104,46 @@
   }
 
   /**
+   * The shell plugin's method proxies, or null when unavailable (a
+   * browser, or an APK built before the plugin existed).
+   * @returns {object|null}
+   */
+  function shellPlugin() {
+    if (!isNativeApp()) {
+      return null;
+    }
+    var plugins = global.Capacitor.Plugins;
+    return plugins && plugins[SHELL_PLUGIN_NAME]
+      ? plugins[SHELL_PLUGIN_NAME]
+      : null;
+  }
+
+  /**
+   * Subscribes to the hardware back button inside the native shell.
+   * The web layer then owns the press: back dismisses the topmost
+   * surface before ever considering leaving the app. Silent no-op in a
+   * browser, where the platform back semantics stay untouched.
+   * @param {function(): void} handler - Runs on every back press
+   */
+  function onHardwareBack(handler) {
+    var plugin = shellPlugin();
+    if (plugin && typeof plugin.addListener === 'function') {
+      plugin.addListener(BACK_BUTTON_EVENT, handler);
+    }
+  }
+
+  /**
+   * Leaves the native app the way the platform back gesture does on a
+   * top screen: back to the user's home screen. No-op in a browser.
+   */
+  function leaveApp() {
+    var plugin = shellPlugin();
+    if (plugin && typeof plugin.exitApp === 'function') {
+      plugin.exitApp();
+    }
+  }
+
+  /**
    * Retires the web app's service worker and shell caches. Used in the
    * native shell, where the APK serves the whole app and a leftover
    * worker from an earlier build could keep showing the previous
@@ -145,6 +191,8 @@
   const DaryaNative = {
     isNativeApp,
     saveTextFile,
+    onHardwareBack,
+    leaveApp,
     retireWebCaches
   };
 

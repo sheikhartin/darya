@@ -80,6 +80,10 @@
     global.DaryaAppUpdate.create(ctrl)
   );
 
+  // Android hardware back walks the app's own surface stack (menu,
+  // overlays, conversation, picker, leave); inert in browsers.
+  global.DaryaAppBackButton.create(ctrl);
+
   // The chat scrollbar stays hidden until the reader actually scrolls
   // (see js/app/scrollbar.js); wired straight to the scroll container.
   if (el.chat && DaryaScrollbar) {

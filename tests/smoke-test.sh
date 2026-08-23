@@ -69,6 +69,7 @@ required_files=(
   "js/app/conversation.js"
   "js/app/menu.js"
   "js/app/sound.js"
+  "js/app/backbutton.js"
   "js/app/scrollbar.js"
   "js/engine/index.js"
   "js/engine/utils-constants.js"

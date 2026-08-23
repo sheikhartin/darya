@@ -42,6 +42,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ExportPlugin.class);
+        registerPlugin(ShellPlugin.class);
         super.onCreate(savedInstanceState);
         this.bridge.addWebViewListener(
                 new WebViewListener() {
