@@ -356,6 +356,22 @@ class DaryaResponseEngine {
       this.memory.farewellPending = true;
       return this.exitConfirmation();
     }
+    // A cancelled farewell ("no wait", «نه صبر کن») after the confirm
+    // deserves a warm welcome back, not a generic short-input line.
+    if (
+      this.memory.farewellPending &&
+      this.lang.farewellCancelResponses &&
+      // eslint-disable-next-line max-len
+      /^(?:no wait|wait|no no|stay|dont go|don'?t go|actually stay|cancel|نه صبر کن|صبر کن|نشده|برنگشتم|نه هنوز|ماندم|نرفتم)\.?$/iu.test(
+        String(rawText).trim()
+      )
+    ) {
+      this.memory.farewellPending = false;
+      return this._pickVaried(this.lang.farewellCancelResponses, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
+    }
     this.memory.farewellPending = false;
 
     const normalized = this.lang.normalize(rawText);

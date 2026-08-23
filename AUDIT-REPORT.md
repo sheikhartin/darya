@@ -1,6 +1,6 @@
 # Darya Deep Audit Report
 
-Date: 2026-08-23 (status refreshed after the first implementation pass)
+Date: 2026-08-23 (status refreshed after the second implementation pass: safety + engine correctness)
 Scope: full engine audit, both languages, v1.9.2 tree (commit 6e818d8)
 Method: code review of the engine and language packs, 400+ adversarial input probes
 through the real engine (via `tests/helpers.mjs`), CPU profiling, statistical
@@ -24,15 +24,15 @@ workstream, which was implemented first by direction).
 
 | Workstream | Items | Status |
 |---|---|---|
-| P0 crisis phrasings, overdose/firearm/noose, third-party verbs | 12.1 | [ ] Open (highest priority) |
-| Distress-lexicon backstop tier | 12.2 | [ ] Open |
-| Sentiment negation fix (hopelessness scored positive) | 12.3 | [ ] Open |
-| Tone-quip / curiosity ban on distress turns | 12.4 | [ ] Open |
-| `ali` weak-word removal and audit of short weak words | 12.5 | [ ] Open |
-| Engine correctness: person-awareness, ambiguity gate, dialogue-act guards, disclosure rules | 12.7-12.15 | [ ] Open |
-| Knowledge coverage, collisions, snapshot discipline | 12.16-12.20 | [ ] Open |
-| Persian parity: word numbers, elongation, variants, Finglish | 12.21-12.25 | [~] Register mechanics done (section 13.2); variant and word-number coverage open |
-| Performance: regex caching, per-turn budget | 12.26 | [ ] Open (~88ms FA heavy turn remains) |
+| P0 crisis phrasings, overdose/firearm/noose, third-party verbs | 12.1 | [x] Done (pinned by adversarial tests) |
+| Distress-lexicon backstop tier | 12.2 | [x] Done |
+| Sentiment negation fix (hopelessness scored positive) | 12.3 | [x] Done (both languages score negative now) |
+| Tone-quip / curiosity ban on distress turns | 12.4 | [x] Done (unreachable by construction) |
+| `ali` weak-word removal + neutral Imam Ali entry | 12.5 | [x] Done |
+| Engine correctness: person-awareness, ambiguity gate, dialogue-act guards, disclosure rules | 12.7-12.15 | [x] Done (12.8 trajectory gate partial) |
+| Knowledge coverage, collisions, snapshot discipline | 12.16-12.20 | [~] Live-data word order + price-vs-recommendation done (12.17, 12.18); coverage sprint and lint governance open |
+| Persian parity: word numbers, elongation, variants, Finglish | 12.21-12.25 | [~] Word-number ages and recall/leave variants done (12.21, 12.22); elongation and Finglish open |
+| Performance: regex caching, per-turn budget | 12.26 | [~] Caching done (~88ms -> ~25ms FA heavy turn); budget test open |
 | Pool growth for unknown/ambiguous replies | 12.27 | [ ] Open |
 | QA infrastructure: paraphrase battery, held-out set | 12.29-12.30 | [ ] Open |
 | Question punctuation repair | 13.1 | [x] Done |
@@ -638,60 +638,69 @@ Points of disagreement and resolution:
 
 ## 12. Remediation plan (recommended, phased; no version bump implied)
 
+> **Implementation status (pass 2, same branch):** items 12.1-12.15,
+> 12.17, 12.18, and 12.21 are DONE and pinned by tests (3,014 passing);
+> 12.8, 12.22, and 12.26 are PARTIAL (the mechanical half landed, the
+> remaining half is noted inline). The open items are the knowledge
+> coverage sprint (12.19), weak-word lint governance (12.16), snapshot
+> discipline (12.20), Finglish and parity CI (12.23-12.25), pool growth
+> (12.27), the optional semantic ranker (12.28), and QA infrastructure
+> (12.29-12.30).
+
 ### Phase 0 - immediate safety (P0, hours)
-- [ ] **12.1** Add the missing high-precision phrasings to `safety`, `safety_method`,
+- [x] **12.1** Add the missing high-precision phrasings to `safety`, `safety_method`,
    `third_party_risk` (both languages): present-tense overdose («قرص
    خوابم رو همه رو خوردم», "i took all my sleeping pills", "i overdosed"),
    firearm means, "noose", «کاش نبودم», «بهتر بود اگه نمی‌بودم», «مرگ
    راحت‌تره», third-party verb forms («خودشو بکشه»), «خسته‌ام از زندگی».
-- [ ] **12.2** Add the distress-lexicon backstop tier: veto huff/boredom/smalltalk/
+- [x] **12.2** Add the distress-lexicon backstop tier: veto huff/boredom/smalltalk/
    curiosity lines and emit a gentle check-in on lexicon hits that did not
    match a crisis rule (safe-completion design).
-- [ ] **12.3** **Fix negation in the sentiment scorer** (invert polarity in the scope of
+- [x] **12.3** **Fix negation in the sentiment scorer** (invert polarity in the scope of
    never/nothing/nobody/هیچ/هیچوقت, or add absolutist-hopelessness bigrams
    to both lexicons as negative): "nothing will ever get better" and
    «هیچوقت هیچ چیز برام خوب نمیشه» must never score positive again.
    Extend the heavy-unmatched warmth trigger to hopelessness,
    burdensomeness, and isolation phrasings, not just death vocabulary.
-- [ ] **12.4** **Make tone quips and curiosity lines unreachable on distress turns by
+- [x] **12.4** **Make tone quips and curiosity lines unreachable on distress turns by
    construction:** `smalltalk` and `unknownTopicResponses` may not fire
    when any distress signal exists (negative true sentiment, distress
    lexicon, first-person pain or victimization verbs); the caring pool
    becomes the floor, not the exception.
-- [ ] **12.5** Remove bare `ali`/«کلی» (and audit every <=4-char weak word) from
+- [x] **12.5** Removed `ali`/«کلی» (verified: Imam Ali, Ali Khamenei, Ali Karimi no longer resolve to the boxer) and added a neutral `imam_ali` fact; further short-weak-word governance lives in 12.16. Original:
    `weak` lists; require a disambiguating hint for person entries.
-- [ ] **12.6** Regression tests for each: write the tests first, phrased from this
+- [x] **12.6** Regression tests for each: write the tests first, phrased from this
    report's repro table.
 
 ### Phase 1 - engine correctness (P1, days)
-- [ ] **12.7** Fix the huff/boredom gates: never fire when the user's short utterances
+- [x] **12.7** Fix the huff/boredom gates: never fire when the user's short utterances
    are questions or pleasantry-matched rules (raise the priority guard above
    the gratitude rule), and require the *bot's* previous replies to have
    been adequate.
-- [ ] **12.8** Dialogue-act guard on overrides: no tone quips on farewells, no mood-shift
+- [~] **12.8** Dialogue-act guard on overrides (complaint and distress vetoes done; the >=2-prior-emotion-turns gate for trajectory lines remains open): no tone quips on farewells, no mood-shift
    line on complaints-about-Darya, no curiosity prompts on lexicon-heavy
    input, no "weight has lifted" trajectory lines without >=2 prior emotion
    turns.
-- [ ] **12.9** Person-awareness predicate for emotion rules ("are you happy?" vs "I am
+- [x] **12.9** Person-awareness predicate for emotion rules ("are you happy?" vs "I am
    happy"; «چطور می‌تونم خوشحال باشم» is a how-to, not a disclosure).
-- [ ] **12.10** Ambiguity gate: exempt interrogatives and questions about Darya; raise
+- [x] **12.10** Ambiguity gate: exempt interrogatives and questions about Darya; raise
    the Persian word-count ceiling or use character count per language.
-- [ ] **12.11** Question detection without punctuation (wh/چی/کی/کجا/چطور + verb shapes).
-- [ ] **12.12** "good night"/«شبت بخیر»/ttyl/gn farewell coverage; polite cancel flow
+- [x] **12.11** Question detection without punctuation (wh/چی/کی/کجا/چطور + verb shapes).
+- [x] **12.12** "good night"/«شبت بخیر»/ttyl/gn farewell coverage; polite cancel flow
     after exit-confirm ("no wait").
-- [ ] **12.13** **Disclosure rules for the section-6 gaps (both languages):** generic
+- [x] **12.13** **Disclosure rules for the section-6 gaps (both languages):** generic
     assault (no named perpetrator), school bullying (must beat the school/
     study rule), pregnancy/infant loss, financial despair («نمی‌تونم خرج
     خانواده‌م رو بدم»), and a calm harm-to-others de-escalation reply
     ("i want to kill my boss") that acknowledges the anger and sets a
     boundary without moralizing.
-- [ ] **12.14** **Immediate-presence lines for raw emotional turns:** crying ("i'm
+- [x] **12.14** **Immediate-presence lines for raw emotional turns:** crying ("i'm
     crying right now"), "nobody cares about me", and burden statements get
     an acknowledgment-first line before any question; no "be calmer" or
     "give me one concrete detail" phrasing may exist in pools reachable
     from a disclosure (rewrite the «آرام‌تر» and «یه جزئیات مشخص بده»
     lines or gate them to non-disclosure turns only).
-- [ ] **12.15** **Boundary parity:** the FA roleplay/companion boundary
+- [x] **12.15** **Boundary parity:** the FA roleplay/companion boundary
     («دختر بشی برام؟») gets the same warm, non-shaming boundary script as
     EN, never the evasive "no ready answer" line.
 
@@ -700,9 +709,9 @@ Points of disagreement and resolution:
     (a) shared by multiple facts, (b) common-function words in either
     language, unless a hint is required; resolve the 110 existing
     collisions by hint-gating.
-- [ ] **12.17** Word-order-insensitive live-data detection (price/rate/weather phrases
+- [x] **12.17** Word-order-insensitive live-data detection (price/rate/weather phrases
     anywhere: «دلار چند شد؟»).
-- [ ] **12.18** Price-vs-recommendation disambiguation («قیمت X» is never a genre ask).
+- [x] **12.18** Price-vs-recommendation disambiguation («قیمت X» is never a genre ask).
 - [ ] **12.19** Coverage sprint for the verified common misses (Everest, ocean depth,
     world cup winners incl. 2026, US president present-tense, religion
     figures with respectful neutral entries, love, basic physics) and
@@ -713,9 +722,9 @@ Points of disagreement and resolution:
     the caveat by construction (the Topuria pattern generalized), not ad hoc.
 
 ### Phase 3 - Persian parity (P1/P2, days)
-- [ ] **12.21** Word-number parsing for ages and math (یک..صد table; «بیست و چهار
+- [x] **12.21** Word-number parsing for ages and math (یک..صد table; «بیست و چهار
     سالمه», «نصف ۲۰», «۲۰ درصد ۱۵»).
-- [ ] **12.22** Elongation collapse + greeting/farewell/recall variant expansion
+- [~] **12.22** Elongation collapse open; recall variants (اسمی چیه، اسمم چی بود) and leave phrasings (فعلاً، برم دیگه، شبت بخیر) done
     (اسمی چیه، اسم من چی بود, مر30, فعلاً, شبت بخیر, حالت چطوره).
 - [ ] **12.23** FA/EN parity CI: every shared scenario asserts same routing class in
     both languages.
@@ -724,7 +733,7 @@ Points of disagreement and resolution:
     consciously scope them and say so.
 
 ### Phase 4 - performance and architecture (P2, days)
-- [ ] **12.26** Cache compiled weak-word regexes (or inverted index); per-turn budget
+- [~] **12.26** Caching done (FA heavy turn ~88ms -> ~25ms measured); the CI per-turn budget assertion remains open
     test (<10ms desktop).
 - [ ] **12.27** Grow unknown/question/ambiguous pools (>=8 lines each) and enforce a
     "one honest sentence + one next step" shape for unknowns; single-reply
@@ -868,9 +877,12 @@ outputs were natural).
 
 ---
 
-*Prepared as the working input for the implementation pass. Every repro line
-above was executed against this exact tree; the fix list in section 12 maps
-one-to-one onto the repro tables in sections 3-9. Section 13 records the
-first implemented workstream (voice, punctuation, spark) with its tests;
-the safety-critical items in section 12.1-12.5 remain the top open
-priorities and must land before the next release is cut.*
+*Prepared as the working input for the implementation passes. Every repro
+line above was executed against this exact tree; the fix list in section 12
+maps one-to-one onto the repro tables in sections 3-9. Two workstreams are
+implemented on this branch with 3,014 tests passing: the voice workstream
+(section 13) and the safety-and-correctness pass (sections 12.1-12.15,
+12.17, 12.18, 12.21, plus the mechanical halves of 12.8, 12.22, 12.26).
+The remaining open items are knowledge coverage (12.19-12.20), Finglish
+and parity CI (12.23-12.25), pool growth (12.27), the optional semantic
+ranker (12.28), and QA infrastructure (12.29-12.30).*

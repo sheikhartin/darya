@@ -118,7 +118,8 @@
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
-    containsDeathLexicon
+    containsDeathLexicon,
+    containsDistressLexicon
   } = global.DaryaUtilsText;
 
   // Question-echo shape: a short question fragment ending in ؟/? followed
@@ -663,6 +664,7 @@
     scoreSentiment,
     reflectPronouns,
     containsDeathLexicon,
+    containsDistressLexicon,
     parseEchoShape,
     ConversationMemory
   };

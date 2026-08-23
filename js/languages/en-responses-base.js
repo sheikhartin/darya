@@ -348,6 +348,24 @@
   // color a LIGHT turn so the reply rhythm feels human, not metronomic.
   // They never carry content of their own, so they can precede any
   // light reply without changing its meaning.
+  // Caring floor for distress-lexicon turns that matched no dedicated
+  // rule (see utils-text containsDistressLexicon and the fallback guard
+  // in responder-rules): hopelessness, burdensomeness, isolation, and
+  // self-directed hostility never meet a quip, a curiosity prompt, or a
+  // generic unknown-topic line. Acknowledgment first, one gentle opening.
+  // Cancelled farewell ("no wait" after the confirm bar): relieved,
+  // warm, back to the conversation.
+  R.farewellCancelResponses = [
+    "Oh, I'm glad you stayed! So, what's on your mind?",
+    "Wonderful, I'm still here. Where were we?",
+    'Not goodbye yet, then! What made you come back?'
+  ];
+  R.distressCheckIns = [
+    "What you just said carries a lot of weight, and I'm glad you said it here. I'm staying with you in it.",
+    "That sounds heavy to carry alone. You don't have to hold it by yourself in this moment.",
+    "I hear how hard this is for you. I'm not going anywhere; start with whichever piece feels easiest.",
+    'That weight is real and it did not land on deaf ears. What would the smallest bit of relief look like right now?'
+  ];
   R.humanSparkOpeners = [
     'By the way,',
     'Honestly,',

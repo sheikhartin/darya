@@ -361,6 +361,24 @@
   // color a LIGHT turn so the reply rhythm feels human, not metronomic.
   // They never carry content of their own, so they can precede any
   // light reply without changing its meaning.
+  // Caring floor for distress-lexicon turns that matched no dedicated
+  // rule (see utils-text containsDistressLexicon and the fallback guard
+  // in responder-rules): hopelessness, burdensomeness, isolation, and
+  // self-directed hostility never meet a quip, a curiosity prompt, or a
+  // generic unknown-topic line. Acknowledgment first, one gentle opening.
+  // Cancelled farewell ("no wait" after the confirm bar): relieved,
+  // warm, back to the conversation.
+  R.farewellCancelResponses = [
+    'آخ، خوشحالم که موندی! پس ادامه بدیم؛ چی تو ذهنته؟',
+    'چه عالی، موندم همین‌جا. کجا بودیم؟',
+    'پس هنوز خداحافظی نیست! بگو ببینم چی بود که برمی‌گشتی؟'
+  ];
+  R.distressCheckIns = [
+    'این که گفتی خیلی سنگینه و خوشحالم که همین‌جا گفتیش. باهات هستم.',
+    'حرفت درد زیادی داره. لازم نیست این لحظه رو تنهایی به دوش بکشی.',
+    'می‌شنوم چقدر برات سخته. جایی نمی‌رم; هر تکه‌ش که راحت‌تره ازش شروع کن.',
+    'این بار واقعیه و بی‌صدا نگهش نداشتم. الان چی کوچیک‌ترین حس آروم شدن برات می‌سازه؟'
+  ];
   R.humanSparkOpeners = ['راستی،', 'راستش،', 'خب،', 'ببین،', 'هوم،'];
   R.humanSparkTags = ['، نه؟', '، می‌دونی؟'];
   R.wellBeingResponses = [

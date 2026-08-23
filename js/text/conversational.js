@@ -864,14 +864,10 @@
     'می‌تونی',
     'میتونی',
     'می‌توانی',
-    'داری',
-    'نداری',
     'هستی',
     'هستید',
     'نکنم',
     'بزنیم',
-    'بگم',
-    'بگی',
     'بپرسم',
     'بریم',
     'بیام',
@@ -890,6 +886,12 @@
     'شنیدی',
     'دیدی'
   ];
+
+  // Offer frame that turns a trailing «بگم/بگی» into a question:
+  // «دوست داری بیشتر بگم», «می‌خوای بگم». Without the frame the ending
+  // is a plain statement («هیچی لازم نیست بگی»).
+  const FA_OFFERED_SAY_RE =
+    /(?:دوست داری|می ?خوای|می‌خوای|بخوای|خواستی)[^،.!؟?]{0,60}$/iu;
 
   /**
    * Persian sentence-initial interrogatives. A sentence that STARTS
@@ -1026,9 +1028,19 @@
       if (FA_QUESTION_STARTS.test(text)) {
         return '؟';
       }
-      return FA_QUESTION_TAILS.some((tail) => lower.endsWith(tail))
-        ? '؟'
-        : null;
+      if (FA_QUESTION_TAILS.some((tail) => lower.endsWith(tail))) {
+        return '؟';
+      }
+      // «بگم/بگی» endings are questions only under an offer frame
+      // ("دوست داری بیشتر بگم"); as bare statements («لازم نیست بگی»)
+      // they keep their period.
+      if (
+        FA_OFFERED_SAY_RE.test(lower) &&
+        (lower.endsWith('بگم') || lower.endsWith('بگی'))
+      ) {
+        return '؟';
+      }
+      return null;
     }
     if (EN_EXCLAIM_STARTS.test(text)) {
       return '!';

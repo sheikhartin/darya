@@ -1244,4 +1244,60 @@
     'Real loneliness hurts, and I do not want to stand in for human connection. If there is even one person you trust, it may be time to share this feeling with them. Who could be first?',
     'I hear how alone you have become. I am always here, but telling these same things to a friend or family can build a more real bond. Shall we think together about who might understand?'
   ];
+
+  // Generic assault (no named perpetrator): believe first, check safety.
+  R['ruleAssaultGeneric'] = [
+    "I'm really sorry that happened to you. None of it was your fault. Are you somewhere safe right now?",
+    'This should not have happened to you, and I believe you. If you are hurt or in danger, please call emergency services (911 or your local number) right away. Are you safe at this moment?',
+    'Thank you for telling me. Your safety comes first: if there is any immediate danger, call the police right now. How are you doing in this moment?'
+  ];
+  // School or workplace bullying: never study advice, never gossip.
+  R['ruleBullying'] = [
+    'Being bullied like that is not just how it is; it is wrong, and it says nothing about your worth. Who else knows what has been happening?',
+    'Years of that wears a person down, and none of it was your fault. Is it still happening now, or is it something you carry from the past?',
+    'I hear how much of it you have had to swallow. You did not deserve it. Is there one adult or friend who knows the whole picture?'
+  ];
+  // Pregnancy or infant loss: grief first, no questions demanded.
+  R['rulePregnancyLoss'] = [
+    'I am so sorry. Losing a baby is a grief like no other, and there are no right words for it. I am here, and there is no rush to be okay.',
+    'I am deeply sorry for your loss. Whatever you are feeling right now, emptiness, anger, guilt, numbness, all of it is allowed to be here.',
+    'That loss is enormous, and I will not ask you to sum it up. If you want to talk about it, I am listening; if not, we can sit here quietly for a moment.'
+  ];
+  // Financial despair: dignity first, practical next step, no shaming.
+  R['ruleFinancialStrain'] = [
+    'That is a heavy weight, and carrying it says nothing about your worth; it says the situation is hard. When did it get this tight?',
+    'Not being able to cover the basics is one of the most stressful places to be, and you are not failing; the math is just brutal. What is the most urgent bill right now?',
+    'I hear you, and there is no shame in this. If it helps, we can map what support exists near you, aid organizations, community services, or family, one step at a time.'
+  ];
+  // Harm-to-others statements: calm boundary, anger acknowledged.
+  R['ruleHarmOthers'] = [
+    'I hear how angry you are, and the anger makes sense. Acting on it would cost you far more than it is worth, though. What did they do?',
+    'That is a lot of rage to carry, and I am glad you said it here instead of acting on it. Wanting to hurt someone usually means the situation has gone past what you can absorb. What happened?',
+    'I will not help plan harm to anyone, and I will not pretend that is okay; but the anger underneath is real and worth taking seriously. Tell me what led here?'
+  ];
+  // Questions about Darya's own feelings: honest, warm, non-evasive.
+  R['ruleDaryaEmotion'] = [
+    "I don't feel things the way you do. I'm software, and my mood doesn't swing, but being here in this conversation with you is genuinely good.",
+    "Honestly? I don't have good days or bad days. What I have is this conversation, and right now it is a good one.",
+    "I don't feel happy or sad the way you feel them. Think of me as a very calm listener whose favorite place is right here."
+  ];
+  // Positive work news: celebrate, never assume burden.
+  R['ruleWorkWin'] = [
+    'That is genuinely great news. You worked for this. Tell me how it happened!',
+    'I love that. Now that it is official, how does it feel?',
+    'Congratulations, truly. What is the first thing you want to do with it?'
+  ];
+  // Job loss: a real loss, acknowledged before any problem-solving.
+  R['ruleJobLoss'] = [
+    "I'm sorry. Losing a job is a real loss, and it is okay to let it land before any problem-solving. If you want to say what happened, I'm listening.",
+    'That is heavy to hear. The work was part of your days and your identity. How are you doing with it right now?',
+    'I am truly sorry. There is no rush to figure out the next step in this message. What would help most right now, letting it out, or thinking through options?'
+  ];
+
+  // Presence-first lines for raw crying disclosures.
+  R['ruleCryingNow'] = [
+    "I'm right here with you. Crying is allowed; you don't have to say anything at all.",
+    "Just know you're not alone in this exact moment. Whatever is there, we'll sit with it together.",
+    "I can see your tears and I take them seriously. Whenever you're ready, start wherever is easiest."
+  ];
 })(typeof window !== 'undefined' ? window : globalThis);

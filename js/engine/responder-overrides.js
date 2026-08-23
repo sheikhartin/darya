@@ -26,7 +26,8 @@
     HUMAN_SPARK_OPENER_SHARE,
     HUMAN_SPARK_TAG_SHARE,
     SAFETY_CRITICAL_TOPICS,
-    containsDeathLexicon
+    containsDeathLexicon,
+    containsDistressLexicon
   } = global.DaryaUtils;
 
   const { KNOWLEDGE_OVERRIDE_CONFIDENCE, LIVED_TOPICS } =
@@ -217,6 +218,8 @@
         this.lang.playfulHuff.length === 0 ||
         this.memory.turnCount < PLAYFUL_HUFF_MIN_TURNS ||
         this.currentTurnSeriousness >= MODERATE_SERIOUSNESS_THRESHOLD ||
+        // Distress vocabulary is never huff material.
+        containsDistressLexicon(this._currentNormalizedInput || '') ||
         this.currentTurnDialogueAct === 'acknowledgement' ||
         this.memory.isInDistressStreak() ||
         // A turn that matched a substantive, topic-bearing rule already
@@ -228,7 +231,7 @@
         // that otherwise fall back to a generic line.
         (this._matchedRuleForTurn &&
           this._matchedRuleForTurn.topic &&
-          this._matchedRuleForTurn.priority >= 30) ||
+          this._matchedRuleForTurn.priority >= 25) ||
         // Session safety mode: after any safety-critical event, the
         // playful huff stays off for the rest of the session. A person
         // who disclosed a crisis must never get an affectionate
@@ -243,8 +246,12 @@
       // The last few user utterances must all be terse (a short, repetitive
       // pattern like "ok", "ok", "hmm") for a huff to be in character.
       const recent = this.memory.recentUtterances.slice(-PLAYFUL_HUFF_STREAK);
+      // A short QUESTION is not disengagement; it is a request that may
+      // have gone unanswered, and huffing at it reads as mockery.
       const terse = recent.every(
-        (u) => u.split(/\s+/u).filter(Boolean).length <= 3
+        (u) =>
+          u.split(/\s+/u).filter(Boolean).length <= 3 &&
+          !this.lang.questionPattern.test(u)
       );
       if (!terse || recent.length < PLAYFUL_HUFF_STREAK) {
         return reply;
@@ -291,6 +298,7 @@
         this.currentTurnDialogueAct === 'test_input' ||
         (this.memory.isInDistressStreak && this.memory.isInDistressStreak()) ||
         containsDeathLexicon(this._currentNormalizedInput || '') ||
+        containsDistressLexicon(this._currentNormalizedInput || '') ||
         this._activeExercise != null ||
         this._pendingMoodRequest != null ||
         (this.lastTurnQuickReplies && this.lastTurnQuickReplies.length > 0) ||
@@ -1584,6 +1592,7 @@
         // turn carrying death/self-harm vocabulary.
         this.memory.safetyModeSince == null &&
         !containsDeathLexicon(matchingText || '') &&
+        !containsDistressLexicon(matchingText || '') &&
         this.memory.turnCount >= BOREDOM_MIN_TURNS &&
         this.memory.turnCount % BOREDOM_CHECK_INTERVAL === 0 &&
         this.lang.boredomResponses &&
@@ -1591,7 +1600,9 @@
       ) {
         const recentUtterances = this.memory.recentUtterances.slice(-3);
         const allBrief = recentUtterances.every(
-          (u) => u.split(/\s+/u).filter(Boolean).length <= 3
+          (u) =>
+            u.split(/\s+/u).filter(Boolean).length <= 3 &&
+            !this.lang.questionPattern.test(u)
         );
         if (allBrief && Math.random() < BOREDOM_SKIP_CHANCE) {
           reply = this._pickVaried(this.lang.boredomResponses);
@@ -1680,10 +1691,17 @@
         String(matchingText || '')
           .split(/\s+/u)
           .filter(Boolean).length < 3;
+      const complaintAboutDarya =
+        // eslint-disable-next-line max-len
+        /(?:تناقض|جوابات|جوابت|دروغ|هذیان|چرت و پرت|درست جواب نمی|همش اشتباه|contradict|your answers|you keep (?:saying|changing)|you said|you're wrong|you are wrong|you don't understand|تو نمی‌?فهمی)/iu.test(
+          matchingText || ''
+        );
       if (
         !isSafetyTurn &&
         !_overrideFired &&
         !isLowContentTurn &&
+        !complaintAboutDarya &&
+        !containsDistressLexicon(matchingText || '') &&
         this._emotionalShiftLine
       ) {
         const shiftLine = this._emotionalShiftLine();

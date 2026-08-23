@@ -7938,3 +7938,101 @@ test('a generic advice subject never blocks a fresh generic advice topic', () =>
     'the generic advice topic takes over the generic subject'
   );
 });
+
+// ==========================================================================
+// Audit regression tests (2026-08 pass): knowledge collisions, person
+// awareness, question acts, farewells, word-number ages, and the
+// distress floor wiring.
+// ==========================================================================
+
+test('audit: bare "ali" never resolves to the boxer', () => {
+  const imam = freshEngine(EN).respond('who is Imam Ali?');
+  assert.match(imam, /Ali ibn Abi Talib|first Imam/i);
+  const boxer = freshEngine(EN).respond('who is Muhammad Ali?');
+  assert.match(boxer, /boxer/i);
+  const khamenei = freshEngine(EN).respond('who is Ali Khamenei?');
+  assert.doesNotMatch(khamenei, /boxer|Cassius Clay/i);
+});
+
+test("audit: questions about Darya's feelings are answered as identity, not user mood", () => {
+  const en = freshEngine(EN).respond('are you happy?');
+  assert.match(en, /software|good days|calm listener/i);
+  const fa = freshEngine(FA).respond('خوشحالی؟');
+  assert.match(fa, /نرم‌افزار|روز خوب و بد|شنونده/u);
+  // A user's own joy disclosure still reaches the joy pool.
+  const faJoy = freshEngine(FA).respond('خیلی خوشحالم');
+  assert.ok(!/نرم‌افزار|روز خوب و بد/.test(faJoy));
+});
+
+test('audit: positive work news celebrates; job loss is acknowledged as loss', () => {
+  assert.match(
+    freshEngine(EN).respond('i love my job'),
+    /great news|love that|congratulations/i
+  );
+  assert.match(
+    freshEngine(FA).respond('کارم رو دوست دارم'),
+    /خبر خوب|مبارک|زحمت کشیدی/u
+  );
+  assert.match(
+    freshEngine(EN).respond('i got fired today'),
+    /sorry|real loss|heavy/i
+  );
+  assert.match(
+    freshEngine(FA).respond('امروز اخراج شدم'),
+    /متأسف|تأسف|فقدان|سنگین/u
+  );
+});
+
+test('audit: short questions are never called ambiguous', () => {
+  const e = freshEngine(FA);
+  const reply = e.respond('بودای کیه؟');
+  assert.doesNotMatch(reply, /کوتاه بود|بیشتر از این بخش بگو/u);
+  const e2 = freshEngine(FA);
+  const recall = e2.respond('اسمی چیه؟');
+  assert.doesNotMatch(recall, /کوتاه بود/u);
+});
+
+test('audit: word-number ages are captured like digit ages', () => {
+  const e = freshEngine(FA);
+  e.respond('بیست و چهار سالمه');
+  assert.match(e.respond('چند سالمه؟'), /۲۴/u);
+  // Word numbers outside an age context are not rewritten.
+  const control = freshEngine(FA).respond('بیست و چهار تا سیب دارم');
+  assert.ok(!/۲۴/.test(control));
+});
+
+test('audit: good night and Persian leave-phrasings open the exit flow', () => {
+  const gn = freshEngine(EN).respond('good night');
+  assert.match(gn, /end (?:our|this) conversation|say goodbye|goodbye|sure/i);
+  const fa = freshEngine(FA).respond('فعلاً');
+  assert.match(fa, /تمام کنیم|تأیید|خداحافظی|بدرود|پایان گفتگو/u);
+});
+
+test('audit: a cancelled farewell welcomes the user back', () => {
+  const e = freshEngine(EN);
+  e.respond('goodbye');
+  const back = e.respond('no wait');
+  assert.match(back, /stay|still here|where were we|come back|glad/i);
+  const f = freshEngine(FA);
+  f.respond('خداحافظ');
+  assert.match(f.respond('نه صبر کن'), /موندی|موندم|برمی‌گشتی|عالی/u);
+});
+
+test('audit: FA price questions in any word order get the honest live-data reply', () => {
+  const dollar = freshEngine(FA).respond('دلار چند شد؟');
+  assert.match(dollar, /آفلاین|لحظه‌ای|منبع زنده/u);
+  const ps = freshEngine(EN).respond('how much is a PlayStation 5?');
+  assert.match(
+    ps,
+    /offline|live (?:data|information|source)|can't (?:see|know)/i
+  );
+  // Genre requests still work.
+  assert.match(freshEngine(EN).respond('recommend me a movie'), /\d\./);
+});
+
+test('audit: complaint turns never receive a mood-improvement line', () => {
+  const reply = freshEngine(EN).respond('you keep contradicting yourself');
+  assert.doesNotMatch(reply, /mood has moved|sound lighter|turned around/i);
+  const faReply = freshEngine(FA).respond('جوابات با قبل فرق داره');
+  assert.doesNotMatch(faReply, /حالت بهتر شده|سبک‌تر شدی/u);
+});

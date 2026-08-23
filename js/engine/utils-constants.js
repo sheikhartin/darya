@@ -22,6 +22,7 @@
   // keeps every choke point (overrides, finalization, phase, strategy)
   // in agreement about what counts as safety-critical.
   const SAFETY_CRITICAL_TOPICS = new Set([
+    'assault_generic',
     'safety',
     'safety_method',
     'third_party_risk',

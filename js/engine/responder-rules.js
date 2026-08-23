@@ -151,6 +151,18 @@
     return out;
   }
 
+  // Turns where a topic keyword exists but the question shape belongs
+  // elsewhere (see _matchRules). Each entry is tested against the
+  // normalized matching text.
+  const TOPIC_EXCLUDES = {
+    // How-to phrasings near emotion words are advice asks, not
+    // disclosures: "how can I be happy", «چطور می‌تونم خوشحال باشم».
+    joy: /(?:چطور|چگونه|how (?:can|do|should|could)|راه)/iu,
+    // Cosmology vocabulary turns "are we alone" into a knowledge
+    // question, never a loneliness disclosure.
+    loneliness: /(?:universe|galaxy|cosmos|کهکشان|کیهان)/iu
+  };
+
   Object.assign(global.DaryaResponseEngine.prototype, {
     /**
      * Strips a clarification opener («منظورم این هست که», "I mean,")
@@ -169,6 +181,15 @@
       for (const currentRule of this.rules) {
         const match = currentRule.pattern.exec(normalizedText);
         if (!match) {
+          continue;
+        }
+        // Topic exclusions: keyword rules whose bare topic word can be
+        // part of a different question shape. "Are we alone in the
+        // universe" is a cosmology question, not a loneliness
+        // disclosure, and "how can I be happy" is a how-to ask, not a
+        // joy disclosure. The rule is skipped for that turn only.
+        const exclusion = TOPIC_EXCLUDES[currentRule.topic];
+        if (exclusion && exclusion.test(normalizedText)) {
           continue;
         }
 
@@ -703,6 +724,21 @@
     },
 
     _fallbackResponse(preferTopic, normalizedUserText) {
+      // Distress floor: when the turn carries distress markers
+      // (hopelessness, burdensomeness, isolation, entrapment,
+      // self-directed hostility) but no dedicated rule caught it, the
+      // caring acknowledgment pool IS the reply. A curiosity prompt, a
+      // source pointer, or a light smalltalk line on such a turn is the
+      // audit's worst failure mode, so it is unreachable by construction.
+      if (
+        this.lang.distressCheckIns &&
+        global.DaryaUtils.containsDistressLexicon(normalizedUserText)
+      ) {
+        return this._pickVaried(this.lang.distressCheckIns, {
+          ignoreQuestionBudget: true,
+          trackQuestions: false
+        });
+      }
       // Questions take priority over entity and quoted callbacks: a stale
       // entity reference or a random "you said X earlier" line must never
       // swallow a direct question ("tell me about Jupiter"). This is the

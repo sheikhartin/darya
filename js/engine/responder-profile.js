@@ -41,6 +41,64 @@
     'عاشقتم'
   ]);
 
+  // Persian word numbers for age disclosures («بیست و چهار سالمه»).
+  // Applied as a narrow preprocessing step before the age statement
+  // regex so the digit-based pattern can keep its precision; only the
+  // tens-plus-optional-unit shape is converted, and only inside the
+  // profile turn, so ordinary text is never rewritten.
+  const FA_TENS = {
+    ده: 10,
+    یازده: 11,
+    دوازده: 12,
+    سیزده: 13,
+    چهارده: 14,
+    پانزده: 15,
+    شانزده: 16,
+    هفده: 17,
+    هجده: 18,
+    نوزده: 19,
+    بیست: 20,
+    سی: 30,
+    چهل: 40,
+    پنجاه: 50,
+    شصت: 60,
+    هفتاد: 70,
+    هشتاد: 80,
+    نود: 90
+  };
+  const FA_UNITS = {
+    یک: 1,
+    دو: 2,
+    سه: 3,
+    چهار: 4,
+    پنج: 5,
+    شش: 6,
+    هفت: 7,
+    هشت: 8,
+    نه: 9
+  };
+  const FA_WORD_AGE_RE = new RegExp(
+    `(?<![\\u0620-\\u064A\\u066E-\\u06D5])(${Object.keys(FA_TENS).join(
+      '|'
+    )})(?:\\s+و\\s+(${Object.keys(FA_UNITS).join('|')}))?\\s+(?=سال)`,
+    'u'
+  );
+
+  /**
+   * Converts one Persian word-number age into Persian digits so the
+   * digit-based ageStatement regex can capture it. «بیست و چهار سالمه»
+   * becomes «۲۴ سالمه»; anything else passes through untouched.
+   * @param {string} text
+   * @returns {string}
+   */
+  function faWordAgeToDigits(text) {
+    return String(text).replace(FA_WORD_AGE_RE, (match, tens, unit) => {
+      const value = FA_TENS[tens] + (unit ? FA_UNITS[unit] : 0);
+      // Persian-digit rendering, matching how ages are echoed back.
+      return String(value).replace(/\d/gu, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+    });
+  }
+
   Object.assign(global.DaryaResponseEngine.prototype, {
     // ======================================================================
     // Session user profile (name and age)
@@ -96,7 +154,11 @@
       // matches first. Recall-cue disclosures ("یادت میمونه اسمم آریاه")
       // follow the same path: the name is captured by the statement
       // pattern and answered warmly.
-      const ageStmt = patterns.ageStatement.exec(matchingText);
+      const ageText =
+        this.lang.code === 'fa'
+          ? faWordAgeToDigits(matchingText)
+          : matchingText;
+      const ageStmt = patterns.ageStatement.exec(ageText);
       let rawAge = '';
       if (ageStmt) {
         const candidate = String(ageStmt[1] || ageStmt[2] || ageStmt[3] || '');
