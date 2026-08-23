@@ -1351,30 +1351,62 @@ html[data-theme='beach'] .picker__theme-heading {
   overscroll-behavior: contain;
 }
 
-.chat::-webkit-scrollbar {
-  width: 6px;
+/* The chat scrollbar is quiet at rest. On touch devices (phones, the
+   Android app) it is hidden entirely, matching chat app convention:
+   the jump-to-latest pill carries the where-am-I affordance, and the
+   track would only crowd the narrow viewport. On pointer devices it is
+   invisible until the reader actually scrolls and hides again after a
+   short pause; the .chat--scrolling modifier is toggled by
+   js/app/scrollbar.js from wheel, touch, and scroll-key input only,
+   so the app's own autoscroll while following the live edge never
+   flashes the bar. Standard properties cover Firefox and Chromium
+   121+; the webkit pseudo rules cover Safari and older Chromium with
+   the same look. */
+@media (pointer: coarse) {
+  .chat {
+    scrollbar-width: none;
+  }
+
+  .chat::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
 }
 
-.chat::-webkit-scrollbar-track {
-  background: rgba(234, 243, 239, 0.06);
-  border-radius: var(--radius-full);
-}
+@media (pointer: fine) {
+  .chat {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
 
-.chat::-webkit-scrollbar-thumb {
-  background: var(--color-tide-soft);
-  border-radius: var(--radius-full);
-  border: 1px solid transparent;
-  background-clip: padding-box;
-}
+  .chat::-webkit-scrollbar {
+    width: 6px;
+  }
 
-html[data-theme='beach'] .chat::-webkit-scrollbar-track {
-  background: rgba(15, 46, 58, 0.06);
-}
+  .chat::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-html[data-theme='beach'] .chat::-webkit-scrollbar-thumb {
-  background: rgba(31, 84, 73, 0.5);
-  border: 1px solid transparent;
-  background-clip: padding-box;
+  .chat::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: var(--radius-full);
+  }
+
+  .chat--scrolling {
+    scrollbar-color: var(--color-tide-soft) transparent;
+  }
+
+  .chat--scrolling::-webkit-scrollbar-thumb {
+    background: var(--color-tide-soft);
+  }
+
+  html[data-theme='beach'] .chat--scrolling {
+    scrollbar-color: rgba(31, 84, 73, 0.5) transparent;
+  }
+
+  html[data-theme='beach'] .chat--scrolling::-webkit-scrollbar-thumb {
+    background: rgba(31, 84, 73, 0.5);
+  }
 }
 
 /* Jump-to-latest affordance: a floating glass pill pinned to the bottom

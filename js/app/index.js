@@ -20,6 +20,8 @@
   var DaryaUI = global.DaryaUI;
   var DaryaOverlays = global.DaryaOverlays;
   var DaryaExport = global.DaryaExport;
+  var DaryaNative = global.DaryaNative;
+  var DaryaScrollbar = global.DaryaScrollbar;
   var DaryaLogger = global.DaryaLogger;
   var DaryaGlint = global.DaryaGlint;
   var DaryaAmbient = global.DaryaAmbient;
@@ -77,6 +79,16 @@
     global.DaryaAppSound.create(ctrl),
     global.DaryaAppUpdate.create(ctrl)
   );
+
+  // Android hardware back walks the app's own surface stack (menu,
+  // overlays, conversation, picker, leave); inert in browsers.
+  global.DaryaAppBackButton.create(ctrl);
+
+  // The chat scrollbar stays hidden until the reader actually scrolls
+  // (see js/app/scrollbar.js); wired straight to the scroll container.
+  if (el.chat && DaryaScrollbar) {
+    DaryaScrollbar.create(el.chat);
+  }
 
   // ========================================================================
   // Event wiring
@@ -303,14 +315,30 @@
   // Offline support
   // ========================================================================
 
-  // Service worker registration: only attempt on http/https protocols.
-  // The file:// protocol (local file open) does not support service
-  // workers and throws a TypeError if we try, which confuses users.
-  // GitHub Pages and other HTTP-based deployments work normally.
-  // After registering, ask for an immediate worker re-check so a
-  // returning visitor picks up a freshly deployed shell on this load
-  // instead of waiting for the next navigation.
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  // Service worker registration: only attempt on http/https protocols
+  // and only in a real browser. The file:// protocol (local file open)
+  // does not support service workers and throws a TypeError if we try,
+  // which confuses users. GitHub Pages and other HTTP-based deployments
+  // work normally. After registering, ask for an immediate worker
+  // re-check so a returning visitor picks up a freshly deployed shell
+  // on this load instead of waiting for the next navigation.
+  //
+  // The native Android shell is excluded: the APK already bundles the
+  // whole app, so the worker adds nothing there, while a registration
+  // left behind by an earlier build would keep serving the previous
+  // shell from Cache Storage after an app update (the app then seems
+  // stuck on the old UI until its data is cleared). Any leftovers are
+  // retired so the APK's own assets are always served.
+  if (
+    DaryaNative &&
+    typeof DaryaNative.isNativeApp === 'function' &&
+    DaryaNative.isNativeApp()
+  ) {
+    DaryaNative.retireWebCaches();
+  } else if (
+    'serviceWorker' in navigator &&
+    location.protocol.startsWith('http')
+  ) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('./sw.js').catch(function (error) {
         console.warn(

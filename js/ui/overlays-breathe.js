@@ -54,6 +54,16 @@
     }
 
     /**
+     * Reports whether the breathing exercise overlay is currently
+     * shown. Lets outside navigation (the hardware back policy) close
+     * the topmost surface instead of leaving the app.
+     * @returns {boolean}
+     */
+    function isBreatheVisible() {
+      return Boolean(breatheOverlay);
+    }
+
+    /**
      * Shows the guided 4-7-8 breathing exercise overlay.
      * The exercise cycles through inhale (4s), hold (7s), and exhale (8s)
      * phases, repeated BREATHE_MAX_ROUNDS times. A countdown timer shows
@@ -285,7 +295,8 @@
 
     return {
       dismissBreathe,
-      showBreatheExercise
+      showBreatheExercise,
+      isBreatheVisible
     };
   }
 

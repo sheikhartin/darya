@@ -5,6 +5,76 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.2] - 2026-08-23
+
+### Fixed
+
+- Sending a message no longer feels laggy. The human-like pause
+  before Darya's reply is intentional; blocking the reader's own
+  message was not: the send handler inserted the reader's bubble and
+  then ran the whole engine respond() computation (up to tens of
+  milliseconds on desktop and several times that on mid-range phones
+  for knowledge questions) in the same synchronous task, so the
+  message and the typing indicator painted only after the engine
+  finished. The typing indicator now appears the moment the reader
+  sends, the browser paints that frame, and only then does the engine
+  run, its cost hidden inside Darya's deliberate thinking window
+  (js/app/conversation.js, yieldToPaint).
+- The download-conversation button now works in the Android app. The
+  Android WebView has no download machinery at all, so the website's
+  blob-URL anchor download was a silent no-op inside the APK (not a
+  permissions problem). A first-party Capacitor plugin
+  (`ExportPlugin.java`) now saves the transcript into the system
+  Downloads folder through MediaStore, which needs no storage
+  permission; on Android 9 and older the file lands in the app's own
+  Downloads directory, reported honestly in the confirmation toast. If
+  the write fails, the transcript is copied to the clipboard so the
+  button never silently does nothing. The browser path is unchanged.
+- The Android app no longer shows the previous version's UI after an
+  update. Builds up to 1.9.1 registered the PWA's service worker inside
+  the Capacitor WebView; after an app update that leftover worker kept
+  serving the old app shell (and the old engine) from Cache Storage,
+  so the app looked stuck until its whole data was cleared. The native
+  shell now never registers the worker and retires any leftover
+  registrations and app-owned caches at boot
+  (`js/app/native.js`), and MainActivity injects the same retirement
+  once per page start so devices already stuck on a cached old shell
+  recover without clearing app data. The website keeps the full
+  service-worker offline behavior.
+
+### Added
+
+- The Android back gesture now follows the app's own navigation stack
+  instead of killing the activity (Capacitor 8 ships no back handling,
+  so back closed the app even mid-conversation). A first-party
+  `ShellPlugin` hands each press to the web policy
+  (`js/app/backbutton.js`), which unwinds one surface at a time: the
+  open menu closes, then the new-chat dialog, then the breathing
+  overlay, then the pending farewell bar (cancel and stay); during an
+  active conversation back asks for confirmation before ending it
+  (the same bar and Yes/No semantics as saying goodbye); after the
+  conversation ended it returns to the picker; and on the picker
+  itself back leaves the app to the device home screen. Before the
+  web policy subscribes, the platform default applies.
+- `js/app/native.js`: the native-shell integration layer (environment
+  detection, transcript saving through the Export plugin, back-button
+  plumbing, service worker and cache retirement), covered by
+  `tests/native-shell.test.mjs`, `tests/backbutton.test.mjs`, and
+  `tests/e2e-native-shell.test.mjs` / `tests/e2e-backbutton.test.mjs`.
+
+### Changed
+
+- The chat scrollbar is quiet now. Styling it with a fixed 6px webkit
+  track had opted the Android WebView out of its native auto-fading
+  overlay scrollbar, so the APK drew a persistent bar (and Firefox
+  showed its full default one). On touch devices the scrollbar is now
+  hidden entirely, matching chat app convention, with the
+  jump-to-latest pill carrying the position affordance; on pointer
+  devices it is invisible at rest and appears only while the reader is
+  actually scrolling (wheel, touch, or scroll keys), never during the
+  app's own autoscroll, then hides again after a short pause
+  (`js/app/scrollbar.js` toggles the `chat--scrolling` modifier).
+
 ## [1.9.1] - 2026-08-22
 
 ### Fixed

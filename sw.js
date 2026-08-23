@@ -28,8 +28,8 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache. Shell refresh: 1.9.0 (conversational
- * register layer, the combat-sports shelf, and knowledge follow-ups).
+ * into the versioned cache. Shell refresh: 1.9.2 (the native shell
+ * export path and cache retirement; see js/app/native.js).
  */
 
 'use strict';
@@ -54,12 +54,15 @@ const PRECACHE_URLS = [
   './manifest.json',
   './css/style.css',
   './js/app/index.js',
+  './js/app/native.js',
   './js/app/composer.js',
   './js/app/language.js',
   './js/app/conversation.js',
   './js/app/menu.js',
   './js/app/sound.js',
   './js/app/update.js',
+  './js/app/backbutton.js',
+  './js/app/scrollbar.js',
   './js/engine/index.js',
   './js/engine/utils-constants.js',
   './js/engine/utils-text.js',

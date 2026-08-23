@@ -21,10 +21,12 @@
   const DaryaOverlays = {
     dismissBreathe: breathe.dismissBreathe,
     showBreatheExercise: breathe.showBreatheExercise,
+    isBreatheVisible: breathe.isBreatheVisible,
     dismissNewChatConfirm: confirm.dismissNewChatConfirm,
     showNewChatConfirm: confirm.showNewChatConfirm,
     showExitConfirmBar: confirm.showExitConfirmBar,
     hideExitConfirmBar: confirm.hideExitConfirmBar,
+    isConfirmVisible: confirm.isConfirmVisible,
     dismissNotification: notify.dismissNotification,
     showNotification: notify.showNotification
   };

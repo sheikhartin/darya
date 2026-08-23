@@ -162,6 +162,28 @@
     }
 
     /**
+     * Yields to the browser until the current frame has painted, so a
+     * long synchronous task started right after a DOM update cannot
+     * delay that update's first paint.
+     * @returns {Promise<void>}
+     */
+    function yieldToPaint() {
+      return new Promise(function (resolve) {
+        if (
+          typeof document !== 'object' ||
+          document.hidden ||
+          typeof requestAnimationFrame !== 'function'
+        ) {
+          setTimeout(resolve, 0);
+          return;
+        }
+        requestAnimationFrame(function () {
+          setTimeout(resolve, 0);
+        });
+      });
+    }
+
+    /**
      * Sends the user's message, processes the response, and updates the UI.
      * @param {string} text - The user's message
      */
@@ -173,6 +195,22 @@
       UI.utils.appendMessage('user', text);
       ctrl.clearComposer();
       ctrl.setComposerBusy(true);
+      // The typing indicator is Darya thinking, which begins the moment
+      // the reader sends, not the moment the engine finishes.
+      ctrl.setTypingVisible(true);
+      // The reader's bubble and the typing dots must paint before any
+      // engine work. respond() is pure main-thread compute (tens of
+      // milliseconds for knowledge questions on desktop, several times
+      // that on mid-range phones), and everything up to the first await
+      // in this function runs as one synchronous task: without this
+      // yield, the send feels laggy because the reader's own message
+      // appears only after the engine is done.
+      await yieldToPaint();
+      if (generation !== st.conversationGeneration) {
+        // A new conversation started while the paint was settling; the
+        // new flow owns the composer and the typing row already.
+        return;
+      }
 
       var isExit = st.engine.isExitCommand(text);
 
