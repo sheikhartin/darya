@@ -21,6 +21,7 @@
   var DaryaOverlays = global.DaryaOverlays;
   var DaryaExport = global.DaryaExport;
   var DaryaNative = global.DaryaNative;
+  var DaryaScrollbar = global.DaryaScrollbar;
   var DaryaLogger = global.DaryaLogger;
   var DaryaGlint = global.DaryaGlint;
   var DaryaAmbient = global.DaryaAmbient;
@@ -78,6 +79,12 @@
     global.DaryaAppSound.create(ctrl),
     global.DaryaAppUpdate.create(ctrl)
   );
+
+  // The chat scrollbar stays hidden until the reader actually scrolls
+  // (see js/app/scrollbar.js); wired straight to the scroll container.
+  if (el.chat && DaryaScrollbar) {
+    DaryaScrollbar.create(el.chat);
+  }
 
   // ========================================================================
   // Event wiring

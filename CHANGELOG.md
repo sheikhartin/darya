@@ -38,6 +38,19 @@ pipeline details live in the [README](README.md) and the upgrade spec
   worker and cache retirement), covered by
   `tests/native-shell.test.mjs` and `tests/e2e-native-shell.test.mjs`.
 
+### Changed
+
+- The chat scrollbar is quiet now. Styling it with a fixed 6px webkit
+  track had opted the Android WebView out of its native auto-fading
+  overlay scrollbar, so the APK drew a persistent bar (and Firefox
+  showed its full default one). On touch devices the scrollbar is now
+  hidden entirely, matching chat app convention, with the
+  jump-to-latest pill carrying the position affordance; on pointer
+  devices it is invisible at rest and appears only while the reader is
+  actually scrolling (wheel, touch, or scroll keys), never during the
+  app's own autoscroll, then hides again after a short pause
+  (`js/app/scrollbar.js` toggles the `chat--scrolling` modifier).
+
 ## [1.9.1] - 2026-08-22
 
 ### Fixed

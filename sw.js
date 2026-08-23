@@ -61,6 +61,7 @@ const PRECACHE_URLS = [
   './js/app/menu.js',
   './js/app/sound.js',
   './js/app/update.js',
+  './js/app/scrollbar.js',
   './js/engine/index.js',
   './js/engine/utils-constants.js',
   './js/engine/utils-text.js',
