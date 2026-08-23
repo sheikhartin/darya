@@ -24,7 +24,7 @@
     "lint:css:fix": "npx stylelint --fix \"**/*.css\"",
     "version:bump": "node scripts/bump-version.mjs",
     "prepare": "husky",
-    "test:e2e": "node --test --test-reporter tap tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/e2e-native-shell.test.mjs tests/e2e-scrollbar.test.mjs tests/e2e-backbutton.test.mjs"
+    "test:e2e": "node --test --test-reporter tap tests/e2e-keyboard.test.mjs tests/e2e-offline-sw.test.mjs tests/e2e-quick-replies.test.mjs tests/e2e-sound-attention.test.mjs tests/e2e-native-shell.test.mjs tests/e2e-scrollbar.test.mjs tests/e2e-backbutton.test.mjs tests/e2e-send-paint.test.mjs"
   },
   "lint-staged": {
     "*.css": [

@@ -9,6 +9,17 @@ pipeline details live in the [README](README.md) and the upgrade spec
 
 ### Fixed
 
+- Sending a message no longer feels laggy. The human-like pause
+  before Darya's reply is intentional; blocking the reader's own
+  message was not: the send handler inserted the reader's bubble and
+  then ran the whole engine respond() computation (up to tens of
+  milliseconds on desktop and several times that on mid-range phones
+  for knowledge questions) in the same synchronous task, so the
+  message and the typing indicator painted only after the engine
+  finished. The typing indicator now appears the moment the reader
+  sends, the browser paints that frame, and only then does the engine
+  run, its cost hidden inside Darya's deliberate thinking window
+  (js/app/conversation.js, yieldToPaint).
 - The download-conversation button now works in the Android app. The
   Android WebView has no download machinery at all, so the website's
   blob-URL anchor download was a silent no-op inside the APK (not a
