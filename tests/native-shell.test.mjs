@@ -54,11 +54,15 @@ function buildSandbox(overrides = {}) {
     deletedCaches: [],
     createdObjectUrls: [],
     anchorClicks: [],
-    clipboardWrites: []
+    clipboardWrites: [],
+    execCommands: []
   };
   const sandbox = {
     console,
+    // The native layer arms and disarms a timeout around the plugin
+    // call, so both timers must be present like in a real WebView.
     setTimeout,
+    clearTimeout,
     Intl,
     Blob,
     navigator: {},
@@ -76,6 +80,12 @@ function buildSandbox(overrides = {}) {
         const node = {
           style: {},
           parentNode: null,
+          value: '',
+          // The clipboard fallback's hidden textarea calls select();
+          // the stub answers so the path runs instead of throwing.
+          select() {
+            /* selection is a no-op in the sandbox */
+          },
           click() {
             records.anchorClicks.push({
               href: node.href,
@@ -84,6 +94,13 @@ function buildSandbox(overrides = {}) {
           }
         };
         return node;
+      },
+      // The legacy clipboard path's success/failure switch. It fails by
+      // default (the "both fail" case); a test that wants the fallback
+      // to succeed overrides it to return true.
+      execCommand(command) {
+        records.execCommands.push(command);
+        return false;
       },
       body: {
         appendChild(node) {
@@ -220,6 +237,26 @@ test('saveTextFile rejects when the plugin is unavailable', async () => {
   );
 });
 
+test('saveTextFile rejects when the plugin call never settles', async () => {
+  const { sandbox } = buildSandbox();
+  sandbox.Capacitor = {
+    isNativePlatform: () => true,
+    Plugins: {
+      Export: {
+        // A wedged bridge (interrupted page transition, dropped
+        // response): the promise never settles. Without the timeout
+        // guard the export button would hang forever with no feedback.
+        saveTranscript: () => new Promise(() => {})
+      }
+    }
+  };
+  loadExportModules(sandbox);
+  await assert.rejects(
+    () => sandbox.DaryaNative.saveTextFile('a.txt', 'x', { timeout: 20 }),
+    /Timed out waiting for the export plugin/u
+  );
+});
+
 // ======================================================================
 // Retiring the service worker and shell caches natively
 // ======================================================================
@@ -340,6 +377,37 @@ test('export falls back to the clipboard when the plugin write fails', async () 
   ]);
 });
 
+test('export copies via execCommand when the async clipboard API rejects', async () => {
+  const { sandbox, records } = buildSandbox();
+  sandbox.Capacitor = {
+    isNativePlatform: () => true,
+    Plugins: {
+      Export: {
+        saveTranscript: () => Promise.reject(new Error('disk full'))
+      }
+    }
+  };
+  // The Android WebView shape of the bug: the async Clipboard API is
+  // present but its writeText rejects (focus or permission quirk). The
+  // legacy execCommand path must still get its turn.
+  sandbox.navigator = {
+    clipboard: {
+      writeText: () => Promise.reject(new Error('clipboard blocked'))
+    }
+  };
+  sandbox.document.execCommand = function (command) {
+    records.execCommands.push(command);
+    return true;
+  };
+  loadExportModules(sandbox);
+  sandbox.DaryaExport.exportPlainText();
+  await flushMicrotasks();
+  assert.deepEqual(records.execCommands, ['copy']);
+  assert.deepEqual(records.notifications, [
+    { severity: 'info', message: 'copied-notice' }
+  ]);
+});
+
 test('export reports failure when saving and copying both fail', async () => {
   const { sandbox, records } = buildSandbox();
   sandbox.Capacitor = {
@@ -411,6 +479,28 @@ test('ExportPlugin writes to MediaStore downloads without a storage permission',
     /WRITE_EXTERNAL_STORAGE/u,
     'the plugin must not depend on the legacy storage permission'
   );
+});
+
+test('ExportPlugin falls back to the app directory and logs when MediaStore fails', () => {
+  const plugin = read(
+    'android/app/src/main/java/com/darya/companion/ExportPlugin.java'
+  );
+  // The app-owned directory is the second-chance target on every API
+  // level, so a flaky Downloads provider cannot make the export fail.
+  assert.match(
+    plugin,
+    /getExternalFilesDir\(Environment\.DIRECTORY_DOWNLOADS\)/u
+  );
+  // The fallback and the final failure must be observable in logcat
+  // (adb logcat -s DaryaExport) so a misbehaving device can be
+  // diagnosed without guessing. Whitespace is allowed between the call
+  // and the tag because the formatter wraps long argument lists.
+  assert.match(plugin, /Log\.w\(\s*LOG_TAG/u);
+  assert.match(plugin, /Log\.e\(\s*LOG_TAG/u);
+  // The final catch must be broad enough that no unexpected exception
+  // escapes the task thread, where it would crash the app and leave the
+  // web promise hanging forever.
+  assert.match(plugin, /catch \(Exception e\)/u);
 });
 
 test('app boot never registers the service worker in the native shell', () => {

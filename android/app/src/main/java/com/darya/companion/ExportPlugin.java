@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -26,12 +27,23 @@ import java.nio.charset.StandardCharsets;
  * no-op inside the shell. The web layer detects the native environment
  * (js/app/native.js) and calls this plugin instead.
  *
- * On Android 10 (API 29) and newer the file is inserted into the shared
+ * On Android 10 (API 29) and newer the primary target is the shared
  * Downloads collection through MediaStore, which needs no storage
- * permission. On older versions, where writing to the shared Downloads
- * folder would require the legacy storage permission, the file lands in
- * the app's own external Downloads directory, and the web layer reports
- * that location honestly.
+ * permission. Some devices reject that write (a flaky Downloads
+ * provider, a restricted storage state, or an OEM quirk); when that
+ * happens the file is written to the app's own external Downloads
+ * directory instead, which also needs no permission, and the web
+ * layer reports that location honestly. A transcript is therefore
+ * always saved somewhere, and the only failure left is a device with
+ * no writable storage at all.
+ *
+ * On Android 9 and older only the app-owned directory path exists,
+ * since the shared Downloads folder would require the legacy storage
+ * permission there.
+ *
+ * Every fallback and failure is logged under the DaryaExport tag
+ * (adb logcat -s DaryaExport) so a device that misbehaves can be
+ * diagnosed without guessing.
  */
 @CapacitorPlugin(name = "Export")
 public class ExportPlugin extends Plugin {
@@ -39,23 +51,30 @@ public class ExportPlugin extends Plugin {
     /** Location reported when the file was written to the shared Downloads collection. */
     static final String LOCATION_DOWNLOADS = "downloads";
 
-    /** Location reported when the file was written to the app-owned directory (pre-Q). */
+    /** Location reported when the file was written to the app-owned directory. */
     static final String LOCATION_APP_FILES = "app-files";
 
     /** MIME type of a saved transcript. */
     private static final String TRANSCRIPT_MIME_TYPE = "text/plain";
 
     /**
-     * Upper bound for a transcript payload. Real transcripts are a few
-     * kilobytes; the cap only stops runaway input from hogging memory.
+     * Upper bound for a transcript payload. Real transcripts are tens
+     * of kilobytes; long sessions with lots of Persian text (two UTF-8
+     * bytes per character) can grow well past the old 2 MB cap, and
+     * rejecting them pushed the export onto the weaker clipboard
+     * fallback for no good reason. 16 MB still stops runaway input
+     * from hogging memory while covering very long sessions.
      */
-    private static final int MAX_CONTENT_BYTES = 2 * 1024 * 1024;
+    private static final int MAX_CONTENT_BYTES = 16 * 1024 * 1024;
 
     /** Longest filename accepted, matching common filesystem limits. */
     private static final int MAX_FILENAME_LENGTH = 128;
 
     /** Fallback filename when the web layer sends none. */
     private static final String DEFAULT_FILENAME = "darya-chat.txt";
+
+    /** Log tag for diagnostics (adb logcat -s DaryaExport). */
+    private static final String LOG_TAG = "DaryaExport";
 
     /**
      * Saves a UTF-8 text file to device storage.
@@ -85,24 +104,45 @@ public class ExportPlugin extends Plugin {
         getBridge().execute(
             () -> {
                 try {
-                    Uri uri;
-                    String location;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        uri = saveViaMediaStore(filename, bytes);
-                        location = LOCATION_DOWNLOADS;
-                    } else {
-                        uri = saveToAppDownloads(filename, bytes);
-                        location = LOCATION_APP_FILES;
+                        try {
+                            Uri uri = saveViaMediaStore(filename, bytes);
+                            resolveWithLocation(call, uri, LOCATION_DOWNLOADS);
+                            return;
+                        } catch (Exception mediaStoreError) {
+                            // The write must still succeed on a device
+                            // whose Downloads provider misbehaves, so
+                            // the app-owned directory below is the
+                            // second chance; the web layer reports that
+                            // location honestly.
+                            Log.w(
+                                LOG_TAG,
+                                "MediaStore save failed, falling back to app files: "
+                                    + mediaStoreError
+                            );
+                        }
                     }
-                    JSObject result = new JSObject();
-                    result.put("uri", uri.toString());
-                    result.put("location", location);
-                    call.resolve(result);
-                } catch (IOException | SecurityException | IllegalArgumentException e) {
+                    Uri uri = saveToAppDownloads(filename, bytes);
+                    resolveWithLocation(call, uri, LOCATION_APP_FILES);
+                } catch (Exception e) {
+                    // A broad catch on purpose: any unexpected exception
+                    // (a broken resolver, a missing volume) must reject
+                    // the call instead of escaping the task thread,
+                    // where it would crash the app and leave the web
+                    // promise hanging forever.
+                    Log.e(LOG_TAG, "Transcript save failed", e);
                     call.reject("Could not save the transcript: " + e.getMessage(), e);
                 }
             }
         );
+    }
+
+    /** Resolves the call with the file's uri and its location. */
+    private void resolveWithLocation(PluginCall call, Uri uri, String location) {
+        JSObject result = new JSObject();
+        result.put("uri", uri.toString());
+        result.put("location", location);
+        call.resolve(result);
     }
 
     /**
@@ -140,9 +180,11 @@ public class ExportPlugin extends Plugin {
     }
 
     /**
-     * Writes the file into the app's external Downloads directory. Used
-     * only on Android 9 and older, where the shared folder requires the
-     * legacy storage permission and this directory needs none.
+     * Writes the file into the app's external Downloads directory, with
+     * the internal files directory as the last resort. Used on Android
+     * 9 and older (where the shared folder would need the legacy
+     * storage permission), and on Android 10 and newer whenever the
+     * MediaStore write above fails. Needs no permission either way.
      */
     private Uri saveToAppDownloads(String filename, byte[] bytes) throws IOException {
         File directory = getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);

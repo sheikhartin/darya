@@ -96,38 +96,49 @@
   /**
    * Copies text to the clipboard as a last-resort export path. Tries
    * the async Clipboard API first and falls back to a hidden textarea
-   * with the deprecated execCommand path for environments where the
-   * async API is unavailable.
+   * with the deprecated execCommand path. The fallback runs when the
+   * async API is unavailable AND when it exists but rejects: the
+   * Android WebView's writeText can be present yet fail (focus or
+   * permission quirks), and skipping the execCommand path in that case
+   * was how an export could fail on both legs and leave the user with
+   * nothing.
    * @param {string} content - Text to copy
    * @returns {Promise<void>} Rejects when neither path worked.
    */
   function copyTextToClipboard(content) {
+    function legacyCopy() {
+      return new Promise(function (resolve, reject) {
+        var textarea = document.createElement('textarea');
+        textarea.value = content;
+        textarea.style.display = 'none';
+        document.body.appendChild(textarea);
+        if (typeof textarea.select === 'function') {
+          textarea.select();
+        }
+        var copied = false;
+        try {
+          copied =
+            typeof document.execCommand === 'function' &&
+            document.execCommand('copy');
+        } catch (e) {
+          copied = false;
+        }
+        document.body.removeChild(textarea);
+        if (copied) {
+          resolve();
+        } else {
+          reject(new Error('clipboard copy failed'));
+        }
+      });
+    }
     if (
       global.navigator &&
       global.navigator.clipboard &&
       typeof global.navigator.clipboard.writeText === 'function'
     ) {
-      return global.navigator.clipboard.writeText(content);
+      return global.navigator.clipboard.writeText(content).catch(legacyCopy);
     }
-    return new Promise(function (resolve, reject) {
-      var textarea = document.createElement('textarea');
-      textarea.value = content;
-      textarea.style.display = 'none';
-      document.body.appendChild(textarea);
-      textarea.select();
-      var copied = false;
-      try {
-        copied = document.execCommand('copy');
-      } catch (e) {
-        copied = false;
-      }
-      document.body.removeChild(textarea);
-      if (copied) {
-        resolve();
-      } else {
-        reject(new Error('clipboard copy failed'));
-      }
-    });
+    return legacyCopy();
   }
 
   /**
@@ -149,7 +160,16 @@
             : lang.ui.exportSavedNotice
         );
       })
-      .catch(function () {
+      .catch(function (error) {
+        // The native side logs its own stack under the DaryaExport tag;
+        // this keeps the reason in the page console too, so a report of
+        // a failed export can be diagnosed from chrome://inspect without
+        // guessing.
+        console.warn(
+          'Darya export: native save failed (' +
+            (error && error.message ? error.message : String(error)) +
+            ')'
+        );
         copyTextToClipboard(content)
           .then(function () {
             notifyExportOutcome('info', lang.ui.exportCopiedNotice);
