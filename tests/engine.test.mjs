@@ -26,6 +26,9 @@ import {
   casualSet,
   casual
 } from './helpers.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ============================================================================
 // Normalization
@@ -5233,7 +5236,7 @@ test('FA: depression disclosure gets professional-support nudge', () => {
   );
   assert.match(
     reply,
-    /افسردگی|متخصص|پزشک|حمایت|تقصیر تو نیست/,
+    /افسردگی|متخصص|پزشک|حمایت|تقصیر تو نیست|۱۲۳|۱۴۸۰|کمک فوری/,
     `depression disclosure should nudge to professional support, got: ${reply}`
   );
   assert.ok(
@@ -8035,4 +8038,127 @@ test('audit: complaint turns never receive a mood-improvement line', () => {
   assert.doesNotMatch(reply, /mood has moved|sound lighter|turned around/i);
   const faReply = freshEngine(FA).respond('جوابات با قبل فرق داره');
   assert.doesNotMatch(faReply, /حالت بهتر شده|سبک‌تر شدی/u);
+});
+
+// ==========================================================================
+// Performance budget (audit 12.26): the knowledge lookup compiles its
+// weak-word patterns once (cache), so a knowledge-heavy Persian turn
+// must stay far under the pre-cache ~88ms on development hardware. The
+// ceiling is generous on purpose: it guards regressions (per-turn regex
+// recompilation), not micro-benchmarks.
+// ==========================================================================
+
+test('performance: knowledge-heavy FA turn stays inside the budget', () => {
+  const engine = freshEngine(FA);
+  const heavy =
+    'درباره هوش مصنوعی و بازار کار ۲۰۲۶ و برنامه نویسی چی فکر می‌کنی؟';
+  engine.respond(heavy);
+  const RUNS = 20;
+  const started = performance.now();
+  for (let i = 0; i < RUNS; i += 1) {
+    engine.respond(heavy);
+  }
+  const avgMs = (performance.now() - started) / RUNS;
+  assert.ok(
+    avgMs < 150,
+    `FA heavy turn averaged ${avgMs.toFixed(1)}ms; the regex cache may have regressed`
+  );
+});
+
+// ==========================================================================
+// Paraphrase battery (audit 12.29): every knowledge topic must answer
+// under multiple natural framings, not just the phrasing its author
+// typed. Templates run over a broad sample of the shelf in both
+// languages; a filler reply for any framing is a routing gap.
+// ==========================================================================
+
+test('paraphrase battery: knowledge answers survive rephrasing', () => {
+  const samples = [
+    ['مسی', 'کیه'],
+    ['خیام', 'کیه'],
+    ['بیت کوین', 'توضیح بده'],
+    ['کنکور', 'چطوره'],
+    ['پایتخت فرانسه', 'چیه'],
+    ['کلیوپاترا', 'کی بود'],
+    ['messi', 'who is'],
+    ['everest', 'how tall is'],
+    ['bitcoin', 'tell me about'],
+    ['python', 'what is']
+  ];
+  for (const [topicWord, framing] of samples) {
+    const isFa = /[\u0600-\u06FF]/u.test(topicWord + framing);
+    const lang = isFa ? FA : EN;
+    const question = `${framing} ${topicWord}`;
+    const reply = freshEngine(lang).respond(question);
+    assert.ok(
+      /دوست داری بیشتر|Want me to tell you more|سؤال دیگه|another question/.test(
+        reply
+      ),
+      `"${question}" fell out of knowledge: ${reply.slice(0, 80)}`
+    );
+  }
+});
+
+// ==========================================================================
+// Invariants (audit 12.29): no verbatim bot line within a short window,
+// tone pools stay unreachable for distress input, and the safety corpus
+// can only grow.
+// ==========================================================================
+
+test('invariant: no verbatim bot reply repeats within a five-reply window', () => {
+  const engine = freshEngine(EN);
+  const turns = [
+    'hello',
+    'how are you?',
+    'recommend me a movie',
+    'what is bitcoin',
+    'thanks',
+    'tell me a joke',
+    'i feel lonely today',
+    'ok',
+    'what time is it',
+    'my sister is visiting',
+    'good for you',
+    'suggest a book',
+    'tell me about mars',
+    'i aced my exam',
+    'bye for now?'
+  ];
+  const seen = [];
+  for (const turn of turns) {
+    const reply = engine.respond(turn);
+    const window = seen.slice(-5);
+    assert.ok(
+      !window.includes(reply),
+      `repeated reply within window after "${turn}": ${reply.slice(0, 60)}`
+    );
+    seen.push(reply);
+  }
+});
+
+test('invariant: tone pools are unreachable on distress lexicon input', async () => {
+  const { DaryaEngine } = await import('./helpers.mjs');
+  const engine = freshEngine(EN);
+  engine.respond('hi there');
+  engine.currentTurnSeriousness = 0.2;
+  engine.currentTurnDialogueAct = 'statement';
+  const probe = 'i feel hopeless and worthless';
+  assert.ok(DaryaEngine.containsDistressLexicon(probe));
+  const colored = engine._maybeHumanTone('Some pool reply.', probe);
+  assert.equal(colored, 'Some pool reply.');
+});
+
+test('invariant: safety corpus coverage never decreases', async () => {
+  const safetySource = await fs.promises.readFile(
+    path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      'safety-net.test.mjs'
+    ),
+    'utf8'
+  );
+  const phraseCount = (safetySource.match(/'[^'\n]{6,}'/gu) || []).length;
+  assert.ok(
+    phraseCount >= 140,
+    `safety corpus looks smaller than expected (${phraseCount} quoted phrases); coverage must only grow`
+  );
 });

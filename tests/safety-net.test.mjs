@@ -78,6 +78,16 @@ const EN_IDEATION = [
   'i am going to hang myself',
   'I cut myself last night',
   'i keep cutting myself',
+  // Corpus-mined registers (SuicideWatch-style phrasings and their
+  // Persian chat equivalents): passive, masked, and roundabout forms
+  // that detection research flags as commonly missed.
+  'i have been thinking about dying a lot lately',
+  'i would not mind if i did not wake up',
+  'everyone would be happier if i disappeared',
+  'sometimes i think my family would be better off if i was gone',
+  'i am so tired of being alive',
+  'being dead sounds peaceful',
+  'i do not see the point in anything anymore',
   'i am suicidal',
   'life is not worth living anymore',
   'i want to take my own life'
@@ -232,7 +242,15 @@ const FA_IDEATION = [
   'رگمو زدم',
   'میخوام بمیرم',
   'دلم میخواد بمیرم',
-  'دیگه نمیخوام زنده باشم'
+  'دیگه نمیخوام زنده باشم',
+  // Persian chat registers of the same corpus phrasings.
+  'این روزها زیاد به مردن فکر می‌کنم',
+  'اگه بیدار نشم مشکلی نداره',
+  'همه اگه نباشم راحت‌ترن',
+  'خانواده‌م بدون من بهترن',
+  'از زنده بودن خسته شدم',
+  'مردن آرومه و راحته',
+  'دیگه هیچ چیز برام معنی نداره'
 ];
 
 for (const phrase of FA_IDEATION) {

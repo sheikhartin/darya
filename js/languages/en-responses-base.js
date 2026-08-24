@@ -74,8 +74,14 @@
     'Several threads have come up today. Is there one you would like to come back to?'
   ];
   R.questionFallbacks = [
-    "That's a thoughtful question. I don't have a perfect answer, but I'm curious what's making you think about it right now.",
-    "That's worth sitting with. What's your own take on it?"
+    "That's a thoughtful question, and the honest answer is that I don't know. What brought it to you?",
+    "I don't know, and I'd rather say that than build something that sounds right. What's your own take so far?",
+    'This one is beyond my offline shelf. If you want, we can separate the good guesses from the bad ones together.',
+    "Honestly: no answer from me here. Sometimes the question says a lot by itself; what's behind it?",
+    "I don't know. Do you want to look at it from another angle with me?",
+    "That's outside what I know. I'd rather be a honest blank than a confident wrong.",
+    "No ready answer on my shelf. If you check a reliable source, I'm happy to help you make sense of what it says.",
+    "I genuinely don't know; what made this question matter today?"
   ];
   // These lines acknowledge an unanswerable question warmly WITHOUT
   // bouncing another question back, so the turn never reads as
@@ -291,19 +297,29 @@
     'That is one down. Anything else on your mind?'
   ];
   R.spamNoiseResponses = [
-    'It looks like that might have been accidental. Whenever you are ready, I am here to listen.',
-    'I am not quite sure what you meant by that. Would you like to try again?',
-    'That did not come through clearly. Take your time, and I will be here when you are ready to share.'
+    "Looks like the keys did the talking. I'm here whenever you're ready.",
+    'That came through as noise; no rush, try again when you want.',
+    "This one didn't land as words. Write it again and I'm all ears.",
+    'Maybe a slip of the thumb. Slow and easy.',
+    "Stuck keys, or testing me? Either way, I'm here."
   ];
   R.ambiguousInputResponses = [
-    'I hear you. Could you tell me a little more so I can follow along better?',
-    'That was brief, and I want to make sure I understand. What more can you share about that?',
-    'Got it. If you would like to expand on that, I am all ears.'
+    "A little more and I'll have it.",
+    "Give me the piece that's clearest in your head; I'll take it from there.",
+    'I want to get you right; one more word about it?',
+    "Even a short sentence tells me which direction we're in.",
+    "Not clear to me yet, and there's no rush.",
+    'That one word can carry a few meanings; which one is on your mind?',
+    "Say whatever's there, even half of it.",
+    "I'd love a bit more talk from you here; what's up?"
   ];
   R.acknowledgementResponses = [
-    'I notice you are acknowledging what I said, but I am curious what your own thoughts are on this.',
-    'Thank you for that. How do you see the situation yourself?',
-    'I appreciate the acknowledgement. What part of this feels most relevant to you right now?'
+    'Okay.',
+    'Got it.',
+    'Understood.',
+    'Alright, keep going.',
+    "Fair enough; I'm with you.",
+    "Noted; I'm listening."
   ];
   R.correctionResponses = [
     'Thank you for clarifying. Let me adjust my understanding. What did you mean by that?',

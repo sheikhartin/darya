@@ -96,6 +96,12 @@
       // "2024-2025") keep matching exactly as before.
       .replace(/(?<![A-Za-z0-9])-|-(?![A-Za-z0-9])/gu, ' ')
       .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
+      // Letter elongation («سلاااام», «خیلیییی», "aaaa") is chat
+      // emphasis, never meaning: three or more identical letters in a
+      // row collapse to one so the stretched word matches its plain
+      // form. Doubled letters are kept for languages that use them.
+      .replace(/([^\p{L}\p{N}])\1{2,}/gu, '$1')
+      .replace(/(\p{L})\1{2,}/gu, '$1')
       .replace(/[ \t\r\n]+/gu, ' ')
       .trim();
     // Persian progressive-prefix binding runs after the half-space has

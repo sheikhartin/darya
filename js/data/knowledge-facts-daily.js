@@ -120,7 +120,7 @@
         'stop biting my nails',
         'stop procrastinating'
       ],
-      weak: ['ترک', 'عادت', 'habit', 'quit', 'stop'],
+      weak: ['عادت', 'habit'],
       weakSafe: true,
       hints: [
         'سیگار',

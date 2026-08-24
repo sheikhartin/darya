@@ -704,7 +704,14 @@ class DaryaResponseEngine {
       // not stack a heavy prefix on top of it.
       this._lightPositiveFired = true;
       reply = this._pickVaried(this.lang.emojiResponses);
-    } else if (isAmbiguous && this.lang.ambiguousInputResponses) {
+    } else if (
+      isAmbiguous &&
+      this.lang.ambiguousInputResponses &&
+      // A short but cheerful complete answer («خیلی خوبم», "feeling
+      // great") is not an ambiguous fragment: defer to the fallback,
+      // which answers it warmly from the light-positive smalltalk path.
+      !this._isLightPositiveCasual(matchingText)
+    ) {
       reply = this._pickVaried(this.lang.ambiguousInputResponses);
     } else {
       reply = this._fallbackResponse(

@@ -441,4 +441,395 @@
       en: 'Stress is the body fight-or-flight response: the brain releases hormones such as cortisol and adrenaline to prepare for danger. This is useful for short-term threat, but chronic stress can disturb sleep, digestion, immunity, and mood. Exercise, slow breathing, and enough sleep help the body regulate again.'
     }
   ]);
+
+  // =====================================================================
+  // World-basics coverage from the 2026-08 audit (12.19): the everyday
+  // questions real users asked that fell to filler pools. Respectful,
+  // neutral, snapshot-honest entries; long weak words only.
+  // =====================================================================
+  global.DaryaFactChunks.push([
+    {
+      id: 'mount_everest',
+      keywords: [
+        'ارتفاع اورست',
+        'بلندترین کوه',
+        'اورست چقدر',
+        'mount everest',
+        'how tall is everest',
+        'tallest mountain'
+      ],
+      weak: ['اورست', 'everest'],
+      weakSafe: true,
+      hints: ['کوه', 'قله', 'ارتفاع', 'متر', 'mountain', 'tall', 'height'],
+      fa: 'قله‌ی اورست در هیمالیا، مرز نپال و چین، با ارتفاع حدود ۸٬۸۴۹ متر (۲۹٬۰۳۲ پا) بلندترین کوه زمین است. ارتفاع رسمی ۸٬۸۴۸٫۸۶ متر در ۲۰۲۰ اعلام شد و به‌خاطر برخورد صفحه‌های زمین‌ساختی هر سال چند میلی‌متر بالاتر می‌رود. اولین فتح موفق در ۱۹۵۳ توسط تنسینگ و هیلاری انجام شد.',
+      en: "Mount Everest, in the Himalayas on the Nepal-China border, is Earth's highest mountain at about 8,849 meters (29,032 feet). The official height of 8,848.86 m was announced in 2020, and tectonic uplift raises it a few millimeters each year. It was first summited in 1953 by Tenzing Norgay and Edmund Hillary."
+    },
+    {
+      id: 'ocean_depth',
+      keywords: [
+        'عمق اقیانوس',
+        'عمیق‌ترین نقطه',
+        'how deep is the ocean',
+        'deepest point',
+        'mariana trench',
+        'گودال ماریانا'
+      ],
+      weak: ['ماریانا', 'mariana', 'challenger deep', 'اقیانوس آرام'],
+      weakSafe: true,
+      hints: ['عمق', 'اقیانوس', 'متر', 'ocean', 'deep', 'depth'],
+      fa: 'عمیق‌ترین نقطه‌ی اقیانوس‌ها «چالنجر دیپ» در گودال ماریانا، اقیانوس آرام است: حدود ۱۰٬۹۰۰ تا ۱۱٬۰۰۰ متر، یعنی عمیق‌تر از ارتفاع اورست اگر سراشیبی‌اش می‌گذاشتیم. میانگین عمق اقیانوس‌ها حدود ۳٬۷۰۰ متر است و فشار در ته چالنجر بیش از هزار برابر سطح زمین.',
+      en: 'The deepest known point of the oceans is the Challenger Deep in the Mariana Trench, Pacific Ocean: roughly 10,900 to 11,000 meters, deeper than Everest is tall. The average ocean depth is about 3,700 meters, and the pressure at the bottom of the Challenger Deep is over a thousand times the surface pressure.'
+    },
+    {
+      id: 'largest_country',
+      keywords: [
+        'بزرگترین کشور',
+        'بزرگ‌ترین کشور',
+        'بزرگترین کشور جهان',
+        'بزرگ‌ترین کشور جهان',
+        'biggest country',
+        'largest country',
+        'largest country in the world'
+      ],
+      weak: ['روسیه', 'russia'],
+      weakSafe: true,
+      hints: ['کشور', 'مساحت', 'country', 'size', 'area'],
+      fa: 'بزرگ‌ترین کشور جهان روسیه با حدود ۱۷ میلیون کیلومترمربع است که یازده منطقه‌ی زمانی را پوشش می‌دهد؛ بعد از آن کانادا، چین/آمریکا و برزیل قرار دارند.',
+      en: 'The largest country in the world is Russia at about 17 million square kilometers, spanning eleven time zones; Canada, China or the USA, and Brazil follow.'
+    },
+    {
+      id: 'smallest_country',
+      keywords: [
+        'کوچکترین کشور',
+        'کوچک‌ترین کشور',
+        'کوچکترین کشور دنیا',
+        'کوچک‌ترین کشور دنیا',
+        'smallest country',
+        'smallest country in the world'
+      ],
+      weak: ['واتیکان', 'vatican'],
+      weakSafe: true,
+      hints: ['کشور', 'مساحت', 'country', 'small'],
+      fa: 'کوچک‌ترین کشور جهان واتیکان با حدود ۰٫۴۴ کیلومترمربع است؛ کمتر از یک پارک متوسط شهر و کمتر از تعداد زیادی از میدان‌های شهرها.',
+      en: 'The smallest country in the world is Vatican City at about 0.44 square kilometers; smaller than many city parks and roughly the size of a few city blocks.'
+    },
+    {
+      id: 'world_cup_recent',
+      keywords: [
+        'کی جام جهانی رو برد',
+        'قهرمان جام جهانی',
+        'برنده جام جهانی',
+        'who won the world cup',
+        'world cup winners',
+        'last world cup winner'
+      ],
+      weak: ['قهرمان جام جهانی ۲۰۲۲', 'جام جهانی ۲۰۲۲', '2022 world cup'],
+      weakSafe: true,
+      hints: ['فوتبال', 'جام', 'football', 'soccer', 'world cup'],
+      fa: 'قهرمانان دوره‌های اخیر جام جهانی فوتبال: ۲۰۱۸ فرانسه، ۲۰۲۲ آرژانتین (بعد از دراماتیک‌ترین فینال‌ها برابر فرانسه)، و دوره‌ی ۲۰۲۶ با ۴۸ تیم و میزبانی مشترک آمریکا، کانادا و مکزیک برگزار شد. قهرمان هر دوره‌ی تازه را از منبع زنده چک کن؛ چون دانش من عکس فیکس‌شده از یه تاریخ مشخصه.',
+      en: 'Recent FIFA World Cup winners: 2018 France, 2022 Argentina (after one of the most dramatic finals ever against France), and the 2026 edition was hosted jointly by the USA, Canada, and Mexico with 48 teams. Check a live source for the newest champion: my knowledge is a snapshot fixed at one date.'
+    },
+    {
+      id: 'us_president_current',
+      keywords: [
+        'رئیس جمهور آمریکا کیه',
+        'رئیس‌جمهور فعلی آمریکا',
+        'president of the usa',
+        'who is the us president',
+        'current us president'
+      ],
+      weak: ['رئیس جمهور فعلی آمریکا', 'us president'],
+      weakSafe: true,
+      hints: [
+        'آمریکا',
+        'ترامپ',
+        'بایدن',
+        'انتخابات',
+        'america',
+        'president',
+        'election'
+      ],
+      fa: 'بر اساس عکس دانش من (اوت ۲۰۲۶): دونالد ترامپ در انتخابات نوامبر ۲۰۲۴ پیروز شد و از ژانویه ۲۰۲۵ رئیس‌جمهور آمریکا است؛ جو بایدن دوره‌ی ۲۰۲۱ تا ۲۰۲۵ را داشت و در جولای ۲۰۲۴ از رقابت کنار کشید. برای آخرین اخبار سیاسی، منبع روز چک کن.',
+      en: 'As of my knowledge snapshot (August 2026): Donald Trump won the November 2024 election and has been president since January 2025; Joe Biden served 2021 to 2025 and withdrew from the race in July 2024. For anything newer, check a current source.'
+    },
+    {
+      id: 'prophet_muhammad',
+      keywords: [
+        'پیامبر اسلام کی بود',
+        'حضرت محمد کی بود',
+        'محمد پیامبر',
+        'who was prophet muhammad',
+        'who is muhammad'
+      ],
+      weak: ['پیامبر اسلام', 'حضرت محمد', 'prophet muhammad'],
+      weakSafe: true,
+      hints: ['اسلام', 'قرآن', 'تاریخ', 'islam', 'prophet', 'history'],
+      fa: 'محمد بن عبدالله (حدود ۵۷۰ تا ۶۳۲ میلادی) پیامبر اسلام و، به باور مسلمانان، آخرین پیامبر الهی است. در مکه به دنیا آمد، در ۴۰ سالگی رسالتش آغاز شد، هجرت به مدینه در ۶۲۲ آغاز تقویم هجری است و قرآن در دوره‌ی او نازل شد. مسلمانان او را الگوی اخلاق و عدالت می‌دانند و سنت زندگی‌اش سیره نامیده می‌شود.',
+      en: 'Muhammad ibn Abdullah (c. 570-632 CE) is the prophet of Islam and, in Muslim belief, the final messenger of God. Born in Mecca, his mission began at forty; the migration to Medina in 622 marks the start of the Islamic calendar, and the Quran was revealed during his life. Muslims regard him as a model of ethics and justice, and his life tradition is called the Sunnah.'
+    },
+    {
+      id: 'jesus_christ',
+      keywords: [
+        'عیسی کی بود',
+        'حضرت عیسی',
+        'who was jesus',
+        'who is jesus',
+        'jesus christ'
+      ],
+      weak: ['عیسی مسیح', 'مسیح'],
+      weakSafe: true,
+      hints: ['مسیحیت', 'دین', 'تاریخ', 'christianity', 'religion', 'bible'],
+      fa: 'عیسی ناصری (حدود ۴ پیش از میلاد تا ۳۰/۳۳ میلادی) شخصیت محوری مسیحیت و یکی از پیامبران گرامی در اسلام است. در فلسطین زیست و تعالیمش درباره‌ی محبت، بخشش و پادشاهی خدا، پایه‌ی اخلاق مسیحی شد؛ مسیحیان او را پسر خدا و منجی می‌دانند و تصلیب و رستاخیزش مرکز ایمان مسیحی است.',
+      en: 'Jesus of Nazareth (c. 4 BCE to 30/33 CE) is the central figure of Christianity and one of the revered prophets in Islam. He lived in Palestine; his teachings on love, forgiveness, and the kingdom of God became the foundation of Christian ethics. Christians regard him as the Son of God and Savior, and his crucifixion and resurrection are the center of Christian faith.'
+    },
+    {
+      id: 'buddha_figure',
+      keywords: [
+        'بودا کی بود',
+        'بودا کیه',
+        'بودا کیست',
+        'بودا چیست',
+        'who was buddha',
+        'who is buddha'
+      ],
+      weak: ['سیدارتا', 'siddhartha'],
+      weakSafe: true,
+      hints: ['بودیسم', 'بوداگرایی', 'آیین', 'buddhism', 'religion'],
+      fa: 'بودا معمولاً یعنی سیدارتا گوتاما (حدود قرن پنجم یا ششم پیش از میلاد)، شاهزاده‌ای که در هند با دیدن رنج، در جست‌وجوی رهایی رفت و زیر درخت روشانی به «بیداری» رسید. آموزه‌هایش (چهار حقیقت نجیب و راه میانه) پایه‌ی بودیسم شد: رنج، ریشه‌ی رنج، پایان رنج و مسیر پایان آن.',
+      en: 'The Buddha usually refers to Siddhartha Gautama (around the fifth or sixth century BCE), a prince in India who, after seeing suffering, sought liberation and attained awakening under the Bodhi tree. His teachings (the Four Noble Truths and the Middle Way) founded Buddhism: suffering, its cause, its end, and the path to that end.'
+    },
+    {
+      id: 'quran_book',
+      keywords: [
+        'قرآن چیه',
+        'قران چیه',
+        'what is the quran',
+        'about the quran'
+      ],
+      weak: ['قرآن', 'quran'],
+      weakSafe: true,
+      hints: ['اسلام', 'کتاب', 'وحی', 'islam', 'book', 'scripture'],
+      fa: 'قرآن کتاب مقدس مسلمانان است؛ به باور آنان کلام وحیانی خدا که در حدود ۲۳ سال بر محمد نازل شده و در ۱۱۴ سوره گردآوری شده است. متن عربی آن برای مسلمانان نشانه‌ی ادبی بی‌همتاست و حفظ، تلاوت و تفسیرش در تمام سنت اسلامی محور است.',
+      en: "The Quran is the holy scripture of Islam; Muslims believe it to be God's revealed word, delivered to Muhammad over about 23 years and compiled into 114 surahs. Its Arabic text is regarded by Muslims as a matchless literary sign, and its memorization, recitation, and interpretation are central to Islamic tradition."
+    },
+    {
+      id: 'bible_book',
+      keywords: [
+        'انجیل چیه',
+        'کتاب مقدس چیه',
+        'what is the bible',
+        'about the bible'
+      ],
+      weak: ['کتاب مقدس', 'bible', 'انجیل'],
+      weakSafe: true,
+      hints: ['مسیحیت', 'دین', 'عهد', 'christianity', 'scripture', 'testament'],
+      fa: 'کتاب مقدس مسیحیان (بایبل) از دو بخش اصلی ساخته شده: عهد عتیق که با تنخ یهودی مشترک است و عهد جدید که چهار انجیل، اعمال رسولان، نامه‌ها و مکاشفه را در بر می‌گیرد. «انجیل» به‌طور خاص گزارش زندگی و تعالیم عیسی است و ترجمه‌های متعدد کتاب مقدس پرفروش‌ترین کتاب تاریخند.',
+      en: 'The Christian Bible has two main parts: the Old Testament, shared with the Hebrew Bible, and the New Testament, containing the four Gospels, Acts, the letters, and Revelation. The \"Gospel\" specifically is the account of Jesus\'s life and teachings, and Bible translations are the best-selling books in history.'
+    },
+    {
+      id: 'what_is_love',
+      keywords: [
+        'عشق چیه',
+        'عشق چیست',
+        'معنی عشق',
+        'what is love',
+        'meaning of love'
+      ],
+      weak: ['تعریف عشق'],
+      weakSafe: true,
+      hints: ['عشق', 'احساس', 'رابطه', 'love', 'feeling', 'relationship'],
+      fa: 'عشق هم فیزیولوژی است، هم روان‌شناسی و هم انتخاب. زیست‌شناسی: پیوندها با اکسی‌توسین و دوپامین تقویت می‌شوند. روان‌شناسی: رابرت استرنبرگ عشق را ترکیب صمیمیت، شور و تعهد می‌داند. و در عمل، عشق چیزی است که روزمره ساخته می‌شود: توجه، حضور و ماندن در روزهای سخت. شاید بهترین تعریف این است که عشق فعلی است که حس، شروعش می‌کند.',
+      en: 'Love is physiology, psychology, and a choice at once. Biologically, bonds are reinforced by oxytocin and dopamine. Psychologically, Robert Sternberg described love as intimacy, passion, and commitment. And in practice, love is built daily: attention, presence, and staying through the hard days. Perhaps the best definition is that love is a practice that a feeling starts.'
+    },
+    {
+      id: 'how_planes_fly',
+      keywords: [
+        'هواپیما چطور پرواز می‌کند',
+        'هواپیما چطور پرواز میکنه',
+        'how do planes fly',
+        'how does a plane fly'
+      ],
+      weak: ['بال هواپیما', 'برآر'],
+      weakSafe: true,
+      hints: ['هواپیما', 'بال', 'پرواز', 'plane', 'wing', 'fly', 'lift'],
+      fa: 'هواپیما با بال‌های خمیده‌شده پرواز می‌کند: هوایی که از بال می‌گذرد بالا سوراخ را سریع‌تر طی می‌کند، فشار آن پایین می‌آید و فشار بیشتر زیر بال، هواپیما را بالا می‌راند (نیروی برآر). طبق قانون سوم نیوتن، بال هوا را به پایین هُل می‌دهد و هوا بال را به بالا. موتورها هم برای سرعت کافی می‌کشند، نه بالا رفتن مستقیم.',
+      en: "Planes fly thanks to wing shape: air flowing over the curved top moves faster, its pressure drops, and the higher pressure under the wing pushes it up (lift). By Newton's third law, the wing deflects air downward and the air pushes the wing up. Engines provide the forward speed that makes all of this possible rather than lifting directly."
+    },
+    {
+      id: 'how_magnets_work',
+      keywords: [
+        'آهنربا چطور کار می‌کند',
+        'آهنربا چطور کار می‌کنه',
+        'آهنربا چیه',
+        'how do magnets work',
+        'how do magnets stick'
+      ],
+      weak: ['میدان مغناطیسی', 'magnetic field'],
+      weakSafe: true,
+      hints: ['آهنربا', 'فلز', 'magnet', 'metal', 'iron'],
+      fa: 'آهنربا به‌خاطر الکترون‌هایش کار می‌کند: هر الکترون مثل یک آهنربای خیلی کوچک می‌چرخد و در آهن، این چرخش‌ها در ناحیه‌هایی (دامنه‌ها) هم‌راستا می‌شوند. وقتی دامنه‌ها یک‌دست شوند، فلز یک میدان مغناطیسی کلی می‌سازد که آهن را می‌کشد و قطب‌های همنام را می‌راند. حرارت و ضربه می‌توانند این نظم را به‌هم بزنند.',
+      en: 'Magnets work because of their electrons: each electron spins like a tiny magnet, and in iron these spins align in regions called domains. When the domains line up together, the metal produces an overall magnetic field that attracts iron and repels like poles. Heat or impact can knock that order out.'
+    },
+    {
+      id: 'why_cats_purr',
+      keywords: [
+        'چرا گربه خرخر می‌کند',
+        'چرا گربه خرخر میکنه',
+        'why do cats purr'
+      ],
+      weak: ['خرخر گربه', 'cat purr'],
+      weakSafe: true,
+      hints: ['گربه', 'cat', 'purr'],
+      fa: 'گربه‌ها با ارتعاش تارهای صوتی حدود ۲۵ تا ۱۵۰ هرتز خرخر می‌کنند و فقط برای رضایت نیست: خرخر در مواقع استرس، بیماری و زایمان هم دیده می‌شود. یکی از فرضیه‌های جالب این است که همین بسامد پایین به ترمیم استخوان و بافت کمک می‌کند؛ یعنی خرخر هم لذت است و هم خوددرمانی.',
+      en: 'Cats purr by vibrating their vocal folds at roughly 25 to 150 hertz, and not only from contentment: purring appears during stress, illness, and labor too. One intriguing hypothesis is that those low frequencies help heal bones and tissue, so purring may be both pleasure and self-care.'
+    },
+    {
+      id: 'what_is_time',
+      keywords: [
+        'زمان چیه',
+        'زمان چیست',
+        'what is time',
+        'what is time in physics'
+      ],
+      weak: ['تعریف زمان'],
+      weakSafe: true,
+      hints: ['فیزیک', 'ساعت', 'نسبیت', 'physics', 'clock', 'relativity'],
+      fa: 'فیزیک زمان را مثل ابزار اندازه‌گیری تغییر می‌بیند: بدون تغییر، زمانی برای سنجیدن نیست. در نسبیت اینشتین زمان مطلق نیست؛ با سرعت و گرانش کند یا تند می‌شود (ساعت‌های GPS هر روز این تصحیح را انجام می‌دهند) و فیزیک کوانتوم بحث «جریان» زمان را مبهم می‌گذارد. تجربه‌ی زیسته‌ی زمان هم شگفت است: شادی کوتاه، انتظار بلند.',
+      en: 'Physics treats time as the measure of change: without change, there is nothing to measure. In Einstein\'s relativity time is not absolute; it slows with speed and gravity (GPS satellites correct for it daily), and quantum physics leaves the \"flow\" of time puzzling. Lived time is strange too: joy is short, waiting is long.'
+    },
+    {
+      id: 'tehran_derby',
+      keywords: [
+        'استقلال یا پرسپولیس',
+        'استقلال بهتره یا پرسپولیس',
+        'پرسپولیس بهتره یا استقلال',
+        'esteghlal or persepolis',
+        'tehran derby',
+        'داربی تهران'
+      ],
+      weak: ['استقلال و پرسپولیس', 'داربی'],
+      weakSafe: true,
+      hints: ['فوتبال', 'تیم', 'ایران', 'football', 'team', 'iran'],
+      fa: 'داربی تهران، دیدار استقلال و پرسپولیس، یکی از پرشورترین شهرآورد‌های آسیاست؛ از دهه‌ی ۱۳۴۰ تا امروز ادامه داشته و استادیوم آزادی را پر می‌کند. اینجا داوری ممکن نیست: دو تا تاریخ، دو تا هویت و عده‌ی زیادی از دو طرف که هر کدام حق دارند تیمشون رو دوست داشته باشن. تو کدوم ستی؟',
+      en: "The Tehran derby, Esteghlal vs Persepolis, is one of Asia's most passionate rivalries; it has run since the 1960s and fills Azadi Stadium. No referee call from me here: two histories, two identities, and millions on each side who each have the right to love their team. Which side are you on?"
+    },
+    {
+      id: 'military_service_iran',
+      keywords: [
+        'خدمت سربازی چقدر طول میکشه',
+        'خدمت سربازی چقدره',
+        'سربازی چقدره',
+        'سربازی چقدر طول میکشه',
+        'مدت سربازی',
+        'military service iran duration',
+        'how long is military service in iran'
+      ],
+      weak: ['مدت خدمت سربازی', 'کسری سربازی'],
+      weakSafe: true,
+      hints: [
+        'سربازی',
+        'نظام',
+        'کارت پایان خدمت',
+        'military',
+        'service',
+        'conscription'
+      ],
+      fa: 'مدت خدمت سربازی ایران ثابت نیست و به محل خدمت، نوع یگان، وضعیت مشمول و قوانین روز بستگی دارد؛ به‌طور تاریخی حدود ۲۱ تا ۲۴ ماه است و برای مناطق محروم یا شرایط خاص کسری خدمت هم دیده شده. معافیت‌ها (تحصیلی، کفالت، خرید از رده محدود) هم پیوسته تغییر می‌کنند، پس برای تصمیم فردی حتماً آخرین آیین‌نامه رسمی و پاسخگوی سازمان نظام وظیفه را چک کن.',
+      en: "The duration of Iran's military service is not fixed: it depends on posting location, unit type, personal status, and current rules; historically around 21 to 24 months, with reductions for deprived regions or special conditions. Exemptions (education, family care, the limited purchase scheme) also change continually, so check the latest official regulations with the conscription organization for a personal case."
+    },
+    {
+      id: 'speed_of_light',
+      keywords: [
+        'سرعت نور چنده',
+        'سرعت نور چقدره',
+        'speed of light',
+        'how fast is light'
+      ],
+      weak: ['سرعت نور'],
+      weakSafe: true,
+      hints: ['نور', 'فیزیک', 'light', 'physics', 'km'],
+      fa: 'سرعت نور در خلا ۲۹۹٬۷۹۲٬۴۵۸ متر بر ثانیه است؛ تقریباً ۳۰۰ هزار کیلومتر بر ثانیه. هیچ چیز اطلاعاتی یا مادی نمی‌تواند از آن سریع‌تر باشد و همین عدد، متر را تعریف می‌کند. نور در یک ثانیه هفت بار و نیم دور زمین می‌چرخد.',
+      en: 'The speed of light in vacuum is 299,792,458 meters per second, roughly 300,000 km per second. Nothing carrying information or matter can travel faster, and this exact number now defines the meter. Light circles the Earth about seven and a half times in one second.'
+    },
+    {
+      id: 'eiffel_tower',
+      keywords: [
+        'برج ایفل چقدر بلنده',
+        'برج ایفل کجاست',
+        'how tall is the eiffel tower',
+        'eiffel tower height'
+      ],
+      weak: ['برج ایفل', 'eiffel tower'],
+      weakSafe: true,
+      hints: ['پاریس', 'فرانسه', 'برج', 'paris', 'france', 'tower'],
+      fa: 'برج ایفل در پاریس حدود ۳۳۰ متر بلند است (با آنتن) و در ۱۸۸۹ برای نمایشگاه جهانی، به مهندسی شرکت گوستاو ایفل ساخته شد؛ در زمان ساخت بلندترین سازه‌ی جهان بود و قرار بود موقت باشد! حالا نماد فرانسه و پربازدیدترین بنای پولی دنیاست.',
+      en: "The Eiffel Tower in Paris is about 330 meters tall (with antennas) and was built in 1889 for the World's Fair by Gustave Eiffel's company; it was the tallest structure in the world at the time and was meant to be temporary. Today it is the symbol of France and the most visited paid monument on Earth."
+    },
+    {
+      id: 'taj_mahal',
+      keywords: [
+        'تاج محل کجاست',
+        'تاج محل رو کی ساخت',
+        'who built the taj mahal',
+        'where is the taj mahal'
+      ],
+      weak: ['تاج محل', 'taj mahal'],
+      weakSafe: true,
+      hints: ['هند', 'آگرا', 'india', 'agra', 'mausoleum'],
+      fa: 'تاج محل در شهر آگرای هند است و شاه‌جهان، امپراتور گورکانی، بین حدود ۱۶۳۲ تا ۱۶۵۳ به یاد همسرش ممتاز محل ساخت؛ آرامگاه سفید مرمرینش ترکیبی از معماری ایرانی، هندی و اسلامی است و یکی از عجایب هفت‌گانه‌ی جدید دنیا شناخته می‌شود.',
+      en: 'The Taj Mahal stands in Agra, India; the Mughal emperor Shah Jahan built it between about 1632 and 1653 in memory of his wife Mumtaz Mahal. Its white marble mausoleum blends Persian, Indian, and Islamic architecture and is counted among the new seven wonders of the world.'
+    },
+    {
+      id: 'human_bones',
+      keywords: [
+        'بدن انسان چند استخوان داره',
+        'انسان چند استخوان داره',
+        'how many bones do humans have',
+        'how many bones in the human body'
+      ],
+      weak: ['تعداد استخوان بدن'],
+      weakSafe: true,
+      hints: ['استخوان', 'بدن', 'bone', 'body', 'anatomy'],
+      fa: 'بدن یک بزرگسال ۲۰۶ استخوان دارد، اما نوزاد با حدود ۲۷۰ عضو شروع می‌کند؛ بسیاری از آن‌ها در رشد به هم جوش می‌خورند. بلندترین استخوان، ران و کوچک‌ترینشان در گوش میانی است.',
+      en: 'An adult human body has 206 bones, but a baby starts with around 270; many of them fuse during growth. The longest is the femur and the smallest ones sit in the middle ear.'
+    },
+    {
+      id: 'why_grass_green',
+      keywords: [
+        'چرا علف سبزه',
+        'چرا چمن سبزه',
+        'why is grass green',
+        'why are plants green'
+      ],
+      weak: ['کلروفیل', 'chlorophyll'],
+      weakSafe: true,
+      hints: ['علف', 'گیاه', 'رنگ', 'grass', 'plant', 'green', 'color'],
+      fa: 'علف و برگ سبزند چون کلروفیل، رنگدانه‌ی فتوسنتز، نور آبی و قرمز را برای ساخت غذا جذب می‌کند و سبز را بازمی‌تاباند؛ چشم ما هم همان سبز بازتابیده را می‌بیند. پاییز وقتی کلروفیل تمام می‌شود، زرد و نارنجی پنهان زیرین پیدا می‌شود.',
+      en: 'Grass and leaves are green because chlorophyll, the pigment of photosynthesis, absorbs blue and red light to make food and reflects green; our eyes see that reflected green. In autumn, when chlorophyll runs out, the hidden yellows and oranges underneath show.'
+    },
+    {
+      id: 'why_we_dream',
+      keywords: ['چرا خواب میبینیم', 'چرا خواب می‌بینیم', 'why do we dream'],
+      weak: ['خواب دیدن', 'dreaming'],
+      weakSafe: true,
+      hints: ['خواب', 'رؤیا', 'مغز', 'sleep', 'dream', 'brain', 'rem'],
+      fa: 'هیچ‌کس هنوز جواب قطعی ندارد اما فرضیه‌های اصلی این‌هاست: تثبیت حافظه (مغز خاطرات روز را مرتب می‌کند)، پردازش هیجان (خواب دیدن مثل شب‌مانور احساسات است) و تمرین شبیه‌سازی تهدیدها و موقعیت‌ها. خواب‌های پرجزئیات بیشتر در مرحله‌ی REM رخ می‌دهند، وقتی مغز پربازده‌تر از بدن فعال است.',
+      en: "No one knows for certain, but the leading hypotheses are: memory consolidation (the brain files the day's experiences), emotional processing (dreaming as overnight drill for feelings), and simulation practice for threats and situations. Vivid dreams mostly happen in REM sleep, when the brain is more active than the body."
+    },
+    {
+      id: 'how_vaccines_work',
+      keywords: [
+        'واکسن چطور کار می‌کند',
+        'واکسن چطور کار می‌کنه',
+        'واکسن چیه',
+        'how do vaccines work',
+        'how do vaccines'
+      ],
+      weak: ['عملکرد واکسن', 'vaccine'],
+      weakSafe: true,
+      hints: ['بیماری', 'ایمنی', 'ویروس', 'disease', 'immune', 'virus'],
+      fa: 'واکسن سیستم ایمنی را تمرین می‌دهد: نسخه‌ی بی‌خطر یا بخشی از عامل بیماری (پروتئین، ضعیف‌شده یا پیام ساخت آن) به بدن معرفی می‌شود تا پادتن و حافظه‌ی ایمنی ساخته شود؛ بعد اگر ویروس واقعی بیاید، بدن از قبل مسلح است. واژگان «فلج کودکان» و «آبله‌مرغان» چقدر رایج شنیده می‌شد و حالا نه؟ کار واکسن است.',
+      en: 'Vaccines train the immune system: a safe version or a piece of a pathogen (a protein, a weakened form, or the instructions to make one) is introduced so the body builds antibodies and immune memory; if the real virus arrives, the body is already armed. Terms like \"polio\" and \"smallpox\" fading from everyday speech is what vaccines did.'
+    }
+  ]);
 })(typeof window !== 'undefined' ? window : globalThis);

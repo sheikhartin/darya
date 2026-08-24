@@ -216,6 +216,84 @@
    * @param {string} langCode - 'fa' or 'en'
    * @returns {{topic: string, confidence: number, text: string}|null}
    */
+  // The month this knowledge snapshot was last reviewed. Facts that can
+  // go stale (records, officeholders, active rosters) carry their own
+  // caveat text; this constant is the global anchor both for those
+  // caveats and for tests that pin the review cadence.
+  const KNOWLEDGE_SNAPSHOT_AS_OF = '2026-08';
+
+  // Query tokens that never count toward lexical overlap.
+  const STOP_TOKENS = new Set([
+    'the',
+    'a',
+    'an',
+    'is',
+    'are',
+    'was',
+    'of',
+    'in',
+    'on',
+    'for',
+    'to',
+    'and',
+    'or',
+    'what',
+    'who',
+    'how',
+    'why',
+    'tell',
+    'me',
+    'about',
+    'do',
+    'does',
+    'did',
+    'my',
+    'your',
+    'i',
+    'چیه',
+    'چیست',
+    'کیه',
+    'کیست',
+    'چطور',
+    'چگونه',
+    'درباره',
+    'راجع',
+    'به',
+    'از',
+    'و',
+    'یا',
+    'برای',
+    'من',
+    'شما',
+    'یه',
+    'یک',
+    'بگو'
+  ]);
+
+  /**
+   * Counts ordinary content tokens a fact shares with the query, used
+   * only to break score ties (see lookup).
+   * @param {object} fact - Candidate fact
+   * @param {string} query - Lowercased normalized query
+   * @returns {number}
+   */
+  function contentOverlap(fact, query) {
+    const tokens = query
+      .split(/\s+/u)
+      .filter((t) => t.length > 1 && !STOP_TOKENS.has(t));
+    if (tokens.length === 0) {
+      return 0;
+    }
+    const haystack = [
+      ...(fact.keywords || []),
+      ...(fact.hints || []),
+      ...(fact.weak || [])
+    ]
+      .join(' ')
+      .toLowerCase();
+    return tokens.reduce((sum, t) => sum + (haystack.includes(t) ? 1 : 0), 0);
+  }
+
   function lookup(text, langCode) {
     if (!text || typeof text !== 'string') {
       return null;
@@ -325,11 +403,13 @@
       ) {
         score += MARKETPLACE_MARKER_BONUS;
       }
-      if (score <= 0) {
-        continue;
-      }
       if (!best || score > best.score) {
-        best = { fact, score };
+        best = { fact, score, overlap: contentOverlap(fact, lower) };
+      } else if (score === best.score) {
+        const overlap = contentOverlap(fact, lower);
+        if (overlap > best.overlap) {
+          best = { fact, score, overlap };
+        }
       }
     }
 
@@ -1366,6 +1446,7 @@
   }
 
   const DaryaKnowledge = {
+    KNOWLEDGE_SNAPSHOT_AS_OF,
     domains,
     answer,
     lookup,

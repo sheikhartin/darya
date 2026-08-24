@@ -87,6 +87,12 @@
   // lighter than earlier") so the context-aware touch never nags. Even a
   // string of improving turns only earns one acknowledgment per window.
   const EMOTION_SHIFT_INTERVAL = 5;
+  // Minimum recorded emotion samples before a mood-shift line may fire:
+  // one prior emotional turn plus the current one. A genuine two-turn
+  // recovery arc (anxious, then hopeful) deserves acknowledgment; a
+  // first-ever emotional turn can never produce a "your mood has moved"
+  // line because there is no previous sample to compare against.
+  const EMOTION_SHIFT_MIN_SAMPLES = 2;
   const ENTITY_RECENT_TURNS = 4;
   const ENTITY_RECENT_CONFIDENCE = 0.72;
   const ENTITY_STALE_CONFIDENCE = 0.45;
@@ -322,6 +328,7 @@
     SMALLTALK_CHANCE,
     HUMAN_TOUCH_INTERVAL,
     EMOTION_SHIFT_INTERVAL,
+    EMOTION_SHIFT_MIN_SAMPLES,
     ENTITY_RECENT_TURNS,
     ENTITY_RECENT_CONFIDENCE,
     ENTITY_STALE_CONFIDENCE,

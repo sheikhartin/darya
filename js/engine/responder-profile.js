@@ -458,6 +458,16 @@
           ) {
             pref = '';
           }
+          // Pronoun guard: "i like you" and «تو رو دوست دارم» are
+          // statements about the companion, not a stored preference; a
+          // bare pronoun object is never a thing the person likes.
+          if (
+            /^(?:you|u|him|her|them|it|this|that|darya|تو|شما|اون|دریا)$/iu.test(
+              pref
+            )
+          ) {
+            pref = '';
+          }
           if (pref.length >= MIN_PROFILE_NAME_LENGTH) {
             this._userProfile.preferences.push(pref);
             if (hasLivedTopic) {

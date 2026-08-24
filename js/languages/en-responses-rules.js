@@ -543,15 +543,31 @@
     R['ruleOnlineSafety'][3],
     R['ruleOnlineSafety'][4]
   ];
-  R['ruleDoomSpending'] = [R['ruleModernMoney'][0]];
-  R['ruleBnpl'] = [R['ruleModernMoney'][1]];
-  R['ruleOnlineScam'] = [R['ruleModernMoney'][2]];
-  R['ruleHousingPressure'] = [R['ruleModernMoney'][3]];
+  R['ruleDoomSpending'] = [
+    R['ruleModernMoney'][0],
+    'Retail therapy is still therapy trying to happen. The purchase is doing a job for a feeling; name the feeling first, then decide if money is the right tool for it. What was today like before the cart filled up?',
+    'Small repeated comfort buys add up faster than one big splurge. A one-week log of what you bought and what you felt can show the pattern without any shame attached. Want to try that?'
+  ];
+  R['ruleBnpl'] = [
+    R['ruleModernMoney'][1],
+    'Installment apps feel light because each slice is small; the weight is in the sum. One page with every plan and its real total changes how the next offer looks. What are you considering putting on installments?'
+  ];
+  R['ruleOnlineScam'] = [
+    R['ruleModernMoney'][2],
+    'Scams are engineered by professionals; falling for one is about their craft, not your intelligence. The steps are boring and they work: freeze the payment path, report, change passwords, keep evidence. What happened, if you want to go through it?'
+  ];
+  R['ruleHousingPressure'] = [
+    R['ruleModernMoney'][3],
+    "When the whole housing picture feels stuck, shrink the frame: this month's rent, this month's buffer, this one decision. Structural problems cannot be solved by worrying harder, only by the next concrete step. Which number is tightest right now?"
+  ];
   R['ruleClimateAnxiety'] = [
     R['ruleClimateAndDivision'][0],
     R['ruleClimateAndDivision'][2]
   ];
-  R['rulePoliticalDivision'] = [R['ruleClimateAndDivision'][1]];
+  R['rulePoliticalDivision'] = [
+    R['ruleClimateAndDivision'][1],
+    'You can love people and still cap how much news and argument you metabolize for them. A fixed dose and a couple of live conversations beat an infinite feed. What does your current intake look like?'
+  ];
 
   R['ruleKnowledge'] = [];
 
@@ -778,7 +794,9 @@
   // rule-based companion, her limits, and her origin. Honest per AGENTS.md:
   // never implies being human, never overclaims knowledge.
   R['ruleDaryaBrowse'] = [
-    'No. I am fully offline and cannot browse, check live prices, open websites, or verify what changed today. I can help you build comparison criteria, but current prices and availability must be checked with up-to-date retailer or manufacturer sources.'
+    'No. I am fully offline and cannot browse, check live prices, open websites, or verify what changed today. I can help you build comparison criteria, but current prices and availability must be checked with up-to-date retailer or manufacturer sources.',
+    "I genuinely cannot look anything up; nothing I say comes from today's internet. If you bring the numbers here, I'm happy to help you compare them clearly.",
+    "That is beyond this chat on purpose: no browsing, no live checks. Give me what you already know and we'll turn it into a good comparison checklist."
   ];
 
   R['ruleDaryaLimits'] = [
