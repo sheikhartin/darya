@@ -17,7 +17,15 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
-import { freshEngine, FA, EN, halfSpace, ZWNJ } from './helpers.mjs';
+import {
+  freshEngine,
+  FA,
+  EN,
+  halfSpace,
+  ZWNJ,
+  casual,
+  seededRandom
+} from './helpers.mjs';
 
 // ============================================================================
 // Bilingual parity: structural shape
@@ -563,4 +571,173 @@ test('seriousness and humor gates are explicit and conservative', () => {
   light.currentTurnSeriousness = 0.2;
   light.lastTurnNeedsCare = false;
   assert.equal(light.canHumorFire(), true);
+});
+
+// ==========================================================================
+// Routing parity CI (audit 12.23): every shared scenario exists in both
+// languages and routes the same way turn by turn. Language packs may
+// phrase rules natively, but "a rule matched here, filler there" is a
+// parity bug, not a translation choice.
+// ==========================================================================
+
+const fillerPoolCaches = new Map();
+
+/**
+ * The set of pool lines that count as "no real answer" for parity:
+ * generic fallbacks, question acknowledgements, unknown-topic lines,
+ * source suggestions, and ambiguous-input prompts. Cached per pack.
+ * @param {object} lang - FA or EN
+ * @returns {Set<string>}
+ */
+function fillerReplies(lang) {
+  if (fillerPoolCaches.has(lang)) {
+    return fillerPoolCaches.get(lang);
+  }
+  const lines = [
+    // Quoted-word callbacks are template lines, not topic answers; a
+    // turn answered by one is the same generic class as a fallback. The
+    // template is passed through the conversational layer first because
+    // the outgoing reply arrives in casual register («آن» -> «اون»).
+    ...(lang.quotedCallbackTemplates || []).map((t) =>
+      casual(t, lang.code).replace('{excerpt}', '[^"»]+')
+    ),
+    ...(lang.genericFallbacks || []),
+    ...(lang.questionAcknowledgements || []),
+    ...(lang.unknownTopicResponses || []),
+    ...(lang.unknownTopicCaringResponses || []),
+    ...(lang.sourceSuggestions || []),
+    ...(lang.ambiguousInputResponses || []),
+    ...(lang.spamNoiseResponses || []),
+    ...(lang.emojiResponses || []),
+    ...(lang.smalltalk || []),
+    ...(lang.testInputResponses || []),
+    ...(lang.repeatedGreetingResponses || [])
+  ].map((line) => casual(line, lang.code).trim());
+  const exact = new Set(lines.filter((l) => !l.includes('[^"»]+')));
+  const patterns = lines
+    .filter((l) => l.includes('[^"»]+'))
+    .map(
+      (l) =>
+        new RegExp(
+          l.replace(/[.*+?^${}()|[\]\\]/gu, (c) =>
+            c === '[' ||
+            c === ']' ||
+            c === '^' ||
+            c === '"' ||
+            c === '»' ||
+            c === '\\'
+              ? c
+              : '\\' + c
+          )
+        )
+    );
+  // Structural quoted-callback detector: the engine quotes the user's
+  // own words in guillemets and asks about them («...» هنوز وزن دارد /
+  // "..."). Template text may bypass the casual layer, so match shape.
+  const QUOTED_CALLBACK_SHAPES = [
+    /«[^»]{1,60}»[^.؟?]{0,30}(?:وزن|حاضر|present|weight)/u,
+    /"[^"]{1,60}"[^.؟?]{0,30}(?:still|weight|shifted)/iu
+  ];
+  const set = new Set(exact);
+  // Normalized prefix membership: the engine may append a human-touch
+  // suffix or a spark tag after a pool line (and strip its period), so
+  // replies are compared punctuation-stripped: a reply that starts with
+  // a filler line is filler. Short lines are ignored as prefixes.
+  const strip = (t) =>
+    String(t)
+      .replace(
+        /^(?:راستی|راستش|خب|ببین|هوم|By the way|Honestly|Look|Hmm|Okay so),\s*/u,
+        ''
+      )
+      .replace(/[.!?؟،؛:…"«»()]+/gu, ' ')
+      .replace(/\s+/gu, ' ')
+      .trim();
+  set.test = (reply) =>
+    [...exact].some(
+      (line) => strip(line).length >= 12 && strip(reply).startsWith(strip(line))
+    ) ||
+    patterns.some((re) => re.test(reply)) ||
+    QUOTED_CALLBACK_SHAPES.some((re) => re.test(reply));
+  fillerPoolCaches.set(lang, set);
+  return set;
+}
+
+test('parity: every shared scenario routes the same class in both languages', () => {
+  // Deterministic random: spark openers, tone coloring, and pool picks
+  // all consume Math.random; seeding makes parity failures reproducible
+  // instead of flaky run-to-run.
+  const restoreRandom = seededRandom(0x5eed1e);
+  try {
+    const dir = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      'scenarios'
+    );
+    const names = fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith('.json') && !f.startsWith('fa-'))
+      .map((f) => f.replace(/\.json$/u, ''));
+    let compared = 0;
+    for (const name of names) {
+      const enFile = path.join(dir, `${name}.json`);
+      const faFile = path.join(dir, `fa-${name}.json`);
+      if (!fs.existsSync(faFile)) {
+        continue;
+      }
+      const enScenario = JSON.parse(fs.readFileSync(enFile, 'utf8'));
+      const faScenario = JSON.parse(fs.readFileSync(faFile, 'utf8'));
+      assert.equal(
+        faScenario.turns.length,
+        enScenario.turns.length,
+        `${name}: turn count drifted between languages`
+      );
+      const en = freshEngine(EN);
+      const fa = freshEngine(FA);
+      enScenario.turns.forEach((turn, i) => {
+        const enReply = en.respond(turn.text);
+        const faTurn = faScenario.turns[i];
+        const faReply = fa.respond(faTurn.text);
+        assert.ok(
+          enReply && enReply.length > 0,
+          `${name}#${i}: EN reply empty`
+        );
+        assert.ok(
+          faReply && faReply.length > 0,
+          `${name}#${i}: FA reply empty`
+        );
+        // Routing parity, filler-aware: a turn "fell to filler" when the
+        // reply is literally a line from the generic unknown/acknowledgement
+        // pools. Everything else (a topic pool, a knowledge or media
+        // answer, a profile recall) is a real answer. The two languages
+        // must agree turn by turn: answering here while shrugging there is
+        // a parity bug, not a translation choice.
+        let enFiller = fillerReplies(EN).test
+          ? fillerReplies(EN).test(enReply)
+          : fillerReplies(EN).has(enReply);
+        let faFiller = fillerReplies(FA).test
+          ? fillerReplies(FA).test(faReply)
+          : fillerReplies(FA).has(faReply);
+        // Echo-shaped replies ("So you ...", the EN pronoun mirror) are the
+        // same generic class as filler pools: Persian intentionally ships
+        // no pronoun mirror, so the two languages must agree here too.
+        if (/^So you \b/iu.test(enReply)) {
+          enFiller = true;
+        }
+        if (/^پس تو\b|انگار می‌گویی|^پس الان/u.test(faReply)) {
+          faFiller = true;
+        }
+        assert.equal(
+          faFiller,
+          enFiller,
+          `${name}#${i}: routing parity broke (EN "${enReply.slice(0, 60)}" filler=${enFiller}; FA "${faReply.slice(0, 60)}" filler=${faFiller})`
+        );
+        compared += 1;
+      });
+    }
+    assert.ok(
+      compared > 200,
+      `expected to compare hundreds of turns, got ${compared}`
+    );
+  } finally {
+    restoreRandom();
+  }
 });

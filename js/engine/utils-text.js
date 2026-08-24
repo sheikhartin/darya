@@ -96,6 +96,12 @@
       // "2024-2025") keep matching exactly as before.
       .replace(/(?<![A-Za-z0-9])-|-(?![A-Za-z0-9])/gu, ' ')
       .replace(/[\u200c\u200d\u200b\ufeff]+/gu, '')
+      // Letter elongation («سلاااام», «خیلیییی», "aaaa") is chat
+      // emphasis, never meaning: three or more identical letters in a
+      // row collapse to one so the stretched word matches its plain
+      // form. Doubled letters are kept for languages that use them.
+      .replace(/([^\p{L}\p{N}])\1{2,}/gu, '$1')
+      .replace(/(\p{L})\1{2,}/gu, '$1')
       .replace(/[ \t\r\n]+/gu, ' ')
       .trim();
     // Persian progressive-prefix binding runs after the half-space has
@@ -186,9 +192,16 @@
       if (contribution === 0) {
         continue;
       }
+      // Three tokens of lookback: absolutist hopelessness phrasings put
+      // the negator far from the sentiment word ("nothing will ever get
+      // better for me"), and published lexicon work marks exactly this
+      // never/nothing/no-one vocabulary as a distress signal, so the
+      // window must be wide enough to flip those polarities.
       const negated =
         (i > 0 && negations.has(tokens[i - 1])) ||
         (i > 1 && negations.has(tokens[i - 2])) ||
+        (i > 2 && negations.has(tokens[i - 3])) ||
+        (i > 3 && negations.has(tokens[i - 4])) ||
         (i < tokens.length - 1 && negations.has(tokens[i + 1]));
       score += negated ? -contribution : contribution;
     }
@@ -276,6 +289,34 @@
     return DEATH_LEXICON_EN.test(t) || DEATH_LEXICON_FA.test(t);
   }
 
+  // Distress lexicon (second line of defense, behind the safety rules):
+  // hopelessness, burdensomeness, isolation, entrapment, and self-directed
+  // hostility markers that clinical corpus research identifies with
+  // depression, anxiety, and suicidal ideation - including the absolutist
+  // never/nothing/nobody vocabulary that is measurably elevated in those
+  // populations (Al-Mosaiwi and Johnstone 2018). A hit does NOT mean
+  // crisis: it means playful, curious, and quip pools are off for the
+  // turn and the caring acknowledgment floor applies instead.
+  const DISTRESS_LEXICON_EN =
+    // eslint-disable-next-line max-len
+    /\b(?:hopeless|worthless|pointless|meaningless|no reason to (?:live|go on|be here)|nothing to live for|no point in living|better off (?:dead|without me)|burden on|feel like a burden|give up(?: on life| on everything)?|end it all|no way out|feel(?:ing)? trapped|hate myself|loathe myself|can'?t (?:take|do) (?:it|this) anymore|can'?t go on(?: anymore)?|tired of (?:life|living|everything)|so tired of everything|exhausted (?:of|by|from) (?:life|everything)|nobody (?:cares|loves me|would miss me|needs me)|no one (?:cares|loves me|would miss me|needs me)|not worth (?:living|it)|lost everything|broken inside|hurts too much|done with everything|miserable|never get(?:s|ting)? better|will ever get better|always be this way|nothing (?:ever )?(?:gets|goes|will get) better|it never gets better)\b/iu;
+  const DISTRESS_LEXICON_FA =
+    // eslint-disable-next-line max-len
+    /(?<!\p{L})(?:بی‌?امید|ناامید|بی‌?معنا|بی‌?ارزش|بی‌?انگیزه|بار اضافه(?:‌ام|‌ایم| ام| ایم)?|دلیلی برای (?:زندگی|زنده بودن) ندارم|به درد نمی‌?خورم|از زندگی خسته(?:م|‌ام| ام|ست)|از زندگی سیر(?:م|‌ام| ام)|از زندگی بی‌?زارم|کم آوردم|دیگه طاقت ندارم|طاقت ندارم|دیگه تحمل ندارم|هیچکس (?:دوستم ندارد|دوست من نیست|حالم رو نمی‌پرسه|دردم رو نمی‌فهمه)|هیچی برام مهم نیست|هیچ انگیزه‌ای ندارم|راهی نیست|بن‌?بسته|از خودم بیزارم|از خودم متنفرم|داغونم|خسته‌?ام از این همه|می‌?خوام گم شم|همه چیزم رو از دست دادم|هیچوقت خوب نمی‌شه|هیچ چیز خوب نمی‌شه|هیچوقت.{0,30}خوب ?نمیش?ه|هیچ چیز.{0,25}خوب ?نمیش?ه|همیشه همینجوری می‌مونه|همینجوری می‌مونه|هیچکس.{0,20}نمی‌?(?:ده|دن|داره|کنه))(?!\p{L})/u;
+
+  /**
+   * True when the (normalized) turn text carries distress markers:
+   * hopelessness, burdensomeness, isolation, entrapment, or self-directed
+   * hostility, in either language. NOT a crisis classifier; a gate that
+   * keeps light pools off the turn and applies the caring floor.
+   * @param {string} text - Normalized matching text.
+   * @returns {boolean}
+   */
+  function containsDistressLexicon(text) {
+    const t = String(text || '');
+    return DISTRESS_LEXICON_EN.test(t) || DISTRESS_LEXICON_FA.test(t);
+  }
+
   global.DaryaUtilsText = {
     scriptRatio,
     isValidScript,
@@ -283,6 +324,7 @@
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
-    containsDeathLexicon
+    containsDeathLexicon,
+    containsDistressLexicon
   };
 })(typeof window !== 'undefined' ? window : globalThis);

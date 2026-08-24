@@ -117,7 +117,17 @@
 
     _isAmbiguousInput(normalizedText) {
       const wordCount = normalizedText.split(/\s+/u).filter(Boolean).length;
-      return wordCount <= 2 && normalizedText.length < 10;
+      if (wordCount > 2 || normalizedText.length >= 10) {
+        return false;
+      }
+      // A short QUESTION is a real question, not an ambiguous fragment:
+      // «بودای کیه؟» and "who is Buddha?" must never be told "that was
+      // short, say more". Persian packs dense meaning into two words, so
+      // this exemption matters more in Persian than in English.
+      if (this.lang.questionPattern.test(normalizedText)) {
+        return false;
+      }
+      return true;
     },
 
     /**

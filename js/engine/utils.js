@@ -40,6 +40,11 @@
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
     PLAYFUL_HUFF_STREAK,
+    HUMAN_SPARK_CHANCE,
+    HUMAN_SPARK_MIN_TURNS,
+    HUMAN_SPARK_COOLDOWN_TURNS,
+    HUMAN_SPARK_OPENER_SHARE,
+    HUMAN_SPARK_TAG_SHARE,
     WARMTH_MIN_SERIOUSNESS,
     WARMTH_MAX_SERIOUSNESS,
     WARMTH_MIN_TURN_GAP,
@@ -49,6 +54,7 @@
     SMALLTALK_CHANCE,
     HUMAN_TOUCH_INTERVAL,
     EMOTION_SHIFT_INTERVAL,
+    EMOTION_SHIFT_MIN_SAMPLES,
     ENTITY_RECENT_TURNS,
     ENTITY_RECENT_CONFIDENCE,
     ENTITY_STALE_CONFIDENCE,
@@ -113,7 +119,8 @@
     normalizeForMatching,
     scoreSentiment,
     reflectPronouns,
-    containsDeathLexicon
+    containsDeathLexicon,
+    containsDistressLexicon
   } = global.DaryaUtilsText;
 
   // Question-echo shape: a short question fragment ending in ؟/? followed
@@ -583,6 +590,11 @@
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
     PLAYFUL_HUFF_STREAK,
+    HUMAN_SPARK_CHANCE,
+    HUMAN_SPARK_MIN_TURNS,
+    HUMAN_SPARK_COOLDOWN_TURNS,
+    HUMAN_SPARK_OPENER_SHARE,
+    HUMAN_SPARK_TAG_SHARE,
     WARMTH_MIN_SERIOUSNESS,
     WARMTH_MAX_SERIOUSNESS,
     WARMTH_MIN_TURN_GAP,
@@ -592,6 +604,7 @@
     SMALLTALK_CHANCE,
     HUMAN_TOUCH_INTERVAL,
     EMOTION_SHIFT_INTERVAL,
+    EMOTION_SHIFT_MIN_SAMPLES,
     ENTITY_RECENT_TURNS,
     ENTITY_RECENT_CONFIDENCE,
     ENTITY_STALE_CONFIDENCE,
@@ -653,6 +666,7 @@
     scoreSentiment,
     reflectPronouns,
     containsDeathLexicon,
+    containsDistressLexicon,
     parseEchoShape,
     ConversationMemory
   };

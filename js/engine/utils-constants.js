@@ -22,6 +22,7 @@
   // keeps every choke point (overrides, finalization, phase, strategy)
   // in agreement about what counts as safety-critical.
   const SAFETY_CRITICAL_TOPICS = new Set([
+    'assault_generic',
     'safety',
     'safety_method',
     'third_party_risk',
@@ -63,6 +64,17 @@
   const PLAYFUL_HUFF_CHANCE = 0.25;
   const PLAYFUL_HUFF_MIN_TURNS = 4;
   const PLAYFUL_HUFF_STREAK = 3;
+  // Occasional "human spark": on light, safe turns Darya sometimes opens
+  // with a conversational interjection («راستی،», "Honestly,"), tags a
+  // statement with a friendly check-in («، نه؟», ", right?"), or lets an
+  // exclamatory close through on joyful turns. This is deliberate,
+  // bounded chaos: it makes the reply rhythm feel human instead of
+  // metronomic. Gated off safety, heavy, and structured-flow turns.
+  const HUMAN_SPARK_CHANCE = 0.14;
+  const HUMAN_SPARK_MIN_TURNS = 2;
+  const HUMAN_SPARK_COOLDOWN_TURNS = 3;
+  const HUMAN_SPARK_OPENER_SHARE = 0.5;
+  const HUMAN_SPARK_TAG_SHARE = 0.3;
   const WARMTH_MIN_SERIOUSNESS = 0.3;
   const WARMTH_MAX_SERIOUSNESS = 0.6;
   const WARMTH_MIN_TURN_GAP = 3;
@@ -75,6 +87,12 @@
   // lighter than earlier") so the context-aware touch never nags. Even a
   // string of improving turns only earns one acknowledgment per window.
   const EMOTION_SHIFT_INTERVAL = 5;
+  // Minimum recorded emotion samples before a mood-shift line may fire:
+  // one prior emotional turn plus the current one. A genuine two-turn
+  // recovery arc (anxious, then hopeful) deserves acknowledgment; a
+  // first-ever emotional turn can never produce a "your mood has moved"
+  // line because there is no previous sample to compare against.
+  const EMOTION_SHIFT_MIN_SAMPLES = 2;
   const ENTITY_RECENT_TURNS = 4;
   const ENTITY_RECENT_CONFIDENCE = 0.72;
   const ENTITY_STALE_CONFIDENCE = 0.45;
@@ -296,6 +314,11 @@
     PLAYFUL_HUFF_CHANCE,
     PLAYFUL_HUFF_MIN_TURNS,
     PLAYFUL_HUFF_STREAK,
+    HUMAN_SPARK_CHANCE,
+    HUMAN_SPARK_MIN_TURNS,
+    HUMAN_SPARK_COOLDOWN_TURNS,
+    HUMAN_SPARK_OPENER_SHARE,
+    HUMAN_SPARK_TAG_SHARE,
     WARMTH_MIN_SERIOUSNESS,
     WARMTH_MAX_SERIOUSNESS,
     WARMTH_MIN_TURN_GAP,
@@ -305,6 +328,7 @@
     SMALLTALK_CHANCE,
     HUMAN_TOUCH_INTERVAL,
     EMOTION_SHIFT_INTERVAL,
+    EMOTION_SHIFT_MIN_SAMPLES,
     ENTITY_RECENT_TURNS,
     ENTITY_RECENT_CONFIDENCE,
     ENTITY_STALE_CONFIDENCE,

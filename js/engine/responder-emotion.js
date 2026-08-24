@@ -9,6 +9,7 @@
     EMOTION_PREFIX_CHANCE,
     MIXED_LANGUAGE_REDIRECT_CHANCE,
     EMOTION_SHIFT_INTERVAL,
+    EMOTION_SHIFT_MIN_SAMPLES,
     SAFETY_CRITICAL_TOPICS,
     scoreSentiment
   } = global.DaryaUtils;
@@ -437,7 +438,13 @@
           EMOTIONAL_SHIFT_BLOCKING_TOPICS.has(topic)
         ) ||
         this.memory.turnCount - (this._lastEmotionShiftTurn || -Infinity) <
-          EMOTION_SHIFT_INTERVAL
+          EMOTION_SHIFT_INTERVAL ||
+        // A real arc needs at least two prior emotion samples plus the
+        // current one: on the first or second emotional turn there is no
+        // trajectory to acknowledge, and a "your mood has moved" line
+        // there is a hallucinated observation (the covid-turn failure).
+        !this.emotionTrajectory ||
+        this.emotionTrajectory.samples.length < EMOTION_SHIFT_MIN_SAMPLES
       ) {
         return null;
       }

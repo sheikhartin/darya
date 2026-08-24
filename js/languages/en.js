@@ -105,7 +105,7 @@
     // "today/now/current/latest/right now/at the moment" + a volatile
     // noun, or the volatile noun with an explicit price/result framing.
     liveDataPattern:
-      /\b(?:(?:price|worth|value|rate|cost) of .{0,24}(?:today|right now|now|currently|at the moment)|(?:today'?s?|current|latest|live|real.?time) (?:price|weather|news|headlines|score|scores|rate|exchange rate|temperature)|what(?:'?s| is) the (?:weather|news|temperature|score)(?: like)?(?: today| now| outside| tomorrow)?|weather (?:today|now|tomorrow|forecast|like today|like now)|(?:bitcoin|btc|ethereum|gold|dollar|euro|stock|oil) (?:price|rate|worth|value)(?: today| now| right now)?|price of (?:bitcoin|btc|ethereum|gold|dollar|euro|oil)|news (?:today|right now|update)|who (?:won|is winning) (?:the game|the match|today|tonight|last night|yesterday)|(?:last )?night'?s (?:game|match|score)|who won (?:last night|yesterday)|what (?:happened|is happening) today|any news(?: today)?|exchange rate)\b/i,
+      /\b(?:(?:price|worth|value|rate|cost) of .{0,24}(?:today|right now|now|currently|at the moment)|(?:today'?s?|current|latest|live|real.?time) (?:price|weather|news|headlines|score|scores|rate|exchange rate|temperature)|what(?:'?s| is) the (?:weather|news|temperature|score)(?: like)?(?: today| now| outside| tomorrow)?|weather (?:today|now|tomorrow|forecast|like today|like now)|(?:bitcoin|btc|ethereum|gold|dollar|euro|stock|oil) (?:price|rate|worth|value)(?: today| now| right now)?|price of (?:bitcoin|btc|ethereum|gold|dollar|euro|oil)|news (?:today|right now|update)|who (?:won|is winning) (?:the game|the match|today|tonight|last night|yesterday)|(?:last )?night'?s (?:game|match|score)|who won (?:last night|yesterday)|what (?:happened|is happening) today|any news(?: today)?|exchange rate|how much (?:is|are|does|do) (?:a|an|the|this|that) .{0,30})\b/i,
     liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
@@ -216,6 +216,10 @@
     teasingMockingResponses: R.teasingMockingResponses,
     stopWords,
     boredomResponses: R.boredomResponses,
+    distressCheckIns: R.distressCheckIns,
+    farewellCancelResponses: R.farewellCancelResponses,
+    humanSparkOpeners: R.humanSparkOpeners,
+    humanSparkTags: R.humanSparkTags,
     wellBeingPattern,
     insultPattern,
     wellBeingResponses: R.wellBeingResponses,
@@ -445,7 +449,7 @@
       // Preference disclosure ("I love coffee", "I hate crowds"): the
       // liked/disliked object is captured after the like/dislike verb.
       preferenceStatement:
-        /\b(?:i (?:love|hate|really like|dislike|enjoy|cant stand|can'?t stand))\s+(.{2,40}?)(?:[.!?]|$)/iu,
+        /\b(?:i (?:love|hate|really like|dislike|enjoy|like|cant stand|can'?t stand))\s+(.{2,40}?)(?:[.!?]|$)/iu,
       // Preference recall ("what do I like?", "what do I hate?").
       preferenceQuestion:
         /\b(?:what do i (?:like|love|hate|enjoy)|do you remember what i (?:like|love|hate)|what am i into)\b/i

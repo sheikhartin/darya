@@ -990,8 +990,8 @@
     },
     {
       id: 'pele_footballer',
-      keywords: ['پله کیه', 'پله', 'pele', 'who is pele'],
-      weak: ['پله', 'pele'],
+      keywords: ['پله کیه', 'پله فوتبالیست', 'pelé کیه', 'pele', 'who is pele'],
+      weak: ['pele'],
       weakSafe: true,
       hints: ['فوتبال', 'برزیل', 'football', 'brazil'],
       fa: 'پله (ادسون آرانتس دوناسیمنتو، ۱۹۴۰-۲۰۲۲) فوتبالیست برزیلی و یکی از بزرگ‌ترین بازیکنان تاریخ است. با برزیل سه بار قهرمان جام جهانی شد (۱۹۵۸، ۱۹۶۲، ۱۹۷۰) و بیش از هزار گل رسمی زد. به او لقب «پادشاه فوتبال» دادند. در جام جهانی ۱۹۵۸ در ۱۷ سالگی ستاره شد.',
@@ -1007,6 +1007,29 @@
       en: 'Diego Maradona (1960-2020) was an Argentine footballer and one of the greatest in history. In the 1986 World Cup, with the "Hand of God" and the "Goal of the Century", he carried Argentina to the title. His life was full of highs, lows, and addiction; he played for Napoli and Barcelona and later coached. In Argentina he is revered like a demigod.'
     },
     {
+      id: 'imam_ali',
+      keywords: [
+        'imam ali',
+        'who is imam ali',
+        'امام علی کیه',
+        'امام علی کیست',
+        'حضرت علی کیه'
+      ],
+      weak: ['امام علی', 'حضرت علی', 'imam ali'],
+      weakSafe: true,
+      hints: [
+        'شیعه',
+        'اسلام',
+        'خلافت',
+        'نهج البلاغه',
+        'shia',
+        'islam',
+        'caliph'
+      ],
+      fa: 'امام علی بن ابی‌طالب، پسرعمو و داماد پیامبر اسلام و نخستین امام شیعیان و چهارمین خلیفه‌ی اهل سنت است. در مکه به دنیا آمد و در مدینه نقش کلیدی در صدر اسلام داشت؛ سنت شیعی او را نماد عدالت، زهد و شجاعت می‌داند و سخنان و نامه‌هایش در کتاب نهج‌البلاغه گردآوری شده است. در سال ۴۰ هجری قمری (۶۶۱ میلادی) در کوفه به دست ابن‌ملجم کشته شد و حرم او در نجف از مهم‌ترین زیارتگاه‌های جهان اسلام است.',
+      en: 'Imam Ali ibn Abi Talib, the cousin and son-in-law of the Islamic prophet Muhammad, is the first Imam in Shia tradition and the fourth caliph in Sunni tradition. Born in Mecca, he played a central role in early Islam in Medina; Shia tradition honors him as a symbol of justice, asceticism, and courage, and his sermons and letters are collected in Nahj al-Balagha. He was assassinated in Kufa in 661 CE, and his shrine in Najaf is one of the most visited sites in the Muslim world.'
+    },
+    {
       id: 'ali_boxer',
       keywords: [
         'محمد علی کیه',
@@ -1014,7 +1037,7 @@
         'muhammad ali',
         'who is muhammad ali'
       ],
-      weak: ['محمد علی', 'محمدعلی', 'کلی', 'muhammad ali', 'ali'],
+      weak: ['محمد علی', 'محمدعلی', 'muhammad ali'],
       weakSafe: true,
       hints: ['بوکس', 'قهرمان', 'boxing', 'champion'],
       fa: 'محمدعلی کلی (کاسیوس کلی، ۱۹۴۲-۲۰۱۶) بوکسور آمریکایی و از بزرگ‌ترین ورزشکاران قرن بیستم بود. سه بار قهرمان سنگین‌وزن جهان شد و با «وزوز مثل پروانه، نیش مثل زنبور» معروف بود. به خاطر اعتقاداتش از جنگ ویتنام سر باز زد و عنوانش گرفته شد؛ بعدها نماد ایستادگی و عدالت شد. بیماری پارکینسون آخر عمرش را گرفت.',

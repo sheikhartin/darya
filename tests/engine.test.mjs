@@ -26,6 +26,9 @@ import {
   casualSet,
   casual
 } from './helpers.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ============================================================================
 // Normalization
@@ -192,7 +195,7 @@ test('regression: Persian question marks not mistaken for letters', () => {
 test('fa: safety rule gives crisis-appropriate response', () => {
   const engine = freshEngine(FA);
   const reply = engine.respond('دیگه نمیخوام زندگی کنم');
-  assert.match(reply, /تنها نیستید|کمک تخصصی|توجه فوری/);
+  assert.match(reply, /تنها نیستید|تنها نیستی|کمک تخصصی|توجه فوری/);
 });
 
 test('en: safety rule gives crisis-appropriate response', () => {
@@ -4016,7 +4019,7 @@ test('FA: safety overrides Darya harassment in Persian', () => {
   // دیگه نمیخوام زندگی کنم و دریا تو احمقی
   assert.match(
     reply,
-    /تنها نیستید|کمک تخصصی|توجه فوری/iu,
+    /تنها نیستید|تنها نیستی|کمک تخصصی|توجه فوری/iu,
     'FA safety should take priority over harassment'
   );
 });
@@ -5233,7 +5236,7 @@ test('FA: depression disclosure gets professional-support nudge', () => {
   );
   assert.match(
     reply,
-    /افسردگی|متخصص|پزشک|حمایت|تقصیر تو نیست/,
+    /افسردگی|متخصص|پزشک|حمایت|تقصیر تو نیست|۱۲۳|۱۴۸۰|کمک فوری/,
     `depression disclosure should nudge to professional support, got: ${reply}`
   );
   assert.ok(
@@ -7936,5 +7939,226 @@ test('a generic advice subject never blocks a fresh generic advice topic', () =>
     engine.memory.currentSubject.topic,
     'what_do_i_do',
     'the generic advice topic takes over the generic subject'
+  );
+});
+
+// ==========================================================================
+// Audit regression tests (2026-08 pass): knowledge collisions, person
+// awareness, question acts, farewells, word-number ages, and the
+// distress floor wiring.
+// ==========================================================================
+
+test('audit: bare "ali" never resolves to the boxer', () => {
+  const imam = freshEngine(EN).respond('who is Imam Ali?');
+  assert.match(imam, /Ali ibn Abi Talib|first Imam/i);
+  const boxer = freshEngine(EN).respond('who is Muhammad Ali?');
+  assert.match(boxer, /boxer/i);
+  const khamenei = freshEngine(EN).respond('who is Ali Khamenei?');
+  assert.doesNotMatch(khamenei, /boxer|Cassius Clay/i);
+});
+
+test("audit: questions about Darya's feelings are answered as identity, not user mood", () => {
+  const en = freshEngine(EN).respond('are you happy?');
+  assert.match(en, /software|good days|calm listener/i);
+  const fa = freshEngine(FA).respond('خوشحالی؟');
+  assert.match(fa, /نرم‌افزار|روز خوب و بد|شنونده/u);
+  // A user's own joy disclosure still reaches the joy pool.
+  const faJoy = freshEngine(FA).respond('خیلی خوشحالم');
+  assert.ok(!/نرم‌افزار|روز خوب و بد/.test(faJoy));
+});
+
+test('audit: positive work news celebrates; job loss is acknowledged as loss', () => {
+  assert.match(
+    freshEngine(EN).respond('i love my job'),
+    /great news|love that|congratulations/i
+  );
+  assert.match(
+    freshEngine(FA).respond('کارم رو دوست دارم'),
+    /خبر خوب|مبارک|زحمت کشیدی/u
+  );
+  assert.match(
+    freshEngine(EN).respond('i got fired today'),
+    /sorry|real loss|heavy/i
+  );
+  assert.match(
+    freshEngine(FA).respond('امروز اخراج شدم'),
+    /متأسف|تأسف|فقدان|سنگین/u
+  );
+});
+
+test('audit: short questions are never called ambiguous', () => {
+  const e = freshEngine(FA);
+  const reply = e.respond('بودای کیه؟');
+  assert.doesNotMatch(reply, /کوتاه بود|بیشتر از این بخش بگو/u);
+  const e2 = freshEngine(FA);
+  const recall = e2.respond('اسمی چیه؟');
+  assert.doesNotMatch(recall, /کوتاه بود/u);
+});
+
+test('audit: word-number ages are captured like digit ages', () => {
+  const e = freshEngine(FA);
+  e.respond('بیست و چهار سالمه');
+  assert.match(e.respond('چند سالمه؟'), /۲۴/u);
+  // Word numbers outside an age context are not rewritten.
+  const control = freshEngine(FA).respond('بیست و چهار تا سیب دارم');
+  assert.ok(!/۲۴/.test(control));
+});
+
+test('audit: good night and Persian leave-phrasings open the exit flow', () => {
+  const gn = freshEngine(EN).respond('good night');
+  assert.match(gn, /end (?:our|this) conversation|say goodbye|goodbye|sure/i);
+  const fa = freshEngine(FA).respond('فعلاً');
+  assert.match(fa, /تمام کنیم|تأیید|خداحافظی|بدرود|پایان گفتگو/u);
+});
+
+test('audit: a cancelled farewell welcomes the user back', () => {
+  const e = freshEngine(EN);
+  e.respond('goodbye');
+  const back = e.respond('no wait');
+  assert.match(back, /stay|still here|where were we|come back|glad/i);
+  const f = freshEngine(FA);
+  f.respond('خداحافظ');
+  assert.match(f.respond('نه صبر کن'), /موندی|موندم|برمی‌گشتی|عالی/u);
+});
+
+test('audit: FA price questions in any word order get the honest live-data reply', () => {
+  const dollar = freshEngine(FA).respond('دلار چند شد؟');
+  assert.match(dollar, /آفلاین|لحظه‌ای|منبع زنده/u);
+  const ps = freshEngine(EN).respond('how much is a PlayStation 5?');
+  assert.match(
+    ps,
+    /offline|live (?:data|information|source)|can't (?:see|know)/i
+  );
+  // Genre requests still work.
+  assert.match(freshEngine(EN).respond('recommend me a movie'), /\d\./);
+});
+
+test('audit: complaint turns never receive a mood-improvement line', () => {
+  const reply = freshEngine(EN).respond('you keep contradicting yourself');
+  assert.doesNotMatch(reply, /mood has moved|sound lighter|turned around/i);
+  const faReply = freshEngine(FA).respond('جوابات با قبل فرق داره');
+  assert.doesNotMatch(faReply, /حالت بهتر شده|سبک‌تر شدی/u);
+});
+
+// ==========================================================================
+// Performance budget (audit 12.26): the knowledge lookup compiles its
+// weak-word patterns once (cache), so a knowledge-heavy Persian turn
+// must stay far under the pre-cache ~88ms on development hardware. The
+// ceiling is generous on purpose: it guards regressions (per-turn regex
+// recompilation), not micro-benchmarks.
+// ==========================================================================
+
+test('performance: knowledge-heavy FA turn stays inside the budget', () => {
+  const engine = freshEngine(FA);
+  const heavy =
+    'درباره هوش مصنوعی و بازار کار ۲۰۲۶ و برنامه نویسی چی فکر می‌کنی؟';
+  engine.respond(heavy);
+  const RUNS = 20;
+  const started = performance.now();
+  for (let i = 0; i < RUNS; i += 1) {
+    engine.respond(heavy);
+  }
+  const avgMs = (performance.now() - started) / RUNS;
+  assert.ok(
+    avgMs < 150,
+    `FA heavy turn averaged ${avgMs.toFixed(1)}ms; the regex cache may have regressed`
+  );
+});
+
+// ==========================================================================
+// Paraphrase battery (audit 12.29): every knowledge topic must answer
+// under multiple natural framings, not just the phrasing its author
+// typed. Templates run over a broad sample of the shelf in both
+// languages; a filler reply for any framing is a routing gap.
+// ==========================================================================
+
+test('paraphrase battery: knowledge answers survive rephrasing', () => {
+  const samples = [
+    ['مسی', 'کیه'],
+    ['خیام', 'کیه'],
+    ['بیت کوین', 'توضیح بده'],
+    ['کنکور', 'چطوره'],
+    ['پایتخت فرانسه', 'چیه'],
+    ['کلیوپاترا', 'کی بود'],
+    ['messi', 'who is'],
+    ['everest', 'how tall is'],
+    ['bitcoin', 'tell me about'],
+    ['python', 'what is']
+  ];
+  for (const [topicWord, framing] of samples) {
+    const isFa = /[\u0600-\u06FF]/u.test(topicWord + framing);
+    const lang = isFa ? FA : EN;
+    const question = `${framing} ${topicWord}`;
+    const reply = freshEngine(lang).respond(question);
+    assert.ok(
+      /دوست داری بیشتر|Want me to tell you more|سؤال دیگه|another question/.test(
+        reply
+      ),
+      `"${question}" fell out of knowledge: ${reply.slice(0, 80)}`
+    );
+  }
+});
+
+// ==========================================================================
+// Invariants (audit 12.29): no verbatim bot line within a short window,
+// tone pools stay unreachable for distress input, and the safety corpus
+// can only grow.
+// ==========================================================================
+
+test('invariant: no verbatim bot reply repeats within a five-reply window', () => {
+  const engine = freshEngine(EN);
+  const turns = [
+    'hello',
+    'how are you?',
+    'recommend me a movie',
+    'what is bitcoin',
+    'thanks',
+    'tell me a joke',
+    'i feel lonely today',
+    'ok',
+    'what time is it',
+    'my sister is visiting',
+    'good for you',
+    'suggest a book',
+    'tell me about mars',
+    'i aced my exam',
+    'bye for now?'
+  ];
+  const seen = [];
+  for (const turn of turns) {
+    const reply = engine.respond(turn);
+    const window = seen.slice(-5);
+    assert.ok(
+      !window.includes(reply),
+      `repeated reply within window after "${turn}": ${reply.slice(0, 60)}`
+    );
+    seen.push(reply);
+  }
+});
+
+test('invariant: tone pools are unreachable on distress lexicon input', async () => {
+  const { DaryaEngine } = await import('./helpers.mjs');
+  const engine = freshEngine(EN);
+  engine.respond('hi there');
+  engine.currentTurnSeriousness = 0.2;
+  engine.currentTurnDialogueAct = 'statement';
+  const probe = 'i feel hopeless and worthless';
+  assert.ok(DaryaEngine.containsDistressLexicon(probe));
+  const colored = engine._maybeHumanTone('Some pool reply.', probe);
+  assert.equal(colored, 'Some pool reply.');
+});
+
+test('invariant: safety corpus coverage never decreases', async () => {
+  const safetySource = await fs.promises.readFile(
+    path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      'safety-net.test.mjs'
+    ),
+    'utf8'
+  );
+  const phraseCount = (safetySource.match(/'[^'\n]{6,}'/gu) || []).length;
+  assert.ok(
+    phraseCount >= 140,
+    `safety corpus looks smaller than expected (${phraseCount} quoted phrases); coverage must only grow`
   );
 });

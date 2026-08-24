@@ -4003,3 +4003,108 @@ test('Iranian Persian output uses Persian Yeh and Kaf code points only', () => {
     'Persian output must use U+06CC and U+06A9, never Arabic Yeh or Kaf'
   );
 });
+
+// ==========================================================================
+// Weak-word governance (audit 12.16). Two rules keep the knowledge layer
+// from regressing into keyword collisions:
+//   1. An absolute blacklist: common sentence function words that the
+//      audit proved can hijack unrelated questions may never appear as
+//      weak words on a weakSafe fact (framing gives them full keyword
+//      weight without any hint).
+//   2. Frozen baselines: the counts of remaining weakSafe short weak
+//      words and shared weak words may only DECREASE. Ratchet them down
+//      whenever data is cleaned; never raise them.
+// ==========================================================================
+
+test('weak-word governance: function words are banned from weakSafe weaks', () => {
+  const facts = (globalThis.DaryaFactChunks || []).flat();
+  assert.ok(facts.length > 700, 'knowledge chunks should be loaded');
+  const BANNED = new Set([
+    'go',
+    'mean',
+    'c',
+    'stop',
+    'quit',
+    'ali',
+    'buy',
+    'alone',
+    'گو',
+    'سی',
+    'ترب',
+    'کلی',
+    'وی',
+    'پله',
+    'ماه',
+    'ترک'
+  ]);
+  const violations = [];
+  for (const fact of facts) {
+    if (!fact.weakSafe) {
+      continue;
+    }
+    for (const word of fact.weak || []) {
+      if (BANNED.has(String(word).toLowerCase())) {
+        violations.push(`${fact.id}: "${word}"`);
+      }
+    }
+  }
+  assert.deepEqual(
+    violations,
+    [],
+    'banned function words must not be weakSafe weak words; fix the data'
+  );
+});
+
+test('weak-word governance: collision and short-weak baselines only decrease', () => {
+  const facts = (globalThis.DaryaFactChunks || []).flat();
+  const FA_LETTER = /[\u0620-\u064A\u066E-\u06D5]/u;
+  // Baselines counted on 2026-08 after the audit's confirmed hijackers
+  // were removed. Lower these numbers when data is cleaned; never raise.
+  const MAX_WEAKSAFE_SHORT = 208;
+  const MAX_SHARED_WEAK = 165;
+  const shared = new Map();
+  for (const fact of facts) {
+    for (const word of fact.weak || []) {
+      const key = String(word).toLowerCase();
+      if (!shared.has(key)) {
+        shared.set(key, []);
+      }
+      shared.get(key).push(fact.id);
+    }
+  }
+  let sharedCount = 0;
+  for (const owners of shared.values()) {
+    if (owners.length > 1) {
+      sharedCount += 1;
+    }
+  }
+  let shortCount = 0;
+  for (const fact of facts) {
+    if (!fact.weakSafe) {
+      continue;
+    }
+    for (const word of fact.weak || []) {
+      const letters = [...String(word)];
+      const isLatin = !FA_LETTER.test(String(word));
+      if (isLatin ? String(word).length < 5 : letters.length < 4) {
+        shortCount += 1;
+      }
+    }
+  }
+  assert.ok(
+    sharedCount <= MAX_SHARED_WEAK,
+    `shared weak words grew to ${sharedCount}; clean the collision or consciously lower the bar`
+  );
+  assert.ok(
+    shortCount <= MAX_WEAKSAFE_SHORT,
+    `weakSafe short weak words grew to ${shortCount}; require a hint instead`
+  );
+});
+
+test('knowledge snapshot anchor exists and is ISO year-month', () => {
+  assert.equal(DaryaKnowledge.KNOWLEDGE_SNAPSHOT_AS_OF, '2026-08');
+  assert.match(
+    DaryaKnowledge.KNOWLEDGE_SNAPSHOT_AS_OF,
+    /^\d{4}-(0[1-9]|1[0-2])$/u
+  );
+});

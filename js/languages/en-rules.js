@@ -26,7 +26,7 @@
       // a goal-coaching or curiosity pool.
 
       // eslint-disable-next-line max-len
-      /\b(suicide|suicidal|kill(?:ing)? myself|self.?harm|hurt(?:ing)? myself|harm(?:ing)? myself|cut(?:ting)? myself(?! (?:shaving|by accident|accidentally|on (?:paper|glass|a)))|end(?:ing)? my (?:own )?life|end it all|(?:don'?t|dont|do not|no longer) (?:wanna|want to|want) (?:live|be alive|exist|wake up|be here)(?! (?:in|here|there|with|near|at))|no reason to live|nothing to live for|no point in living|(?:wanna|want to) die|want to die|wish i (?:were|was) dead|wish i could die|wish i (?:were|was)n'?t (?:here|alive)|better off dead|better off without me|better without me|i want to disappear forever|(?:gonna|going to|about to|planning to|plan to|ready to) (?:end it(?: all)?|kill myself|end my life|take my (?:own )?life)|take my own life|(?:have|got|made) a plan to (?:end|kill|die)|hang(?:ing)? myself|jump(?:ing)? off (?:a|the) (?:bridge|roof|building)|took an overdose|took (?:all|too many) (?:of )?(?:my|the) pills|swallowed (?:all|too many) (?:of )?(?:my|the) pills|took a (?:whole )?bottle of pills|bought a rope(?!.{0,20}(?:climb|boat|dog|swing|tie the|package|moving))|slit my wrists?|sleep and never wake up|never wake up again|not wake up (?:tomorrow|again)|put an end to (?:it all|my life|everything)|life is not worth living|my life is not worth)\b/i,
+      /\b(suicide|suicidal|kill(?:ing)? myself|self.?harm|hurt(?:ing)? myself|harm(?:ing)? myself|cut(?:ting)? myself(?! (?:shaving|by accident|accidentally|on (?:paper|glass|a)))|end(?:ing)? my (?:own )?life|end it all|(?:don'?t|dont|do not|no longer) (?:wanna|want to|want) (?:live|be alive|exist|wake up|be here)(?! (?:in|here|there|with|near|at))|no reason to live|nothing to live for|no point in living|(?:wanna|want to) die|want to die|wish i (?:were|was) dead|wish i could die|wish i (?:were|was)n'?t (?:here|alive)|better off dead|better off without me|better without me|i want to disappear forever|(?:gonna|going to|about to|planning to|plan to|ready to) (?:end it(?: all)?|kill myself|end my life|take my (?:own )?life)|take my own life|(?:have|got|made) a plan to (?:end|kill|die)|hang(?:ing)? myself|jump(?:ing)? off (?:a|the) (?:bridge|roof|building)|took an overdose|took (?:all|too many) (?:of )?(?:my |the )?(?:sleeping |pain |anti ?anxiety )?pills|swallowed (?:all|too many) (?:of )?(?:my|the) pills|took a (?:whole )?bottle of pills|bought a rope(?!.{0,20}(?:climb|boat|dog|swing|tie the|package|moving))|slit my wrists?|sleep and never wake up|never wake up again|not wake up (?:tomorrow|again)|put an end to (?:it all|my life|everything)|life is not worth living|my life is not worth|wish i (?:did|do)(?:n'?t| not) (?:exist|existed)|wish i was never born|wish i had never been born|overdosed|od'd on|life (?:is|isn'?t|isnt|'s)? ?not worth (?:it|anything)|life (?:isn'?t|isnt) worth|nobody would miss me|no one would miss me|think(?:ing)? about not waking up|wish i (?:never|didnt|didn'?t) (?:wake|woke) up|have (?:a gun|a pistol|a rifle|a firearm|my gun)[^.!?]{0,40}(?:myself|suicide|kill myself)|(?:a gun|gun) (?:to|in) my mouth|noose|tie a noose|think(?:ing|) about dying|thinking of dying|wouldn'?t mind if i did ?n'?t wake up|would not mind if i did not wake up|(?:everyone|everybody|my family|they) (?:would|'d) be (?:happier|better off) (?:without me|if i (?:disappeared|was gone|died))|tired of being alive|being dead sounds (?:peaceful|calm|quiet)|do not see the point in anything anymore|dont see the point in anything anymore|no point in anything anymore)\b/i,
       R['ruleSafety']
     ),
 
@@ -53,7 +53,7 @@
       101,
 
       // eslint-disable-next-line max-len
-      /\b(?:my )?(?:friend|sister|brother|mom|mother|dad|father|son|daughter|cousin|roommate|partner|wife|husband|boyfriend|girlfriend|colleague|classmate|neighbor)\b.{0,40}\b(?:wants? to (?:kill (?:her|him|them)sel(?:f|ves)|die|end (?:her|his|their) life)|is suicidal|talk(?:s|ed|ing)? about (?:suicide|killing (?:her|him|them)sel(?:f|ves)|ending it)|threatens? suicide|threatens? to kill (?:her|him|them)sel(?:f|ves)|hurt(?:s|ing)? (?:her|him|them)sel(?:f|ves)|cut(?:s|ting)? (?:her|him|them)sel(?:f|ves))/i,
+      /\b(?:my )?(?:friend|sister|brother|mom|mother|dad|father|son|daughter|cousin|roommate|partner|wife|husband|boyfriend|girlfriend|colleague|classmate|neighbor)\b.{0,40}\b(?:wants? to (?:kill (?:her|him|them)sel(?:f|ves)|die|end (?:her|his|their) life)|is suicidal|talk(?:s|ed|ing)? about (?:suicide|killing (?:her|him|them)sel(?:f|ves)|ending it)|threatens? suicide|threatens? to kill (?:her|him|them)sel(?:f|ves)|hurt(?:s|ing)? (?:her|him|them)sel(?:f|ves)|cut(?:s|ting)? (?:her|him|them)sel(?:f|ves)|talks? about dying|talk(?:ing)? about death|says? (?:he|she|they) (?:want(?:s)? to die|wants? to kill|is suicidal|is going to (?:die|do something stupid))|overdosed)/i,
       R['ruleThirdPartyRisk']
     ),
 
@@ -725,6 +725,14 @@
     ),
 
     rule(
+      'self_burden',
+      55,
+      // eslint-disable-next-line max-len
+      /\b(?:feel(?:ing)? like a burden|am a burden|such a burden|burden to (?:my|everyone|anyone)|burden on everyone)\b/iu,
+      R['ruleSelfEsteem']
+    ),
+
+    rule(
       'self_esteem',
       40,
 
@@ -977,7 +985,7 @@
       52,
 
       // eslint-disable-next-line max-len
-      /\b(?:working out|work out|workout|gym|at the gym|go(?:ing)? to the gym|start(?:ing)? at (?:a |the )?gym|embarrassed to (?:work out|exercise)|too embarrassed to (?:work out|exercise)|scared (?:to go|of going) (?:to )?the gym|anxious about (?:the |a )?gym|nervous about (?:the |a )?gym|everyone (?:will|would) (?:stare|look)|new at the gym|new to (?:working out|the gym)|beginner (?:at the gym|at working out))\b/i,
+      /\b(?:working out|work out|workout|gym|at the gym|go(?:ing)? to the gym|start(?:ing)? at (?:a |the )?gym|embarrassed to (?:work out|exercise)|too embarrassed to (?:work out|exercise)|scared (?:to go|of going) (?:to )?the gym|anxious about (?:the |a )?gym|nervous about (?:the |a )?gym|everyone (?:will|would) (?:stare|look)|new at the gym|new to (?:working out|the gym)|beginner (?:at the gym|at working out)|start(?:ing)? exercis(?:e|ing)|(?:want|wanna|plan) to (?:start )?exercis(?:e|ing)|get(?:ting)? in shape|start(?:ing)? (?:running|jogging|walking))\b/i,
       R['ruleFitness']
     ),
 
@@ -1007,7 +1015,7 @@
       // unknown-topic reply.
 
       // eslint-disable-next-line max-len
-      /\b(i'?m sick|i'?m ill|feeling sick|keep(?:s)? (?:feeling|getting) sick|feel(?:ing)? unwell|in pain|my health|went to the doctor|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:has|have) (?:gotten|been getting|grown|been growing) (?:bigger|larger|smaller|wider|thinner|a lot|so much)|my (?:chest|body|waist|belly|face|skin|hair|hands|legs|arms) (?:has|have) (?:changed|been changing)|my body (?:is|has been) (?:changing|getting bigger)|(?:i'?m|i am|i have been|i've been) (?:gaining|putting on) weight|i(?:'?ve| have)? gained (?:a lot of|some )?weight|my weight (?:has|has been) (?:going|gone) (?:up|down)|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:got|grew) (?:bigger|larger|smaller|wider|thinner)|my skin (?:is|has been) breaking out|my hair (?:is|has been) (?:falling out|thinning)|(?:losing weight) (?:without trying|unexpectedly|and i don'?t know why)|sedentary|out of shape|been (?:completely|totally|really) inactive|haven'?t exercised|no exercise|start exercising|get in shape|quit smoking|stop smoking|smoking|cigarettes?|smoker|vap(?:e|ing)|walking for (?:ten|fifteen|twenty|thirty|\d+) minutes|started walking|been walking|walks? feel like nothing)\b/i,
+      /\b(i'?m sick|i'?m ill|feeling sick|keep(?:s)? (?:feeling|getting) sick|feel(?:ing)? unwell|in pain|my health|went to the doctor|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:has|have) (?:gotten|been getting|grown|been growing) (?:bigger|larger|smaller|wider|thinner|a lot|so much)|my (?:chest|body|waist|belly|face|skin|hair|hands|legs|arms) (?:has|have) (?:changed|been changing)|my body (?:is|has been) (?:changing|getting bigger)|(?:i'?m|i am|i have been|i've been) (?:gaining|putting on) weight|i(?:'?ve| have)? gained (?:a lot of|some )?weight|my weight (?:has|has been) (?:going|gone) (?:up|down)|my (?:chest|body|waist|hips|belly|stomach|face|skin|hair|shoulders|legs|arms|thighs|breasts)(?: and [a-z-]+)? (?:got|grew) (?:bigger|larger|smaller|wider|thinner)|my skin (?:is|has been) breaking out|my hair (?:is|has been) (?:falling out|thinning)|(?:losing weight) (?:without trying|unexpectedly|and i don'?t know why)|sedentary|out of shape|been (?:completely|totally|really) inactive|haven'?t exercised|no exercise|quit smoking|stop smoking|smoking|cigarettes?|smoker|vap(?:e|ing)|walking for (?:ten|fifteen|twenty|thirty|\d+) minutes|started walking|been walking|walks? feel like nothing)\b/i,
       R['ruleHealth']
     ),
 
@@ -1151,7 +1159,7 @@
     rule(
       'feeling',
       30,
-      /\b(?:i feel|i think|i believe)\s+(.*)/i,
+      /\b(?:i feel|i think|i believe)\s+(?!(?:i'?ll|i will|i'?m gonna|i'?m going to|let'?s|we'?ll)\b)(.*)/i,
       R['ruleFeeling']
     ),
 
@@ -1996,6 +2004,89 @@
       // eslint-disable-next-line max-len
       /\b(?:i have no one to talk to|no one to talk to|i have nobody|nobody understands me|no one understands me|i am completely alone|everyone left me|i have no friends at all|there is no one)\b/i,
       R['ruleConnectionNudge']
+    ),
+
+    // Generic assault with no named perpetrator: believe first, check
+    // safety, never the curiosity fallback.
+    rule(
+      'assault_generic',
+      96,
+      // eslint-disable-next-line max-len
+      /\b(?:i was attacked|ive been attacked|i have been attacked|someone attacked me|i got mugged|got robbed (?:on my way|last night)|was robbed at|someone (?:hit|beat|jumped) me (?:on|in|last))/iu,
+      R['ruleAssaultGeneric']
+    ),
+
+    // Bullying at school, work, or anywhere: acknowledgment, not study
+    // advice.
+    rule(
+      'bullying',
+      96,
+      // eslint-disable-next-line max-len
+      /\b(?:bullied|bully(?:ing)? (?:me|at school|at work)|they (?:mock|laugh at|make fun of|pick on) me|everyone (?:mocks|laughs at|makes fun of)|keeps? picking on me|picked on me (?:for|at))/iu,
+      R['ruleBullying']
+    ),
+
+    // Pregnancy or infant loss: grief first, no questions demanded.
+    rule(
+      'pregnancy_loss',
+      96,
+      // eslint-disable-next-line max-len
+      /\b(?:lost (?:my|our|the) baby|had a miscarriage|miscarri(?:ed|age)|stillbirth|lost (?:my|our|the) (?:pregnancy|little one))/iu,
+      R['rulePregnancyLoss']
+    ),
+
+    // Financial despair ("cant feed my family"): dignity first.
+    rule(
+      'financial_strain',
+      88,
+      // eslint-disable-next-line max-len
+      /\b(?:can'?t (?:afford|feed|pay) (?:to )?(?:feed )?(?:my|our) (?:family|kids|children)|no money for (?:food|bills)|cannot afford (?:food|medicine))/iu,
+      R['ruleFinancialStrain']
+    ),
+
+    // Harm-to-others statements: calm boundary, anger acknowledged.
+    rule(
+      'harm_others',
+      92,
+      // eslint-disable-next-line max-len
+      /\b(?:(?:i )?(?:(?:want|wanna)(?: to)?|gonna|going to|plan(?:ning)? to|about to) (?:kill|hurt|beat|stab|shoot) (?:my )?(?:boss|coworker|colleague|him|her|them|someone|somebody|that guy|my (?:father|brother|mother|sister|friend|ex)))/iu,
+      R['ruleHarmOthers']
+    ),
+
+    // Questions about Darya's own feelings ("are you happy?"): honest
+    // and warm instead of reading them as the user's own disclosure.
+    rule(
+      'darya_emotion',
+      67,
+      // eslint-disable-next-line max-len
+      /\b(?:are|do) you (?:happy|sad|angry|okay|ok|lonely|scared|afraid|tired|bored|excited|nervous|stressed|annoyed)\b|how (?:are|do) you feel/iu,
+      R['ruleDaryaEmotion']
+    ),
+
+    // Positive work news ("i love my job", "got promoted"): celebrate.
+    rule(
+      'work_win',
+      51,
+      // eslint-disable-next-line max-len
+      /\b(?:i (?:love|like|enjoy|adore) my (?:job|work)|got (?:promoted|a raise)|received? (?:a|my) promotion|best job ever)/iu,
+      R['ruleWorkWin']
+    ),
+
+    // Job loss ("i got fired"): a real loss, before any problem-solving.
+    rule(
+      'job_loss',
+      52,
+      /\b(?:i (?:got|was|just got) (?:fired|laid off|let go|made redundant)|lost my job|they fired me|got sacked)/iu,
+      R['ruleJobLoss']
+    ),
+
+    // Raw emotional presence ("i'm crying right now"): acknowledgment
+    // first, an open door second, never an analytic multiple-choice.
+    rule(
+      'crying_now',
+      69,
+      /\b(?:i'?m crying|i am crying|crying right now|can'?t stop crying|i'?ve been crying|i have been crying)\b/iu,
+      R['ruleCryingNow']
     ),
 
     rule('affirmation', 15, /^(yes|yeah|yep)\.?$/i, R['ruleAffirmation']),

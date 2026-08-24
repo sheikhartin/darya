@@ -133,12 +133,30 @@
     // The bookish question particle adds nothing in conversation:
     // «آیا چیزی هست که...» reads naturally as «چیزی هست که...».
     [new RegExp(`(?<![${FA_WORD}])آیا (?=[${FA_WORD}])`, 'gu'), ''],
+    // «بخواهید» (as much as you want) is the one ب-subjunctive the pools
+    // use; the می‌ pass cannot see it because it lacks the prefix.
+    [new RegExp(`(?<![${FA_WORD}])بخواهید(?![${FA_WORD}])`, 'gu'), 'بخوای'],
+    // The polite plural enclitic «ـتان» after a ZWNJ boundary is always
+    // possessive («پیام‌تان»), never part of a word like «استان» (which
+    // has no ZWNJ), so it collapses to the everyday «ـتون» everywhere.
+    [new RegExp(`${ZWNJ}تان(?![${FA_LETTER}])`, 'gu'), ZWNJ + 'تون'],
+    // The vowel-glued «ـتان» enclitic («دلتان», «خوابتان», «سراغتان»)
+    // has no ZWNJ to key on, so only a curated set of noun hosts is
+    // rewritten; a bare suffix rule would eat real words like
+    // «گلستان» or «داستان».
+    [
+      new RegExp(
+        '(?<![\\u0620-\\u064A\\u066E-\\u06D5])(دل|خواب|غم|خشم|حرف|نظر|پیام|سؤال|سوال|احساس|زندگی|اعتماد|درمان|سراغ|اخیر|همراه|دست|جواب|ناراحت|ذهن|روز|منظور|حواس|رفتار|بدن|سلامتی|حال|لطف)تان(?![\\u0620-\\u064A\\u066E-\\u06D5])',
+        'gu'
+      ),
+      '$1تون'
+    ],
     // «کند» alone is ambiguous (the adjective means "slow"), so the
     // light-verb construction is only rewritten after a whitelisted
     // object noun: «کمک کند» → «کمک کنه», while «اینترنت کند» stays.
     [
       new RegExp(
-        '(کمک|کمکت|کمکش|فکر|کار|حل|پیدا|تغییر|رشد|درک|صحبت|تمرکز|عمل|' +
+        '(کمک|کمکت|کمکش|فکر|کار|حل|پیدا|تغییر|رشد|درک|صحبت|تمرکز|تماشا|ممکن|عمل|' +
           `قضاوت|تجربه|ایجاد|شروع|تمام|ثبت|حفظ|دنبال|قبول|تحمل) کند(?![${FA_WORD}])`,
         'gu'
       ),
@@ -206,6 +224,40 @@
     خودشان: 'خودشون',
     ایشان: 'ایشون',
     بگویید: 'بگین',
+    بنویسید: 'بنویس',
+    بردارید: 'بردار',
+    ببینید: 'ببین',
+    بشینید: 'بشین',
+    بخوابید: 'بخواب',
+    بدید: 'بدی',
+    ندارید: 'ندارین',
+    نیستید: 'نیستی',
+    بینتان: 'بینتون',
+    نکنید: 'نکنین',
+    دوشتان: 'دوتون',
+    روزهایتان: 'روزهاتون',
+    // Simple-past second-person plural, formal «شما» register → the
+    // friendly singular Darya actually speaks with: «گفتید» → «گفتی»,
+    // «احوالپرسی کردید» → «احوالپرسی کردی». Exact tokens only; a bare
+    // «ید» suffix rule would mangle nouns like «امید».
+    گفتید: 'گفتی',
+    کردید: 'کردی',
+    شدید: 'شدی',
+    بودید: 'بودی',
+    رفتید: 'رفتی',
+    دیدید: 'دیدی',
+    شنیدید: 'شنیدی',
+    فهمیدید: 'فهمیدی',
+    خواستید: 'خواستی',
+    داشتید: 'داشتی',
+    گرفتید: 'گرفتی',
+    دادید: 'دادی',
+    گذاشتید: 'گذاشتی',
+    برداشتید: 'برداشتی',
+    نوشتید: 'نوشتی',
+    خوردید: 'خوردی',
+    آمدید: 'اومدی',
+    رسیدید: 'رسیدی',
     بگذار: 'بذار',
     بگذارم: 'بذارم',
     بگذاری: 'بذاری',
@@ -437,7 +489,21 @@
     آید: 'اد',
     آیم: 'ام',
     آیی: 'ای',
-    آیند: 'ان'
+    آیند: 'ان',
+    // Simple-past second-person plural inside the می‌ pass:
+    // «می‌گفتید» → «می‌گفتی» (the FA_PAST_FORMS skip would otherwise
+    // freeze these in the formal register).
+    گفتید: 'گفتی',
+    کردید: 'کردی',
+    بودید: 'بودی',
+    رفتید: 'رفتی',
+    دیدید: 'دیدی',
+    دادید: 'دادی',
+    گرفتید: 'گرفتی',
+    خواستید: 'خواستی',
+    توانستید: 'تونستی',
+    دانستید: 'دونستی',
+    شدید: 'شدی'
   };
 
   /** «می‌آید» family joins the prefix directly: «میاد», «نمیاد». */
@@ -470,14 +536,14 @@
    * @returns {string|null}
    */
   function colloquialVerb(prefix, rest) {
-    if (FA_PAST_FORMS.test(rest)) {
-      return null;
-    }
     if (FA_IRREGULAR_VERBS[rest]) {
       if (FA_JOIN_PREFIX_VERBS.has(rest)) {
         return prefix + FA_IRREGULAR_VERBS[rest];
       }
       return prefix + ZWNJ + FA_IRREGULAR_VERBS[rest];
+    }
+    if (FA_PAST_FORMS.test(rest)) {
+      return null;
     }
     // Disambiguate «کند»-style forms first: a rest ending in a single
     // «ند» whose «stem + د» reading has a known ن-final stem is a
@@ -581,7 +647,7 @@
         if (ending === 'ای') {
           return stem + 'ی';
         }
-        return stem + 'ید';
+        return stem + 'ی';
       }
     );
   }
@@ -784,36 +850,75 @@
     'چنده',
     'چقدره',
     'چقدر',
+    'چی شد',
+    'چی میشه',
+    'چی می‌شه',
     'می‌خوای',
     'میخوای',
     'می‌خواهی',
     'میخواهی',
     'دوست داری',
+    'دوست دارید',
     'موافقی',
     'موافقید',
     'می‌تونی',
     'میتونی',
     'می‌توانی',
-    'داری',
-    'نداری',
     'هستی',
     'هستید',
-    'درسته',
-    'درست است',
     'نکنم',
     'بزنیم',
-    'بگم',
-    'بگی',
     'بپرسم',
     'بریم',
     'بیام',
     'میای',
-    'می‌آیی'
+    'می‌آیی',
+    'میگی',
+    'می‌گی',
+    'میگین',
+    'می‌گین',
+    'بلدی',
+    'تونستی',
+    'می‌دونی',
+    'میدونی',
+    'می‌دونید',
+    'میدونید',
+    'شنیدی',
+    'دیدی'
   ];
+
+  // Offer frame that turns a trailing «بگم/بگی» into a question:
+  // «دوست داری بیشتر بگم», «می‌خوای بگم». Without the frame the ending
+  // is a plain statement («هیچی لازم نیست بگی»).
+  const FA_OFFERED_SAY_RE =
+    /(?:دوست داری|می ?خوای|می‌خوای|بخوای|خواستی)[^،.!؟?]{0,60}$/iu;
+
+  /**
+   * Persian sentence-initial interrogatives. A sentence that STARTS
+   * with one of these words (word-boundary guarded so «چراغ» never
+   * matches «چرا») and lost its question mark gets it back. «چرا که»
+   * (the "because" clause) and «چرا که نه» (the idiom "why not", an
+   * agreement) are excluded.
+   */
+  const FA_QUESTION_STARTS =
+    /^(?<![\p{L}\u200c])(?:چرا(?!\s+که)|چی|چیه|کی|کجا|کدوم|کدام|چطور|چند|آیا|بگو ببینم|بیا ببینم)(?![\p{L}\u200c])/iu;
+
+  /**
+   * Persian exclamation sentence starts («وای، ...», «اوه، ...»,
+   * «عجب ...»). A short «چقدر ...» sentence («چقدر خوبه») is read as
+   * an exclamation; a longer one usually carries a question tail of
+   * its own.
+   */
+  const FA_EXCLAIM_STARTS =
+    /(?<![\p{L}\u200c])(?:وای|اوه|آخی|عجب|به به)(?![\p{L}\u200c])/iu;
+  const FA_CHEGHADAR_EXCLAIM_WORDS = 4;
 
   /**
    * English question-signalling tails. Same contract as
    * FA_QUESTION_TAILS: only clear interrogative sentence-endings.
+   * "right now" and "tell me" were deliberately removed: they turned
+   * statements like "You do not have to decide right now." into
+   * questions, which read as if Darya had not listened.
    */
   const EN_QUESTION_TAILS = [
     'are you',
@@ -833,75 +938,176 @@
     "isn't it",
     'is that',
     'is this',
-    'right now',
-    'tell me',
+    'you okay',
+    'you sure',
+    'or not',
+    'what you think',
+    'what do you think',
+    'you agree',
     'want more',
-    'another question'
+    'another question',
+    'shall we',
+    'okay with you'
   ];
 
   /**
-   * Replaces the trailing period of a sentence that clearly ends in an
-   * interrogative marker with the language-appropriate question mark.
-   * Only the FINAL sentence of the outgoing reply is touched: a mid-
-   * sentence clause that happens to end with «نامیده می‌شه.» followed
-   * by more explanation must keep its period. Runs AFTER the
-   * conversational rewrites, on the un-quoted output, so it sees the
-   * colloquial forms that Darya actually sends (e.g. «می‌خوای»).
+   * English question sentence starts: auxiliary inversion ("Is that
+   * so."), wh+auxiliary bigrams ("What do you miss", "How does it
+   * feel"), and elliptical curiosity openers ("Curious what brought
+   * you in today"). A bare wh-word is NOT enough: "What matters is
+   * how you show up." is a statement and must keep its period.
+   */
+  const EN_QUESTION_START_ALTERNATIVES = [
+    'is',
+    'are',
+    'was',
+    'were',
+    'do',
+    'does',
+    'did',
+    'can',
+    'could',
+    'would',
+    'will',
+    'should',
+    'shall',
+    'have',
+    'has',
+    'had',
+    'may',
+    'might',
+    'any(?:thing|one|body| thoughts| idea| ideas| chance| way)',
+    'curious',
+    'wondering',
+    'who (?:is|are|was|were|do|does|did|has|have)',
+    "what(?:'s| is| are| do| does| did| can| could| would| will| should| have| has| about)",
+    'when (?:is|are|do|does|did|will)',
+    "where(?:'s| is| are| do| does| did)",
+    "why (?:is|are|do|does|did|don't|doesn't|not)",
+    "how(?:'s| is| are| do| does| did| can| could| many| much| long| often| about)",
+    'which (?:is|are|do|does)'
+  ];
+  const EN_QUESTION_STARTS = new RegExp(
+    '^(?:' + EN_QUESTION_START_ALTERNATIVES.join('|') + ')\\b',
+    'iu'
+  );
+
+  /** English exclamation sentence starts. */
+  const EN_EXCLAIM_STARTS = /^(?:wow|ooh|oh my|yay|aha|huh)\b/iu;
+
+  /** Lines that are list items or labels never get new punctuation. */
+  const LIST_ITEM_START = /^\s*(?:[0-9۰-۹]+[.)]|[•*·-])\s*/u;
+  /** A sentence hanging on a comma or colon is not finished; skip it. */
+  const HANGING_CLAUSE_END = /[،:;]\s*$/u;
+
+  /**
+   * Decides the punctuation mark one plain sentence deserves, or null
+   * to leave it exactly as it is. `body` is the sentence without its
+   * existing terminal punctuation.
+   * @param {string} body - Sentence body
+   * @param {string} langCode - 'fa' or 'en'
+   * @returns {string|null} The mark to use, or null to keep the current one
+   */
+  function sentenceMark(body, langCode) {
+    const text = String(body || '').trim();
+    if (!text || LIST_ITEM_START.test(text) || HANGING_CLAUSE_END.test(text)) {
+      return null;
+    }
+    const isFa = langCode === 'fa';
+    const lower = text.toLowerCase();
+    if (isFa) {
+      if (FA_EXCLAIM_STARTS.test(text)) {
+        return '!';
+      }
+      if (
+        lower.startsWith('چقدر') &&
+        text.split(/\s+/u).length <= FA_CHEGHADAR_EXCLAIM_WORDS
+      ) {
+        return '!';
+      }
+      if (FA_QUESTION_STARTS.test(text)) {
+        return '؟';
+      }
+      if (FA_QUESTION_TAILS.some((tail) => lower.endsWith(tail))) {
+        return '؟';
+      }
+      // «بگم/بگی» endings are questions only under an offer frame
+      // ("دوست داری بیشتر بگم"); as bare statements («لازم نیست بگی»)
+      // they keep their period.
+      if (
+        FA_OFFERED_SAY_RE.test(lower) &&
+        (lower.endsWith('بگم') || lower.endsWith('بگی'))
+      ) {
+        return '؟';
+      }
+      return null;
+    }
+    if (EN_EXCLAIM_STARTS.test(text)) {
+      return '!';
+    }
+    if (EN_QUESTION_STARTS.test(text)) {
+      return '?';
+    }
+    return EN_QUESTION_TAILS.some((tail) => lower.endsWith(tail)) ? '?' : null;
+  }
+
+  /**
+   * Sentence-level punctuation repair for the whole outgoing reply:
+   * every question-shaped sentence gets the question mark it lost
+   * (Persian «؟», English "?"), every exclamation-shaped sentence gets
+   * "!", and everything else keeps its punctuation untouched. Runs
+   * AFTER the register rewrites and on un-quoted segments only, so
+   * quoted poetry and titles are never modified. Existing "؟"/"?"
+   * endings are never overwritten (a "!" ending is left alone too:
+   * humans write «چی شد!» as surprise). Sentences that end on "،" or
+   * ":" are unfinished clauses and are skipped.
    * @param {string} text - Full outgoing bot text
    * @param {string} langCode - 'fa' or 'en'
    * @returns {string}
    */
-  function enforceFinalQuestionMarks(text, langCode) {
+  function punctuateSentences(text, langCode) {
     if (typeof text !== 'string' || !text) {
       return text;
     }
-    const tails = langCode === 'fa' ? FA_QUESTION_TAILS : EN_QUESTION_TAILS;
-    if (!tails || tails.length === 0) {
-      return text;
+    const parts = text.split(/([.!?؟…]+)/u);
+    for (let i = 0; i < parts.length; i += 2) {
+      const body = parts[i];
+      if (!body || !body.trim()) {
+        continue;
+      }
+      const punct = parts[i + 1] || '';
+      if (punct) {
+        if (punct !== '.') {
+          continue; // already "?", "!", "؟", or a mix; leave it
+        }
+        const mark = sentenceMark(body, langCode);
+        if (mark) {
+          parts[i + 1] = mark;
+        }
+        continue;
+      }
+      // No terminal punctuation at all: repair only when this body is
+      // the tail of its line (a real sentence end), not when more
+      // words follow on the same line.
+      const trailingWhitespace = body.match(/\s*$/u)[0];
+      const isLineTail =
+        !trailingWhitespace.includes(' ') || i === parts.length - 1;
+      if (!isLineTail) {
+        continue;
+      }
+      const mark = sentenceMark(body, langCode);
+      if (mark) {
+        parts[i] = body.replace(/\s*$/u, '') + mark + trailingWhitespace;
+      }
     }
-    const qMark = langCode === 'fa' ? '؟' : '?';
-    // Locate the last sentence-ending punctuation in the reply and
-    // only inspect what comes after the PREVIOUS sentence boundary.
-    // This makes the pass a pure "is the whole final sentence a
-    // question?" decision and prevents mid-reply periods from being
-    // rewritten.
-    const lastBoundary = text.search(/[.!?؟…][^.!?؟…]*$/u);
-    if (lastBoundary === -1) {
-      return text;
-    }
-    const punct = text[lastBoundary];
-    if (punct !== '.' && punct !== '!') {
-      return text; // already a question mark or ellipsis
-    }
-    // The sentence body runs from after the previous boundary (or the
-    // start of text) up to (but not including) the final punctuation.
-    const head = text.slice(0, lastBoundary);
-    const body = head
-      .slice(
-        Math.max(
-          head.lastIndexOf('.'),
-          head.lastIndexOf('!'),
-          head.lastIndexOf('?'),
-          head.lastIndexOf('؟'),
-          head.lastIndexOf('…')
-        ) + 1
-      )
-      .trim();
-    if (!body) {
-      return text;
-    }
-    const tailText = body.toLowerCase();
-    const matched = tails.some((tail) => tailText.endsWith(tail));
-    if (!matched) {
-      return text;
-    }
-    return text.slice(0, lastBoundary) + qMark + text.slice(lastBoundary + 1);
+    return parts.join('');
   }
 
   /**
    * Rewrites bot output into conversational register, leaving quoted
    * segments («...», "...") untouched so poetry and titles keep their
-   * original wording.
+   * original wording, then repairs sentence punctuation on the same
+   * un-quoted segments.
    * @param {string} text - The outgoing bot message
    * @param {string} langCode - 'fa' or 'en'
    * @returns {string}
@@ -916,13 +1122,17 @@
     PROTECTED_SEGMENT.lastIndex = 0;
     let match = PROTECTED_SEGMENT.exec(text);
     while (match) {
-      result += transform(text.slice(cursor, match.index)) + match[0];
+      result +=
+        punctuateSentences(
+          transform(text.slice(cursor, match.index)),
+          langCode
+        ) + match[0];
       cursor = match.index + match[0].length;
       match = PROTECTED_SEGMENT.exec(text);
     }
-    result += transform(text.slice(cursor));
-    return enforceFinalQuestionMarks(result, langCode);
+    result += punctuateSentences(transform(text.slice(cursor)), langCode);
+    return result;
   }
 
-  global.DaryaConversational = { toConversational, enforceFinalQuestionMarks };
+  global.DaryaConversational = { toConversational, punctuateSentences };
 })(typeof window !== 'undefined' ? window : globalThis);

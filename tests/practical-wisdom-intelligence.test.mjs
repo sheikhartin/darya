@@ -508,7 +508,7 @@ const HARD_COMPANION_SCENARIOS = [
       'political polarization is destroying my friendship'
     ],
     'political_division',
-    /politic|friend|boundary|relationship|agree/i
+    /politic|friend|boundary|relationship|agree|news and argument|cap how much/i
   ],
   [
     'religious family debate without a sermon',

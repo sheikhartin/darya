@@ -68,9 +68,30 @@
   }
 
   /** Whole-word presence check that works for Persian and Latin text. */
+  // Compiled-pattern caches. The lookup runs wordInText for every fact
+  // weak word on every turn, and the EN keyword pass compiles a word-
+  // boundary regex per keyword per fact per turn; compiling on the hot
+  // path showed up as ~74% of turn CPU. Compiling once per distinct
+  // word keeps the lookup identical and the per-turn cost trivial.
+  const WEAK_WORD_RE_CACHE = new Map();
+  const KEYWORD_RE_CACHE = new Map();
+
   function wordInText(text, word) {
-    const escaped = escapeRegExp(word);
-    return new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, 'u').test(text);
+    let pattern = WEAK_WORD_RE_CACHE.get(word);
+    if (!pattern) {
+      pattern = new RegExp(`(?<!\\p{L})${escapeRegExp(word)}(?!\\p{L})`, 'u');
+      WEAK_WORD_RE_CACHE.set(word, pattern);
+    }
+    return pattern.test(text);
+  }
+
+  function keywordBoundaryPattern(word) {
+    let pattern = KEYWORD_RE_CACHE.get(word);
+    if (!pattern) {
+      pattern = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'iu');
+      KEYWORD_RE_CACHE.set(word, pattern);
+    }
+    return pattern;
   }
 
   // Framing words that mark a message as a knowledge question. Weak
@@ -195,6 +216,84 @@
    * @param {string} langCode - 'fa' or 'en'
    * @returns {{topic: string, confidence: number, text: string}|null}
    */
+  // The month this knowledge snapshot was last reviewed. Facts that can
+  // go stale (records, officeholders, active rosters) carry their own
+  // caveat text; this constant is the global anchor both for those
+  // caveats and for tests that pin the review cadence.
+  const KNOWLEDGE_SNAPSHOT_AS_OF = '2026-08';
+
+  // Query tokens that never count toward lexical overlap.
+  const STOP_TOKENS = new Set([
+    'the',
+    'a',
+    'an',
+    'is',
+    'are',
+    'was',
+    'of',
+    'in',
+    'on',
+    'for',
+    'to',
+    'and',
+    'or',
+    'what',
+    'who',
+    'how',
+    'why',
+    'tell',
+    'me',
+    'about',
+    'do',
+    'does',
+    'did',
+    'my',
+    'your',
+    'i',
+    'چیه',
+    'چیست',
+    'کیه',
+    'کیست',
+    'چطور',
+    'چگونه',
+    'درباره',
+    'راجع',
+    'به',
+    'از',
+    'و',
+    'یا',
+    'برای',
+    'من',
+    'شما',
+    'یه',
+    'یک',
+    'بگو'
+  ]);
+
+  /**
+   * Counts ordinary content tokens a fact shares with the query, used
+   * only to break score ties (see lookup).
+   * @param {object} fact - Candidate fact
+   * @param {string} query - Lowercased normalized query
+   * @returns {number}
+   */
+  function contentOverlap(fact, query) {
+    const tokens = query
+      .split(/\s+/u)
+      .filter((t) => t.length > 1 && !STOP_TOKENS.has(t));
+    if (tokens.length === 0) {
+      return 0;
+    }
+    const haystack = [
+      ...(fact.keywords || []),
+      ...(fact.hints || []),
+      ...(fact.weak || [])
+    ]
+      .join(' ')
+      .toLowerCase();
+    return tokens.reduce((sum, t) => sum + (haystack.includes(t) ? 1 : 0), 0);
+  }
+
   function lookup(text, langCode) {
     if (!text || typeof text !== 'string') {
       return null;
@@ -237,7 +336,7 @@
         }
         const hit = isFa
           ? lower.includes(k)
-          : new RegExp(`\\b${escapeRegExp(k)}\\b`, 'iu').test(lower);
+          : keywordBoundaryPattern(k).test(lower);
         if (hit) {
           score += k.length * 2;
           matchedAny = true;
@@ -304,11 +403,13 @@
       ) {
         score += MARKETPLACE_MARKER_BONUS;
       }
-      if (score <= 0) {
-        continue;
-      }
       if (!best || score > best.score) {
-        best = { fact, score };
+        best = { fact, score, overlap: contentOverlap(fact, lower) };
+      } else if (score === best.score) {
+        const overlap = contentOverlap(fact, lower);
+        if (overlap > best.overlap) {
+          best = { fact, score, overlap };
+        }
       }
     }
 
@@ -1109,8 +1210,15 @@
   }
 
   /** Resolve a full media request without letting a stale topic influence it. */
+  // A price question is never a genre request: "how much is a
+  // PlayStation 5" and «قیمت گوشی آیفون چقدره» ask about money, not
+  // about which game to play. They must fall through to the honest
+  // live-data or buying-guidance paths instead of a recommendation list.
+  const PRICE_INTENT =
+    /(?:قیمت|قیمتش|چند می‌?ده|چقدر می‌?ده|چند باید بدم|how much|what(?:'?s| is) the price|price of|worth of)\b/iu;
+
   function detectMediaRequest(text, langCode) {
-    if (!text || !MEDIA_REQUEST.test(text)) {
+    if (!text || PRICE_INTENT.test(text) || !MEDIA_REQUEST.test(text)) {
       return null;
     }
     const category = Object.keys(MEDIA_WORDS).find((key) =>
@@ -1338,6 +1446,7 @@
   }
 
   const DaryaKnowledge = {
+    KNOWLEDGE_SNAPSHOT_AS_OF,
     domains,
     answer,
     lookup,

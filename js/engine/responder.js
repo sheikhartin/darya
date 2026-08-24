@@ -207,6 +207,10 @@ class DaryaResponseEngine {
     // asked for a rating on the mood scale, cleared when the answer
     // lands (or the request is released). Session-only.
     this._pendingMoodRequest = null;
+    // Last turn that carried a human spark (opener/tag/exclamation), so
+    // the spark stays rare and cooldown-limited (see responder-overrides
+    // _maybeHumanSpark). Session-only; -Infinity means "never".
+    this._lastHumanSparkTurn = -Infinity;
     // Quick-reply chips for the UI: a short list of tappable options
     // (exercise yes/no, mood scale) attached to the last reply. The app
     // reads it after delivering the reply and renders the chips; reset
@@ -351,6 +355,22 @@ class DaryaResponseEngine {
       }
       this.memory.farewellPending = true;
       return this.exitConfirmation();
+    }
+    // A cancelled farewell ("no wait", «نه صبر کن») after the confirm
+    // deserves a warm welcome back, not a generic short-input line.
+    if (
+      this.memory.farewellPending &&
+      this.lang.farewellCancelResponses &&
+      // eslint-disable-next-line max-len
+      /^(?:no wait|wait|no no|stay|dont go|don'?t go|actually stay|cancel|نه صبر کن|صبر کن|نشده|برنگشتم|نه هنوز|ماندم|نرفتم)\.?$/iu.test(
+        String(rawText).trim()
+      )
+    ) {
+      this.memory.farewellPending = false;
+      return this._pickVaried(this.lang.farewellCancelResponses, {
+        ignoreQuestionBudget: true,
+        trackQuestions: false
+      });
     }
     this.memory.farewellPending = false;
 
@@ -684,7 +704,14 @@ class DaryaResponseEngine {
       // not stack a heavy prefix on top of it.
       this._lightPositiveFired = true;
       reply = this._pickVaried(this.lang.emojiResponses);
-    } else if (isAmbiguous && this.lang.ambiguousInputResponses) {
+    } else if (
+      isAmbiguous &&
+      this.lang.ambiguousInputResponses &&
+      // A short but cheerful complete answer («خیلی خوبم», "feeling
+      // great") is not an ambiguous fragment: defer to the fallback,
+      // which answers it warmly from the light-positive smalltalk path.
+      !this._isLightPositiveCasual(matchingText)
+    ) {
       reply = this._pickVaried(this.lang.ambiguousInputResponses);
     } else {
       reply = this._fallbackResponse(

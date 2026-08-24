@@ -131,6 +131,14 @@
     // ======================================================================
 
     _maybeHumanTone(reply, normalized) {
+      if (
+        global.DaryaUtils.containsDistressLexicon &&
+        global.DaryaUtils.containsDistressLexicon(normalized)
+      ) {
+        // Distress-lexicon turns never receive humor, smalltalk, or a
+        // tone swap; only the pool's own caring line may speak.
+        return reply;
+      }
       if (this._lightPositiveFired) {
         // The reply already came from the smalltalk pool for a light,
         // positive casual statement. Further coloring (humor, warmth,

@@ -111,7 +111,8 @@
   // the engine can tell an interrogative sentence apart from a statement
   // even when a specific rule doesn't cover what's being asked.
   const questionPattern =
-    /\?|^\s*(what|why|how|who|when|where|which|do|does|did|is|are|am|can|could|will|would|should)\b/i;
+    // eslint-disable-next-line max-len
+    /\?|^\s*(what|what's|whats|why|whys|how|hows|who|who's|whos|when|where|where's|wheres|which|do|does|did|is|are|am|can|could|will|would|should)\b/i;
 
   // A safe, low-risk callback: quoting the person's own earlier words back
   // to them is a core reflective-listening technique and carries no
@@ -148,6 +149,12 @@
     'i must go',
     'take care',
     'bye for now',
+    'good night',
+    'goodnight',
+    'gn',
+    'ttyl',
+    'gotta run',
+    'i should get going',
     // "bai"/"bay" are the Latin-alphabet spellings of the Persian بای
     // (bye), common when Persian speakers write in the Latin script.
     'bai',

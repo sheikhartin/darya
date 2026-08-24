@@ -15,9 +15,9 @@
       "intent": "topic_statement"
     },
     {
-      "text": "مالیخولیا درمان داره؟",
-      "dialogueAct": "question",
-      "intent": "topic_statement"
+      "text": "دیگه هیچ چیزی بهم لذت نمی‌ده",
+      "dialogueAct": "statement",
+      "intent": "emotional_disclosure"
     }
   ],
   "expected": {

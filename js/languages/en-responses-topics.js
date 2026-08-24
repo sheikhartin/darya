@@ -85,6 +85,14 @@
       'not',
       'never',
       'no',
+      // Absolutist negators: hopelessness phrasings front-load them far
+      // from the sentiment word ("nothing will ever get better"), and
+      // corpus research marks this vocabulary as a distress signal.
+      'nothing',
+      'nobody',
+      'noone',
+      'none',
+      'nowhere',
       "don't",
       'dont',
       "isn't",

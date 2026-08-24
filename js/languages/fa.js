@@ -156,7 +156,55 @@
       goodbye: 'exit',
       'good bye': 'exit',
       bb: 'exit',
-      bey: 'exit'
+      bey: 'exit',
+      // Finglish (Persian typed in Latin script) for the phrases
+      // Persian chatters use most; recognized as whole messages before
+      // the foreign-script redirect so the conversation never scolds a
+      // native speaker for their keyboard (audit item: Finglish top-50).
+      salam: 'greeting',
+      salaam: 'greeting',
+      slm: 'greeting',
+      'salam agha': 'greeting',
+      'salam khanom': 'greeting',
+      'salam khosh gelidi': 'greeting',
+      derod: 'greeting',
+      dorod: 'greeting',
+      mersi: 'thanks',
+      mer30: 'thanks',
+      merc: 'thanks',
+      mamnoon: 'thanks',
+      mamnoonam: 'thanks',
+      moteshakeram: 'thanks',
+      tashakor: 'thanks',
+      'khaste nabashi': 'thanks',
+      'khaste nabashid': 'thanks',
+      'damet garm': 'thanks',
+      'damet garmi': 'thanks',
+      'damesh garm': 'thanks',
+      khobam: 'ack',
+      khoobam: 'ack',
+      'man khoobam': 'ack',
+      'khoobam tashakor': 'ack',
+      chetori: 'greeting',
+      'chetori?': 'greeting',
+      'chi shod': 'greeting',
+      'che khabar': 'greeting',
+      chekhabar: 'greeting',
+      'che khabara': 'greeting',
+      sup: 'greeting',
+      'sobh bekheir': 'greeting',
+      'shab bekheir': 'exit',
+      'khodahafez azizam': 'exit',
+      khodafez: 'exit',
+      'movafagh bashi': 'exit',
+      'be salamat': 'exit',
+      aah: 'ack',
+      ah: 'ack',
+      aha: 'ack',
+      ahaa: 'ack',
+      oky: 'ack',
+      hm: 'ack',
+      hmm: 'ack'
     },
     normalize,
     normalizeOutput,
@@ -184,7 +232,7 @@
     distressNudges: R.distressNudges,
     // Live-data questions (current price/weather/news/score/rate).
     liveDataPattern:
-      /(?:قیمت (?:امروز|الان|لحظه‌ای|لحظه ای|روز)|قیمت (?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|ارز|بنزین|خودرو)(?:\s|$|چنده|چقدره|چیه)|(?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین) (?:چنده|چقدره|چند شده|چنده امروز)|هوا (?:چطوره|چطور است|چه جوریه|چجوریه|خوبه)|آب و هوا|آب‌وهوا|وضع هوا|دمای (?:هوا|امروز|الان)|اخبار (?:امروز|روز|جدید|تازه)|خبر (?:جدید|تازه|روز)|نتیجه (?:بازی|مسابقه|فوتبال)|کی برد|نرخ (?:ارز|دلار|بهره|تورم امروز)|(?:امروز|الان|جدیدا|اخیرا) (?:چه خبره|چی خبره|چه خبرای|چه خبرهایی)|(?:چه خبره|چی خبره|چه خبرای) امروز|خبر چیه|بازی دیشب|مسابقه دیشب|نتیجه دیشب|دیشب کی برد|کی برد دیشب|امروز کی برد)/u,
+      /(?:قیمت (?:امروز|الان|لحظه‌ای|لحظه ای|روز)|قیمت (?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|ارز|بنزین|خودرو)(?:\s|$|چنده|چقدره|چیه)|(?:دلار|یورو|طلا|سکه|بیت کوین|بیتکوین|تتر) (?:چنده|چقدره|چند شده|چند شد|چندشه|چند است|چندبود|چنده امروز)|قیمت .{0,24}(?:چنده|چقدره|چند شد)|هوا (?:چطوره|چطور است|چه جوریه|چجوریه|خوبه)|آب و هوا|آب‌وهوا|وضع هوا|دمای (?:هوا|امروز|الان)|اخبار (?:امروز|روز|جدید|تازه)|خبر (?:جدید|تازه|روز)|نتیجه (?:بازی|مسابقه|فوتبال)|کی برد|نرخ (?:ارز|دلار|بهره|تورم امروز)|(?:امروز|الان|جدیدا|اخیرا) (?:چه خبره|چی خبره|چه خبرای|چه خبرهایی)|(?:چه خبره|چی خبره|چه خبرای) امروز|خبر چیه|بازی دیشب|مسابقه دیشب|نتیجه دیشب|دیشب کی برد|کی برد دیشب|امروز کی برد)/u,
     liveDataResponses: R.liveDataResponses,
     sentimentLexicon: R.sentimentLexicon,
     pronounMap,
@@ -300,6 +348,10 @@
     teasingMockingResponses: R.teasingMockingResponses,
     stopWords,
     boredomResponses: R.boredomResponses,
+    distressCheckIns: R.distressCheckIns,
+    farewellCancelResponses: R.farewellCancelResponses,
+    humanSparkOpeners: R.humanSparkOpeners,
+    humanSparkTags: R.humanSparkTags,
     wellBeingPattern,
     insultPattern,
     wellBeingResponses: R.wellBeingResponses,
@@ -717,7 +769,7 @@
         // disclosures; combined with the recall cues they must answer from
         // the stored profile (or honestly admit nothing is stored), never
         // capture «کی» as a name.
-        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمم چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu,
+        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمی چیه|اسمم چی بود|اسم من چی بود|اسمی چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu,
       // Location disclosure («تهران زندگی می‌کنم», «اهل شیرازم», «تو
       // اصفهان زندگی می‌کنم»). The place capture is a single Persian
       // word or two, before the living/from marker.
