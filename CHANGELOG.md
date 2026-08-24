@@ -5,6 +5,48 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.3] - 2026-08-24
+
+### Fixed
+
+- The download-conversation button in the Android app is resilient
+  now. On some devices it showed its notification badge and left
+  nothing on the device; three gaps were found and closed
+  (js/app/native.js, js/ui/export.js, ExportPlugin.java):
+  - The native save rejected transcripts over 2 MB outright. A long
+    session is easy to push past that line, because Persian text is
+    two UTF-8 bytes per character, and the rejected export then fell
+    through to the weaker clipboard path with no file to be found in
+    Downloads. The cap is 16 MB now.
+  - When the device's MediaStore Downloads provider refused the
+    write, there was no second attempt. The Export plugin now writes
+    to the app's own Downloads directory instead, which needs no
+    storage permission, and reports that location in the
+    confirmation. A transcript is now saved somewhere on every
+    device, and the only failure left is a device with no writable
+    storage at all.
+  - The web clipboard fallback trusted the async Clipboard API. When
+    that API is present but rejects (a known Android WebView quirk),
+    the legacy execCommand path was skipped entirely, so the export
+    could fail on both legs and leave the user with nothing. The
+    execCommand path now always gets its turn, and a timeout guard
+    makes it impossible for the button to hang silently when a
+    bridge call gets wedged.
+- Failed saves can now be diagnosed without guessing: the native side
+  logs every fallback and every failure to logcat under the DaryaExport
+  tag (adb logcat -s DaryaExport), and the page console carries the
+  reason the native save rejected, readable from chrome://inspect.
+
+### Changed
+
+- The Android app builds with targetSdk 36, which is above the API
+  level 34 that Myket requires for new uploads and updates starting
+  1 Aban 1405 (and that Google Play already enforces). The version
+  currently listed in the store predates that requirement; uploading
+  this build (or the already-built 1.9.2, which carries the same
+  target) resolves the notice. No code change was needed for this:
+  the bump exists so the store gets a fresh build that passes.
+
 ## [1.9.2] - 2026-08-23
 
 ### Fixed
@@ -587,10 +629,10 @@ pipeline details live in the [README](README.md) and the upgrade spec
   (honoring `prefers-reduced-motion`).
 - **Elevation is layered and soft, never a heavy halo.** The two shadow
   tokens are now three-stop, low-opacity ambient shadows (tight contact
-  + mid presence + wide diffuse lift) instead of a single dark blob, and
-  their color warms to sand in Beach so no element ever casts a cold,
-  smudgy shadow. The sun glow and notification bloom were dialed back to
-  match.
+  - mid presence + wide diffuse lift) instead of a single dark blob, and
+    their color warms to sand in Beach so no element ever casts a cold,
+    smudgy shadow. The sun glow and notification bloom were dialed back to
+    match.
 - **No layout jump on theme switch.** The picker's language-lock note and
   theme heading sit in one glass chip in both themes (identical padding
   and radius), so switching Ocean to Beach only swaps the tint and ink.

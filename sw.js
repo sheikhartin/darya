@@ -28,8 +28,10 @@
  * change, so any release that modifies precached shell content must
  * also change something in this file (a comment note like this one is
  * enough); the install then re-runs and re-fetches the changed shell
- * into the versioned cache. Shell refresh: 1.9.2 (the native shell
- * export path and cache retirement; see js/app/native.js).
+ * into the versioned cache. Shell refresh: 1.9.3 (export resilience:
+ * the native save gains its app-folder fallback, the clipboard
+ * fallback gains its execCommand leg, and the plugin call gains its
+ * timeout; see js/app/native.js and js/ui/export.js).
  */
 
 'use strict';
