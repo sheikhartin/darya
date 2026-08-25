@@ -56,6 +56,23 @@
     /^(?:no|nope|nah|no thanks|no thx|not really|that's (?:it|all)|i'?m good|im good|enough|stop|that'?s enough|never ?mind)(?:[!.,?…]|\s+(?:thanks|thank you|thx|mate))*[!.?…]*$/iu;
 
   /**
+   * "Give me a different one" right after a knowledge answer (a movie
+   * list, an example, a fact): the person wants a NEW item from the
+   * same thread, not a deeper dive into the same one. The shelf holds
+   * one curated fact per topic, so the honest move is the depth-limit
+   * reply: say the shelf ends here, point to a live source, and keep
+   * the door open. Without this branch the terse request fell to the
+   * topic-question or unknown pools, which read as a non-sequitur
+   * right after a good answer (a 2026-08 transcript failure).
+   */
+  const FA_DIFFERENT =
+    // eslint-disable-next-line max-len
+    /^(?:میشه|شاید|فکر کنم)?\s*(?:یه|یک)\s+(?:تا|نمونه|مثال|عنوان|فیلم|آهنگ|کتاب|بازی|کانال|دستور|تیکه)?\s*دیگه(?:ای)?\s*[!.؟?…]*$|^دیگه\s+یه\s+(?:تا|نمونه|مثال)[!.؟?…]*$|^(?:مثال|نمونه)\s+دیگه(?:ای)?(?:\s+(?:داری|میدونی|می‌دونی|بگو|تعریف کن))?[!.؟?…]*$/u;
+  const EN_DIFFERENT =
+    // eslint-disable-next-line max-len
+    /^(?:can you |could you |do you have |i want )?(?:give me |tell me |share )?(?:a |an |the |some )?(?:different|other|another|new|fresh|more)\s+(?:one|example|fact|idea|movie|song|book|game|recipe|title|topic|story)?[!.?…]*$|^(?:another|one more|next one)[!.?…]*$/i;
+
+  /**
    * Famous figures whose names appear in playful identity claims.
    * Aliases are written in normalized matching form (lowercase Latin,
    * ZWNJ-free Persian, ئ→ی). `factId` links to the knowledge shelf when
@@ -512,6 +529,17 @@
         return this.lang.knowledgeDepthLimitResponses
           ? pick(this.lang.knowledgeDepthLimitResponses)
           : null;
+      }
+
+      // --- Different item after a knowledge answer -----------------------
+      if (threadFresh) {
+        const different = isFa ? FA_DIFFERENT : EN_DIFFERENT;
+        if (different.test(text) && this.lang.knowledgeDepthLimitResponses) {
+          // Keep the thread warm so a follow-up question still lands on
+          // the same topic, but do not pretend the shelf has more items.
+          this._lastKnowledgeTurn = this.memory.turnCount;
+          return pick(this.lang.knowledgeDepthLimitResponses);
+        }
       }
 
       // --- Bare yes after the "want me to tell you more?" offer -----------

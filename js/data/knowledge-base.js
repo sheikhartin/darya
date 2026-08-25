@@ -1094,7 +1094,7 @@
     /(?:\brecommend\b|\bsuggest\b|\bgive me\b|\bshow me\b|\bname (?:me |some |a few )?\b|\bwhat should i (?:watch|read|play|listen to)\b|\bto (?:watch|read|play|listen to)\b|\bbest\b|\btop\b|پیشنهاد|معرفی|بگو|چی (?:ببینم|بخونم|گوش بدم|بازی کنم)|چه (?:ببینم|بخونم|گوش بدم|بازی کنم)|بهترین|بیشتر)/iu;
   const MORE_REQUEST =
     // eslint-disable-next-line max-len
-    /^(?:please\s+)?(?:tell me\s+)?(?:suggest\s+)?(?:\d+\s+)?(?:more|another|others?|new ones?|different ones?)(?:\s+please)?$|^(?:بازم|بیشتر|بیش تر|چندتای? دیگه|یکی دیگه|موارد دیگه|پیشنهاد دیگه)(?: لطفا)?$/iu;
+    /^(?:please\s+)?(?:tell me\s+)?(?:suggest\s+)?(?:\d+\s+)?(?:more|another|others?|new ones?|different ones?)(?:\s+please)?$|^(?:(?:can you |could you |give me |tell me |please )*)(?:a |an |the )?(?:more|another|others?|new ones?|different ones?|different one)(?:\s+please)?$|^(?:بازم|بیشتر|بیش تر|چندتای? دیگه|یکی دیگه|موارد دیگه|پیشنهاد دیگه)(?: لطفا)?$|^(?:میشه|شاید)?\s*(?:یه|یک)\s+(?:تا|تای|نمونه|مثال|پیشنهاد) دیگه(?:ی)?(?: لطفا)?$/iu;
 
   const GENRE_ALIASES = {
     drama: /\bdrama\b|درام/iu,

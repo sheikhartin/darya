@@ -43,6 +43,15 @@
   var SAVE_LOCATION_APP_FILES = 'app-files';
 
   /**
+   * How long to wait for the export plugin before treating the call as
+   * lost and letting the web layer fall back to the clipboard. The
+   * plugin settles in milliseconds; the guard only covers a wedged
+   * bridge (an interrupted page transition, a dropped response) so the
+   * export button can never hang silently.
+   */
+  var SAVE_TIMEOUT_MS = 20000;
+
+  /**
    * Cache name prefixes owned by this app's service worker (see
    * sw.js). MainActivity.java injects its own retirement snippet for
    * stuck builds; the prefixes there must match these.
@@ -84,23 +93,47 @@
    * Saves a text file through the native export plugin.
    * @param {string} filename - Download filename
    * @param {string} content - UTF-8 text to save
+   * @param {object} [options] - { timeout: milliseconds to wait for the
+   * plugin before rejecting (defaults to SAVE_TIMEOUT_MS). Tests pass a
+   * short value to exercise the timeout path without sleeping.
    * @returns {Promise<string>} Where the file landed: 'downloads' (the
-   * system Downloads folder) or 'app-files' (an app-owned folder on
-   * older Android versions). Rejects when the plugin is unavailable or
-   * the write fails.
+   * system Downloads folder) or 'app-files' (an app-owned folder).
+   * Rejects when the plugin is unavailable, the write fails, or the
+   * call does not settle within the timeout.
    */
-  function saveTextFile(filename, content) {
+  function saveTextFile(filename, content, options) {
     var plugin = exportPlugin();
     if (!plugin || typeof plugin.saveTranscript !== 'function') {
       return Promise.reject(new Error('Export plugin unavailable'));
     }
-    return Promise.resolve(
-      plugin.saveTranscript({ filename: filename, content: content })
-    ).then(function (result) {
-      return result && result.location === SAVE_LOCATION_APP_FILES
-        ? SAVE_LOCATION_APP_FILES
-        : SAVE_LOCATION_DOWNLOADS;
+    var timeout =
+      options && typeof options.timeout === 'number' && options.timeout > 0
+        ? options.timeout
+        : SAVE_TIMEOUT_MS;
+    var timer = null;
+    var guard = new Promise(function (resolve, reject) {
+      timer = setTimeout(function () {
+        reject(new Error('Timed out waiting for the export plugin'));
+      }, timeout);
     });
+    // Promise.resolve().then keeps a synchronous throw from the plugin
+    // proxy (a torn-down bridge) inside the promise chain, so every
+    // failure shape reaches the caller as a rejection.
+    var pluginCall = Promise.resolve().then(function () {
+      return plugin.saveTranscript({ filename: filename, content: content });
+    });
+    return Promise.race([pluginCall, guard]).then(
+      function (result) {
+        clearTimeout(timer);
+        return result && result.location === SAVE_LOCATION_APP_FILES
+          ? SAVE_LOCATION_APP_FILES
+          : SAVE_LOCATION_DOWNLOADS;
+      },
+      function (error) {
+        clearTimeout(timer);
+        throw error;
+      }
+    );
   }
 
   /**

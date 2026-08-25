@@ -197,8 +197,13 @@
             // and «فوتسال» (futsal), so a "which sport is better"
             // question was read as grief and got a "من اینجا با تو
             // هستم." prefix. The lookarounds keep only standalone words.
+            // Bare "miss"/"missing" is NOT grief: "I miss a life away
+            // from this city" is longing, and reading it as grieving
+            // (-0.8 valence) set up false mood-shift acknowledgments the
+            // next turn ("your mood has moved"). Longing lines fall to
+            // the sentiment path instead.
             // eslint-disable-next-line max-len
-            /\b(?:grief|loss|died|passed away|gone|miss(?:ing)?|mourn)\b|(?<!\p{L})(?:فقدان|فوت|از دست دادن|داغ|سوگ)(?!\p{L})/iu
+            /\b(?:grief|grieving|loss|died|passed away|gone|mourn)\b|(?<!\p{L})(?:فقدان|فوت|از دست دادن|داغ|سوگ)(?!\p{L})/iu
         },
         {
           name: 'fear',
@@ -207,8 +212,13 @@
             // usually mean surprise or being impressed in everyday speech
             // («شوکه شدم، آفرین!»), not terror. Counting them here made a
             // compliment plus a joke request read as a fear disclosure.
+            // Bare "fear" IS counted: "Fear is my biggest obstacle" and
+            // "fear of" statements are fear disclosures, and leaving the
+            // word unmatched read them as neutral (valence 0), which set
+            // up false mood-shift acknowledgments. "scared"/"afraid"
+            // stay with the milder anxious emotion below.
             // eslint-disable-next-line max-len
-            /\b(?:terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|petrified|dread)\b|(?:لرزیدن|هراس|فوبیا|ترس\s+مرگ|دلهره|وحشت\s+زده)/iu
+            /\b(?:fear|terrified|frightened|scared\s+(?:to\s+death|stiff|shitless|witless)|panic\s+(?:attack|mode)|phobia|horror|petrified|dread)\b|(?:لرزیدن|هراس|فوبیا|ترس\s+مرگ|دلهره|وحشت\s+زده)/iu
         },
         {
           name: 'anxious',

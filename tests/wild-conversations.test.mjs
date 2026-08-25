@@ -2071,15 +2071,27 @@ test('wild: FA affectionate greetings never fall to the unknown pool', () => {
       `${line}: must be a greeting, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
     );
   }
-  // Direct compliments («فدات شم», «چشمات قشنگه», «تو خیلی خوشگلی»)
+  // Direct compliments («چشمات قشنگه», «تو خیلی خوشگلی»)
   // stay on the flirtation thread with the warm boundary.
-  for (const line of ['فدات شم', 'چشمات قشنگه', 'تو خیلی خوشگلی']) {
+  for (const line of ['چشمات قشنگه', 'تو خیلی خوشگلی']) {
     const engine = freshEngine(FA);
     const reply = engine.respond(line);
     assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
     assert.ok(
       engine.currentTurnTopics.includes('flirtation'),
       `${line}: must be flirtation, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
+    );
+  }
+  // «فدات شم» and friends are everyday endearments, not flirtation:
+  // the casual_endearment rule thanks the warmth and hands the thread
+  // back, never the romantic boundary line.
+  for (const line of ['فدات شم', 'قربونت برم', 'فدایتم']) {
+    const engine = freshEngine(FA);
+    const reply = engine.respond(line);
+    assert.doesNotMatch(reply, EVASIVE, `${line}: evasive: "${reply}"`);
+    assert.ok(
+      engine.currentTurnTopics.includes('casual_endearment'),
+      `${line}: must be casual endearment, got: ${engine.currentTurnTopics.join(',')} -> "${reply}"`
     );
   }
 });

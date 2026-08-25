@@ -105,6 +105,19 @@
     'این سؤال از حیطه‌ی دانش من خارج است و بهتر است از یک منبع تخصصی دنبالش کنی: ویکی‌پدیا برای مرور کلی و یک متخصص یا استاد همان حوزه برای جزئیات جدی‌تر.',
     'برای این یکی منبع قابل‌اعتمادی که پیشنهاد می‌کنم ویکی‌پدیا یا محتوای آموزشی باکیفیت در یوتیوب است؛ اگر موضوع حساس یا تخصصی است، نظر یک متخصص آن حوزه از هر منبع عمومی معتبرتر است.'
   ];
+  // Opinion questions («به نظرت آگاهی دقیقاً چیه؟», «فکر می‌کنی آدم‌ها
+  // چرا نوستالژی رو اینقدر دوست دارن؟») ask for Darya's own take.
+  // When the offline shelf has nothing on the topic, pointing to
+  // Wikipedia answers a different question than the one asked: the
+  // person wants a companion's perspective, not a source list. These
+  // lines answer first-person, honest about the offline limit, and hand
+  // the question back so the conversation keeps moving.
+  R.opinionResponses = [
+    'من قضاوت قطعی ندارم، اما خوشم می‌آید که این سؤال را باز نگه می‌داری. می‌خواهم بدانم تو خودت به چه جوابی نزدیک‌تری.',
+    'سؤالی است که جوابهای کوتاهش معمولاً اشتباهند. از جایی که من نشسته‌ام، همین که بارها برمی‌گردد سراغت، خودش بخشی از جواب است.',
+    'راستش را بخواهی من فقط از همین گفتگوها خبر دارم؛ و از همین‌جا می‌فهمم که این پرسش برایت وزن دارد. بگو کدام بخشش بیشتر ذهنت را مشغول می‌کند.',
+    'جواب واحدی نیست؛ هر کسی از جای خودش جواب می‌دهد. من از جای شنونده نگاه می‌کنم و تو از جای زندگی‌ات. هر جا رسیدی، من می‌شنوم.'
+  ];
   // Live-data limitation: questions about current prices, weather,
   // news, or scores cannot be answered offline.
   R.liveDataResponses = [

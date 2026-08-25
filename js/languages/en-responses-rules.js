@@ -700,7 +700,63 @@
   // Cooking care: fixing a failed dish and gentle guidance for new
   // cooks. Distinct from the knowledge shelf's encyclopedic food
   // facts: a burnt dinner gets a concrete fix, not a lecture.
+  // A colorless, low-energy day (EN twin of the FA bored_day pool):
+  // light warmth and one small break from the routine, never the heavy
+  // motivation pool.
+  R['ruleBoredDay'] = [
+    'A grey, colorless day can take the color out of everything, and that is normal. What is the small thing that usually gives you a little life on days like this?',
+    'On a flat day, the smallest break from routine opens a crack of air: a short walk, a different tea, a corner you do not usually go to. Which one feels closer to you?',
+    'Let us make this day easier to digest. Tell me what you saw and heard when you woke up, and I will listen for a while.'
+  ];
+
+  // The movie mood (EN twin of the FA movie_mood pool): choosing a
+  // film together, taste first. Explicit recommendation requests still
+  // go to the movie knowledge shelf.
+  R['ruleMovieMood'] = [
+    'Alright, let us find a film for tonight. Tell me the mood: thoughtful and heavy, light and funny, or gripping to the last minute?',
+    'The right film matches the energy of the day. Do you want to think, escape, or laugh?',
+    'Name two or three films you have genuinely loved, and I will suggest something close to them.'
+  ];
+
+  // Topic setup (EN twin of the FA topic_setup pool): the question is
+  // on the tip of the tongue. Make space and invite it, never jump to
+  // an answer.
+  R['ruleTopicSetup'] = [
+    'I am ready and all ears. Ask the question; nothing is too big or too small.',
+    'A question that has been on your mind for a while deserves a calm space. Take your time and start wherever you like.',
+    'I am here, and there is no rush. Tell me the question and we will think it through together.'
+  ];
+
+  // Casual endearment (EN twin of the FA casual_endearment pool):
+  // everyday American warmth, thanked lightly, thread handed back;
+  // never the romantic boundary line.
+  R['ruleCasualEndearment'] = [
+    'That is very kind of you; I can feel the warmth in how you say it. Tell me, what is new with your day?',
+    'That one made me smile. Thank you for being this open. What is on your mind right now?',
+    'It is sweet of you to say. I am right here; what would you like to talk about?'
+  ];
+
+  // Longing for a person, place, or period of life (EN twin of the FA
+  // longing pool): wistful company, never the loneliness counseling
+  // essay.
+  R['ruleLonging'] = [
+    'I hear that longing; it is for something or someone that has weight for you. Would you like to tell me about it?',
+    'Longing is sometimes for a person and sometimes for a chapter of life. Which one is louder in your mind right now?',
+    'I am holding this feeling with you. If you want, tell me about the person or the days you miss.'
+  ];
+
+  // First-date nerves: name the tremble, keep it light, ask the real
+  // worry (silence vs being oneself) instead of promising outcomes.
+  R['ruleFirstDate'] = [
+    'First dates always carry a little tremble, and that usually means it matters to you. What worries you most: the silence, or being yourself?',
+    'You are what you are, and that is plenty. A first date is not a performance; it is two people getting to know each other. What are the plans for tomorrow?',
+    'The nerves are your body saying this matters. Let us walk through the first few minutes together: where is it, and what are you hoping it turns out to be?'
+  ];
+
   R['ruleCooking'] = [
+    'For a fast dinner, two dependable paths: eggs with vegetables and bread, or potatoes with a simple sauce. Which one is closer to what your kitchen actually has right now?',
+    'Tell me what you have on hand and how much time you have, and we can think through a few simple options together.',
+    'A light dinner is a good idea on heavy days: a soup, a salad with something protein, or grains with a sauce. What does your appetite feel like tonight?',
     'A bitter ghormeh sabzi usually comes from not browning the herbs properly or simmering too long; next time fry the herbs slowly over low heat and caramelize the tomato paste well. For right now, a spoon of browned tomato paste or a little sugar can balance the bitterness.',
     'Fesenjan turns dark and glossy when the walnuts are toasted well and the pomegranate paste is cooked separately until the oil separates. Which part felt hardest for you?',
     'Persian cooking rewards patience more than speed; one failed attempt just means the heat or the amounts need a small adjustment. What exactly went wrong?',

@@ -93,12 +93,19 @@
     UI.refreshComposerState = refreshComposerState;
 
     /**
-     * Sets the composer busy state, disabling input during reply generation.
+     * Sets the composer busy state while Darya is composing a reply. The
+     * send button is disabled (refreshComposerState) and the submit path
+     * rechecks waitingForReply, but the input itself stays enabled and
+     * focused: on a phone, disabling a focused field detaches the
+     * on-screen keyboard mid-gesture (on Samsung IMEs the space bar is
+     * left stale and white), and the reader would have to tap the
+     * composer again just to keep typing. Chat apps keep the keyboard
+     * open while the reply is on its way.
      * @param {boolean} busy
      */
     function setComposerBusy(busy) {
       st.waitingForReply = busy;
-      el.input.disabled = busy || st.conversationEnded;
+      el.input.disabled = st.conversationEnded;
       refreshComposerState();
     }
 

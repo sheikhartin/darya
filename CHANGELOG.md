@@ -5,6 +5,108 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.3] - 2026-08-24
+
+### Fixed
+
+- The download-conversation button in the Android app is resilient
+  now. On some devices it showed its notification badge and left
+  nothing on the device; three gaps were found and closed
+  (js/app/native.js, js/ui/export.js, ExportPlugin.java):
+  - The native save rejected transcripts over 2 MB outright. A long
+    session is easy to push past that line, because Persian text is
+    two UTF-8 bytes per character, and the rejected export then fell
+    through to the weaker clipboard path with no file to be found in
+    Downloads. The cap is 16 MB now.
+  - When the device's MediaStore Downloads provider refused the
+    write, there was no second attempt. The Export plugin now writes
+    to the app's own Downloads directory instead, which needs no
+    storage permission, and reports that location in the
+    confirmation. A transcript is now saved somewhere on every
+    device, and the only failure left is a device with no writable
+    storage at all.
+  - The web clipboard fallback trusted the async Clipboard API. When
+    that API is present but rejects (a known Android WebView quirk),
+    the legacy execCommand path was skipped entirely, so the export
+    could fail on both legs and leave the user with nothing. The
+    execCommand path now always gets its turn, and a timeout guard
+    makes it impossible for the button to hang silently when a
+    bridge call gets wedged.
+- Failed saves can now be diagnosed without guessing: the native side
+  logs every fallback and every failure to logcat under the DaryaExport
+  tag (adb logcat -s DaryaExport), and the page console carries the
+  reason the native save rejected, readable from chrome://inspect.
+- A 71-conversation warm-mood battery (38 Persian, 33 English,
+  `tests/probe-moods.mjs`) exposed a whole class of warm-turn failures;
+  each class is fixed and pinned by `tests/mood-battery-regression.test.mjs`:
+  - «درود بهت! چطوری؟» and the «به تو»/«به شما» vocative greetings now
+    reach the how-are-you answer (and a single name word before the
+    check-in, «سلام داریوش! احوالت چطوره؟», no longer breaks it)
+    instead of the question-acknowledgement or Wikipedia/YouTube line.
+  - Longing («دلم برات تنگ شده», «دلم برای ... تنگ») has its own warm
+    pool; it no longer lands on the loneliness counseling essay. The
+    English twin («i miss those days», «i really miss home») is new.
+  - Opinion questions («به نظرت ...», "what do you think about this?",
+    "in your opinion ...") get an honest first-person opinion pool
+    instead of a source pointer; no English line carries a question
+    mark.
+  - Exit detection no longer hijacks hedged career sentences ("i am
+    thinking of quitting my job", "i might quit") or errand sentences
+    ("i got to run errands today", "gotta go to the store"); only the
+    un-hedged farewell exits, and the split-tile "got to run"
+    farewell now exits when it is a real farewell.
+  - «سر و کار» idioms («کجا باهاش سر و کار داریم؟») no longer open
+    the work-stress thread; the achievement rule gained everyday
+    forms (job offer, work presentation, promotion, grandchild,
+    sibling's baby, "finally sent/did it"); cooking gained
+    meal-planning questions in both languages.
+  - "Can we breathe together?" / «استرسمو یه کم پایین بیار» are met
+    with the breathing-exercise invite; "do you actually feel
+    things?" stays on the honest identity thread.
+  - A name statement now needs the copula ("my dog is named Rex"
+    stores, "my mom called and we argued" stores nothing and no
+    longer answers "Got it, your mom is named and.").
+  - "A different one" / «میشه یه تای دیگه؟» after a media list serves
+    fresh titles (the used titles are excluded), and the same
+    follow-up works on knowledge-fact threads.
+  - New warm topic families in both languages (with the bilingual
+    parity test keeping them in lockstep): bored day, movie mood,
+    first date, topic setup, and casual endearment. Persian
+    endearments («قربونت برم», «فدات شم») no longer get the romantic
+    boundary line; the tech-frustration pool gained device
+    malfunction lines that still name the technology.
+  - Emotion classification: "miss" no longer reads as grieving, bare
+    "fear" reads as fear, "i am grieving" reads as grieving.
+- Mobile fixes found on a Samsung A03 (tests/live-edge.test.mjs):
+  - Sending a message no longer disables the focused composer input
+    while the reply is pending. Disabling a focused field detaches the
+    on-screen keyboard mid-gesture (on Samsung IMEs the space bar is
+    left stale and white) and the reader had to tap the composer again
+    to keep typing. The send button and the submit guard
+    (waitingForReply) already block sending, so the input now stays
+    enabled and focused; the keyboard stays open, like in any chat
+    app. A finished conversation still disables the field.
+  - The jump-to-latest pill no longer appears for readers who never
+    scrolled. The on-screen keyboard opening shrinks the chat
+    viewport and the browser clamps the pinned bottom by exactly that
+    delta; the old handler treated that clamp (and the mid-animation
+    frames) as the reader scrolling away, so tapping the composer or
+    Darya's reply arriving surfaced the pill. Follow mode now ends
+    only on a reader-caused move: a resize-explained clamp is ignored
+    (move minus shrink stays under the noise floor), any arrival back
+    at the bottom re-arms follow, and a real finger or wheel scroll up
+    still shows the pill and preserves the reading position.
+
+### Changed
+
+- The Android app builds with targetSdk 36, which is above the API
+  level 34 that Myket requires for new uploads and updates starting
+  1 Aban 1405 (and that Google Play already enforces). The version
+  currently listed in the store predates that requirement; uploading
+  this build (or the already-built 1.9.2, which carries the same
+  target) resolves the notice. No code change was needed for this:
+  the bump exists so the store gets a fresh build that passes.
+
 ## [1.9.2] - 2026-08-23
 
 ### Fixed
@@ -587,10 +689,10 @@ pipeline details live in the [README](README.md) and the upgrade spec
   (honoring `prefers-reduced-motion`).
 - **Elevation is layered and soft, never a heavy halo.** The two shadow
   tokens are now three-stop, low-opacity ambient shadows (tight contact
-  + mid presence + wide diffuse lift) instead of a single dark blob, and
-  their color warms to sand in Beach so no element ever casts a cold,
-  smudgy shadow. The sun glow and notification bloom were dialed back to
-  match.
+  - mid presence + wide diffuse lift) instead of a single dark blob, and
+    their color warms to sand in Beach so no element ever casts a cold,
+    smudgy shadow. The sun glow and notification bloom were dialed back to
+    match.
 - **No layout jump on theme switch.** The picker's language-lock note and
   theme heading sit in one glass chip in both themes (identical padding
   and radius), so switching Ocean to Beach only swaps the tint and ink.

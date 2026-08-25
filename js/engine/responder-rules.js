@@ -796,6 +796,17 @@
           if (continuation) {
             return continuation;
           }
+          // Opinion questions that fell through the shelf get a
+          // first-person take instead of a source pointer: the user
+          // asked what Darya thinks («به نظرت...؟», "do you think...?"),
+          // not where to look. The shelf still wins when it actually
+          // has a confident fact (checked above).
+          if (
+            this._isOpinionQuestion(normalizedUserText) &&
+            this.lang.opinionResponses
+          ) {
+            return this._pickVaried(this.lang.opinionResponses);
+          }
           // For factual questions that fell through the knowledge layer,
           // honesty plus a reliable-source pointer (Wikipedia, reputable
           // YouTube channels, qualified experts) is more useful than a

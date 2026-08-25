@@ -154,6 +154,12 @@
     'gn',
     'ttyl',
     'gotta run',
+    // "I've got to run" / "got to run" are the split-tile forms of
+    // "gotta run": the single-token keyword never matches the two-token
+    // "got to", so the farewell fell to the unknown pool (a 2026-08
+    // transcript failure).
+    'got to run',
+    'i got to run',
     'i should get going',
     // "bai"/"bay" are the Latin-alphabet spellings of the Persian بای
     // (bye), common when Persian speakers write in the Latin script.
@@ -202,10 +208,20 @@
   // as false positives, so a real "i want to quit" (ending the chat)
   // still exits. Gig, freelance, and delivery work are included so
   // the 2026 gig-economy questions never bounce into the farewell
-  // confirmation.
+  // confirmation. Hedged quit forms are false positives too: "I am
+  // starting to think I should quit" mid-burnout-chat is a career
+  // disclosure, not a leave request, and the exit confirm must not
+  // hijack it. Only un-hedged "quit"/"I want to quit" still exits.
+  // The run/go farewells ("gotta run", "got to run", "have to go",
+  // "need to go") also open everyday sentences: "I got to run errands
+  // today", "gotta go to the store", "I have to go to work" are NOT
+  // leave requests. A go/run keyword that is not the final word and is
+  // not followed by a farewell tail (now, bye, later, ...) marks the
+  // whole message as a false positive; the bare farewell at the end of
+  // the message still exits.
   const exitFalsePositivePattern =
     // eslint-disable-next-line max-len
-    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b|\bleave\s+(?:sex work|prostitution|escorting)\b/i;
+    /\btake care of (?!yourself\b|urself\b)|\bquit\s+(?:smoking|smokes?|cigarettes?|vaping|drinking|alcohol|drugs?|sugar|junk food|gaming|social media|scrolling|procrastinating|my job|my gig job|my side hustle|my position|my career|this job|the job|working|work|the team|the company|gig(?: job| work|s)?|side hustles?|freelanc(?:e|ing)|delivery|driving|riding)\b|\bleave\s+(?:sex work|prostitution|escorting)\b|\b(?:should\s+(?:i\s+)?quit|think(?:ing)?\s+(?:of|about)\s+(?:to\s+)?quitt?ing|consider(?:ing)?\s+(?:to\s+)?quitt?ing|plann(?:ing)?\s+to\s+quit|gonna\s+quit|going\s+to\s+quit|about\s+to\s+quit|might\s+quit|maybe\s+quit|may\s+quit|wonder(?:ing)?\s+if\s+(?:i\s+)?should\s+quit)\b|\b(?:got\s+to|gotta|have\s+to|need\s+to)\s+(?:run|go)(?!$)(?!\s+(?:now|bye|later|today|tonight|sorry|please|pls|ok|okay)\b)/i;
 
   // Phase 1 (warm presence): the very first greeting should establish Darya
   // as a calm, non-judgmental presence with a gentle opening.

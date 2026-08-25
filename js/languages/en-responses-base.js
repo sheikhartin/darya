@@ -103,6 +103,20 @@
     'This question is beyond my knowledge, so it is worth checking a specialized source: Wikipedia for an overview, and a qualified expert or teacher in the field for anything serious.',
     'For this one I would point you to Wikipedia or high-quality educational content on YouTube; if the topic is sensitive or specialized, the opinion of an expert in that field beats any general source.'
   ];
+  // Opinion questions ("Do you think life has a purpose?", "what is your
+  // take on...") ask for Darya's own perspective. When the offline shelf
+  // has nothing on the topic, a source pointer answers a different
+  // question than the one asked: the person wants a companion's take,
+  // not a bibliography. These lines answer first-person, stay honest
+  // about the offline limit, and hand the question back. They carry no
+  // question marks: an opinion question must never be answered with
+  // another bare question (a quality-suite invariant).
+  R.opinionResponses = [
+    'I do not have a settled verdict on this one, but I like that you keep the question open. I am curious where your own thinking lands on it.',
+    'That is the kind of question where the short answers are the wrong ones. From where I sit, in this conversation, the fact that it keeps coming back to you is part of the answer.',
+    'Honestly, I only know what passes through this conversation, and from here I can see that this question has weight for you. Tell me which part of it keeps your mind moving.',
+    'There is no single answer; everyone answers from where they stand. I am looking from the listener side of this, and you from the life you are living. Wherever you land, I am listening.'
+  ];
   // Live-data limitation: questions about current prices, weather,
   // news, or scores cannot be answered offline. Honesty first, then a
   // pointer to where the live answer actually lives.

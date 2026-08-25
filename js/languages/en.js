@@ -92,6 +92,7 @@
     questionFallbacks: R.questionFallbacks,
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
+    opinionResponses: R.opinionResponses,
     unknownTopicResponses: R.unknownTopicResponses,
     unknownTopicCaringResponses: R.unknownTopicCaringResponses,
     adviceBridgeResponses: R.adviceBridgeResponses,
@@ -468,7 +469,7 @@
       statements: {
         profession:
           /\bmy (sister|brother|mother|mom|mum|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|aunt|uncle|cousin|grandmother|grandfather|grandma|grandpa|best friend|boss|roommate) (?:is|works as)(?! (?:called|named))(?: a | an )?([a-z][a-z ]{1,28}?)(?:[.!?]|$)/iu,
-        name: /\bmy (dog|cat|pet|bird|fish|sister|brother|mother|mom|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|boss|roommate)(?:'s| is)? (?:name is|is called|is named|called|named) ([A-Za-z][A-Za-z'-]{1,28})\b/iu,
+        name: /\bmy (dog|cat|pet|bird|fish|sister|brother|mother|mom|father|dad|husband|wife|partner|boyfriend|girlfriend|son|daughter|kid|child|friend|boss|roommate)(?:'s| is)? (?:name is|is called|is named) ((?!(?:and|or|but|then|we|you|they|he|she|it|the|a|an|was|were|is|are|had|have|has|said|who|that|which|when|where|why|so)\b)[A-Za-z][A-Za-z'-]{1,28})\b/iu, // The bare "called"/"named" alternatives used to read the verb "called" in "my mom called and we argued" as "is called" and store "and" as the mom's name (a 2026-08 transcript failure). The copula is now required, and the captured value rejects conjunctions and function words as a second layer of guard.
         count:
           /\bi have (one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) (kids|children|siblings|brothers|sisters|cats|dogs|pets|cousins|grandchildren)\b/iu,
         relationship:
