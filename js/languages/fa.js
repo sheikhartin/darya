@@ -221,6 +221,7 @@
     questionFallbacks: R.questionFallbacks,
     questionAcknowledgements: R.questionAcknowledgements,
     sourceSuggestions: R.sourceSuggestions,
+    opinionResponses: R.opinionResponses,
     unknownTopicResponses: R.unknownTopicResponses,
     unknownTopicCaringResponses: R.unknownTopicCaringResponses,
     adviceBridgeResponses: R.adviceBridgeResponses,

@@ -999,8 +999,84 @@
       48,
 
       // eslint-disable-next-line max-len
-      /\b(?:cook(?:ing|ed|er)?|recipe|ghormeh|fesenjan|kebab|kabab|stew|soup|baking|bake|frying|boil|simmer|kitchen|meal prep|tasted (?:bitter|salty)|tastes (?:bitter|salty)|was (?:bitter|salty|burned)|too salty|burnt the|burned the|fix (?:the|my) (?:stew|soup|food|meal|recipe|dish)|fix (?:it|that) (?:next time|tomorrow|tonight)|went wrong (?:with the|in the|while)|ruined the|messed up (?:the|my|a) (?:stew|soup|food|meal|recipe|dish|dinner))\b/i,
+      /\b(?:cook(?:ing|ed|er)?|recipe|ghormeh|fesenjan|kebab|kabab|stew|soup|baking|bake|frying|boil|simmer|kitchen|meal prep|tasted (?:bitter|salty)|tastes (?:bitter|salty)|was (?:bitter|salty|burned)|too salty|burnt the|burned the|fix (?:the|my) (?:stew|soup|food|meal|recipe|dish)|fix (?:it|that) (?:next time|tomorrow|tonight)|went wrong (?:with the|in the|while)|ruined the|messed up (?:the|my|a) (?:stew|soup|food|meal|recipe|dish|dinner)|what (?:should|can|do) i (?:make|cook)(?: (?:for (?:dinner|lunch|breakfast)|tonight|for tonight))?|make (?:for|something for) (?:dinner|lunch|breakfast)|(?:dinner|lunch|breakfast) ideas|what to (?:make|cook)(?: (?:for (?:dinner|lunch|breakfast)|tonight))?)\b/i,
       R['ruleCooking']
+    ),
+
+    // First-date nerves ("first date tomorrow", "I have a date
+    // tonight"): warm de-escalation that names the tremble without
+    // promising the other person's behavior. Sits below the
+    // professional band and above the generic anxiety pool so the date
+    // framing, not the fear, anchors the reply.
+    rule(
+      'first_date',
+      44,
+
+      // eslint-disable-next-line max-len
+      /\b(first date|a first date|date (?:tonight|tomorrow)|going on a date|on a date|have a date (?:tonight|tomorrow))\b/i,
+      R['ruleFirstDate']
+    ),
+
+    // A colorless, low-energy day ("today is a drag", "it has been a
+    // grey day"): not a motivation disclosure, the day just came out
+    // grey. Light warmth and one small break from the routine, the EN
+    // twin of the FA bored_day rule (bilingual topic parity).
+    rule(
+      'bored_day',
+      36,
+
+      // eslint-disable-next-line max-len
+      /\b(?:today|this (?:day|week)) (?:was|is|feels like) (?:such |so |a |a really |a pretty |a bit )?(?:a )?(?:grey|gray|boring|miserable|drag|drab|flat|colorless|lifeless|pointless)|(?:it'?s|its) (?:been |just |such |so |a )?(?:a |really )?(?:grey|gray|boring|drab|flat|colorless|lifeless) (?:day|morning|evening|week)|what (?:a |an )?(?:boring|grey|gray|drab|flat|colorless|lifeless|pointless) (?:day|week|morning|evening)|feels like a (?:drag|blur)\b/i,
+      R['ruleBoredDay']
+    ),
+
+    // The movie mood ("I am in the mood for a movie", "feeling like a
+    // series"): choosing a film together, taste first. The EN twin of
+    // the FA movie_mood rule; explicit recommendation requests still go
+    // to the media shelf.
+    rule(
+      'movie_mood',
+      45,
+
+      // eslint-disable-next-line max-len
+      /\b(?:in the mood for|feeling like|craving|dying to watch|feel like watching|want to watch|wanting to watch) (?:a |an |some |something |the )?(?:movie|film|series|show|episode|documentary)\b/i,
+      R['ruleMovieMood']
+    ),
+
+    // Topic setup ("I have a question", "a question that has been on
+    // my mind for a while"): the question is on the tip of the tongue.
+    // Make space and invite it, the EN twin of the FA topic_setup rule.
+    rule(
+      'topic_setup',
+      42,
+
+      // eslint-disable-next-line max-len
+      /\b(?:i (?:have|'ve|have got|'ve got) (?:a |one )?question|there'?s (?:a |one )?question|that question (?:that|which)? (?:has been|has|'s been) (?:on my mind|in my head|on my mind for)|been on my mind (?:for a while|for ages|for a long time|for weeks)|i'?ve been wanting to ask|wanting to ask (?:you|this)|there'?s something i'?ve been wanting to ask)\b/i,
+      R['ruleTopicSetup']
+    ),
+
+    // Casual endearment ("you are a lifesaver", "god bless you"):
+    // everyday American warmth far below romance, the EN twin of the FA
+    // casual_endearment rule. Kept out of compliment_darya forms so the
+    // two stay distinct.
+    rule(
+      'casual_endearment',
+      42,
+      /\b(?:you(?:'re| are) (?:the best|a lifesaver|such a gem|a gem|the greatest)|god bless you|bless your heart)\b/i,
+      R['ruleCasualEndearment']
+    ),
+
+    // Longing / missing a person, place, or period of life (not the
+    // bot: "i miss you" stays with the affection rule). The EN twin of
+    // the FA longing rule; wistful, never the loneliness counseling
+    // pool.
+    rule(
+      'longing',
+      42,
+
+      // eslint-disable-next-line max-len
+      /\b(?:i (?:really |truly |so )?miss (?:that|those|the old|home|my old|the way things were|how things were|the days|those days|the life)|i'?ve been missing|i have been missing)\b/i,
+      R['ruleLonging']
     ),
 
     rule(
@@ -1024,7 +1100,7 @@
       40,
 
       // eslint-disable-next-line max-len
-      /\b(mindfulness|meditation|meditate|mindful|breathing (?:exercise|technique)|present moment|be present|grounding|ground myself|in the moment|calm my mind|quiet my mind|clear my head|body scan|just breathe|focus on my breath|watching my thoughts|notice my thoughts|noticing my thoughts|being aware)\b/i,
+      /\b(mindfulness|meditation|meditate|mindful|breathing (?:exercise|technique)|present moment|be present|grounding|ground myself|in the moment|calm my mind|quiet my mind|clear my head|body scan|just breathe|focus on my breath|watching my thoughts|notice my thoughts|noticing my thoughts|being aware|breathe (?:together|with me|for a bit|for a minute|for a second)|can we (?:breathe|do a breathing exercise)|let'?s (?:breathe|do a breathing exercise)|breathing together|breathe with me)\b/i,
       R['ruleMindfulness']
     ),
 
@@ -1489,7 +1565,7 @@
       66,
 
       // eslint-disable-next-line max-len
-      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|why do you (?:even )?exist|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself))\b/i,
+      /\b(?:do you have (?:a )?(?:parents|mom|mum|dad|father|mother|family|siblings|brother|sister|children|kids|wife|husband|home|house)|(?:who|what|why) (?:made|built|created|designed) you|why (?:were|are) you (?:made|built|created|designed)|why do you (?:even )?exist|what is your (?:purpose|goal|mission|birthday|age)|how old are you|where do you live|what are your (?:weaknesses|limits|limitations|flaws)|what do you (?:not|don'?t) know|how much (?:knowledge|do you know)|what can'?t you do|what can you not (?:do|help (?:me )?with)|what can'?t you help with|when should i not trust you|when should i verify your answer|are you a (?:robot|bot|machine|computer program|real person)|do you (?:sleep|eat|dream|get tired)|can you (?:fall in love|get married|die)|are you (?:actually |really )?(?:self.?aware|conscious|sentient|awake|aware of yourself)|do you (?:have )?(?:consciousness|self.?awareness)|are you (?:really )?(?:thinking|thinking for yourself)|do you (?:actually |really )?feel (?:things|anything|real|it)|do you have (?:any )?(?:feelings|emotions)|you (?:also have|have) (?:feelings|emotions)(?: too)?|are you (?:just |only )?(?:performing|pretending|faking it|acting)|is (?:this|all this) (?:just )?(?:a performance|acting|pretending)|what is (?:all )?(?:this|the|our) (?:conversation|chat|talk) (?:for|about))\b/i,
       R['ruleDaryaSelf']
     ),
 

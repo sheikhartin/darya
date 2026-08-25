@@ -409,6 +409,10 @@
     social_comparison: 0.6,
     loneliness_new_city: 0.7,
     loneliness_online: 0.7,
+    // Longing / missing someone or a period of life (warm, wistful) is
+    // milder than loneliness: it deserves warmth, not the heavy
+    // isolation counseling pool.
+    longing: 0.4,
     therapy_help: 0.7,
     family_conflict: 0.7,
     toxic_family: 0.8,

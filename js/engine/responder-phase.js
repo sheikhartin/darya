@@ -505,6 +505,27 @@
     },
 
     /**
+     * True when the user asks for Darya's own opinion on a topic
+     * («به نظرت آگاهی دقیقاً چیه؟», "do you think life has a
+     * purpose?"). Opinion framings were added to the knowledge-request
+     * detector so the shelf can engage ("do you think it will replace
+     * computers?"), but when the shelf has no answer the fallback used
+     * to point at Wikipedia, which answers a different question than
+     * the one asked. The opinion pool answers first-person instead.
+     * @param {string} text - Normalized matching text
+     * @returns {boolean}
+     */
+    _isOpinionQuestion(text) {
+      const fa =
+        // eslint-disable-next-line max-len
+        /(?:به\s?نظرت|به\s?نظرتون|به\s?نظر تو|به\s?نظر شما|نظرت چیه|نظرت درباره|نظرت در مورد|نظرت درباره اش|نظرت درباره‌اش|فکر می‌?کنی|فکر می‌?کنید|فکر میکنی|به نظرت چه|به نظرت چی|به نظرت چرا)/u;
+      const en =
+        // eslint-disable-next-line max-len
+        /\b(?:do you think|what do you think|in your opinion|do you believe|how do you (?:see|feel) about|what'?s your take|whats your take|your opinion on)\b/i;
+      return fa.test(text) || en.test(text);
+    },
+
+    /**
      * True when the question is a first-person process question
      * ("چطور میتونم مدیریت کنم", "how do I talk to her") that deictically
      * refers back to the active conversation subject. Such questions ask

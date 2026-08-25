@@ -96,6 +96,12 @@ const LIVED_TOPICS = new Set([
   // stack on top of them either.
   'loneliness_new_city',
   'loneliness_online',
+  // Longing / missing someone («دلم برات تنگ شده», «دلم برای یه
+  // زندگی دور از این شهر تنگ شده») carries its own warm
+  // acknowledgment in the longing pool; a stacked generic empathy
+  // prefix would read as doubled, and the longing rule must beat the
+  // knowledge shelf when a missing-line mentions a city or place.
+  'longing',
   // Modern-life disclosure pools are already contextual and should never be
   // replaced by a random light-humor line on an otherwise low-scored turn.
   'climate_anxiety',

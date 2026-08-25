@@ -36,6 +36,47 @@ pipeline details live in the [README](README.md) and the upgrade spec
   logs every fallback and every failure to logcat under the DaryaExport
   tag (adb logcat -s DaryaExport), and the page console carries the
   reason the native save rejected, readable from chrome://inspect.
+- A 71-conversation warm-mood battery (38 Persian, 33 English,
+  `tests/probe-moods.mjs`) exposed a whole class of warm-turn failures;
+  each class is fixed and pinned by `tests/mood-battery-regression.test.mjs`:
+  - «درود بهت! چطوری؟» and the «به تو»/«به شما» vocative greetings now
+    reach the how-are-you answer (and a single name word before the
+    check-in, «سلام داریوش! احوالت چطوره؟», no longer breaks it)
+    instead of the question-acknowledgement or Wikipedia/YouTube line.
+  - Longing («دلم برات تنگ شده», «دلم برای ... تنگ») has its own warm
+    pool; it no longer lands on the loneliness counseling essay. The
+    English twin («i miss those days», «i really miss home») is new.
+  - Opinion questions («به نظرت ...», "what do you think about this?",
+    "in your opinion ...") get an honest first-person opinion pool
+    instead of a source pointer; no English line carries a question
+    mark.
+  - Exit detection no longer hijacks hedged career sentences ("i am
+    thinking of quitting my job", "i might quit") or errand sentences
+    ("i got to run errands today", "gotta go to the store"); only the
+    un-hedged farewell exits, and the split-tile "got to run"
+    farewell now exits when it is a real farewell.
+  - «سر و کار» idioms («کجا باهاش سر و کار داریم؟») no longer open
+    the work-stress thread; the achievement rule gained everyday
+    forms (job offer, work presentation, promotion, grandchild,
+    sibling's baby, "finally sent/did it"); cooking gained
+    meal-planning questions in both languages.
+  - "Can we breathe together?" / «استرسمو یه کم پایین بیار» are met
+    with the breathing-exercise invite; "do you actually feel
+    things?" stays on the honest identity thread.
+  - A name statement now needs the copula ("my dog is named Rex"
+    stores, "my mom called and we argued" stores nothing and no
+    longer answers "Got it, your mom is named and.").
+  - "A different one" / «میشه یه تای دیگه؟» after a media list serves
+    fresh titles (the used titles are excluded), and the same
+    follow-up works on knowledge-fact threads.
+  - New warm topic families in both languages (with the bilingual
+    parity test keeping them in lockstep): bored day, movie mood,
+    first date, topic setup, and casual endearment. Persian
+    endearments («قربونت برم», «فدات شم») no longer get the romantic
+    boundary line; the tech-frustration pool gained device
+    malfunction lines that still name the technology.
+  - Emotion classification: "miss" no longer reads as grieving, bare
+    "fear" reads as fear, "i am grieving" reads as grieving.
 
 ### Changed
 

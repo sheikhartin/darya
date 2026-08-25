@@ -144,7 +144,7 @@
   // exercise. The specific exercise is chosen by requestKeywords.
   R.exerciseRequestPattern =
     // eslint-disable-next-line max-len
-    /\b(?:breathing exercise|breathe with me|calm me down|de-?stress|relax(?:ation)? exercise|ground(?:ing)? (?:me|exercise)|5-4-3-2-1|body scan|scan my body|thought record|cbt exercise|cognitive (?:restructuring|reframing)|challenge my thoughts|write down my thoughts|exercise to (?:calm|relax|ground) me)\b/i;
+    /\b(?:breathing exercise|breathe (?:with me|together|for a bit|for a minute)|can we (?:breathe|do a breathing exercise)|let'?s (?:breathe|do a breathing exercise)|calm me down|de-?stress|relax(?:ation)? exercise|ground(?:ing)? (?:me|exercise)|5-4-3-2-1|body scan|scan my body|thought record|cbt exercise|cognitive (?:restructuring|reframing)|challenge my thoughts|write down my thoughts|exercise to (?:calm|relax|ground) me)\b/i;
   // Saying stop (or no) at any point releases the active exercise.
   R.exerciseStopPattern =
     /\b(?:stop(?: the exercise)?|that'?s (?:enough|all)|i'?m done|let'?s stop|we can stop|never mind)\b/i;
