@@ -77,6 +77,25 @@ pipeline details live in the [README](README.md) and the upgrade spec
     malfunction lines that still name the technology.
   - Emotion classification: "miss" no longer reads as grieving, bare
     "fear" reads as fear, "i am grieving" reads as grieving.
+- Mobile fixes found on a Samsung A03 (tests/live-edge.test.mjs):
+  - Sending a message no longer disables the focused composer input
+    while the reply is pending. Disabling a focused field detaches the
+    on-screen keyboard mid-gesture (on Samsung IMEs the space bar is
+    left stale and white) and the reader had to tap the composer again
+    to keep typing. The send button and the submit guard
+    (waitingForReply) already block sending, so the input now stays
+    enabled and focused; the keyboard stays open, like in any chat
+    app. A finished conversation still disables the field.
+  - The jump-to-latest pill no longer appears for readers who never
+    scrolled. The on-screen keyboard opening shrinks the chat
+    viewport and the browser clamps the pinned bottom by exactly that
+    delta; the old handler treated that clamp (and the mid-animation
+    frames) as the reader scrolling away, so tapping the composer or
+    Darya's reply arriving surfaced the pill. Follow mode now ends
+    only on a reader-caused move: a resize-explained clamp is ignored
+    (move minus shrink stays under the noise floor), any arrival back
+    at the bottom re-arms follow, and a real finger or wheel scroll up
+    still shows the pill and preserves the reading position.
 
 ### Changed
 

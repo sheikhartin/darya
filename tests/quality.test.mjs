@@ -3918,7 +3918,16 @@ test('chat live-edge state distinguishes new content from reader scrolling', () 
   assert.match(core, /followingLatest: true/u);
   assert.match(core, /function handleChatScroll\(\)/u);
   assert.match(core, /if \(!scrollToLatestPending\)/u);
-  assert.match(core, /state\.followingLatest = isNearBottom\(\)/u);
+  // Follow mode now ends only on a reader-caused move: the blind
+  // "any scroll away from the bottom ends follow" assignment (which
+  // let keyboard-resize clamps and mid-animation frames surface the
+  // jump pill) must stay out of the handler.
+  assert.doesNotMatch(
+    core,
+    /state\.followingLatest = isNearBottom\(\)/u,
+    'blind follow-state assignment regressed'
+  );
+  assert.match(core, /movedUp - shrank > 2/u);
   assert.ok(
     followSnapshot > appendStart,
     'follow snapshot exists in appendMessage'

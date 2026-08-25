@@ -350,6 +350,10 @@
   var scrollToLatestPending = false;
   /** @type {number|null} Timer for completion of a smooth jump. */
   var jumpScrollTimer = null;
+  /** Last scrollTop observed by handleChatScroll (-1: not observed yet). */
+  var lastScrollTop = -1;
+  /** Last clientHeight observed by handleChatScroll (-1: not observed yet). */
+  var lastClientHeight = -1;
 
   /**
    * Scrolls the chat container to the bottom, revealing the latest message.
@@ -418,14 +422,44 @@
   }
 
   /**
-   * Records a real chat-scroll event. Programmatic moves are ignored until
-   * they settle; every other scroll updates whether the reader is following
-   * the live edge and therefore whether the jump control is needed.
+   * Records a real chat-scroll event. Programmatic moves are ignored
+   * until they settle, and a scroll only ends follow mode when the
+   * reader is the one moving:
+   *
+   * - Landing back near the bottom (a swipe down, or a resize clamp
+   *   that ends there) re-arms follow and hides the jump control.
+   * - Moving away from the bottom only counts as reading intent when
+   *   the move is not explained by the container shrinking. The
+   *   on-screen keyboard opening shrinks the viewport, and the browser
+   *   then clamps a pinned bottom by exactly that delta; the
+   *   mid-animation frames briefly look "not near bottom". Without the
+   *   shrink compensation, tapping the composer or Darya's reply
+   *   arriving would surface the jump pill for a reader who never
+   *   scrolled. Real finger or wheel input moves the offset with the
+   *   height unchanged, so its difference stays above the 2px noise
+   *   floor.
    */
   function handleChatScroll() {
-    if (!scrollToLatestPending) {
-      state.followingLatest = isNearBottom();
+    if (!elements.chat) {
+      return;
     }
+    if (!scrollToLatestPending) {
+      if (isNearBottom()) {
+        state.followingLatest = true;
+      } else {
+        var movedUp = lastScrollTop - elements.chat.scrollTop;
+        var shrank = lastClientHeight - elements.chat.clientHeight;
+        if (
+          lastScrollTop >= 0 &&
+          lastClientHeight > 0 &&
+          movedUp - shrank > 2
+        ) {
+          state.followingLatest = false;
+        }
+      }
+    }
+    lastScrollTop = elements.chat.scrollTop;
+    lastClientHeight = elements.chat.clientHeight;
     updateJumpButton();
   }
 
