@@ -5,6 +5,66 @@ All notable changes to Darya are documented here. Darya follows
 pipeline details live in the [README](README.md) and the upgrade spec
 (`darya-comprehensive-upgrade-spec.md`).
 
+## [1.9.4] - 2026-08-27
+
+### Fixed
+
+- The Persian possessive-suffix trap in the session name memory
+  (js/languages/fa.js, js/engine/responder-profile.js). The glued
+  first-person copula («من بارانم» = I am Baran) and the possessive
+  suffix («من اسمم چیه» = what is MY name) are written with the same
+  «م», and the copular branch matched any «من Xم» anywhere in a
+  sentence. The two reported failures: «من اسمم چیه؟» stored the
+  literal word «اسم» as the user's name and answered «اسم قشنگیه،
+  اسم», and «من اسمم الیاس هست» also stored «اسم» because the
+  possessive fragment matched before the real name could. The glued
+  branch now demands the self-introduction clause shape (utterance-end
+  or a following «و»), the possessive nouns people actually attach
+  («اسم», «حال», «کار», «دست», «گوشی», «پول», body parts, devices) and
+  the utterance-final states («من داغونم», «من باهاتم», «من میتونم»)
+  are stopwords, and the recall question forms («اسمم رو بهت گفتم؟»,
+  «میدونی اسمم چیه؟») route to the honest recall answer. Real
+  self-introductions in every register («من بارانم», «من آرتین هستم»,
+  «اسمم آریاه», «اسمم علی نیست، کوروشه», «منو دریا صدا کن») keep
+  working unchanged.
+- «اسمم مهم نیست» stored the fragment «ست» as a name: regex
+  backtracking split «نیست» into «نی» + «ست» inside the correction
+  branch. The negated copula now requires a word boundary, and the
+  decline-to-share family («اسمم خصوصیه», "my name is a secret",
+  "my name is private") is never stored in either language.
+- Durations were misread as the user's age in Persian: «من ۵ سال
+  سابقه کار دارم» stored age ۵ and «من ۲ سال درس خوندم» stored age ۲
+  (and then answered an adult with the trusted-adult child reply).
+  A bare «سال» without its glued copula is a duration now, and the
+  suffixed forms reject duration continuations («۱۰ ساله که اینجا
+  کار میکنم»). English got the mirrored fix: "my son is 5 years old"
+  and "my grandma is 90 years old" no longer store the relative's age
+  as the user's.
+- Lifestyle sentences were misread as cities: «تنها زندگی می‌کنم»
+  stored «تنها» and «با مادرم زندگی می‌کنم» stored «با مادرم» as the
+  user's location. A locationGuard now rejects manner adverbs,
+  companion phrases, and family-member tails in the place capture.
+- English name-capture idioms: "call me maybe/tomorrow/back/crazy"
+  and "I'm Legend at this game" no longer store names (the call-me
+  branch rejects idiom objects, and the copular branch rejects a
+  prepositional continuation after the candidate).
+- The preference strip mangled vowel-final objects: «من عاشق دریام»
+  stored «دری» and «من عاشق موسیقیم» stored «موسیق». The glued «م»
+  after a final vowel is stripped as one letter now, so the stored
+  preference keeps the whole word («پیتزا», «موسیقی», «چایی») and
+  «عاشق دریام» correctly resolves to the companion's own name, which
+  the pronoun guard then declines to store as a preference.
+
+### Added
+
+- `tests/profile-memory-adversarial.test.mjs`: a 61-test corpus with
+  45+ multi-turn adversarial conversations (250+ turns total, both
+  languages) covering every trap above plus correction chains,
+  famous-figure jokes, crisis interruptions, repeated recalls, young
+  ages, combined disclosures, and honest empty-profile recalls. The
+  suite runs in `npm test` and was verified over multiple consecutive
+  clean rounds.
+
 ## [1.9.3] - 2026-08-24
 
 ### Fixed

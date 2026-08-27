@@ -315,7 +315,14 @@
     // non-age quantity phrases ("i am 2 hours late", "100 percent").
     userProfilePatterns: {
       ageStatement:
-        /\b(?:(?:i'?m|i am|im|my age is)\s+(?:a\s+)?(\d{1,3})\s*(?:years?|yrs?|yo)?|(?:and\s+)?(\d{1,3})\s+years?\s+old)\b(?!\s*(?:hours?|minutes?|days?|weeks?|months?|times|o'clock|percent|dollars|miles|meters?))/i,
+        // The bare "N years old" branch must belong to the SPEAKER: a
+        // third-person subject before it ("my son is 5 years old", "she
+        // is 80 years old") states someone else's age and used to store
+        // the child's age as the user's. The lookbehind rejects the
+        // third-person copulas; the first-person forms ("i'm 24 years
+        // old", "and 24 years old" continuing an "I'm Artin" clause)
+        // keep matching exactly as before.
+        /\b(?:(?:i'?m|i am|im|my age is)\s+(?:a\s+)?(\d{1,3})\s*(?:years?|yrs?|yo)?|(?<!\b(?:he|she|it|son|daughter|kid|child|baby|boy|girl|mom|mum|dad|mother|father|brother|sister|friend|wife|husband|grandma|grandpa|dog|cat|house|car)(?:'s)?\s+(?:is|was|turned|turns|just turned)\s+)(?:and\s+)?(\d{1,3})\s+years?\s+old)\b(?!\s*(?:hours?|minutes?|days?|weeks?|months?|times|o'clock|percent|dollars|miles|meters?))/i,
       ageQuestion:
         // "do you remember how old i am" (with the subject between the
         // recall cue and the age phrase) was missed, so the transcript
@@ -336,7 +343,12 @@
       // are never stored as names. The capture takes up to two words
       // ("call me Mary Jane"), mirroring the explicit-form branch.
       nameStatement:
-        /\b(?:my name(?: is|'?s)|i'?m called|i am called)\s+(?!(?:not|never|no|actually)\b)([A-Za-z][A-Za-z']*(?:\s+(?!and\b|or\b)[A-Za-z][A-Za-z']*)?)\b|\bmy name (?:is|'?s) not\s+[A-Za-z][A-Za-z']*(?:,|\s+it(?:'| i)?s|\s+it is)\s*([A-Z][a-z']+)\b|\b(?:i'?m|i am)\s+(?!(?:a\s+)?(?:ok\b|fine\b|good\b|great\b|tired\b|sad\b|happy\b|angry\b|excited\b|busy\b|bored\b|hungry\b|scared\b|worried\b|confused\b|sorry\b|sure\b|ready\b|here\b|back\b|home\b|not\b|just\b|so\b|really\b|actually\b|kinda\b|sort of|kind of|gonna\b|going\b|trying\b|starting\b|beginning\b|hoping\b|wondering\b|feeling\b|thinking\b|looking\b|done\b|finished\b|almost\b|basically\b|honestly\b|serious\b|kidding\b|joking\b|doing\b|new\b|single\b|alone\b|lost\b|stuck\b|fine\b|better\b|well\b))([A-Z][a-z]+)\b|\b(?:please\s+)?(?<!don'?t\s+)call me\s+([A-Z][a-z]+(?:\s+(?!and\b|or\b)[A-Z][a-z]+)?)\b/i,
+        // The explicit "my name is X" branch also rejects the decline
+        // family ("my name is a secret", "my name is private", "my name
+        // is weird/unusual/hard to pronounce"): an article or a
+        // name-describing adjective after the copula is a statement
+        // ABOUT the name, never the name itself.
+        /\b(?:my name(?: is|'?s)|i'?m called|i am called)\s+(?!(?:not|never|no|actually|a|an|the|secret|private|confidential|classified|weird|strange|unusual|common|rare|long|short|hard|difficult|complicated|funny|stupid|ugly|beautiful|irrelevant|unimportant|none)\b)([A-Za-z][A-Za-z']*(?:\s+(?!and\b|or\b)[A-Za-z][A-Za-z']*)?)\b|\bmy name (?:is|'?s) not\s+[A-Za-z][A-Za-z']*(?:,|\s+it(?:'| i)?s|\s+it is)\s*([A-Z][a-z']+)\b|\b(?:i'?m|i am)\s+(?!(?:a\s+)?(?:ok\b|fine\b|good\b|great\b|tired\b|sad\b|happy\b|angry\b|excited\b|busy\b|bored\b|hungry\b|scared\b|worried\b|confused\b|sorry\b|sure\b|ready\b|here\b|back\b|home\b|not\b|just\b|so\b|really\b|actually\b|kinda\b|sort of|kind of|gonna\b|going\b|trying\b|starting\b|beginning\b|hoping\b|wondering\b|feeling\b|thinking\b|looking\b|done\b|finished\b|almost\b|basically\b|honestly\b|serious\b|kidding\b|joking\b|doing\b|new\b|single\b|alone\b|lost\b|stuck\b|fine\b|better\b|well\b))([A-Z][a-z]+)\b(?!\s+(?:at|in|on|for|with|about|of|over|under|against)\b)|\b(?:please\s+)?(?<!don'?t\s+)call me\s+(?!(?:maybe|later|tomorrow|tonight|today|anytime|whenever|back|now|soon|again|crazy|names)\b)([A-Z][a-z]+(?:\s+(?!and\b|or\b|by\b|at\b|on\b|in\b)[A-Z][a-z]+)?)\b/i,
       nameRequiresCapital: true,
       // Group 3 (the "call me x" branch) must also clear the capital
       // check: the pattern is case-insensitive, so without it the

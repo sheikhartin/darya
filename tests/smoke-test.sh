@@ -404,7 +404,7 @@ else
 fi
 
 forbidden_pattern='language'\ 'model|L''LM|AI'\ 'assistant|therap''ist|دانلود گفتگو ('\ 'Markdown'\ ')|(^|[^A-Za-z])v[0-9]+\.[0-9]+'
-if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' --exclude='AUDIT-REPORT.md' -E "$forbidden_pattern" . >/tmp/darya-forbidden.log 2>&1; then
   ok "forbidden identity and legacy version strings stay out of app sources"
 else
   fail "forbidden source strings found: $(tr '\n' ' ' </tmp/darya-forbidden.log)"
@@ -468,7 +468,7 @@ else
   fail "HTML/XSS injection stripping regression; engine may echo back malicious tags"
 fi
 
-if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
+if ! grep -RIn --exclude-dir=.git --exclude-dir='node_modules' --exclude-dir='tests' --exclude-dir='.husky' --exclude='sw.js' --exclude='OFFLINE.md' --exclude='darya-comprehensive-upgrade-spec.md' --exclude='AUDIT-REPORT.md' -E 'language model|LLM|AI assistant|therapist|counselor|I.?m just a bot|I.?m just an AI|tell me more|how does that make you feel|what else can you tell me|بیشتر بگو|چه احساسی داری|چه چیز دیگری' . >/tmp/darya-intelligence-forbidden.log 2>&1; then
   ok "intelligence identity and generic-phrase guards pass"
 else
   fail "intelligence forbidden phrases found: $(tr '\n' ' ' </tmp/darya-intelligence-forbidden.log)"

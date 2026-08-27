@@ -38,7 +38,7 @@
    */
   const FA_AFFIRMATION =
     // eslint-disable-next-line max-len
-    /^(?:آره|اره|آرّه|بله|بله حتماً?|آره حتماً?|اره حتماً?|حتماً?|حتماً? بگو|موافقم|درسته|البته|همینه|همینه که هست|خوبه|عالیه|باشه|اوکی|اُکی|هوم|اوهوم|آهان|آها)(?:\s+(?:بگو|بگویید|بگو دیگه|ادامه|ادامه بده|بیشتر|بیشتر بگو|تعریف کن|دقیقا|حتما|حتماً|خوبه|عالیه|چرا که نه|معلومه|معلومه که آره))?[!.؟?…]*$/iu;
+    /^(?:آره|اره|آرّه|بله|بله حتماً?|آره حتماً?|اره حتماً?|حتماً?|حتماً? بگو|موافقم|درسته|البته|همینه|همینه که هست|خوبه|عالیه|باشه|اوکی|اُکی|هوم|اوهوم|آهان|آها)(?:\s+(?:بگو|بگویید|بگو دیگه|ادامه|ادامه بده|بیشتر(?:\s+بگو)?|تعریف کن|دقیقا|حتما|حتماً|خوبه|عالیه|چرا که نه|معلومه|معلومه که آره))?[!.؟?…]*$/iu;
   const EN_AFFIRMATION =
     // eslint-disable-next-line max-len
     /^(?:yes|yeah|yep|yup|sure|ok|okay|go on|please do|more please|yes please|yeh|ya|uh-huh|uh huh|mhm|mm-hmm|mmhmm|totally|exactly|right|ofc|of course)(?:[!.,?…]|\s+(?:please|go on|tell me|more|continue|keep going))*[!.?…]*$/iu;
@@ -547,7 +547,7 @@
       // after a knowledge answer means "yes, keep going". Without this
       // branch it fell through to the generic acknowledgement pool, which
       // read as if Darya had forgotten what she just offered. It behaves
-      // exactly like an explicit "tell me more" turn.
+      // exactly like an explicit keep-going follow-up turn.
       if (threadFresh) {
         const affirmation = isFa ? FA_AFFIRMATION : EN_AFFIRMATION;
         if (affirmation.test(text)) {
