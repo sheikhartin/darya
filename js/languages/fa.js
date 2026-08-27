@@ -463,7 +463,16 @@
         // a bare «سالم» without a preceding number can never match (the
         // pattern always requires the digits first); a digit + «سالم» is
         // read as the age form, which is the natural reading.
-        /(?<!\p{L})(?:(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)|(?:و\s*)?([۰-۹0-9]{1,3})\s*(?:(?:سال(?:ه|م|مه)?)\s*(?:دارم|هستم|ام)|سالمه|سالم))(?![\p{L}۰-۹])/iu,
+        // A bare «سال» with no glued copula is a DURATION, never an age:
+        // «من ۵ سال سابقه کار دارم» and «من ۲ سال درس خوندم» used to
+        // store ۵ and ۲ as the user's age (and the ۲ reply then treated
+        // an adult as a small child), so the «من N سال» branch now
+        // demands the copular suffix (سالمه/سالم/ساله), and the suffixed
+        // forms reject the duration continuations that follow them in
+        // real sentences («۱۰ ساله که اینجا کار میکنم», «N سال دارم
+        // اینجا زندگی میکنم»). «ساله هستم» stays a valid age («من ۲۴
+        // ساله هستم»); only «ساله که» and the duration tails are cut.
+        /(?<!\p{L})(?:(?:من\s+)?(?:سنم|سن من|سنی)\s*([۰-۹0-9]{1,3})\s*(?:سالمه|سالم|سال(?:ه|م|مه)?)?|من\s+([۰-۹0-9]{1,3})\s*(?:سالمه|سالم(?!\p{L})|ساله(?!\s*(?:که|پیش|سابقه|تجربه|(?:هست|است)\s*که)))|(?:و\s*)?([۰-۹0-9]{1,3})\s*(?:(?:سال(?:ه|م|مه)?)\s*(?:دارم|هستم|ام)(?!\s*(?:که|اینجا|این جا|اونجا|اون جا|تو(?!\p{L})|توی|در(?!\p{L})|با(?!\p{L})|کار|درس|زندگی|سابقه|تجربه|روش|روی))|سالمه|سالم(?!\p{L})))(?![\p{L}۰-۹])/iu,
       ageQuestion:
         // «یادته که گفتم ... چند سالمه» (with up to 30 chars between the
         // recall cue and the age phrase) was missed by the old 10-char
@@ -480,17 +489,33 @@
       // with no space, the most common informal self-introduction.
       nameStatement:
         // Recall fragments after «اسمم» («رو یادته», «رو گفتم», «چی بود»,
-        // «یادت رفته») must not be captured as names: they mark a
-        // question about the stored name, which nameQuestion handles.
-        // Only «اسمم»/«اسم من» carries these fragments; the copular
-        // branches have no recall ambiguity. The «اسممو سارا بذار»
-        // branch covers the preposed form only (name before بذار); the
-        // postposed «اسممو بذار سارا» is deliberately out of scope.
-        // Question words (کی/کسی/آدم/آد) are also rejected up front so a
-        // recall like «من کی هستم» can never store «کی» as a name (the
-        // transcript's worst failure); the nameStopwords list below is
-        // the belt-and-suspenders second guard.
-        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت)([\p{L}]{2,20})\s*(?:است|هست|ه)?(?!\s*(?:نیست|نبود|نی))(?!\p{L})|(?<!\p{L})(?:اسمم|اسم من)\s+[\p{L}]{2,20}\s+(?:نیست|نبود|نی)(?:\s*(?:،|,))?\s*([\p{L}]{2,20})(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,12})م(?!\p{L})|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
+        // «یادت رفته», «یادم رفته») must not be captured as names: they
+        // mark a question or a lapse about the stored name, which
+        // nameQuestion handles. Only «اسمم»/«اسم من» carries these
+        // fragments; the copular branches have no recall ambiguity. The
+        // «اسممو سارا بذار» branch covers the preposed form only (name
+        // before بذار); the postposed «اسممو بذار سارا» is deliberately
+        // out of scope. Question words (کی/کسی/آدم/آد) are also rejected
+        // up front so a recall like «من کی هستم» can never store «کی» as
+        // a name (the transcript's worst failure); the nameStopwords list
+        // below is the belt-and-suspenders second guard.
+        //
+        // The correction branch spells the negated copula as
+        // «نی(?!\p{L})», never a bare «نی»: without the boundary,
+        // backtracking split «نیست» into «نی» + «ست» and «اسمم مهم نیست»
+        // stored the fragment «ست» as a name.
+        //
+        // The glued first-person copula branch («من بارانم») is the
+        // dangerous one: the same «م» is ALSO the possessive suffix
+        // («من اسمم چیه» = my name, «من حالم خوبه» = my state, «من دستم
+        // درد میکنه» = my hand), so a bare «من Xم» anywhere in a sentence
+        // stored «اسم», «حال», «دست», «گوشی», «پول»... as names. The two
+        // readings differ in shape: the possessive continues into a
+        // predicate («چیه», «خوبه», «درد میکنه») while the
+        // self-introduction ends the utterance («سلام من بارانم») or
+        // continues with «و» («من آرتینم و ۲۴ سالمه»). The branch now
+        // demands exactly that shape: end of input or a following «و».
+        /(?<!\p{L})(?:اسمم|اسم من)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|رو\s*(?:یادت|گف)|را\s*(?:یادت|گف)|رو\s+|را\s+|یادت|یادم)([\p{L}]{2,20})\s*(?:است|هست|ه)?(?!\s*(?:نیست|نبود|نی(?!\p{L})))(?!\p{L})|(?<!\p{L})(?:اسمم|اسم من)\s+[\p{L}]{2,20}\s+(?:نیست|نبود|نی(?!\p{L}))(?:\s*(?:،|,))?\s*([\p{L}]{2,20})(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,20})\s+هستم(?!\p{L})|من\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد)([\p{L}]{2,12})م(?!\p{L})(?=\s*$|\s+و(?!\p{L}))|(?<!\p{L})(?:منو|من رو|من را|مرا)\s+([\p{L}]{2,20})\s+صدا(?:م)?\s*کن(?!\p{L})|(?<!\p{L})(?:اسممو|اسمم رو|اسمم را|اسم من رو|اسم من را|اسم منو)\s+(?!چیه|چیست|چی|کیه|کیست|کی|کسی|آدم|آد|چی\s*بود|یادت)([\p{L}]{2,20})\s+(?:بذار|بگذار|بزار)(?!\p{L})/iu,
       // Group 3 of nameStatement is the glued first-person copula
       // («من بارانم»); the handler reads this flag instead of hardcoding
       // the group index (see responder-profile.js).
@@ -725,6 +750,111 @@
         'گرم',
         'سرد',
         'دل',
+        // Possessive-suffix nouns: the same «م» that writes the glued
+        // first-person copula («من بارانم» = I am Baran) also writes the
+        // possessive («من اسمم چیه» = MY name, «من حالم خوبه» = MY
+        // state). The clause-shape guard on that branch is the primary
+        // defense; these everyday possessed nouns are the second, so a
+        // clipped fragment like «من گوشیم» can never store a body part,
+        // a device, or the literal word «اسم» as the user's name. This
+        // was the reported failure: «من اسمم چیه؟» answered «اسم قشنگیه،
+        // اسم».
+        'اسم',
+        'سن',
+        'حال',
+        'کار',
+        'شغل',
+        'فکر',
+        'دست',
+        'پا',
+        'قلب',
+        'ذهن',
+        'جون',
+        'جان',
+        'گوشی',
+        'پول',
+        'سر',
+        'مو',
+        'موها',
+        'چشم',
+        'خون',
+        'ماشین',
+        'خونه',
+        'خانه',
+        'حرف',
+        'زندگی',
+        // Utterance-final first-person states and verb stems that the
+        // clause-shape guard alone cannot stop, because they genuinely
+        // end the sentence: «آره من میتونم», «من نمیدونم», «من اینجام»,
+        // «من باهاتم», «من پشیمونم», «من داغونم». Each captured stem is
+        // a state, an ability, or a place deictic, never a name.
+        'میتون',
+        'نمیتون',
+        'نمیدون',
+        'نمیخوا',
+        'نمیگ',
+        'نمیر',
+        'نمیا',
+        'نمیبین',
+        'نمیفهم',
+        'نمیخون',
+        'اینجا',
+        'همینجا',
+        'اونجا',
+        'انجا',
+        'باهات',
+        'باهاتون',
+        'عاشقت',
+        'مخلصت',
+        'مخلص',
+        'نوکرت',
+        'نوکر',
+        'چاکرت',
+        'چاکر',
+        'مدیونت',
+        'مدیون',
+        'ممنونت',
+        'قبول',
+        'بیدار',
+        'گرفتار',
+        'درگیر',
+        'مقروض',
+        'بدهکار',
+        'طلبکار',
+        'باردار',
+        'حامله',
+        'ایرانی',
+        'افغان',
+        'مسلمان',
+        'مسیحی',
+        'دلتنگ',
+        'دلواپس',
+        'داغون',
+        'افتضاح',
+        'عالی',
+        'خوشبخت',
+        'بدبخت',
+        'موفق',
+        'ناموفق',
+        'پشیمون',
+        'پشیمان',
+        'عصبی',
+        'موندگار',
+        // Professions missing from the role list above, seen in the wild
+        // probes as «من آشپزم», «من طراحم», «من راننده هستم».
+        'راننده',
+        'رانند',
+        'آشپز',
+        'فروشنده',
+        'فروشند',
+        'طراح',
+        'حسابدار',
+        // Non-name answers to the name question itself: «اسمم خصوصیه»
+        // and «اسمم مهم نیست» decline to share, they never disclose.
+        'خصوصی',
+        'محرمانه',
+        'مخفی',
+        'مهم',
         'هست',
         'دار',
         'کن',
@@ -770,12 +900,21 @@
         // disclosures; combined with the recall cues they must answer from
         // the stored profile (or honestly admit nothing is stored), never
         // capture «کی» as a name.
-        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمی چیه|اسمم چی بود|اسم من چی بود|اسمی چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو گفتم|اسمم را گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu,
+        /(?<!\p{L})(?:اسمم چیه|اسم من چیه|اسمی چیه|اسمم چی بود|اسم من چی بود|اسمی چی بود|اسمم رو یادته|اسمم را یادته|اسمم یادته|اسمم رو یادت میاد|اسمم را یادت میاد|اسمم یادت میمونه|اسمم یادت می‌مونه|اسمم رو (?:بهت )?گفتم|اسمم را (?:بهت )?گفتم|اسمم رو گفتی|اسمم را گفتی|اسمم رو میدونی|اسمم رو می‌دونی|اسمم را میدانی|میدونی اسمم چیه|می‌دونی اسمم چیه|اسمم یادت رفته|اسمم یادت رفت|اسمم یادت بره|اسم من یادت رفته|یادت.{0,30}?اسمم|یادت.{0,30}?اسم من|یادت میمونه اسمم|یادت می‌مونه اسمم|من کی هستم|من کیستم|من کیستم|من کی بودم|من کیم|من کی ام|یادت.{0,30}?من کی)(?!\p{L})/iu,
       // Location disclosure («تهران زندگی می‌کنم», «اهل شیرازم», «تو
       // اصفهان زندگی می‌کنم»). The place capture is a single Persian
       // word or two, before the living/from marker.
       locationStatement:
         /(?:من )?(?:تو |توی |در )?([\u0600-\u06FF\u200c]{2,20}(?:\s[\u0600-\u06FF\u200c]{2,20})?)\s*(?:زندگی (?:میکنم|می‌کنم|می کنم)|ساکنم|ساکن هستم)|اهل\s+([\u0600-\u06FF\u200c]{2,20})(?:م| هستم| ام)(?!\p{L})/u,
+      // The captured "place" before «زندگی می‌کنم» is not always a place:
+      // «تنها زندگی می‌کنم» (I live alone), «سخت زندگی می‌کنم» (life is
+      // hard), and «با مادرم زندگی می‌کنم» (I live with my mother) used
+      // to store «تنها», «سخت», and «با مادرم» as cities. Manner adverbs,
+      // companion phrases (anything opening with با/پیش/کنار), and
+      // family-member tails are rejected; a real city or neighborhood
+      // never has these shapes.
+      locationGuard:
+        /^(?:با|پیش|کنار)\s|^(?:تنها|سخت|راحت|خوب|بد|بهتر|درست|ساده|معمولی|مجردی|شاد|آروم|آرام|اینجا|این جا|اونجا|اون جا|انجا|هنوز|الان|فعلا|چطور|چجوری|چطوری)$|(?:مادرم|پدرم|مامانم|بابام|والدینم|خانواده|خانوادم|خانواده‌ام|پدربزرگم|مادربزرگم|همسرم|شوهرم|زنم|دوستم|رفیقم|خواهرم|برادرم|پارتنرم|هم اتاقیم)$/u,
       locationQuestion:
         /(?:کجا زندگی (?:میکنم|می‌کنم|می کنم)|من کجا زندگیم|شهرم (?:چیه|کجاست|چی بود)|اهل کجام|من اهل کجام|یادته کجا زندگی|میدونی کجا زندگی|می‌دونی کجا زندگی)/u,
       // Preference disclosure («دوست دارم قهوه», «از شلوغی بدم میاد»,

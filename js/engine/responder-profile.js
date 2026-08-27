@@ -335,7 +335,14 @@
         const locStmt = patterns.locationStatement.exec(matchingText);
         if (locStmt) {
           const place = String(locStmt[1] || locStmt[2] || '').trim();
-          if (place.length >= MIN_PROFILE_NAME_LENGTH) {
+          // Manner and companion phrases before the living verb are not
+          // places: «تنها زندگی می‌کنم» is "I live alone" and «با مادرم
+          // زندگی می‌کنم» is "I live with my mother". The language pack's
+          // locationGuard rejects them so a lifestyle disclosure is never
+          // echoed back later as the user's city.
+          const isNonPlace =
+            patterns.locationGuard && patterns.locationGuard.test(place);
+          if (!isNonPlace && place.length >= MIN_PROFILE_NAME_LENGTH) {
             this._userProfile.location = place;
             if (hasLivedTopic) {
               return null;
@@ -441,9 +448,18 @@
           // «قهوه», not «قهوه هستم». A bare «ه» is deliberately NOT
           // stripped: it is part of many ordinary objects («قهوه»,
           // «میوه», «خانه») and removing it mangles the stored word.
+          // The copula strips run from the least to the most ambiguous
+          // form. Spaced copulas («قهوه هستم», «چایی ام») are unambiguous
+          // and go first. Glued long copulas («قهوههست») are still safe.
+          // The glued short copula is a bare «م» after a vowel («عاشق
+          // دریام» is دریا + م, «عاشق موسیقیم» is موسیقی + م): stripping
+          // the two-letter «ام»/«یم» endings instead (the old behavior)
+          // ate the word's own final vowel and stored «دری» and «موسیق».
           pref = pref
-            .replace(/(?:\s+)?(?:هستم|هست|است|ام|ای|یم|ید|ند)$/u, '')
+            .replace(/\s+(?:هستم|هست|است|ام|ای|یم|ید|ند)$/u, '')
             .trim();
+          pref = pref.replace(/(?:هستم|هست|است)$/u, '');
+          pref = pref.replace(/(?<=[ای])م$/u, '');
           // Verb-shape guard: «میتونی عاشق بشی؟» used to store «بشی»
           // as a preference (the عاشق branch captures whatever follows,
           // including the subjunctive verb). «عاشقتم» (I love you)

@@ -68,7 +68,17 @@ registers (چخبر, کجایی, چته), Latin interjections inside Persian cha
 capability variants, 24 sports and 60+ notable people, name corrections,
 preference traps, live-data honesty, contradiction and ethical-dilemma
 pools, word problems, fatigue, and follow-up continuity. It is
-randomized and was run 20 consecutive rounds clean before shipping. `software-work-history-intelligence.test.mjs` adds 348 bilingual
+randomized and was run 20 consecutive rounds clean before shipping.
+`profile-memory-adversarial.test.mjs` is the session-profile trap
+corpus: 45+ multi-turn conversations (8 to 16 turns each, 250+ turns
+total) built around the Persian possessive/copula ambiguity («من اسمم
+چیه؟» must never store the word «اسم» as a name, «من بارانم» must),
+plus duration-versus-age traps («۵ سال سابقه کار دارم»), third-person
+ages ("my son is 5 years old"), manner-adverb location traps («تنها
+زندگی می‌کنم»), decline-to-share forms («اسمم خصوصیه», "my name is a
+secret"), idiomatic "call me maybe/tomorrow", correction chains,
+famous-figure jokes, crisis interruptions, and honest empty-profile
+recalls in both languages. `software-work-history-intelligence.test.mjs` adds 348 bilingual
 lookup, live-engine, hard-persona, cyber-boundary, formatting,
 no-fixed-price, conflict-history, migration, conscription,
 Persian-code-point, and offline-wiring decisions.
